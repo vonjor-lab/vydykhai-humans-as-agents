@@ -1,7 +1,7 @@
 # Framework for Collaborative Vibe Coding
 
 Date: 2026-06-10
-Version: 1.4.3
+Version: 1.4.5
 Status: universal working framework for several vibe coders and several Codex instances working on one product
 Changelog: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -148,6 +148,22 @@ Output:
 - GitHub/project-memory updates after human approval.
 
 These skills keep the process human-readable: orchestrate the stream, start the work, keep it aligned, accept the result.
+
+## Canonical Source And Product Copies
+
+The canonical source for the framework is the standalone repository: `https://github.com/vonjor-lab/vydykhai-humans-as-agents`.
+
+Product repositories may keep local copies of docs, workflows, and `.agents/skills` so Codex can execute the framework inside a specific project. These copies are useful for execution, but they are not the canonical source.
+
+Change rule:
+
+- universal framework changes go into the standalone repo first;
+- product-local copies are synced from the standalone repo afterward;
+- before changing framework rules inside a product repo, compare them with the standalone upstream;
+- if a rule is specific to a product, team, domain, environment, or infrastructure, keep it in the product repo `AGENTS.md`, project docs, or local runbooks;
+- do not silently promote project-specific rules into the universal framework.
+
+This keeps the framework portable while still letting product repositories add their own constraints.
 
 ## Compatibility With Other Agent Harnesses
 
@@ -991,6 +1007,9 @@ After an epic:
 
 Project:
 Repo:
+Framework upstream:
+Local framework copy:
+Last framework sync:
 Source of truth:
 
 Coordination sources:
@@ -1011,6 +1030,9 @@ Milestone DOD:
 Non-goals:
 
 Privacy constraints:
+
+Project-specific rules:
+- AGENTS.md / project docs / runbooks:
 
 Harness adapter:
 - Codex reference implementation | other harness:

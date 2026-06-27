@@ -20,6 +20,7 @@ Goal: create the minimum shared operating system before implementation starts: r
 Draft a compact brief:
 
 - project name and target repo;
+- framework upstream and local framework copy path, if the framework is imported into the repo;
 - source of truth for issues, PRs, briefs, decisions, and docs;
 - coordination sources used for syncs;
 - who can read and approve those sources;
@@ -28,6 +29,8 @@ Draft a compact brief:
 - privacy constraints and what must not be pasted into durable memory.
 
 Treat meetings, recordings, transcripts, and team chats as one coordination input layer. They are raw inputs until Codex distills them and a human approves the resulting artifact.
+
+The standalone framework repo is the canonical source for universal framework rules. Product-local copies are execution mirrors. If the project needs a local rule, keep it in the project `AGENTS.md`, project docs, or runbooks rather than silently changing the universal framework copy.
 
 ### 2. Onboard The Team
 
@@ -74,6 +77,7 @@ After human approval, create or update:
 - alignment issue for the first meeting or work window;
 - initial task board labels or milestones if the repo uses them;
 - links from the operating brief to docs, meeting sources, team chat, and current tasks.
+- framework sync note: upstream repo, local copied paths, last sync point when known, and where project-specific rules live.
 
 Do not paste raw transcripts, secrets, customer data, private prompts, or proprietary context into public or broadly shared artifacts.
 
@@ -92,6 +96,7 @@ End with:
 
 - whether the project can start;
 - where the Project Operating Brief lives;
+- framework upstream, local copied paths, and project-specific rule location when the framework is imported;
 - coordination sources and source of truth;
 - harness adapter status;
 - team onboarding summary;

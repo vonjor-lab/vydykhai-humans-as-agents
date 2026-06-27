@@ -1,7 +1,7 @@
 # Фреймворк совместной вайб-разработки
 
 Дата: 2026-06-10
-Версия: 1.4.3
+Версия: 1.4.5
 Статус: универсальный рабочий фреймворк для нескольких вайбкодеров и нескольких Codex-инстансов, работающих над одним продуктом
 История изменений: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -148,6 +148,22 @@ Orchestrator thread - это только организация работы. �
 - GitHub/project-memory updates после human approval.
 
 Эти skills сохраняют процесс человеческим: оркестрировать поток, стартовать работу, вести ее без расхождения, принять результат.
+
+## Canonical Source и Product Copies
+
+Канонический source фреймворка - standalone repository: `https://github.com/vonjor-lab/vydykhai-humans-as-agents`.
+
+Product repos могут держать локальные копии docs, workflows и `.agents/skills`, чтобы Codex работал внутри конкретного проекта. Эти копии нужны для execution, но они не являются canonical source.
+
+Правило изменений:
+
+- универсальные изменения фреймворка сначала вносятся в standalone repo;
+- product-local copies синхронизируются из standalone repo после этого;
+- перед правкой framework rules в product repo нужно сравнить их со standalone upstream;
+- если правило специфично для продукта, команды, домена, окружения или инфраструктуры, оно остается в product repo `AGENTS.md`, project docs или local runbooks;
+- нельзя молча продвигать project-specific правило в universal framework.
+
+Так framework остается переносимым, а product repos могут добавлять свои ограничения без загрязнения общей модели.
 
 ## Совместимость с другими agent harnesses
 
@@ -991,6 +1007,9 @@ Codex проверяет:
 
 Project:
 Repo:
+Framework upstream:
+Local framework copy:
+Last framework sync:
 Source of truth:
 
 Coordination sources:
@@ -1011,6 +1030,9 @@ Milestone DOD:
 Non-goals:
 
 Privacy constraints:
+
+Project-specific rules:
+- AGENTS.md / project docs / runbooks:
 
 Harness adapter:
 - Codex reference implementation | other harness:

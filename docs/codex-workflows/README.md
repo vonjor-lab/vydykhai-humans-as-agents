@@ -2,6 +2,8 @@
 
 This folder contains reference workflows for repo-local Codex collaboration. Repo-scoped skills live under `.agents/skills` and point Codex here.
 
+Canonical framework changes belong in the standalone upstream repository first. Product repositories may copy this folder for execution, but those copies are mirrors; keep product-specific rules in product-local docs or `AGENTS.md`.
+
 Use repo-scoped skills for this project before creating global `$CODEX_HOME/skills` entries. Global skills are useful for cross-repo reuse, but they require local installation and can drift between participants. Repo skills are available to everyone after pulling the repository and starting a new Codex session from inside it.
 
 ## Available Workflows

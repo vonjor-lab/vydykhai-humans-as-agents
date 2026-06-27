@@ -8,6 +8,28 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.4.5 - 2026-06-22
+
+Уточнена формулировка canonical source, чтобы standalone framework не зависел от рабочих копий или внутренних рабочих контекстов команды.
+
+- Standalone repo остается единственным canonical upstream для universal framework.
+- Product-local copies остаются execution copies.
+- Никакой конкретный project repo, рабочая копия или внутренний рабочий контекст не должен упоминаться как часть universal framework governance.
+
+Зачем: сохранить standalone framework полностью универсальным и не привязывать его к рабочим контекстам или проектам конкретной команды.
+
+## 1.4.4 - 2026-06-22
+
+Закреплен governance source-of-truth для самого фреймворка.
+
+- Standalone repo `https://github.com/vonjor-lab/vydykhai-humans-as-agents` объявлен canonical source.
+- Product-local framework copies описаны как execution mirrors, а не canonical source.
+- Universal framework changes должны сначала попадать в standalone repo, затем синхронизироваться в product repos.
+- Перед изменением framework rules в product repo нужно сверяться со standalone upstream.
+- Project-specific правила должны оставаться в product repo `AGENTS.md`, project docs или local runbooks и не продвигаться в universal framework молча.
+
+Зачем: не расходить framework copies между проектами и не загрязнять универсальную модель локальными правилами одного продукта.
+
 ## 1.4.3 - 2026-06-22
 
 Добавлен Runtime Coherence Check для smoke/acceptance в проектах с несколькими branches, worktrees и локальными runtime.

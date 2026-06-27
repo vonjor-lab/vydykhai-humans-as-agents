@@ -20,6 +20,12 @@ This repo contains the current Codex-first reference implementation. The same op
 - Workflow index: `docs/codex-workflows/README.md`
 - Repo-scoped skills: `.agents/skills`
 
+## Canonical Source
+
+This repository is the canonical source for Vydykhai framework rules, docs, workflows, and repo-scoped skills.
+
+Target product repositories may keep local copies so Codex can run the framework inside that project. Treat those copies as execution mirrors: universal framework changes should land here first, then be synced into product repos. Product-specific rules belong in the target repo's `AGENTS.md`, project docs, or local runbooks.
+
 ## Add The Framework To Your Project
 
 Repo-scoped skills do not activate from a link to this repository. They activate when the framework kit is present inside the target repository and a new Codex session starts from that target repository.
@@ -33,9 +39,11 @@ Recommended import:
    - `docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md`
    - `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 2. Add the core rules from this repo's `AGENTS.md` into the target repo's `AGENTS.md`. If the target already has `AGENTS.md`, append the framework rules instead of replacing project-specific instructions.
-3. Commit and pull the changes on each teammate's machine.
-4. Start a new Codex thread from inside the target repo.
-5. In the first orchestrator thread, run:
+3. Record this repository as the framework upstream for future syncs.
+4. Keep project-specific rules in the target repo's own `AGENTS.md`, project docs, or local runbooks instead of changing the universal framework copy silently.
+5. Commit and pull the changes on each teammate's machine.
+6. Start a new Codex thread from inside the target repo.
+7. In the first orchestrator thread, run:
 
 ```text
 Use $project-launch to set up this project with Vydykhai: Collaborative Vibe Coding with Humans as Agents.

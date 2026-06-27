@@ -21,6 +21,8 @@ Load `docs/codex-workflows/start-work.md` only when the launch needs epic decomp
 
 - Treat meeting recordings, transcripts, team chat, docs, and manual notes as one coordination input layer.
 - Create a compact Project Operating Brief: repo, source of truth, team, decision owner, owners/backups, coordination sources, privacy constraints, compass, DOD, and first next action.
+- Record the framework upstream when importing into a product repo. The standalone framework repo is the canonical source; product-local copies are execution mirrors.
+- Keep product-specific rules in the target repo's `AGENTS.md`, project docs, or local runbooks instead of silently changing universal framework rules.
 - Treat Codex as the reference implementation. When the team uses another harness, document the adapter: separate task context, context id/link, shared memory, verification/smoke path, and handoff location.
 - Explain onboarding plainly: personal orchestrator thread for organization, separate task threads for implementation, GitHub shared memory for durable state.
 - Do not implement, fix, deploy, smoke test, or merge inside the launch/orchestrator thread.
