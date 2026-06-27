@@ -8,8 +8,10 @@ Use this template when a Framework Orchestrator launches or prepares a separate 
 Thread title:
 Task issue:
 Owner:
+Backup owner / failover:
 Orchestrator thread:
 Alignment issue:
+Task thread launch state:
 Latest Team Alignment Delta:
 Codex Task Contract: use the contract in the task issue as the completion source of truth.
 DOD impact:
@@ -55,6 +57,8 @@ Burn / Limits:
 
 - before final completion, run `$accept-work` in this task thread;
 - `$accept-work` must inspect this task issue, PR or diff, latest relevant alignment, DOD impact, task type, Product Capability Loop, verification, burn check when material, and current-branch smoke when required;
+- for user-facing or integration-affecting work, organize fresh current-branch smoke from this exact worktree before claiming acceptance;
+- if merge is needed, perform manual merge from this task thread after manual smoke and human confirmation;
 - finish only with one acceptance status: `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES`, or `BLOCKED`;
 - do not say the task is done before the `$accept-work` result is included.
 
@@ -63,6 +67,7 @@ Burn / Limits:
 Branch / worktree:
 PR / commit:
 Accept Work status:
+Smoke / merge status:
 DOD impact result:
 Task type / product loop result:
 Burn check:

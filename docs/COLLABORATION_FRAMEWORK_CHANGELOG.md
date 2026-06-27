@@ -8,6 +8,32 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.4.1 - 2026-06-20
+
+Уточнена переносимость фреймворка на другие agent harnesses.
+
+- Codex закреплен как reference implementation: repo-scoped skills, threads, thread titles, orchestrator/task-thread handoff, GitHub shared memory и local verification.
+- Добавлен adapter capability check для Claude Code, Cursor, Windsurf/Devin Desktop, GitHub Copilot cloud agent, Gemini CLI или других инструментов.
+- Если harness не умеет создавать resumable task threads, task thread мапится на отдельный chat/run/branch/PR/issue, а GitHub issue становится главным coordination handle.
+- README теперь явно говорит, что link-only или наличие этого repo не активирует skills/workflows в чужом harness.
+
+Зачем: сохранить универсальность фреймворка без ложного обещания, что Codex-specific automation автоматически работает в других инструментах.
+
+## 1.4.0 - 2026-06-20
+
+Добавлен универсальный запуск проекта и усилена дисциплина orchestrator/task thread.
+
+- Появился `$project-launch`: project operating brief, coordination sources, team onboarding, compass, DOD, owners/backups и первый route в `$start-work` или `$framework-orchestrator`.
+- Введен единый блок Project Coordination Sources: встречи, записи, transcripts, командный чат, docs и ручные summaries считаются одним слоем raw inputs для синков.
+- Orchestrator thread закреплен как organization-only: в нем нельзя кодить, чинить, деплоить, запускать приемочный smoke или merge.
+- Task thread закреплен как место implementation, `$accept-work`, fresh current-branch smoke и manual merge после human smoke.
+- Добавлен Thread Launch Contract: task thread должен иметь стабильное title, проверенный rename и запись title/id/link или manual-start prompt в GitHub shared memory.
+- Добавлены owner/backup и failover rule для задач, которые блокируют других участников.
+- Добавлен Orchestrator Health Review после milestone/large merge, 3-5 accepted slices, repeated follow-ups, stalled tasks, scope growth или owner dropout.
+- README теперь объясняет, как импортировать framework kit в чужой repo и почему link-only не активирует repo-scoped skills.
+
+Зачем: сделать фреймворк пригодным для старта любого нового проекта с несколькими людьми и Codex-инстансами, сохранив простую модель: orchestrator организует, task threads делают и принимают.
+
 ## 1.3.3 - 2026-06-19
 
 Уточнена двусторонняя связь продукта и техники в Product Capability Closed Loop.

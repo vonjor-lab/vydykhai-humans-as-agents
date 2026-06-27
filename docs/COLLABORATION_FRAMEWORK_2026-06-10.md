@@ -1,7 +1,7 @@
 # Framework for Collaborative Vibe Coding
 
 Date: 2026-06-10
-Version: 1.3.3
+Version: 1.4.1
 Status: universal working framework for several vibe coders and several Codex instances working on one product
 Changelog: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -78,7 +78,19 @@ The human remains accountable for product judgment and final decisions. Codex ex
 
 ## Core Repo Skills
 
-The framework is implemented through one orchestration skill and three human-level work skills. They are repo-scoped under `.agents/skills`, so every team member gets the same behavior after pulling the repository and starting a new Codex session from inside it.
+The framework is implemented through one project launch skill, one orchestration skill, and three human-level work skills. They are repo-scoped under `.agents/skills`, so every team member gets the same behavior after pulling the repository and starting a new Codex session from inside it.
+
+### `$project-launch`
+
+Use when the team starts a new project or connects the framework to an existing repository.
+
+Output:
+
+- Project Operating Brief: repo, participants, roles, decision owner, coordination sources, and source of truth;
+- concise team onboarding: how to use the orchestrator thread, task threads, GitHub issues, and meeting/chat inputs;
+- initial compass, DOD, and non-goals;
+- list of epics or open questions to route into `$start-work`;
+- GitHub shared memory and task board setup after human approval.
 
 ### `$framework-orchestrator`
 
@@ -92,6 +104,8 @@ Output:
 - task thread title and startup prompt when a new task should be dispatched;
 - GitHub issue or PR updates after human approval;
 - handoff back into `$start-work`, `$daily-alignment`, or `$accept-work` when that specialized workflow is required.
+
+The orchestrator thread is for organization only. It must not solve implementation tasks, write product code, fix defects, deploy, smoke test, or merge. The reason is simple: this thread must stay clean as the holder of the overall goal, DOD, sequence, alignment, risks, and next best action. If it performs tasks, its context becomes noisy and less reliable for coordination.
 
 ### `$start-work`
 
@@ -135,6 +149,24 @@ Output:
 
 These skills keep the process human-readable: orchestrate the stream, start the work, keep it aligned, accept the result.
 
+## Compatibility With Other Agent Harnesses
+
+The framework is universal in its operating logic, but the current reference implementation is tuned for Codex: repo-scoped skills in `.agents/skills`, Codex threads, thread titles, handoff between orchestrator and task threads, GitHub shared memory, and local verification.
+
+Other harnesses can use the framework if the team runs an adapter capability check before project launch:
+
+- durable project instructions can live in the repo;
+- there is a separate work context for task work: thread, session, subagent, cloud agent, worktree run, or issue-run;
+- that work context can be named, found, and resumed later;
+- the harness can read and update GitHub issues/PRs or another shared source of truth;
+- it can see local diff/branch state or work through a PR branch;
+- it can run verification and fresh current-branch smoke, or explicitly hand that step to a human;
+- it can write a handoff and acceptance result where another participant or agent can find it later.
+
+If a harness cannot create separate threads, that is not a blocker. Map `orchestrator thread` to a standing planning/session chat, `task thread` to a separate chat/run/branch/PR/issue, and `thread id/link` to that run's link or identifier. If no such identifier exists, the GitHub issue becomes the primary coordination handle.
+
+Do not assume `$project-launch`, `$framework-orchestrator`, `$start-work`, `$daily-alignment`, and `$accept-work` auto-activate outside Codex. In another harness, implement them as native workflows, rules, prompts, agents, or runbooks. The logic is the same; the launch mechanism depends on the tool.
+
 ## Meeting-To-Codex Loop
 
 Human meetings are where context, judgment, and trade-offs emerge. They should feed agent work directly, not remain separate from it.
@@ -151,6 +183,46 @@ Use Fathom or another meeting recorder when possible. After the meeting, ask Cod
 The human reviews this distillation before it becomes project memory. After approval, Codex updates the relevant briefs, alignment packets, tasks, or docs. Then each team member's Codex can read the same durable artifacts and continue from a shared state.
 
 Meeting transcript is raw input. Codex distillation plus human approval is the operational bridge into agent work.
+
+## Project Launch
+
+A new project starts with a separate Framework Orchestrator thread, not with a task. In that thread the team loads the framework, connects the repo and durable project memory, but does not perform implementation work.
+
+Minimal launch request:
+
+```text
+Use $project-launch. Launch this project with the Codex Collaboration Framework.
+```
+
+### Project Coordination Sources
+
+Do not split "meetings", "recordings", and "team chat" into separate mechanisms. For the framework, they are one input layer for syncs.
+
+The Project Operating Brief should name:
+
+- working repo and branch policy;
+- where GitHub issues, PRs, briefs, and docs live;
+- coordination sources: meetings, recordings, transcripts, a dedicated Telegram/Slack/Teams chat, docs, notes, or manual summaries;
+- who can read and approve these sources;
+- which artifact is source of truth when chat/transcript conflicts with a GitHub issue or brief.
+
+Meetings and chats remain raw inputs. Codex turns them into approved deltas, issues, briefs, and task updates only after human confirmation.
+
+### Team Onboarding
+
+Every participant should understand five rules:
+
+- each participant has a personal Framework Orchestrator thread for the project or product stream;
+- no coding, fixing, deploying, smoke testing, or merging happens in the orchestrator thread;
+- the orchestrator creates or prepares GitHub tasks, task thread titles, startup prompts, and shared-memory updates;
+- implementation happens in separate task threads that receive one task, run `$accept-work`, prepare smoke, and perform merge;
+- after a meeting or when returning to work, the participant can say "run daily alignment" or "continue the stream", and Codex restores durable state itself.
+
+Task threads must be named consistently and the rename must be verified. A task is considered launched only after GitHub shared memory contains the thread title and thread id/link or the manual-start prompt.
+
+### Ownership And Backup
+
+Every active task needs an owner and, for critical workstreams, a backup owner. If the owner drops out, the orchestrator should be able to continue from the GitHub issue, task thread handoff, PR, latest Team Alignment Delta, and accepted/unaccepted status. A returning owner runs daily alignment or orchestrator resume before continuing old local work blindly.
 
 ## Asynchronous Alignment Journal
 
@@ -255,7 +327,7 @@ The orchestrator owns:
 - pending decisions, missing inputs, merge events, and acceptance gates;
 - the instruction to launch or resume the next task thread.
 
-The orchestrator should rarely edit product code. Its ordinary work is to read durable artifacts, update GitHub shared memory, decide whether the participant can continue safely, and create or prepare task threads for implementation.
+The orchestrator must not edit product code, deploy, run acceptance smoke, or merge. Its ordinary work is to read durable artifacts, update GitHub shared memory, decide whether the participant can continue safely, and create or prepare task threads for implementation.
 
 ### Task Thread Dispatch
 
@@ -266,9 +338,10 @@ Dispatch rules:
 - one task thread owns one primary task outcome;
 - the thread title should be stable and scannable: `[#<issue>] <sequence> <short title>`; if the task has an epic or milestone sequence, it is required in the title, for example `[#42] 02.1 Data import access boundary`;
 - the task thread receives the task issue, latest relevant Team Alignment Delta, scope, out of scope, verification expectations, current-branch smoke rule, and handoff destination;
-- the orchestrator records the task thread link/id, pending worktree, or manual-start prompt in the task issue or orchestrator state when available;
-- if Codex thread tools are unavailable, the orchestrator prepares the exact title and startup prompt for a human to create manually;
-- when the task thread finishes implementation, it runs `$accept-work` inside the task thread, includes the result in its final report, and returns that report to the orchestrator.
+- the orchestrator creates the thread, immediately verifies or requests its rename, sends the startup prompt, and records the task thread link/id, exact title, pending worktree, or manual-start prompt in the task issue or orchestrator state;
+- if Codex thread tools or rename are unavailable, the orchestrator prepares the exact title and startup prompt for a human to create or rename manually, and marks launch as `thread title pending`;
+- the task is not considered launched until the title and id/link or manual-start prompt are recorded in GitHub shared memory;
+- when the task thread finishes implementation, it runs `$accept-work` inside the task thread, organizes fresh current-branch smoke when required, prepares manual merge after human smoke, includes the result in its final report, and returns that report to the orchestrator.
 
 ### Task Thread Auto-Launch And Resume
 
@@ -277,9 +350,31 @@ Automation should feel native, but it is not hidden background work. When the hu
 - if the next approved/ready task has no task thread, create it with Codex thread tools or prepare the exact manual-start prompt;
 - if the task thread already exists, open or inspect it by the recorded id/link;
 - if the task thread completed implementation without `$accept-work`, send it a short command to run `$accept-work` from its current task context;
-- if `$accept-work` already returned `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS`, update the sequence, DOD impact, and choose the next best action.
+- if `$accept-work` already returned `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS`, check whether fresh current-branch smoke passed and merge was performed in the task thread after human confirmation, then update the sequence, DOD impact, and choose the next best action.
 
 Dispatch is allowed only for a task with clear scope, out of scope, acceptance criteria, verification, `Codex Task Contract`, `DOD Impact`, and `Burn / Limits`. The orchestrator must not become the implementation worker.
+
+Manual smoke and merge happen in the task thread, not in the orchestrator. If smoke or merge needs corrections, the task thread has the full implementation context and can fix the result quickly. The orchestrator only reads the outcome and decides what should happen next.
+
+### Orchestrator Health Review
+
+The orchestrator should pause for a short health review:
+
+- after a milestone or large merge;
+- after 3-5 accepted task slices;
+- when the same follow-up repeats;
+- when a task stalls, an owner drops out, or scope keeps growing;
+- when accepted technical enablers are not turning into a product loop.
+
+The health review answers:
+
+- whether the team is moving toward the compass and DOD;
+- which blockers, stale assumptions, or repeated costs appeared;
+- whether scope is drifting;
+- which tasks should stop, merge, be resequenced, or move to a backup owner;
+- whether the brief, rules, or lessons need an update.
+
+This is not retro for its own sake. It is a short pause to avoid continuing an expensive wrong trajectory.
 
 ### Lessons From Parallel Work
 
@@ -295,6 +390,22 @@ Recent parallel work showed several reusable lessons:
 - burn should be checked only where there is real cost risk: AI generation, paid APIs, long agent loops, heavy smoke/build cycles, external demos, or repeated retries.
 
 ## Operating Cycle
+
+### 0. Project Launch
+
+Before the first task, create or open the personal Framework Orchestrator thread and run `$project-launch`.
+
+Launch result:
+
+- repo, task board, and durable project memory are defined;
+- sync sources are named as one coordination input;
+- adapter capability check is done when the team uses non-Codex or mixed harnesses;
+- team onboarding is explained;
+- compass, DOD, and non-goals are drafted;
+- owners, backup owners, and the failover rule are named at least for the first active streams;
+- first epics or questions are routed into `$start-work`.
+
+Do not start implementation in the orchestrator thread just because the project is still small.
 
 ### 1. Project Compass
 
@@ -391,7 +502,7 @@ The `DOD Impact` section should briefly state which epic/milestone DoD row the t
 
 The `Burn / Limits` section should be short: `not material`, or a cap/stop condition for tasks involving AI generation, paid APIs, long agent loops, heavy verification, or demo risk. `$accept-work` checks burn only when it is material.
 
-The `Completion Gate` section should state that the task thread must run `$accept-work` inside the task thread before final completion. The issue is not accepted or moved to Done until that result reviews the original brief, latest alignment packets/deltas, verification, current-branch smoke when required, and residual risks.
+The `Completion Gate` section should state that the task thread must run `$accept-work` inside the task thread before final completion. The issue is not accepted or moved to Done until that result reviews the original brief, latest alignment packets/deltas, verification, current-branch smoke when required, and residual risks. If merge is needed, it is performed manually after manual smoke inside the task thread.
 
 ### 5. Dispatch
 
@@ -403,6 +514,7 @@ At the human level, decide:
 - expected output;
 - review owner;
 - whether the task is exploratory, design-only, implementation, fix, or rollout.
+- backup owner or failover condition for tasks that block others.
 
 At the orchestration level, Codex prepares the technical dispatch details: task body, affected docs, alignment packet, suggested branch/worktree, verification expectations, and handoff requirements.
 
@@ -421,6 +533,7 @@ The agent should:
 - publish or prepare an alignment packet when a trigger event changes shared understanding;
 - verify before claiming completion;
 - run `$accept-work` inside the task thread before final completion;
+- prepare fresh current-branch smoke and manual merge in the task thread when the task is user-facing, integration-affecting, or should land in the main branch;
 - leave a handoff.
 
 The human should not micromanage every line. The human should steer at checkpoints.
@@ -465,6 +578,8 @@ Review should prioritize:
 Avoid reviewing only the diff. Review the task against the intended flow.
 
 Substantial tasks should use `$accept-work` as the acceptance gate. The implementation agent may summarize its own result, but acceptance should be a separate review step whenever the work changes shared contracts, user-facing behavior, data shape, or cross-epic assumptions.
+
+After `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS`, the human performs manual smoke, then manual merge in the task thread. Then it is enough to tell the orchestrator: "Check status and continue." The orchestrator finds the task issue, task thread, PR, accept-work result, and merge state from durable memory.
 
 ### 9. Handoff
 
@@ -667,6 +782,21 @@ For each costly moment, write:
 
 If a lesson is not written down, assume it will be repeated.
 
+### Orchestrator Health Review, 15-25 Minutes
+
+Purpose: detect when the team is stalled, drifting in scope, or producing slices without DOD progress.
+
+Codex checks:
+
+- progress toward the compass and nearest DOD;
+- tasks accepted, waiting, blocked, or stale;
+- repeated follow-ups and burn;
+- product loop gaps between UI, backend, data, permissions, and scenarios;
+- owners, backup owners, and dropout risk;
+- what should stop, merge, be resequenced, or move into `$start-work`.
+
+The result is a short next best action, not a long report.
+
 ## Monthly Or Per-Epic Rituals
 
 ### Epic Kickoff
@@ -727,16 +857,20 @@ After an epic:
 ### Orchestration Rules
 
 - The orchestrator must read the latest durable state before recommending the next action: framework, brief, relevant GitHub issues/PRs, latest Team Alignment Delta, and active task handoffs.
+- The orchestrator thread is for organization only. It must not implement, fix product code, deploy, run acceptance smoke, or merge.
 - The orchestrator may create or prepare a new task thread only when the task is approved or ready enough to have a clear scope, out of scope, acceptance criteria, verification expectation, `DOD Impact`, and `Burn / Limits`.
 - The task thread name must include the issue id and sequence when they exist, so humans and Codex can map the sidebar to the brief/GitHub without opening the issue.
-- The orchestrator must record active task thread links/ids, pending worktree, or manual-start prompt in GitHub shared memory when available.
+- The orchestrator must verify task thread rename and record exact title, active task thread links/ids, pending worktree, or manual-start prompt in GitHub shared memory when available.
+- The task thread is not considered launched until title and id/link or manual-start prompt are recorded.
 - On a short continuation command, the orchestrator launches or resumes the next ready task thread itself; if a task thread finished without `$accept-work`, the orchestrator sends it the `$accept-work` command.
+- If a task thread is accepted but smoke or merge is not done yet, the orchestrator sends the human back to the task thread. Merge and corrective fixes do not happen in the orchestrator.
 - When the human adds product vision or future-state commentary during implementation, the orchestrator must run Product Compass Note Triage before adding scope, creating follow-ups, or changing task order.
 - After a daily, meaningful meeting, merge, blocked event, accepted result, or follow-up split, the orchestrator must run or route to `$daily-alignment` before dependent work continues.
 - After a task thread reports completion, the orchestrator must check whether the task thread already ran `$accept-work`. If not, it sends that command back to the task thread. If yes, it uses the result to choose the next best action.
 - Each substantial task must include `DOD Impact`; a new slice is allowed only if it moves a named epic/milestone DoD or is explicitly accepted as an exception.
 - `Burn / Limits` is required for tasks with material cost/retry/generation risk and may be `not material` for ordinary tasks.
 - If shared packets are missing, the orchestrator should return `continue with cautions`, `wait`, or `blocked` rather than inventing another participant's local state.
+- The orchestrator should run a health review after a milestone/large merge, after 3-5 accepted slices, or when follow-ups repeat, a task stalls, scope grows, or an owner drops out.
 
 ### Git And Environment Rules
 
@@ -760,6 +894,7 @@ After an epic:
 - Browser or product smoke is required for user-facing behavior when feasible.
 - At task completion, Codex must arrange a fresh smoke pass on the exact current branch/worktree being accepted. It must not rely on old local servers, old browser tabs, or frontend/backend processes started from another branch.
 - Before smoke, Codex must confirm the branch/worktree identity, start or restart the required backend and frontend from that same worktree, and record what commit or local state was tested.
+- Manual smoke and merge happen in the task thread after `$accept-work`, because only the task thread has the full implementation context for quick fixes.
 - If a verification step is skipped, state why.
 - Do not claim completion without fresh verification.
 - Do not trust generated artifacts without checking that they are meaningful, current, and traceable.
@@ -774,6 +909,45 @@ After an epic:
 - Handoff is part of the work, not an afterthought.
 
 ## Minimal Templates
+
+### Project Operating Brief
+
+```md
+# Project Operating Brief
+
+Project:
+Repo:
+Source of truth:
+
+Coordination sources:
+- meetings / recordings / transcripts:
+- team chat:
+- docs / notes:
+
+Team:
+- <person> | role | availability | owner/backup notes
+
+Decision owner:
+
+Compass:
+
+Milestone DOD:
+- <row>
+
+Non-goals:
+
+Privacy constraints:
+
+Harness adapter:
+- Codex reference implementation | other harness:
+- Separate task context mechanism:
+- Context id/link:
+- Shared memory:
+- Verification/smoke mechanism:
+
+First route:
+- $start-work | $daily-alignment | $framework-orchestrator | needs decision
+```
 
 ### Meeting-To-Codex Prompt
 
@@ -865,8 +1039,10 @@ Docs updated:
 Thread title:
 Task issue:
 Owner:
+Backup owner / failover:
 Orchestrator thread:
 Alignment issue:
+Task thread launch state:
 Latest Team Alignment Delta:
 DOD impact:
 Burn / Limits:
@@ -889,6 +1065,8 @@ Verification:
 
 Completion gate:
 - before final completion, run $accept-work inside this task thread
+- for user-facing or integration-affecting work, organize fresh current-branch smoke from this worktree
+- if merge is needed, perform manual merge from this task thread after manual smoke and human confirmation
 - include the acceptance status in the final report
 
 Handoff back to orchestrator:

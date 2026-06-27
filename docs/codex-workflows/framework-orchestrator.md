@@ -15,7 +15,7 @@ The orchestrator thread owns coordination, not implementation:
 - pending decisions, missing inputs, merge events, and acceptance gates;
 - next recommended action for the participant.
 
-Large product-code changes should happen in task threads.
+Implementation, product-code fixes, deploys, acceptance smoke, and merges must happen in task threads. The orchestrator stays clean so it can protect the project goal, DOD, sequence, alignment state, and next best action.
 
 ## Inputs To Read
 
@@ -57,6 +57,7 @@ If the state already exists in an issue comment or body, update it from durable 
 
 Choose one mode:
 
+- `launch`: the project is being started or imported into the framework;
 - `plan`: the human is starting or reshaping a large topic;
 - `align`: a meeting, daily, merge, blocked event, accepted result, or follow-up split may affect shared work;
 - `dispatch`: the next approved task should be launched or resumed;
@@ -66,6 +67,7 @@ Choose one mode:
 
 Route to the specialized workflow when appropriate:
 
+- `launch` -> `$project-launch`;
 - `plan` -> `$start-work`;
 - `align` -> `$daily-alignment`;
 - `accept` -> `$accept-work`.
@@ -154,9 +156,9 @@ If Codex thread tools are available and the human has authorized launching the n
 [<epic>] <short task title>
 ```
 
-If the task title already contains the sequence, keep it visible in the sidebar title. Then send the startup prompt to the new thread and record the task thread link/id or pending worktree in GitHub shared memory when available.
+If the task title already contains the sequence, keep it visible in the sidebar title. Then send the startup prompt to the new thread, verify the sidebar title or request the rename, and record the task thread link/id, exact title, or pending worktree in GitHub shared memory when available.
 
-If thread tools are unavailable, provide the exact title and startup prompt for manual creation, and record that manual-start prompt as the task's current dispatch state.
+If thread tools or rename are unavailable, provide the exact title and startup prompt for manual creation or manual rename, and record that manual-start prompt as the task's current dispatch state. A task is not considered launched until the title and id/link or manual-start prompt are recorded in GitHub shared memory.
 
 ### 6. Supervise Task Thread
 
@@ -169,10 +171,12 @@ Use this simple state machine:
 - task thread says work is complete but no `$accept-work` result is present: send the task thread a short command to run `$accept-work` from its task context;
 - `$accept-work` result is `NEEDS_FIXES`: send the concrete fix request back to the task thread;
 - `$accept-work` result is `BLOCKED`: record the blocker or missing decision in GitHub shared memory and tell the human what decision is needed;
-- `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` and PR is not merged: propose or perform the merge according to normal repository rules and human authorization;
+- `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` and required smoke or merge is not done: send the human back to the task thread for manual smoke and merge after human confirmation;
 - `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` and PR is merged or no merge is needed: update the sequence, DOD impact/burndown, burn status when material, and choose the next best action.
 
 The task thread is responsible for running `$accept-work` before final completion. The orchestrator is responsible for noticing whether that happened and for moving the stream forward from the accepted result.
+
+Do not merge from the orchestrator. If smoke or merge fails, the task thread has the implementation context needed to correct the work.
 
 ### 7. Choose Next Best Action
 
@@ -182,6 +186,7 @@ After an accepted task, merge, blocker, or follow-up split, do not stop at statu
 - run a parent epic/milestone DOD burndown check before creating another slice in the same area;
 - check whether accepted technical enablers now require the linked product-loop task to be launched, updated, or re-sequenced;
 - classify any new product compass notes before deciding whether they are current scope, DOD gaps, vision guardrails, or future options;
+- run a health review after a milestone/large merge, after 3-5 accepted slices, or when follow-ups repeat, a task stalls, scope grows, or an owner drops out;
 - run or route to `$daily-alignment` when the accepted result or merge affects another participant's work;
 - send fixes back to the current task thread;
 - ask for a named human decision;

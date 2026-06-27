@@ -99,6 +99,7 @@ Each task concept should include:
 
 - short title;
 - thread title in the form `[#<issue>] <sequence> <short title>` when an issue id or sequence exists;
+- owner and backup owner or failover condition when the task can block other work;
 - task type: `product capability`, `technical enabler`, `maintenance`, `research/spike`, or `future option`;
 - goal;
 - affected surfaces;
@@ -167,12 +168,15 @@ After approval:
 - include a compact `Codex Task Contract` in every implementation task:
   - `Orchestrator thread`: link or id when available;
   - `Task thread`: deterministic title plus link/id, pending worktree, or manual-start prompt when created;
+  - `Task thread launch state`: `recorded`, `manual start pending`, or `thread title pending`;
   - `Alignment issue`: shared journal for this stream or meeting window;
+  - `Owner / backup`: owner plus backup or failover condition for blocking work;
   - `DOD Impact`: named epic/milestone DoD row this task moves or closes;
   - `Task type`: `product capability`, `technical enabler`, `maintenance`, or `research/spike`;
   - `Product Capability Loop`: closed-loop checklist for product capabilities, or linked product-loop task for technical enablers;
   - `Burn / Limits`: `not material` or a cap/stop condition;
   - `Completion`: before final completion, the task thread must run `$accept-work` from inside the task thread and include the result in its final report;
+  - `Smoke / merge`: fresh current-branch smoke when required, then manual merge from the task thread after human smoke and confirmation;
   - `Final status`: `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES`, or `BLOCKED`;
   - `Next action`: what the orchestrator should do after reading the result.
 - include `Alignment Hooks` in every implementation task:
@@ -181,7 +185,7 @@ After approval:
   - do not post routine commit-by-commit updates, branch creation, or ordinary PR-open status;
 - include `Completion Gate` in every implementation task:
   - the task is not accepted or moved to Done until `$accept-work` reviews the result against the original issue, latest alignment packets/deltas, verification, and residual risks inside the task thread;
-  - the implementation agent should end with the `$accept-work` result, PR or delivered artifact, and recommended orchestrator next action;
+  - the implementation agent should end with the `$accept-work` result, PR or delivered artifact, smoke/merge status, and recommended orchestrator next action;
 - add links to meeting transcript, alignment issue, or Team Alignment Delta when applicable.
 
 Return the approved task sequence to the Framework Orchestrator. If the first task is ready, the orchestrator should launch or prepare a separate task thread using `task-thread-handoff-template.md`; do not start implementation inside the planning workflow.

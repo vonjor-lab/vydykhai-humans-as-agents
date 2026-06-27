@@ -27,6 +27,8 @@ Load `docs/codex-workflows/daily-alignment.md` when the topic comes from recent 
 - Ask for human approval before creating or updating GitHub issues.
 - Keep tasks sized for autonomous Codex execution with clear acceptance and verification.
 - Include a compact `Codex Task Contract` in implementation task issues so task threads know their deterministic thread title, `DOD Impact`, task type / Product Capability Loop, `Burn / Limits`, and requirement to run `$accept-work` before final completion.
+- Include owner/backup or failover condition for blocking tasks.
+- State that fresh current-branch smoke when required and manual merge after human smoke happen inside the task thread, not the orchestrator thread.
 - Return approved task sequence to the Framework Orchestrator so implementation can happen in separate task threads.
 - If the topic is too large or ambiguous, decompose it before writing tasks.
 

@@ -108,6 +108,8 @@ Do not close an epic until all blocking tasks are accepted or explicitly moved o
 
 When `$accept-work` runs inside an implementation task thread, it is the task's final self-check before completion.
 
+For user-facing or integration-affecting work, the task thread must organize the current-branch smoke from the exact worktree being accepted. If merge is needed, the human performs manual smoke and then manual merge in this task thread after confirmation. Do not move smoke, merge, or corrective fixes into the Framework Orchestrator thread.
+
 The task thread must include the result in its final report so the Framework Orchestrator can read it later:
 
 - status: `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES`, or `BLOCKED`;
@@ -115,6 +117,7 @@ The task thread must include the result in its final report so the Framework Orc
 - DOD impact result;
 - burn check when material;
 - verification and current-branch smoke result when required;
+- smoke / merge status;
 - follow-ups or blockers;
 - recommended orchestrator next action.
 
@@ -130,6 +133,7 @@ Task type: <product capability | technical enabler | maintenance | research/spik
 Product loop: <closed | linked to issue/task | missing and needs decision>
 DOD impact: <named row and result>
 Burn check: <not material | within cap | exceeded and needs decision>
+Smoke / merge: <not needed | smoke passed, merge pending | smoke passed, merged | blocked>
 
 ### What Matches
 

@@ -6,6 +6,7 @@ Use repo-scoped skills for this project before creating global `$CODEX_HOME/skil
 
 ## Available Workflows
 
+- `project-launch.md`: start a new project or import the framework into an existing repo by defining the operating brief, coordination sources, team onboarding, compass, DOD, and first route into planning or orchestration.
 - `framework-orchestrator.md`: keep a personal Codex orchestrator thread aligned with the brief, GitHub shared memory, task sequence, task threads, DOD impact, burn checks, merge events, and acceptance gates.
 - `start-work.md`: turn a large idea, meeting outcome, or re-brief signal into an epic brief and task map.
 - `daily-alignment.md`: run after a meeting or before resuming work; publishes a Local Alignment Packet, reads other packets, and updates the Team Alignment Delta.
@@ -21,6 +22,7 @@ Use repo-scoped skills for this project before creating global `$CODEX_HOME/skil
 In a standing Codex thread, the human command can stay short:
 
 ```text
+Use $project-launch to set up this project with the framework.
 Use $framework-orchestrator to continue this product stream.
 Use $start-work to turn this topic into an epic and task map.
 Run daily alignment after the latest meeting.
@@ -33,6 +35,7 @@ Check the product loop: backend tasks need the linked user/operator workflow; UI
 or:
 
 ```text
+Запусти этот проект через $project-launch.
 Продолжи этот поток через $framework-orchestrator.
 Запусти большую тему по итогам встречи.
 Сделай daily alignment после последней встречи.

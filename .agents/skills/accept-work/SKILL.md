@@ -27,6 +27,7 @@ Load related epic briefs, task issues, PRs, Team Alignment Deltas, Brief Patches
 - Check `Burn / Limits` when material; classify exceeded or unmeasured material burn as a decision/blocker instead of silently accepting.
 - Check affected entities, neighboring epics, docs, tests, and handoff.
 - For user-facing or integration-affecting work, require a fresh smoke pass from the exact current branch/worktree. Do not rely on old servers, old browser tabs, or processes from another branch.
+- When running in a task thread, keep smoke, corrective fixes, and manual merge in that task thread after human confirmation; do not route merge work into the Framework Orchestrator.
 - Do not close the loop if unprocessed alignment packets or unresolved conflicts can change the acceptance decision.
 - When running inside an implementation task thread, act as the final task self-check before completion and include the acceptance status in the task thread's final report.
 - When acceptance is run from a Framework Orchestrator thread, update the task sequence, handoff status, and shared GitHub memory after the human confirms the acceptance decision.
