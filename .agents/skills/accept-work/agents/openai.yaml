@@ -1,0 +1,7 @@
+interface:
+  display_name: "Accept Work"
+  short_description: "Accept tasks against alignment"
+  default_prompt: "Use $accept-work to verify whether this task or epic can be accepted."
+
+policy:
+  allow_implicit_invocation: true
