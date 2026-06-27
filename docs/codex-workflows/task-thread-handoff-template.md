@@ -58,6 +58,7 @@ Burn / Limits:
 
 - <tests or checks>
 - current-branch smoke is required when this is user-facing or integration-affecting
+- Runtime Coherence Check is required when frontend/backend/browser runtime is involved
 - burn check is required when `Burn / Limits` is not `not material`
 
 ## Completion Gate
@@ -66,6 +67,7 @@ Burn / Limits:
 - `$accept-work` must inspect this task issue, PR or diff, latest relevant alignment, DOD impact, parent closure status, task type, Product Capability Loop, verification, burn check when material, and current-branch smoke when required;
 - accepted sub-slice or merged PR does not close the parent issue unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope;
 - for user-facing or integration-affecting work, organize fresh current-branch smoke from this exact worktree before claiming acceptance;
+- if runtime smoke is required, include Runtime Coherence Check: repo/worktree, branch, HEAD, dirty state, frontend/backend command+URL+cwd, browser target, smoke scenario/result;
 - if merge is needed, perform manual merge from this task thread after manual smoke and human confirmation;
 - finish only with one acceptance status: `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES`, or `BLOCKED`;
 - do not say the task is done before the `$accept-work` result is included.
@@ -80,6 +82,7 @@ DOD impact result:
 Accepted as sub-slice:
 Parent closure status:
 Task type / product loop result:
+Runtime Coherence Check:
 Burn check:
 Changed surfaces:
 Verification:

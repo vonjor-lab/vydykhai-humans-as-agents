@@ -119,6 +119,7 @@ Each task concept should include:
 - alignment hooks;
 - acceptance criteria;
 - expected verification;
+- Runtime Coherence Check expectation when smoke may require frontend/backend/browser runtime;
 - completion gate;
 - suggested owner or owner type;
 - whether it is sequential or parallel.
@@ -181,6 +182,7 @@ After approval:
   - `Product Capability Loop`: closed-loop checklist for product capabilities, or linked product-loop task for technical enablers;
   - `Compass Calibration`: required when target object, source of truth, foundation, or visible loop can be misunderstood;
   - `Burn / Limits`: `not material` or a cap/stop condition;
+  - `Runtime Coherence Check`: required for user-facing or integration-affecting smoke involving frontend/backend/browser runtime;
   - `Completion`: before final completion, the task thread must run `$accept-work` from inside the task thread and include the result in its final report;
   - `Smoke / merge`: fresh current-branch smoke when required, then manual merge from the task thread after human smoke and confirmation;
   - `Final status`: `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES`, or `BLOCKED`;

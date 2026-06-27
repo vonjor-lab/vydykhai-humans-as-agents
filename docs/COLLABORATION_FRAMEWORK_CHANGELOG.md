@@ -8,6 +8,18 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.4.3 - 2026-06-22
+
+Добавлен Runtime Coherence Check для smoke/acceptance в проектах с несколькими branches, worktrees и локальными runtime.
+
+- Current-branch smoke теперь требует доказательство, что frontend, backend и browser target относятся к той же ветке/worktree/commit, которые принимаются.
+- Task handoff и acceptance report получили отдельное поле `Runtime Coherence Check`.
+- `$accept-work` должен классифицировать acceptance как `NEEDS_FIXES` или `BLOCKED`, если smoke нельзя связать с exact current branch/worktree.
+- Orchestrator должен отправлять task thread обратно на проверку, если ACCEPT есть, но runtime coherence не доказан.
+- Формулировки оставлены универсальными: без project-specific команд, но с обязательными полями repo root, branch, HEAD, dirty state, backend/frontend command+URL+cwd, browser target и smoke result.
+
+Зачем: не принимать результат, проверенный на старом backend/frontend, соседнем worktree или browser tab от другой ветки.
+
 ## 1.4.2 - 2026-06-22
 
 Закреплены уроки оркестраторского треда без добавления нового skill.

@@ -32,6 +32,7 @@ Check DOD burndown and continue with the next best action.
 Check the product loop: backend tasks need the linked user/operator workflow; UI tasks need backing backend/data/permissions/scenarios.
 Run compass calibration before launching this ambiguous task.
 Launch a research thread first if the source of truth or foundation is unclear.
+Check runtime coherence before accepting this smoke.
 ```
 
 or:
@@ -47,4 +48,5 @@ or:
 Проверь product loop: у backend-задач должен быть связанный пользовательский/операторский workflow, у UI-задач - backing backend/data/permissions/scenarios.
 Проведи compass calibration перед запуском этой неоднозначной задачи.
 Сначала запусти research thread, если непонятны source of truth или foundation.
+Проверь runtime coherence перед приемкой этого smoke.
 ```

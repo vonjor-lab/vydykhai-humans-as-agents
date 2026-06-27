@@ -51,20 +51,23 @@ Review:
 
 Ignore unrelated local changes unless they affect acceptance.
 
-### 3. Run Current-Branch Smoke
+### 3. Run Runtime Coherence Check And Current-Branch Smoke
 
 For user-facing or integration-affecting work, run or organize a smoke pass from the exact branch/worktree being accepted.
 
 Required checks:
 
+- record repo root or worktree path;
 - confirm branch name and `HEAD` commit;
 - state whether accepted work includes uncommitted local changes;
-- start or restart the required backend and frontend from this same worktree;
+- start or restart the required backend and frontend from this same worktree, or state why a service is not needed;
+- record backend command, URL/port, and cwd, or `not needed`;
+- record frontend command, URL/port, and cwd, or `not needed`;
 - ensure the browser target points at these fresh processes, not old servers from another branch;
 - smoke the relevant product path;
-- record command, URL, result, and any skipped step with reason.
+- record browser/app target URL, smoke scenario/path, result, and any skipped step with reason.
 
-If Codex cannot prove the smoke ran against the current branch/worktree, classify acceptance as `BLOCKED` or `NEEDS_FIXES`.
+If Codex cannot prove the smoke ran against the current branch/worktree and the runtime being accepted, classify acceptance as `BLOCKED` or `NEEDS_FIXES`. A plain "smoke passed" without Runtime Coherence Check is not acceptance evidence.
 
 ### 4. Compare Against Baseline
 
@@ -81,6 +84,7 @@ Check:
 - burn stayed within the task's cap/stop condition, or is explicitly `not material`;
 - acceptance criteria met;
 - required verification run;
+- Runtime Coherence Check present when current-branch smoke was required;
 - docs and project memory updated;
 - neighboring epics not contradicted;
 - daily and event-triggered alignment decisions preserved.
@@ -122,6 +126,7 @@ The task thread must include the result in its final report so the Framework Orc
 - parent closure status: closed, remains open, or out-of-scope by human decision;
 - burn check when material;
 - verification and current-branch smoke result when required;
+- Runtime Coherence Check when runtime smoke was required;
 - smoke / merge status;
 - follow-ups or blockers;
 - recommended orchestrator next action.
@@ -140,6 +145,7 @@ DOD impact: <named row and result>
 Parent closure: <closed | accepted sub-slice, parent remains open | out of scope by human decision>
 Visible loop: <visible entry/action | linked exception | missing>
 Burn check: <not material | within cap | exceeded and needs decision>
+Runtime Coherence Check: <repo/worktree, branch, HEAD, dirty state, frontend/backend command+URL+cwd, browser target, smoke result | not needed | missing>
 Smoke / merge: <not needed | smoke passed, merge pending | smoke passed, merged | blocked>
 
 ### What Matches

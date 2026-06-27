@@ -1,7 +1,7 @@
 # Фреймворк совместной вайб-разработки
 
 Дата: 2026-06-10
-Версия: 1.4.2
+Версия: 1.4.3
 Статус: универсальный рабочий фреймворк для нескольких вайбкодеров и нескольких Codex-инстансов, работающих над одним продуктом
 История изменений: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -388,6 +388,22 @@ Research thread тоже получает стабильный title, `gpt-5.5` 
 
 Manual smoke и merge выполняются в task thread, а не в orchestrator. Если smoke или merge требуют исправлений, именно task thread имеет полный implementation context и может быстро поправить результат. Orchestrator после этого только читает outcome и решает, что делать дальше.
 
+### Runtime Coherence Check
+
+Для user-facing или integration-affecting работы current-branch smoke считается валидным только если task thread записал `Runtime Coherence Check`.
+
+Минимальный check:
+
+- repo root или worktree path, который принимается;
+- branch, `HEAD` commit и dirty/uncommitted state;
+- backend command, URL/port и cwd, либо `not needed`;
+- frontend command, URL/port и cwd, либо `not needed`;
+- browser/app target URL;
+- smoke path/scenario и результат;
+- подтверждение, что frontend, backend и browser target относятся к той же branch/worktree/commit, либо явная причина, почему это невозможно доказать.
+
+Если это нельзя доказать, "smoke passed" не считается приемочным доказательством. `$accept-work` должен вернуть `NEEDS_FIXES` или `BLOCKED`, а orchestrator должен отправить работу обратно в task thread до merge.
+
 ### Orchestrator Health Review
 
 Orchestrator должен останавливаться на короткий health review:
@@ -525,6 +541,8 @@ Brief должен покрывать:
 
 ## Verification
 
+## Runtime Coherence Check
+
 ## Completion Gate
 
 ## Handoff
@@ -545,6 +563,8 @@ Brief должен покрывать:
 `Parent Closure` должен говорить, закрывает ли задача parent issue/milestone row или является sub-slice. Accepted sub-slice не закрывает parent автоматически.
 
 `Burn / Limits` должен быть коротким: `not material`, либо cap/stop condition для задач с AI generation, paid API, долгим agent loop, heavy verification или demo-risk. `$accept-work` проверяет burn только когда он material.
+
+`Runtime Coherence Check` обязателен для user-facing или integration-affecting задач. Он должен доказать, что smoke выполнен на той же branch/worktree/commit и на тех frontend/backend процессах, которые принимает reviewer.
 
 `Completion Gate` должен говорить, что task thread обязан запустить `$accept-work` внутри task thread до финального completion. Issue не считается accepted и не переводится в Done, пока этот результат не проверит original brief, latest alignment packets/deltas, verification, current-branch smoke когда требуется, и residual risks. Если нужен merge, он выполняется вручную после ручного smoke именно в task thread.
 
@@ -578,6 +598,7 @@ Brief должен покрывать:
 - проверять результат до заявления о completion;
 - запустить `$accept-work` внутри task thread до финального completion;
 - подготовить fresh current-branch smoke и manual merge в task thread, если задача user-facing, integration-affecting или должна попасть в основную ветку;
+- приложить Runtime Coherence Check к smoke/acceptance, если поднимались frontend, backend, browser или другой runtime;
 - оставить handoff.
 
 Человеку не нужно микроменеджить каждую строку. Человек управляет на checkpoints.
@@ -913,6 +934,7 @@ Codex проверяет:
 - Task thread не считается запущенным, пока title и id/link или manual-start prompt не записаны.
 - При короткой команде продолжения orchestrator сам запускает или возобновляет next ready task thread; если task thread завершился без `$accept-work`, orchestrator отправляет туда команду на `$accept-work`.
 - Если task thread accepted, но smoke или merge еще не выполнены, orchestrator направляет человека обратно в task thread. Merge и corrective fixes не выполняются в orchestrator.
+- Если smoke нужен, но Runtime Coherence Check отсутствует или не доказывает exact branch/worktree/runtime, orchestrator не считает task accepted и отправляет работу обратно в task thread.
 - Когда человек добавляет product vision или future-state commentary во время implementation, orchestrator должен провести Product Compass Note Triage до расширения scope, создания follow-ups или изменения task order.
 - После daily, содержательной встречи, merge, blocked event, accepted result или follow-up split orchestrator должен запустить или направить в `$daily-alignment` до продолжения зависимой работы.
 - После сообщения task thread о completion orchestrator должен проверить, запускал ли task thread `$accept-work`. Если нет, он отправляет эту команду обратно в task thread. Если да, использует результат, чтобы выбрать next best action.
@@ -945,6 +967,7 @@ Codex проверяет:
 - Browser или product smoke нужен для user-facing behavior, когда это feasible.
 - По завершении задачи Codex должен организовать свежий smoke на точной текущей ветке/worktree, которую принимают. Нельзя опираться на старые локальные серверы, старые browser tabs или frontend/backend процессы, запущенные из другой ветки.
 - Перед smoke Codex должен подтвердить branch/worktree identity, поднять или перезапустить нужные backend и frontend из этого же worktree и записать, какой commit или local state был проверен.
+- Runtime Coherence Check должен показывать repo root/worktree, branch, HEAD, dirty state, frontend/backend command+URL+cwd, browser target и smoke result. Без этого smoke не доказывает acceptance.
 - Manual smoke и merge выполняются в task thread после `$accept-work`, потому что только task thread держит полный implementation context для быстрых исправлений.
 - Если verification step пропущен, явно сказать почему.
 - Не заявлять completion без свежей verification.
@@ -1118,10 +1141,12 @@ Acceptance criteria:
 
 Verification:
 - include current-branch smoke when user-facing or integration-affecting
+- include Runtime Coherence Check when frontend/backend/browser runtime is involved
 
 Completion gate:
 - before final completion, run $accept-work inside this task thread
 - for user-facing or integration-affecting work, organize fresh current-branch smoke from this worktree
+- if smoke is required, include Runtime Coherence Check in the final report
 - if merge is needed, perform manual merge from this task thread after manual smoke and human confirmation
 - include the acceptance status in the final report
 
@@ -1132,6 +1157,7 @@ Handoff back to orchestrator:
 - DOD impact result
 - parent closure status
 - task type / product loop result
+- Runtime Coherence Check
 - burn check
 - changed surfaces
 - verification

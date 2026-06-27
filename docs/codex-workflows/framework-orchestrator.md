@@ -160,6 +160,7 @@ Only dispatch when the task has:
 - Compass Calibration result when the target object/source of truth can be misunderstood;
 - acceptance criteria;
 - verification expectation;
+- Runtime Coherence Check expectation when current-branch smoke may involve frontend/backend/browser runtime;
 - latest relevant Team Alignment Delta;
 - handoff destination back to this orchestrator.
 
@@ -189,6 +190,7 @@ Use this simple state machine:
 - task thread says work is complete but no `$accept-work` result is present: send the task thread a short command to run `$accept-work` from its task context;
 - `$accept-work` result is `NEEDS_FIXES`: send the concrete fix request back to the task thread;
 - `$accept-work` result is `BLOCKED`: record the blocker or missing decision in GitHub shared memory and tell the human what decision is needed;
+- `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` but required Runtime Coherence Check is missing or inconclusive: send the task thread back to prove exact branch/worktree/runtime before merge;
 - `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` and required smoke or merge is not done: send the human back to the task thread for manual smoke and merge after human confirmation;
 - `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` and PR is merged or no merge is needed: update the sequence, DOD impact/burndown, parent closure status, burn status when material, and choose the next best action.
 
