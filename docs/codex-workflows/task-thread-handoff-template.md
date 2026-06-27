@@ -2,6 +2,8 @@
 
 Use this template when a Framework Orchestrator launches or prepares a separate task thread.
 
+For a research thread, keep the same header fields but set scope to investigation only. The thread must not change product code unless the orchestrator and human explicitly promote it to implementation.
+
 ```md
 # Task Thread Startup
 
@@ -13,8 +15,12 @@ Orchestrator thread:
 Alignment issue:
 Task thread launch state:
 Latest Team Alignment Delta:
+Model / Reasoning:
+Compass Calibration:
 Codex Task Contract: use the contract in the task issue as the completion source of truth.
 DOD impact:
+Accepted as sub-slice:
+Parent closure status:
 Task type:
 Product Capability Loop:
 Burn / Limits:
@@ -45,6 +51,7 @@ Burn / Limits:
 - <assumptions this task must preserve>
 - <closed product loop if this is a product capability, or linked product-loop task if this is a technical enabler>
 - <backing backend/API/data/persistence/permission contracts and realistic states if this is UI/product-surface work>
+- <visible UI/operator entry/action, or human-approved linked exception if the loop is intentionally deferred>
 - <when to stop and return to orchestrator>
 
 ## Verification
@@ -56,7 +63,8 @@ Burn / Limits:
 ## Completion Gate
 
 - before final completion, run `$accept-work` in this task thread;
-- `$accept-work` must inspect this task issue, PR or diff, latest relevant alignment, DOD impact, task type, Product Capability Loop, verification, burn check when material, and current-branch smoke when required;
+- `$accept-work` must inspect this task issue, PR or diff, latest relevant alignment, DOD impact, parent closure status, task type, Product Capability Loop, verification, burn check when material, and current-branch smoke when required;
+- accepted sub-slice or merged PR does not close the parent issue unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope;
 - for user-facing or integration-affecting work, organize fresh current-branch smoke from this exact worktree before claiming acceptance;
 - if merge is needed, perform manual merge from this task thread after manual smoke and human confirmation;
 - finish only with one acceptance status: `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES`, or `BLOCKED`;
@@ -69,6 +77,8 @@ PR / commit:
 Accept Work status:
 Smoke / merge status:
 DOD impact result:
+Accepted as sub-slice:
+Parent closure status:
 Task type / product loop result:
 Burn check:
 Changed surfaces:

@@ -1,7 +1,7 @@
 # Framework for Collaborative Vibe Coding
 
 Date: 2026-06-10
-Version: 1.4.1
+Version: 1.4.2
 Status: universal working framework for several vibe coders and several Codex instances working on one product
 Changelog: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -101,7 +101,7 @@ Output:
 - current orchestrator state;
 - latest brief, task, PR, and alignment links;
 - next recommended action: continue, continue narrowly, wait, launch task, accept work, or ask for decision;
-- task thread title and startup prompt when a new task should be dispatched;
+- task or research thread title and startup prompt when a new separate context should be dispatched;
 - GitHub issue or PR updates after human approval;
 - handoff back into `$start-work`, `$daily-alignment`, or `$accept-work` when that specialized workflow is required.
 
@@ -307,12 +307,28 @@ When the loop is missing, the orchestrator should not wait until acceptance to d
 
 Backend-only slices are still valid when they are intentionally scoped as technical enablers. They must not be presented as completed product capabilities unless their linked closed-loop task is already accepted or explicitly out of scope by human decision.
 
+A route, POST/API test, backend state, projection, readiness card, or passive record does not close a product capability by itself. Acceptance needs a visible entry/action in the UI or another approved product/operator surface. The only exception is a human-approved linked exception with a clear follow-up or out-of-scope decision.
+
 The check is bidirectional:
 
 - When a task starts from backend, data, API, permissions, storage, AI, or infrastructure work, the orchestrator should identify the product capability, actor, surface, and scenario loop that this technical work enables. If that product loop is missing, draft it and ask the human to confirm or trim it before dispatch.
 - When a task starts from UI, product surface, design, navigation, or copy, the orchestrator should identify the backing contracts: data source, backend/API, persistence, permissions, loading/empty/error states, recovery path, audit/provenance, and the realistic scenarios the UI must support. If the backing implementation is missing, link or create the technical enabler before treating the UI as product-complete.
 
 This reciprocity is meant to protect product coherence. It should help the team build intuitive end-to-end workflows where front, backend, data, permissions, and recovery states fit together, rather than separate plausible slices that do not add up to a usable product.
+
+### Compass Calibration Check
+
+Before launching or resuming high-ambiguity product/design/IA/UI shell/entity-model/AI workflow work, the orchestrator should run a short compass calibration when the target object or source of truth could be misunderstood.
+
+Calibration asks the task or research thread to confirm in plain language:
+
+- what exactly is being built;
+- which source of truth is available and in what form;
+- what is not a foundation or reference;
+- which nearest user or operator result must be visible;
+- which nearest smoke artifact will prove the agent understood the object correctly.
+
+If the thread treats a technical/internal surface as a product template, a visual shell as a finished capability, or a test/API route as the user loop, implementation stops until the compass is corrected.
 
 ## Personal Framework Orchestrator
 
@@ -323,7 +339,7 @@ The orchestrator owns:
 - the current compass, brief, and task sequence;
 - links to active GitHub epic/task issues, PRs, and the shared alignment issue;
 - latest Local Alignment Packet and Team Alignment Delta;
-- active task threads, their titles, branches, PRs, owners, and status;
+- active task/research threads, their titles, branches, PRs, owners, and status;
 - pending decisions, missing inputs, merge events, and acceptance gates;
 - the instruction to launch or resume the next task thread.
 
@@ -336,12 +352,28 @@ Use a separate task thread for every implementation task that can run autonomous
 Dispatch rules:
 
 - one task thread owns one primary task outcome;
+- new task or research threads should use `gpt-5.5` or the newest available model and `xhigh` / very high reasoning. If the environment cannot support that, the fallback must be visible in the task issue, handoff, or orchestrator state;
 - the thread title should be stable and scannable: `[#<issue>] <sequence> <short title>`; if the task has an epic or milestone sequence, it is required in the title, for example `[#42] 02.1 Data import access boundary`;
 - the task thread receives the task issue, latest relevant Team Alignment Delta, scope, out of scope, verification expectations, current-branch smoke rule, and handoff destination;
-- the orchestrator creates the thread, immediately verifies or requests its rename, sends the startup prompt, and records the task thread link/id, exact title, pending worktree, or manual-start prompt in the task issue or orchestrator state;
+- the orchestrator creates the thread, reads back the actual sidebar title, renames the thread itself through an available thread tool or explicitly asks the human to rename it, sends the startup prompt, and records the task thread link/id, exact title, pending worktree, or manual-start prompt in the task issue or orchestrator state;
 - if Codex thread tools or rename are unavailable, the orchestrator prepares the exact title and startup prompt for a human to create or rename manually, and marks launch as `thread title pending`;
 - the task is not considered launched until the title and id/link or manual-start prompt are recorded in GitHub shared memory;
 - when the task thread finishes implementation, it runs `$accept-work` inside the task thread, organizes fresh current-branch smoke when required, prepares manual merge after human smoke, includes the result in its final report, and returns that report to the orchestrator.
+
+### Research Thread Dispatch
+
+When implementation first requires understanding a foundation, source of truth, design template, affected contracts, or whether previous work is usable, the orchestrator launches a research thread instead of an implementation thread.
+
+A research thread must not change product code without a separate decision. Its output is:
+
+- what actually exists;
+- which source of truth was found or is missing;
+- what can be used as shared foundation;
+- what looks like a visual shell, experiment, or incomplete slice;
+- which blockers or pending inputs prevent implementation;
+- whether an implementation task can start, or whether the brief/task needs an update first.
+
+Research threads also get a stable title, `gpt-5.5` or newest available model, `xhigh` reasoning, readback rename, and recorded id/link or manual-start prompt in GitHub shared memory.
 
 ### Task Thread Auto-Launch And Resume
 
@@ -463,6 +495,8 @@ Minimum task format:
 ```md
 ## Short Description
 
+## Model / Reasoning
+
 ## Goal
 
 ## Read First
@@ -477,9 +511,13 @@ Minimum task format:
 
 ## Alignment Hooks
 
+## Compass Calibration
+
 ## Codex Task Contract
 
 ## DOD Impact
+
+## Parent Closure
 
 ## Burn / Limits
 
@@ -496,9 +534,15 @@ A good task says not only what to build, but also what not to break.
 
 The `Alignment Hooks` section should state when the agent must read the latest Team Alignment Delta and when it must publish or prepare a Local Alignment Packet for material scope changes, conflicts, blockers, accepted results, or follow-up splits.
 
+The `Model / Reasoning` section should state `gpt-5.5` or the newest available model and `xhigh` / very high reasoning for the task/research thread, or make the fallback visible.
+
+The `Compass Calibration` section is required for ambiguous product/design/IA/UI shell/entity-model/AI workflow tasks. It should briefly confirm the target object, source of truth, non-foundation references, nearest visible result, and smoke artifact before implementation.
+
 The `Codex Task Contract` section should name the orchestrator thread, task thread, alignment issue, and final completion rule: before final completion, the task thread runs `$accept-work` and reports one status: `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES`, or `BLOCKED`.
 
 The `DOD Impact` section should briefly state which epic/milestone DoD row the task moves or closes. If a task does not move a named DoD row, the orchestrator should ask why it is not backlog or polish.
+
+The `Parent Closure` section should state whether the task closes the parent issue/milestone row or is a sub-slice. An accepted sub-slice does not automatically close the parent.
 
 The `Burn / Limits` section should be short: `not material`, or a cap/stop condition for tasks involving AI generation, paid APIs, long agent loops, heavy verification, or demo risk. `$accept-work` checks burn only when it is material.
 
@@ -578,6 +622,8 @@ Review should prioritize:
 Avoid reviewing only the diff. Review the task against the intended flow.
 
 Substantial tasks should use `$accept-work` as the acceptance gate. The implementation agent may summarize its own result, but acceptance should be a separate review step whenever the work changes shared contracts, user-facing behavior, data shape, or cross-epic assumptions.
+
+`ACCEPT_WITH_FOLLOWUPS` or an accepted sub-slice does not automatically close the parent issue. The parent closes only when the named DOD row and promised product loop are actually closed, or when the human explicitly moves the remainder out of scope. The acceptance report should always show whether this is parent closure, accepted sub-slice, or parent remains open.
 
 After `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS`, the human performs manual smoke, then manual merge in the task thread. Then it is enough to tell the orchestrator: "Check status and continue." The orchestrator finds the task issue, task thread, PR, accept-work result, and merge state from durable memory.
 
@@ -848,6 +894,7 @@ After an epic:
 - Use a personal Framework Orchestrator thread to keep brief, sequence, alignment state, task threads, and acceptance gates connected.
 - Do not do large implementation work inside the orchestrator thread; dispatch it to a task thread with a clear title and startup prompt.
 - Name task threads consistently: `[#<issue>] <sequence> <short title>` when an issue id or sequence is available.
+- Use `gpt-5.5` or the newest available model and `xhigh` / very high reasoning for new task/research threads; record any fallback explicitly.
 - Prefer existing patterns over new abstractions.
 - Keep edits scoped.
 - Preserve unrelated dirty work.
@@ -859,8 +906,10 @@ After an epic:
 - The orchestrator must read the latest durable state before recommending the next action: framework, brief, relevant GitHub issues/PRs, latest Team Alignment Delta, and active task handoffs.
 - The orchestrator thread is for organization only. It must not implement, fix product code, deploy, run acceptance smoke, or merge.
 - The orchestrator may create or prepare a new task thread only when the task is approved or ready enough to have a clear scope, out of scope, acceptance criteria, verification expectation, `DOD Impact`, and `Burn / Limits`.
+- Before ambiguous product/design/IA/UI shell/entity-model/AI workflow tasks, the orchestrator must run Compass Calibration Check and stop implementation when the target object, source of truth, or visible loop is misunderstood.
+- If the team first needs to identify source of truth/foundation/design template/affected contracts, the orchestrator launches a research thread without product-code changes instead of an implementation thread.
 - The task thread name must include the issue id and sequence when they exist, so humans and Codex can map the sidebar to the brief/GitHub without opening the issue.
-- The orchestrator must verify task thread rename and record exact title, active task thread links/ids, pending worktree, or manual-start prompt in GitHub shared memory when available.
+- The orchestrator must read back the actual title, rename the task/research thread itself through an available thread tool or explicitly ask the human, and record exact title, active thread links/ids, pending worktree, or manual-start prompt in GitHub shared memory.
 - The task thread is not considered launched until title and id/link or manual-start prompt are recorded.
 - On a short continuation command, the orchestrator launches or resumes the next ready task thread itself; if a task thread finished without `$accept-work`, the orchestrator sends it the `$accept-work` command.
 - If a task thread is accepted but smoke or merge is not done yet, the orchestrator sends the human back to the task thread. Merge and corrective fixes do not happen in the orchestrator.
@@ -868,6 +917,8 @@ After an epic:
 - After a daily, meaningful meeting, merge, blocked event, accepted result, or follow-up split, the orchestrator must run or route to `$daily-alignment` before dependent work continues.
 - After a task thread reports completion, the orchestrator must check whether the task thread already ran `$accept-work`. If not, it sends that command back to the task thread. If yes, it uses the result to choose the next best action.
 - Each substantial task must include `DOD Impact`; a new slice is allowed only if it moves a named epic/milestone DoD or is explicitly accepted as an exception.
+- An accepted sub-slice or merged PR does not close the parent issue until the named DOD/product loop is closed or the human explicitly moves the remainder out of scope.
+- A route, backend/API test, projection, or readiness card does not count as a product capability without a visible UI/operator action or human-approved linked exception.
 - `Burn / Limits` is required for tasks with material cost/retry/generation risk and may be `not material` for ordinary tasks.
 - If shared packets are missing, the orchestrator should return `continue with cautions`, `wait`, or `blocked` rather than inventing another participant's local state.
 - The orchestrator should run a health review after a milestone/large merge, after 3-5 accepted slices, or when follow-ups repeat, a task stalls, scope grows, or an owner drops out.
@@ -1044,7 +1095,12 @@ Orchestrator thread:
 Alignment issue:
 Task thread launch state:
 Latest Team Alignment Delta:
+Model / Reasoning:
 DOD impact:
+Parent closure:
+Task type:
+Product Capability Loop:
+Compass calibration:
 Burn / Limits:
 
 Read first:
@@ -1074,6 +1130,8 @@ Handoff back to orchestrator:
 - PR/commit
 - accept-work status
 - DOD impact result
+- parent closure status
+- task type / product loop result
 - burn check
 - changed surfaces
 - verification

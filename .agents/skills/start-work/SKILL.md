@@ -24,9 +24,11 @@ Load `docs/codex-workflows/daily-alignment.md` when the topic comes from recent 
 - Produce an epic brief, affected entities, dependency map, task concepts, sequencing, and proposed ownership.
 - Classify task concepts by type (`product capability`, `technical enabler`, `maintenance`, `research/spike`, or `future option`) before tasking.
 - For product capabilities, define the closed user/operator loop before creating tasks; for technical enablers, link the task to the capability or later task that closes the loop; for UI/product-surface work, identify backing backend/API/data/persistence/permission contracts and realistic states.
+- For ambiguous product/design/IA/UI shell/entity-model/AI workflow tasks, include Compass Calibration: target object, source of truth, non-foundation references, nearest visible result, and smoke artifact.
 - Ask for human approval before creating or updating GitHub issues.
 - Keep tasks sized for autonomous Codex execution with clear acceptance and verification.
-- Include a compact `Codex Task Contract` in implementation task issues so task threads know their deterministic thread title, `DOD Impact`, task type / Product Capability Loop, `Burn / Limits`, and requirement to run `$accept-work` before final completion.
+- Include a compact `Codex Task Contract` in implementation task issues so task threads know their deterministic thread title, `Model / Reasoning`, `DOD Impact`, `Parent Closure`, task type / Product Capability Loop, `Burn / Limits`, and requirement to run `$accept-work` before final completion.
+- Use `gpt-5.5` or newest available model and `xhigh` / very high reasoning for new task/research threads, with explicit fallback if unavailable.
 - Include owner/backup or failover condition for blocking tasks.
 - State that fresh current-branch smoke when required and manual merge after human smoke happen inside the task thread, not the orchestrator thread.
 - Return approved task sequence to the Framework Orchestrator so implementation can happen in separate task threads.

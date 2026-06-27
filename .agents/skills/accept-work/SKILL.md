@@ -23,7 +23,9 @@ Load related epic briefs, task issues, PRs, Team Alignment Deltas, Brief Patches
 - Include relevant Brief Patches and Team Alignment Deltas.
 - Distinguish accepted work from follow-up work.
 - Check that the promised `DOD Impact` actually moved or closed the named epic/milestone row.
+- Check parent closure status. An accepted sub-slice or merged PR does not close the parent issue unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope.
 - Check task type and Product Capability Loop. Product capabilities are not accepted as complete when they only deliver backend state, APIs, projections, readiness cards, or accounting without the closed user/operator loop; technical enablers must remain linked to the task that closes the loop; UI/product-surface work must have real or explicitly linked backing backend/API/data/permissions/error-state implementation.
+- Require a visible UI/operator entry/action for product capability closure, or a human-approved linked exception. Route existence and backend/API tests are not enough by themselves.
 - Check `Burn / Limits` when material; classify exceeded or unmeasured material burn as a decision/blocker instead of silently accepting.
 - Check affected entities, neighboring epics, docs, tests, and handoff.
 - For user-facing or integration-affecting work, require a fresh smoke pass from the exact current branch/worktree. Do not rely on old servers, old browser tabs, or processes from another branch.

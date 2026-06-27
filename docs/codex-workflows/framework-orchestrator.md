@@ -11,7 +11,7 @@ The orchestrator thread owns coordination, not implementation:
 - current compass, brief, and task sequence;
 - links to the epic, task issues, PRs, and shared alignment issue;
 - latest Local Alignment Packet and Team Alignment Delta;
-- active task thread ids or links when available;
+- active task/research thread ids or links when available;
 - pending decisions, missing inputs, merge events, and acceptance gates;
 - next recommended action for the participant.
 
@@ -60,6 +60,7 @@ Choose one mode:
 - `launch`: the project is being started or imported into the framework;
 - `plan`: the human is starting or reshaping a large topic;
 - `align`: a meeting, daily, merge, blocked event, accepted result, or follow-up split may affect shared work;
+- `research`: source of truth, foundation, design template, or affected contracts must be clarified before implementation;
 - `dispatch`: the next approved task should be launched or resumed;
 - `accept`: a task, PR, milestone, or epic needs acceptance;
 - `sequence`: the human asks what should happen next;
@@ -93,9 +94,21 @@ When inspecting or preparing backlog/tasks, classify each item by task type befo
 
 For a `product capability`, require a closed user/operator loop: actor, entry point, setup/configuration, input/action, processing/enforcement, feedback, state, recovery/next action, audit/provenance, and verification. If the loop is missing, draft the likely loop, ask the human to confirm or trim it, and update the task map before launch.
 
+Do not treat route existence, backend/API tests, projections, readiness cards, or passive records as product capability closure. There must be a visible UI/operator entry/action or a human-approved linked exception.
+
 For a `technical enabler`, require a named linked product capability or later task that will close the loop. Do not describe a technical enabler as a completed product capability unless the linked loop has already been accepted or explicitly moved out of scope by human decision.
 
 For UI, product surface, design, navigation, or copy work, run the reverse check: identify the backend/API/data/persistence/permission contracts, loading/empty/error states, recovery path, audit/provenance, and realistic scenarios required underneath the UI. If they are missing, draft the missing technical enabler and ask the human to confirm sequencing before launch.
+
+For high-ambiguity product/design/IA/UI shell/entity-model/AI workflow work, run Compass Calibration Check before dispatch or continuation. Ask the task or research thread to state:
+
+- what exactly is being built;
+- which source of truth is available and in what form;
+- what is not a foundation or reference;
+- which nearest user/operator result should be visible;
+- which nearest smoke artifact proves the object was understood correctly.
+
+If the agent confuses a technical/internal surface with a product template, a visual shell with a finished capability, or a route/test/backend state with a visible product loop, stop implementation and correct the brief/task first.
 
 ### 3. Check Alignment Freshness
 
@@ -134,20 +147,25 @@ For stacked PRs, write the baton explicitly: merged PR, next PR, remaining valid
 Only dispatch when the task has:
 
 - task issue or approved task brief;
+- `Model / Reasoning`: `gpt-5.5` or newest available model and `xhigh` / very high reasoning, with explicit fallback if unavailable;
 - `Codex Task Contract` in the task issue;
 - `DOD Impact` that maps the task to a named epic or milestone DoD row, unless the human explicitly accepted an exception;
+- `Parent Closure` stating whether this is parent closure or an accepted sub-slice;
 - `Task type` and `Product Capability Loop` status:
   - product capabilities need the closed loop in scope or a named human-approved exception;
   - technical enablers need the linked product-loop task or parent capability;
   - UI/product-surface tasks need the backing backend/API/data/permissions/scenario contracts in scope or linked;
 - `Burn / Limits` set to `not material` or a concrete cap/stop condition;
 - clear scope and out of scope;
+- Compass Calibration result when the target object/source of truth can be misunderstood;
 - acceptance criteria;
 - verification expectation;
 - latest relevant Team Alignment Delta;
 - handoff destination back to this orchestrator.
 
 Use `task-thread-handoff-template.md` to prepare the startup prompt.
+
+If the next step is `research`, launch a research thread with the same title/readback/recording discipline, but explicitly forbid product-code changes. Its output should identify what exists, source of truth, usable foundation, gaps/blockers, and whether implementation can start or the brief/task must change first.
 
 If Codex thread tools are available and the human has authorized launching the next task, create the task thread. Title it from the task:
 
@@ -156,7 +174,7 @@ If Codex thread tools are available and the human has authorized launching the n
 [<epic>] <short task title>
 ```
 
-If the task title already contains the sequence, keep it visible in the sidebar title. Then send the startup prompt to the new thread, verify the sidebar title or request the rename, and record the task thread link/id, exact title, or pending worktree in GitHub shared memory when available.
+If the task title already contains the sequence, keep it visible in the sidebar title. Then send the startup prompt to the new thread, read back the actual sidebar title, rename the thread yourself through the available thread tool or ask the human to rename it, and record the task thread link/id, exact title, or pending worktree in GitHub shared memory when available. The startup title inside a child thread is only a hint; the orchestrator owns readback and rename verification.
 
 If thread tools or rename are unavailable, provide the exact title and startup prompt for manual creation or manual rename, and record that manual-start prompt as the task's current dispatch state. A task is not considered launched until the title and id/link or manual-start prompt are recorded in GitHub shared memory.
 
@@ -172,9 +190,11 @@ Use this simple state machine:
 - `$accept-work` result is `NEEDS_FIXES`: send the concrete fix request back to the task thread;
 - `$accept-work` result is `BLOCKED`: record the blocker or missing decision in GitHub shared memory and tell the human what decision is needed;
 - `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` and required smoke or merge is not done: send the human back to the task thread for manual smoke and merge after human confirmation;
-- `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` and PR is merged or no merge is needed: update the sequence, DOD impact/burndown, burn status when material, and choose the next best action.
+- `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` and PR is merged or no merge is needed: update the sequence, DOD impact/burndown, parent closure status, burn status when material, and choose the next best action.
 
 The task thread is responsible for running `$accept-work` before final completion. The orchestrator is responsible for noticing whether that happened and for moving the stream forward from the accepted result.
+
+An accepted sub-slice or merged PR does not close a parent issue unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope. Keep the parent open and route the next best action to the missing visible loop, follow-up, decision, or health review.
 
 Do not merge from the orchestrator. If smoke or merge fails, the task thread has the implementation context needed to correct the work.
 
@@ -221,6 +241,7 @@ Use one of these statuses:
 - `CONTINUE_WITH_CAUTIONS`;
 - `WAIT`;
 - `LAUNCH_TASK_THREAD`;
+- `LAUNCH_RESEARCH_THREAD`;
 - `SEND_ACCEPT_WORK_TO_TASK_THREAD`;
 - `NEEDS_DECISION`;
 - `BLOCKED`.

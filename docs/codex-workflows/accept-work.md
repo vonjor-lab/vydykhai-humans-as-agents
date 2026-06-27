@@ -20,12 +20,14 @@ Summarize:
 
 - original goal;
 - task type: `product capability`, `technical enabler`, `maintenance`, or `research/spike`;
+- whether this acceptance is supposed to close the parent issue/milestone row or accept a sub-slice only;
 - Product Capability Loop baseline:
   - for product capabilities: actor, entry point, setup/configuration, input/action, processing/enforcement, feedback, state, recovery/next action, audit/provenance, and verification;
   - for technical enablers: the linked product capability or later task that closes the loop;
   - for UI/product-surface work: backing backend/API/data/persistence/permission contracts, loading/empty/error states, recovery path, audit/provenance, and realistic scenarios;
 - task scope and out of scope;
 - DOD impact promised by the task or parent milestone;
+- Parent Closure expectation: parent closure, sub-slice acceptance, or parent remains open;
 - Burn / Limits, if material;
 - acceptance criteria;
 - expected verification;
@@ -70,10 +72,12 @@ Check:
 
 - goal satisfied;
 - product capability loop satisfied when the task promised product functionality, or explicitly linked/deferred when this is a technical enabler;
+- product capability has a visible UI/operator entry/action, or a human-approved linked exception; routes, backend/API tests, projections, readiness cards, or passive records are not enough by themselves;
 - UI/product-surface work has real or explicitly linked backing data/backend/permissions/error-state implementation instead of only static or fixture presentation;
 - scope respected;
 - out-of-scope work avoided or justified;
 - promised DOD impact actually moved or closed the named epic/milestone row;
+- parent closure is accurate: an accepted sub-slice or merged PR does not close the parent unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope;
 - burn stayed within the task's cap/stop condition, or is explicitly `not material`;
 - acceptance criteria met;
 - required verification run;
@@ -86,7 +90,7 @@ Check:
 Use one status:
 
 - `ACCEPT`: ready to close.
-- `ACCEPT_WITH_FOLLOWUPS`: core work is accepted, named follow-ups remain.
+- `ACCEPT_WITH_FOLLOWUPS`: core work or sub-slice is accepted, named follow-ups remain. Use this without closing the parent unless the parent DOD/product loop is actually closed.
 - `NEEDS_FIXES`: work is close but must change before acceptance. Use this when a task promised a product capability but delivered only backend state, APIs, readiness cards, or passive accounting without the closed user/operator loop.
 - `BLOCKED`: missing decision, missing packet, unresolved conflict, unknown verification, or exceeded material burn limit prevents acceptance.
 
@@ -115,6 +119,7 @@ The task thread must include the result in its final report so the Framework Orc
 - status: `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES`, or `BLOCKED`;
 - PR, commit, or delivered artifact;
 - DOD impact result;
+- parent closure status: closed, remains open, or out-of-scope by human decision;
 - burn check when material;
 - verification and current-branch smoke result when required;
 - smoke / merge status;
@@ -132,6 +137,8 @@ Baseline: <brief, task issue, deltas, patches>
 Task type: <product capability | technical enabler | maintenance | research/spike>
 Product loop: <closed | linked to issue/task | missing and needs decision>
 DOD impact: <named row and result>
+Parent closure: <closed | accepted sub-slice, parent remains open | out of scope by human decision>
+Visible loop: <visible entry/action | linked exception | missing>
 Burn check: <not material | within cap | exceeded and needs decision>
 Smoke / merge: <not needed | smoke passed, merge pending | smoke passed, merged | blocked>
 

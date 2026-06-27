@@ -99,6 +99,7 @@ Each task concept should include:
 
 - short title;
 - thread title in the form `[#<issue>] <sequence> <short title>` when an issue id or sequence exists;
+- model/reasoning: `gpt-5.5` or newest available model and `xhigh` / very high reasoning, with explicit fallback if unavailable;
 - owner and backup owner or failover condition when the task can block other work;
 - task type: `product capability`, `technical enabler`, `maintenance`, `research/spike`, or `future option`;
 - goal;
@@ -107,11 +108,13 @@ Each task concept should include:
 - out of scope;
 - dependencies;
 - DOD impact: which epic or milestone DoD row this task moves or closes;
+- Parent Closure: whether this closes the parent issue/milestone row or is a sub-slice with the parent remaining open;
 - Product Capability Loop:
   - for `product capability`: actor, entry point, setup/configuration, input/action, processing/enforcement, feedback, state, recovery/next action, audit/provenance, and verification;
   - for `technical enabler`: the linked product capability or later task that will close the loop;
   - for UI/product-surface work: the backing backend/API/data/persistence/permission contracts, realistic states, and scenarios required for the UI to be usable;
   - for `maintenance` or `research/spike`: payoff/question, owner, timing, and stop condition;
+- Compass Calibration for high-ambiguity product/design/IA/UI shell/entity-model/AI workflow tasks: target object, source of truth, non-foundation references, nearest visible result, and smoke artifact;
 - Burn / Limits: `not material` or a concrete cap/stop condition for generation/API/retry/verification risk;
 - alignment hooks;
 - acceptance criteria;
@@ -169,11 +172,14 @@ After approval:
   - `Orchestrator thread`: link or id when available;
   - `Task thread`: deterministic title plus link/id, pending worktree, or manual-start prompt when created;
   - `Task thread launch state`: `recorded`, `manual start pending`, or `thread title pending`;
+  - `Model / Reasoning`: `gpt-5.5` or newest available model plus `xhigh` / very high reasoning, or explicit fallback;
   - `Alignment issue`: shared journal for this stream or meeting window;
   - `Owner / backup`: owner plus backup or failover condition for blocking work;
   - `DOD Impact`: named epic/milestone DoD row this task moves or closes;
+  - `Parent Closure`: parent closure, accepted sub-slice, or parent remains open;
   - `Task type`: `product capability`, `technical enabler`, `maintenance`, or `research/spike`;
   - `Product Capability Loop`: closed-loop checklist for product capabilities, or linked product-loop task for technical enablers;
+  - `Compass Calibration`: required when target object, source of truth, foundation, or visible loop can be misunderstood;
   - `Burn / Limits`: `not material` or a cap/stop condition;
   - `Completion`: before final completion, the task thread must run `$accept-work` from inside the task thread and include the result in its final report;
   - `Smoke / merge`: fresh current-branch smoke when required, then manual merge from the task thread after human smoke and confirmation;

@@ -1,7 +1,7 @@
 # Фреймворк совместной вайб-разработки
 
 Дата: 2026-06-10
-Версия: 1.4.1
+Версия: 1.4.2
 Статус: универсальный рабочий фреймворк для нескольких вайбкодеров и нескольких Codex-инстансов, работающих над одним продуктом
 История изменений: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -101,7 +101,7 @@ Codex - не только исполнитель. Его нужно исполь
 - текущий orchestrator state;
 - ссылки на актуальный brief, task, PR и alignment;
 - рекомендация следующего действия: continue, continue narrowly, wait, launch task, accept work или ask for decision;
-- title и startup prompt для task thread, если нужно запускать новую задачу;
+- title и startup prompt для task или research thread, если нужно запускать новый отдельный контекст;
 - обновления GitHub issue или PR после human approval;
 - handoff в `$start-work`, `$daily-alignment` или `$accept-work`, когда нужен специализированный workflow.
 
@@ -307,12 +307,28 @@ Closed loop для product capability должен отвечать:
 
 Backend-only slices валидны, если они честно scoped как technical enablers. Их нельзя подавать как завершенные product capabilities, пока связанная closed-loop задача не принята или явно не вынесена out of scope human decision.
 
+Route, POST/API test, backend state, projection, readiness card или пассивная запись не закрывают product capability сами по себе. Для acceptance нужен видимый entry/action в UI или другом согласованном product/operator surface. Исключение допустимо только как human-approved linked exception с понятным follow-up или out-of-scope решением.
+
 Проверка двусторонняя:
 
 - Если задача начинается с backend, data, API, permissions, storage, AI или infrastructure, orchestrator должен определить product capability, actor, surface и scenario loop, которые эта техника включает. Если product loop отсутствует, orchestrator предлагает его и согласует с человеком до dispatch.
 - Если задача начинается с UI, product surface, design, navigation или copy, orchestrator должен определить backing contracts: data source, backend/API, persistence, permissions, loading/empty/error states, recovery path, audit/provenance и реальные сценарии, которые UI должен поддержать. Если backing implementation отсутствует, orchestrator связывает или создает technical enabler до того, как UI считается product-complete.
 
 Эта взаимная проверка защищает цельность продукта. Она должна помогать команде строить интуитивные end-to-end workflows, где frontend, backend, data, permissions и recovery states складываются в usable product, а не в набор правдоподобных, но разрозненных slices.
+
+### Compass Calibration Check
+
+Перед запуском или продолжением high-ambiguity product/design/IA/UI shell/entity-model/AI workflow work orchestrator должен провести короткую калибровку компаса, если target object или source of truth можно понять неверно.
+
+Калибровка просит task или research thread простыми словами подтвердить:
+
+- что именно строим;
+- какой source of truth доступен и в каком виде;
+- что не является foundation или reference;
+- какой ближайший пользовательский или операторский результат должен быть виден;
+- какой ближайший smoke artifact докажет, что агент понял объект правильно.
+
+Если thread принимает technical/internal surface за product template, visual shell за закрытую возможность или test/API route за пользовательский loop, implementation останавливается до исправления compass.
 
 ## Личный Framework Orchestrator
 
@@ -323,7 +339,7 @@ Orchestrator держит:
 - текущий compass, brief и task sequence;
 - ссылки на активные GitHub epic/task issues, PRs и общий alignment issue;
 - последнюю Local Alignment Packet и Team Alignment Delta;
-- активные task threads, их titles, branches, PRs, owners и status;
+- активные task/research threads, их titles, branches, PRs, owners и status;
 - pending decisions, missing inputs, merge events и acceptance gates;
 - инструкцию запустить или продолжить следующий task thread.
 
@@ -336,12 +352,28 @@ Orchestrator не должен редактировать product code, депл
 Правила dispatch:
 
 - один task thread отвечает за один главный outcome задачи;
+- новые task или research threads должны запускаться на `gpt-5.5` или newest available model и `xhigh` / very high reasoning. Если среда не поддерживает такой режим, fallback должен быть явно указан в task issue, handoff или orchestrator state;
 - title thread должен быть стабильным и сканируемым: `[#<issue>] <sequence> <short title>`; если у задачи есть sequence в epic или milestone, он обязателен в названии, например `[#42] 02.1 Data import access boundary`;
 - task thread получает task issue, последнюю релевантную Team Alignment Delta, scope, out of scope, verification expectations, current-branch smoke rule и место handoff;
-- orchestrator создает thread, сразу проверяет или запрашивает переименование, отправляет startup prompt и записывает ссылку/id task thread, exact title, pending worktree или manual-start prompt в task issue или orchestrator state;
+- orchestrator создает thread, делает readback фактического sidebar title, сам переименовывает thread через доступный thread tool или явно просит человека переименовать, отправляет startup prompt и записывает ссылку/id task thread, exact title, pending worktree или manual-start prompt в task issue или orchestrator state;
 - если Codex thread tools или rename недоступны, orchestrator готовит точный title и startup prompt, чтобы человек создал или переименовал thread вручную, и помечает launch как `thread title pending`;
 - задача не считается запущенной, пока title и id/link или manual-start prompt не записаны в GitHub shared memory;
 - когда task thread завершает implementation, он запускает `$accept-work` внутри task thread, организует fresh current-branch smoke когда требуется, готовит manual merge после ручного smoke, включает результат в final report и возвращает этот report в orchestrator.
+
+### Research Thread Dispatch
+
+Если перед implementation нужно понять foundation, source of truth, design template, affected contracts или применимость прошлой работы, orchestrator запускает research thread вместо implementation thread.
+
+Research thread не меняет product code без отдельного решения. Его output:
+
+- что реально существует;
+- какой source of truth найден или отсутствует;
+- что можно использовать как shared foundation;
+- что выглядит как визуальный shell, experiment или incomplete slice;
+- какие blockers или pending inputs мешают implementation;
+- можно ли запускать implementation task, или сначала нужен brief/task update.
+
+Research thread тоже получает стабильный title, `gpt-5.5` или newest available model, `xhigh` reasoning, readback rename и запись id/link или manual-start prompt в GitHub shared memory.
 
 ### Task Thread Auto-Launch And Resume
 
@@ -463,6 +495,8 @@ Brief должен покрывать:
 ```md
 ## Short Description
 
+## Model / Reasoning
+
 ## Goal
 
 ## Read First
@@ -477,9 +511,13 @@ Brief должен покрывать:
 
 ## Alignment Hooks
 
+## Compass Calibration
+
 ## Codex Task Contract
 
 ## DOD Impact
+
+## Parent Closure
 
 ## Burn / Limits
 
@@ -496,9 +534,15 @@ Brief должен покрывать:
 
 `Alignment Hooks` должен говорить, когда агент читает последнюю Team Alignment Delta и когда публикует или готовит Local Alignment Packet: material scope/contract changes, conflicts, blockers, accepted results или follow-up split.
 
+`Model / Reasoning` должен указывать `gpt-5.5` или newest available model и `xhigh` / very high reasoning для task/research thread, либо явно видимый fallback.
+
+`Compass Calibration` обязателен для неоднозначных product/design/IA/UI shell/entity-model/AI workflow задач. Он должен коротко подтвердить target object, source of truth, non-foundation references, nearest visible result и smoke artifact до implementation.
+
 `Codex Task Contract` должен называть orchestrator thread, task thread, alignment issue и финальное правило: до final completion task thread запускает `$accept-work` и сообщает один статус: `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES` или `BLOCKED`.
 
 `DOD Impact` должен коротко говорить, какую строку epic/milestone DoD задача двигает или закрывает. Если задача не двигает named DoD, orchestrator должен спросить, почему это не backlog или polish.
+
+`Parent Closure` должен говорить, закрывает ли задача parent issue/milestone row или является sub-slice. Accepted sub-slice не закрывает parent автоматически.
 
 `Burn / Limits` должен быть коротким: `not material`, либо cap/stop condition для задач с AI generation, paid API, долгим agent loop, heavy verification или demo-risk. `$accept-work` проверяет burn только когда он material.
 
@@ -578,6 +622,8 @@ Review должен смотреть в первую очередь на:
 Не стоит ревьюить только diff. Нужно ревьюить задачу относительно целевого flow.
 
 Существенные задачи должны использовать `$accept-work` как acceptance gate. Implementation agent может описать свой результат, но acceptance лучше делать отдельным review step, если работа меняет shared contracts, user-facing behavior, data shape или cross-epic assumptions.
+
+`ACCEPT_WITH_FOLLOWUPS` или accepted sub-slice не закрывают parent issue автоматически. Parent закрывается только когда named DOD row и обещанный product loop действительно закрыты, либо человек явно перенес остаток out of scope. В отчете acceptance всегда должно быть видно: это closure parent, accepted sub-slice или parent remains open.
 
 После `ACCEPT` или `ACCEPT_WITH_FOLLOWUPS` человек делает ручной smoke, затем manual merge в task thread. Затем в orchestrator достаточно сказать: "Проверь статус и продолжи". Orchestrator сам находит task issue, task thread, PR, accept-work result и merge state по durable memory.
 
@@ -848,6 +894,7 @@ Codex проверяет:
 - Использовать личный Framework Orchestrator thread, чтобы связывать brief, sequence, alignment state, task threads и acceptance gates.
 - Не делать большую implementation work внутри orchestrator thread; отправлять ее в task thread с ясным title и startup prompt.
 - Называть task threads стабильно: `[#<issue>] <sequence> <short title>`, если issue id или sequence доступны.
+- Для новых task/research threads использовать `gpt-5.5` или newest available model и `xhigh` / very high reasoning; fallback фиксировать явно.
 - Предпочитать существующие patterns новым abstractions.
 - Держать edits scoped.
 - Сохранять unrelated dirty work.
@@ -859,8 +906,10 @@ Codex проверяет:
 - Orchestrator должен читать latest durable state перед рекомендацией следующего действия: framework, brief, relevant GitHub issues/PRs, latest Team Alignment Delta и active task handoffs.
 - Orchestrator thread используется только для организации. В нем запрещено выполнять implementation, фиксить product code, деплоить, запускать приемочный smoke или merge.
 - Orchestrator может создать или подготовить новый task thread только когда задача approved или достаточно ready: есть scope, out of scope, acceptance criteria, verification expectation, `DOD Impact` и `Burn / Limits`.
+- Перед неоднозначными product/design/IA/UI shell/entity-model/AI workflow задачами orchestrator должен провести Compass Calibration Check и остановить implementation, если target object, source of truth или visible loop поняты неверно.
+- Если сначала нужно понять source of truth/foundation/design template/affected contracts, orchestrator запускает research thread без product-code changes, а не implementation thread.
 - Task thread name должен включать issue id и sequence, если они есть, чтобы люди и Codex могли сопоставить sidebar с brief/GitHub без открытия issue.
-- Orchestrator должен проверять rename task thread, записывать exact title, ссылки/ids активных task threads, pending worktree или manual-start prompt в GitHub shared memory, когда это доступно.
+- Orchestrator должен делать readback фактического title, сам переименовывать task/research thread доступным thread tool или явно просить человека, и записывать exact title, ссылки/ids активных threads, pending worktree или manual-start prompt в GitHub shared memory.
 - Task thread не считается запущенным, пока title и id/link или manual-start prompt не записаны.
 - При короткой команде продолжения orchestrator сам запускает или возобновляет next ready task thread; если task thread завершился без `$accept-work`, orchestrator отправляет туда команду на `$accept-work`.
 - Если task thread accepted, но smoke или merge еще не выполнены, orchestrator направляет человека обратно в task thread. Merge и corrective fixes не выполняются в orchestrator.
@@ -868,6 +917,8 @@ Codex проверяет:
 - После daily, содержательной встречи, merge, blocked event, accepted result или follow-up split orchestrator должен запустить или направить в `$daily-alignment` до продолжения зависимой работы.
 - После сообщения task thread о completion orchestrator должен проверить, запускал ли task thread `$accept-work`. Если нет, он отправляет эту команду обратно в task thread. Если да, использует результат, чтобы выбрать next best action.
 - Каждая substantial task должна иметь `DOD Impact`; новый slice разрешен только если он двигает named epic/milestone DoD или явно принят как exception.
+- Accepted sub-slice или merged PR не закрывает parent issue, пока named DOD/product loop не закрыт или человек явно не вынес остаток out of scope.
+- Route, backend/API test, projection или readiness card не считаются product capability без видимого UI/operator action или human-approved linked exception.
 - `Burn / Limits` обязателен для задач с material cost/retry/generation risk и может быть `not material` для обычных задач.
 - Если shared packets отсутствуют, orchestrator должен вернуть `continue with cautions`, `wait` или `blocked`, а не придумывать локальное состояние другого участника.
 - Orchestrator должен запускать health review после milestone/large merge, после 3-5 accepted slices, при repeated follow-ups, stalled task, scope growth или выпадении owner.
@@ -1044,7 +1095,12 @@ Orchestrator thread:
 Alignment issue:
 Task thread launch state:
 Latest Team Alignment Delta:
+Model / Reasoning:
 DOD impact:
+Parent closure:
+Task type:
+Product Capability Loop:
+Compass calibration:
 Burn / Limits:
 
 Read first:
@@ -1074,6 +1130,8 @@ Handoff back to orchestrator:
 - PR/commit
 - accept-work status
 - DOD impact result
+- parent closure status
+- task type / product loop result
 - burn check
 - changed surfaces
 - verification

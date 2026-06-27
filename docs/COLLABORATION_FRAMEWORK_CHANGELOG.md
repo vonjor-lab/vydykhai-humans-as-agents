@@ -8,6 +8,19 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.4.2 - 2026-06-22
+
+Закреплены уроки оркестраторского треда без добавления нового skill.
+
+- Добавлен Compass Calibration Check для product/design/IA/UI shell/entity-model/AI workflow задач, где легко перепутать объект работы или source of truth.
+- Research thread стал явным режимом для вопросов "что является source of truth/foundation?" до implementation.
+- Thread Launch Contract уточнен: orchestrator после creation/readback сам проверяет title и переименовывает thread; startup title в дочернем thread только подсказка.
+- Новые task/research threads должны запускаться на `gpt-5.5` или newest available model и `xhigh` reasoning; fallback должен быть видимым.
+- Acceptance уточнен: merged PR или accepted sub-slice не закрывает parent issue, пока named DOD/product loop не закрыт.
+- Visible loop rule: route/backend/tests не считаются product capability, если пользовательское действие не видно в UI/surface или нет human-approved exception.
+
+Зачем: ловить неверный product compass и ложное "done" до дорогого implementation/rework.
+
 ## 1.4.1 - 2026-06-20
 
 Уточнена переносимость фреймворка на другие agent harnesses.

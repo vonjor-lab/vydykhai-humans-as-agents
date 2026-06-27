@@ -34,10 +34,15 @@ Then load these workflows only when the current action requires them:
 - Use `$daily-alignment` after daily meetings, meaningful meetings, merge events, blocked events, accepted results, and follow-up splits when they affect dependent work.
 - For implementation tasks, expect the task thread to run `$accept-work` before final completion; do not treat a task thread's "done" message as accepted unless the `$accept-work` result is present.
 - Before dispatch, classify task type and Product Capability Loop status. Product capabilities need a closed user/operator loop; technical enablers need a linked capability or later task that closes the loop; UI/product-surface work needs backing backend/API/data/persistence/permission contracts and realistic states.
+- Do not treat routes, backend/API tests, projections, readiness cards, or passive records as product capability closure unless there is a visible UI/operator entry/action or a human-approved linked exception.
+- Before high-ambiguity product/design/IA/UI shell/entity-model/AI workflow work, run Compass Calibration Check: confirm target object, source of truth, non-foundation references, nearest visible result, and nearest smoke artifact before implementation continues.
+- If the next step is to understand source of truth, foundation, design template, or affected contracts, launch or prepare a research thread that does not change product code and returns findings before implementation.
 - Create or prepare a separate task thread for implementation work when the task is ready enough to have a GitHub issue with a `Codex Task Contract`, `DOD Impact`, task type / Product Capability Loop, `Burn / Limits`, scope, out of scope, acceptance criteria, and verification.
-- If Codex thread tools are available and the human has authorized launching or continuing the next task, create or resume the task thread, title it as `[#<issue>] <sequence> <short title>` when issue id or sequence is available, verify the rename, and record the exact title plus id/link in GitHub shared memory. If thread tools or rename are unavailable, provide the exact title and startup prompt and mark the launch as pending.
+- Use `gpt-5.5` or newest available model and `xhigh` / very high reasoning for new task/research threads; make any fallback visible in the task issue, handoff, or orchestrator state.
+- If Codex thread tools are available and the human has authorized launching or continuing the next task, create or resume the task/research thread, title it as `[#<issue>] <sequence> <short title>` when issue id or sequence is available, read back the actual sidebar title, rename it yourself through the available thread tool or explicitly ask the human, and record the exact title plus id/link in GitHub shared memory. If thread tools or rename are unavailable, provide the exact title and startup prompt and mark the launch as pending.
 - When checking a task, read or inspect the task thread when its id or link is known. If `$accept-work` has not run, send the task thread a short command to run it from its current task context.
 - After `$accept-work` reports `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS`, check whether required fresh current-branch smoke and manual merge happened in the task thread. If not, send the human back to the task thread. If yes, update sequence, DOD burndown, burn status when material, and recommend the next best action instead of stopping at the acceptance status.
+- An accepted sub-slice or merged PR does not close the parent issue unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope. Keep parent closure status visible.
 - Record task thread links/ids, pending worktrees, or manual-start prompts in GitHub shared memory when available.
 - Run a short health review after a milestone or large merge, after 3-5 accepted slices, repeated follow-ups, stalled tasks, scope growth, or owner dropout.
 - Never invent another participant's local state. Missing packets must remain visible as `WAITING`, `READY_WITH_CAUTIONS`, or `BLOCKED`.
@@ -50,6 +55,7 @@ End with one clear status:
 - continue with cautions;
 - wait;
 - launch task thread;
+- launch research thread;
 - accept work;
 - needs human decision.
 
