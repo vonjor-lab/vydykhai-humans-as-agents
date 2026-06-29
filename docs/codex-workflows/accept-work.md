@@ -10,7 +10,7 @@ Goal: decide whether the work satisfies the original intent and all later alignm
 2. Current PR, branch, local diff, or delivered artifact.
 3. Relevant Local Alignment Packets, Team Alignment Deltas, and Brief Patches.
 4. Local verification output, CI, tests, smoke checks, and review comments.
-5. Related docs, rules, contracts, and active epics.
+5. Related docs, rules, contracts, active epics, Lab Mode notes, and Peer Compass Review packets.
 
 ## Steps
 
@@ -29,6 +29,8 @@ Summarize:
 - DOD impact promised by the task or parent milestone;
 - Parent Closure expectation: parent closure, sub-slice acceptance, or parent remains open;
 - Burn / Limits, if material;
+- Lab Mode contract and lab exit / production transfer expectation, if used;
+- Peer Compass Review requests or packets, if relevant;
 - acceptance criteria;
 - expected verification;
 - decisions from meetings;
@@ -76,12 +78,14 @@ Check:
 - goal satisfied;
 - product capability loop satisfied when the task promised product functionality, or explicitly linked/deferred when this is a technical enabler;
 - product capability has a visible UI/operator entry/action, or a human-approved linked exception; routes, backend/API tests, projections, readiness cards, or passive records are not enough by themselves;
+- if Lab Mode was used, the proof was reached or the cap was handled, lab polish stopped, production transfer happened, lab-only code/artifacts were discarded or intentionally kept, and real-flow tests/smoke prove the integrated result;
 - UI/product-surface work has real or explicitly linked backing data/backend/permissions/error-state implementation instead of only static or fixture presentation;
 - scope respected;
 - out-of-scope work avoided or justified;
 - promised DOD impact actually moved or closed the named epic/milestone row;
 - parent closure is accurate: an accepted sub-slice or merged PR does not close the parent unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope;
 - burn stayed within the task's cap/stop condition, or is explicitly `not material`;
+- relevant Peer Compass Review packets were incorporated or explicitly resolved before accepting overlapping work;
 - acceptance criteria met;
 - required verification run;
 - Runtime Coherence Check present when current-branch smoke was required;
@@ -95,7 +99,7 @@ Use one status:
 
 - `ACCEPT`: ready to close.
 - `ACCEPT_WITH_FOLLOWUPS`: core work or sub-slice is accepted, named follow-ups remain. Use this without closing the parent unless the parent DOD/product loop is actually closed.
-- `NEEDS_FIXES`: work is close but must change before acceptance. Use this when a task promised a product capability but delivered only backend state, APIs, readiness cards, or passive accounting without the closed user/operator loop.
+- `NEEDS_FIXES`: work is close but must change before acceptance. Use this when a task promised a product capability but delivered only backend state, APIs, readiness cards, passive accounting, or a lab-only result without the closed user/operator loop.
 - `BLOCKED`: missing decision, missing packet, unresolved conflict, unknown verification, or exceeded material burn limit prevents acceptance.
 
 ### 6. Prepare GitHub Updates
@@ -145,6 +149,8 @@ DOD impact: <named row and result>
 Parent closure: <closed | accepted sub-slice, parent remains open | out of scope by human decision>
 Visible loop: <visible entry/action | linked exception | missing>
 Burn check: <not material | within cap | exceeded and needs decision>
+Lab Mode: <not used | proof reached, transferred to production | lab-only and not product-accepted | blocked>
+Peer Compass Review: <not needed | incorporated | waiting | conflict unresolved>
 Runtime Coherence Check: <repo/worktree, branch, HEAD, dirty state, frontend/backend command+URL+cwd, browser target, smoke result | not needed | missing>
 Smoke / merge: <not needed | smoke passed, merge pending | smoke passed, merged | blocked>
 

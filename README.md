@@ -77,6 +77,8 @@ If a tool cannot create resumable task threads, use GitHub issue/PR links as the
 - Daily and event-triggered alignment through durable shared memory.
 - `$start-work` for shaping large topics into epics and task maps.
 - `$daily-alignment` for meeting and event alignment.
+- Proactive Lab Mode for expensive, risky, or hard-to-reach pieces, with explicit exit into the real product flow.
+- Peer Compass Review when another participant's context can prevent drift across overlapping work.
 - `$accept-work` for acceptance against brief, alignment history, verification, product loop, and DOD.
 - The orchestrator thread organizes work only; implementation, acceptance smoke, and merge stay in task threads.
 - Product Capability Closed Loop: backend/API/data work must link to the user/operator workflow it enables; UI/product-surface work must link to backing backend/data/permissions/scenarios.

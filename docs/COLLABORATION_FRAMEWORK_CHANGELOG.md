@@ -8,6 +8,19 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.4.6 - 2026-06-29
+
+Добавлен проактивный operating layer для orchestration: orchestrator сам замечает риск, выбирает подходящий инструмент и дает человеку конкретное действие.
+
+- Human-as-agent rule: человек считается агентом системы рядом с task threads, GitHub, встречами и smoke; orchestrator должен давать ему адресата, ссылку/prompt, место результата, safe continuation status и return-sync instruction.
+- No plan-only launch: task thread launch не считается прогрессом, если child thread только написал план или draft intention. Нужен `EXECUTION_STARTED`, `BLOCKED_BEFORE_START` или `NEEDS_REBRIEF`.
+- Proactive Lab Mode: orchestrator предлагает lab, когда isolated learning снижает burn/risk, и отговаривает от lab для существующих product surfaces, real-data/content updates и DOD, который должен проверяться в реальном flow.
+- Lab exit закреплен как обязательный переход: proof/cap -> stop lab polish -> production transfer -> tests -> real-flow smoke -> acceptance. Lab-only result не закрывает product capability.
+- Peer Compass Review закреплен как легкий cross-owner review при пересечении задач, PRs, contracts или DOD rows; orchestrator готовит запрос человеку и требует обратный sync после packet.
+- Health review и accept-work теперь проверяют stalled DOD burn, lab без exit и peer review packets до acceptance.
+
+Зачем: сделать фреймворк более нативным для живых людей - человек не помнит все режимы, а orchestrator сам предлагает lab, peer review, stop/wait/rebrief или next-best-action при рисках и застреваниях.
+
 ## 1.4.5 - 2026-06-22
 
 Уточнена формулировка canonical source, чтобы standalone framework не зависел от рабочих копий или внутренних рабочих контекстов команды.

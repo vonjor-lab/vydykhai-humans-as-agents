@@ -1,7 +1,7 @@
 # Framework for Collaborative Vibe Coding
 
 Date: 2026-06-10
-Version: 1.4.5
+Version: 1.4.6
 Status: universal working framework for several vibe coders and several Codex instances working on one product
 Changelog: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -361,6 +361,19 @@ The orchestrator owns:
 
 The orchestrator must not edit product code, deploy, run acceptance smoke, or merge. Its ordinary work is to read durable artifacts, update GitHub shared memory, decide whether the participant can continue safely, and create or prepare task threads for implementation.
 
+### Human-As-Agent Operating Rule
+
+The framework treats the human as an agent in the operating system, not as the person who must remember every rule. When risk, delay, stalled DOD burn, scope drift, or cross-owner uncertainty appears, the orchestrator should give the human an explicit instruction:
+
+- what action to take;
+- which person, thread, issue, PR, or meeting record it concerns;
+- which context link or prompt to pass along;
+- where the result should be written;
+- whether work can continue safely while waiting;
+- when to return to the orchestrator for the next best action.
+
+This keeps the framework lightweight for people. The orchestrator notices the situation, chooses the tool, and tells the human how to act.
+
 ### Task Thread Dispatch
 
 Use a separate task thread for every implementation task that can run autonomously.
@@ -374,6 +387,7 @@ Dispatch rules:
 - the orchestrator creates the thread, reads back the actual sidebar title, renames the thread itself through an available thread tool or explicitly asks the human to rename it, sends the startup prompt, and records the task thread link/id, exact title, pending worktree, or manual-start prompt in the task issue or orchestrator state;
 - if Codex thread tools or rename are unavailable, the orchestrator prepares the exact title and startup prompt for a human to create or rename manually, and marks launch as `thread title pending`;
 - the task is not considered launched until the title and id/link or manual-start prompt are recorded in GitHub shared memory;
+- launch is not complete when the task thread only writes a plan, draft PR intention, or task summary. After startup, the thread must report `EXECUTION_STARTED`, `BLOCKED_BEFORE_START`, or `NEEDS_REBRIEF`;
 - when the task thread finishes implementation, it runs `$accept-work` inside the task thread, organizes fresh current-branch smoke when required, prepares manual merge after human smoke, includes the result in its final report, and returns that report to the orchestrator.
 
 ### Research Thread Dispatch
@@ -391,12 +405,43 @@ A research thread must not change product code without a separate decision. Its 
 
 Research threads also get a stable title, `gpt-5.5` or newest available model, `xhigh` reasoning, readback rename, and recorded id/link or manual-start prompt in GitHub shared memory.
 
+### Proactive Lab Mode
+
+Lab Mode is a temporary isolated mode for learning or debugging a hard piece before putting it into the product surface. Users do not need to know this pattern in advance. The orchestrator should propose it when it sees that isolation would reduce cost, risk, or waiting time.
+
+Propose Lab Mode when:
+
+- reaching the target state through the full product flow is slow, expensive, or requires paid generation/API calls;
+- the work needs many short iterations on an algorithm, prompt, parser, model, visual result, or unstable mechanic;
+- the team needs to compare alternatives quickly before touching the main flow;
+- experimentation might break an existing user/operator path.
+
+Push back on Lab Mode when the task is really about an existing product surface, replacing mock data with real data, content updates, UI wiring, or any DOD that must be proven in the real user/operator flow. In those cases the work should happen in the product surface, with normal smoke.
+
+Every lab needs a small contract: the question, stop condition, burn cap when material, expected proof, and path back to production. When the proof is reached or the cap is hit, the orchestrator should stop lab polish and move to lab exit. Lab exit names what transfers into the product, what is discarded, which tests are needed, and which smoke proves the result in the real flow. A lab can close research or spike work; it does not close a product capability until the result is integrated into the real surface and accepted there.
+
+### Peer Compass Review
+
+Peer Compass Review is a lightweight cross-owner review before parallel work drifts too far. It does not transfer task ownership. It gives another participant's orchestrator a precise review request when their context can protect the compass.
+
+The orchestrator should propose Peer Compass Review when:
+
+- tasks or PRs touch the same flow, surface, entity, API, data contract, or DOD row;
+- one participant depends on another participant's draft PR or local direction;
+- a task appears to be moving into technical slices without visible DOD progress;
+- continuing without another person's context could cause expensive rework.
+
+The requesting orchestrator prepares the review request: links, what to inspect, why it matters, what questions not to decide without the owner, and where to write the result. It then instructs the human plainly: who to ask, what prompt or link to send, whether current work should pause or continue with cautions, and when to request a return sync.
+
+The reviewer returns a short Peer Compass Review Packet in the PR, issue, or alignment journal: what was checked, compass risk, contract or DOD concerns, recommended owner action, and safe continuation status. The owner orchestrator reads that packet, syncs back, and chooses `continue`, `continue with cautions`, `wait`, `rebrief`, or `split`.
+
 ### Task Thread Auto-Launch And Resume
 
 Automation should feel native, but it is not hidden background work. When the human says "continue", "launch the next task", "check the stream", or a similar short command in the orchestrator thread, the orchestrator restores durable state and chooses the action:
 
 - if the next approved/ready task has no task thread, create it with Codex thread tools or prepare the exact manual-start prompt;
 - if the task thread already exists, open or inspect it by the recorded id/link;
+- if the task thread was launched but only produced a plan or draft intention, send it back to start execution, name a blocker, or request rebrief;
 - if the task thread completed implementation without `$accept-work`, send it a short command to run `$accept-work` from its current task context;
 - if `$accept-work` already returned `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS`, check whether fresh current-branch smoke passed and merge was performed in the task thread after human confirmation, then update the sequence, DOD impact, and choose the next best action.
 
@@ -427,8 +472,10 @@ The orchestrator should pause for a short health review:
 - after a milestone or large merge;
 - after 3-5 accepted task slices;
 - when the same follow-up repeats;
-- when a task stalls, an owner drops out, or scope keeps growing;
-- when accepted technical enablers are not turning into a product loop.
+- when a task stalls, an owner drops out, scope keeps growing, or DOD burn stops;
+- when accepted technical enablers are not turning into a product loop;
+- when Lab Mode keeps producing polish instead of lab exit;
+- when overlapping owner work needs Peer Compass Review before continuing.
 
 The health review answers:
 
@@ -451,7 +498,10 @@ Recent parallel work showed several reusable lessons:
 - acceptance is stronger when the orchestrator verifies scope, latest alignment, handoff, and current-branch smoke before the task is treated as done;
 - DOD burndown matters more than the number of closed slices: every new task should move a named epic or milestone DoD row, otherwise it stays backlog/follow-up;
 - product comments during implementation need triage before tasking: distinguish current scope changes, DOD gaps, vision guardrails, and future options so the product compass improves without uncontrolled slice growth;
-- burn should be checked only where there is real cost risk: AI generation, paid APIs, long agent loops, heavy smoke/build cycles, external demos, or repeated retries.
+- burn should be checked only where there is real cost risk: AI generation, paid APIs, long agent loops, heavy smoke/build cycles, external demos, or repeated retries;
+- plan-only task thread launches are false progress; a launched thread must start execution, name a blocker, or request rebrief;
+- Lab Mode is useful when it reduces burn or risk, but it needs a proactive exit into the production flow;
+- Peer Compass Review should be requested early when another participant's context can prevent drift or duplicate work.
 
 ## Operating Cycle
 
@@ -1147,6 +1197,9 @@ Task type:
 Product Capability Loop:
 Compass calibration:
 Burn / Limits:
+Lab Mode:
+Peer Compass Review:
+Launch expectation:
 
 Read first:
 - AGENTS.md
@@ -1161,11 +1214,15 @@ Out of scope:
 
 Acceptance criteria:
 
+Lab exit / production transfer:
+
 Verification:
 - include current-branch smoke when user-facing or integration-affecting
 - include Runtime Coherence Check when frontend/backend/browser runtime is involved
 
 Completion gate:
+- do not stop at a plan if launch expectation is execution; start work, name a blocker, or request rebrief
+- if Lab Mode was used, stop lab polish after proof/cap and transfer the result into the production surface before product acceptance
 - before final completion, run $accept-work inside this task thread
 - for user-facing or integration-affecting work, organize fresh current-branch smoke from this worktree
 - if smoke is required, include Runtime Coherence Check in the final report

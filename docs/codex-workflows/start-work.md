@@ -47,6 +47,8 @@ Also classify each proposed task or backlog item by task type:
 
 If a proposed product capability lacks a closed user/operator loop, draft the likely loop and ask the human to confirm or trim it before creating tasks. If a proposed technical task is actually only an enabler for a promised product capability, keep it technical but link it to the task that will close the product loop. If a proposed UI/product-surface task lacks backing contracts, identify the missing backend/API/data/persistence/permission/error-state work and link or create the required technical enabler before treating the UI as product-complete.
 
+Also check whether the topic would benefit from Lab Mode or Peer Compass Review. Suggest Lab Mode when isolated learning reduces burn/risk and include lab exit/production transfer in the task map. Suggest Peer Compass Review when another participant's context or active task could change safe sequencing.
+
 ### 2. Define The Epic Brief
 
 Draft an epic brief with:
@@ -116,6 +118,9 @@ Each task concept should include:
   - for `maintenance` or `research/spike`: payoff/question, owner, timing, and stop condition;
 - Compass Calibration for high-ambiguity product/design/IA/UI shell/entity-model/AI workflow tasks: target object, source of truth, non-foundation references, nearest visible result, and smoke artifact;
 - Burn / Limits: `not material` or a concrete cap/stop condition for generation/API/retry/verification risk;
+- Lab Mode: `not needed`, `recommended`, or `active`; when used, include question, proof, stop condition, burn cap, lab exit, production transfer, tests, and real-flow smoke;
+- Peer Compass Review: `not needed`, `requested`, `waiting`, or `incorporated`; when needed, include reviewer, review question, output location, safe continuation status, and return-sync instruction;
+- Launch expectation: execution should start after a short sanity check, unless the task thread names a blocker or requests rebrief;
 - alignment hooks;
 - acceptance criteria;
 - expected verification;
@@ -182,6 +187,9 @@ After approval:
   - `Product Capability Loop`: closed-loop checklist for product capabilities, or linked product-loop task for technical enablers;
   - `Compass Calibration`: required when target object, source of truth, foundation, or visible loop can be misunderstood;
   - `Burn / Limits`: `not material` or a cap/stop condition;
+  - `Lab Mode`: `not needed`, `recommended`, or `active`, with lab exit and production transfer expectations when used;
+  - `Peer Compass Review`: `not needed`, `requested`, `waiting`, or `incorporated`, with reviewer/request/output when needed;
+  - `Launch expectation`: the task thread must start execution, name a blocker, or request rebrief instead of stopping at a plan;
   - `Runtime Coherence Check`: required for user-facing or integration-affecting smoke involving frontend/backend/browser runtime;
   - `Completion`: before final completion, the task thread must run `$accept-work` from inside the task thread and include the result in its final report;
   - `Smoke / merge`: fresh current-branch smoke when required, then manual merge from the task thread after human smoke and confirmation;
@@ -189,6 +197,7 @@ After approval:
   - `Next action`: what the orchestrator should do after reading the result.
 - include `Alignment Hooks` in every implementation task:
   - read the latest relevant Team Alignment Delta before touching shared surfaces;
+  - if Peer Compass Review is requested or waiting, read the packet before touching the overlapping surface or contract;
   - publish or prepare a Local Alignment Packet only when a material scope or contract change, blocker/conflict, accepted result, or follow-up split affects other participants;
   - do not post routine commit-by-commit updates, branch creation, or ordinary PR-open status;
 - include `Completion Gate` in every implementation task:

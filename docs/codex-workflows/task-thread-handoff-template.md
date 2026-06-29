@@ -24,6 +24,9 @@ Parent closure status:
 Task type:
 Product Capability Loop:
 Burn / Limits:
+Lab Mode:
+Peer Compass Review:
+Launch expectation:
 
 ## Read First
 
@@ -52,6 +55,8 @@ Burn / Limits:
 - <closed product loop if this is a product capability, or linked product-loop task if this is a technical enabler>
 - <backing backend/API/data/persistence/permission contracts and realistic states if this is UI/product-surface work>
 - <visible UI/operator entry/action, or human-approved linked exception if the loop is intentionally deferred>
+- <Lab Mode question/proof/stop condition/production transfer, or `not needed`>
+- <Peer Compass Review packet to read or request, or `not needed`>
 - <when to stop and return to orchestrator>
 
 ## Verification
@@ -63,6 +68,8 @@ Burn / Limits:
 
 ## Completion Gate
 
+- do not stop at a plan when launch expectation is execution; after a short sanity check, start work, name a blocker, or request rebrief;
+- if Lab Mode was used, stop lab polish after proof/cap and transfer the result into the production surface before product capability acceptance;
 - before final completion, run `$accept-work` in this task thread;
 - `$accept-work` must inspect this task issue, PR or diff, latest relevant alignment, DOD impact, parent closure status, task type, Product Capability Loop, verification, burn check when material, and current-branch smoke when required;
 - accepted sub-slice or merged PR does not close the parent issue unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope;
@@ -77,6 +84,9 @@ Burn / Limits:
 Branch / worktree:
 PR / commit:
 Accept Work status:
+Launch state: <EXECUTION_STARTED | BLOCKED_BEFORE_START | NEEDS_REBRIEF>
+Lab exit / production transfer:
+Peer Compass Review:
 Smoke / merge status:
 DOD impact result:
 Accepted as sub-slice:

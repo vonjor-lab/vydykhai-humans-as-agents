@@ -25,6 +25,10 @@ This repository contains the standalone Codex Collaboration Framework. Keep it g
 - Accepted sub-slices or merged PRs do not close parent issues unless the named DOD/product loop is closed or the human explicitly moves the remainder out of scope.
 - Product capability closure requires a visible UI/operator action or human-approved linked exception, not only routes, backend/API tests, projections, or readiness cards.
 - Runtime Coherence Check is required when smoke uses frontend/backend/browser runtime: repo/worktree, branch, HEAD, dirty state, frontend/backend command+URL+cwd, browser target, and smoke result. Without it, "smoke passed" is not acceptance evidence.
+- Treat humans as project agents too: when risk, delay, drift, or stalled DOD burn appears, the orchestrator gives the human a concrete action, target, context link, expected output location, and safe continuation rule.
+- A task thread launch is not complete when the child thread only writes a plan; it must show execution started, a named blocker, or a need to rebrief.
+- Proactively propose Lab Mode when an isolated experiment reduces burn or risk, and require lab exit plus production transfer before product capability acceptance.
+- Proactively propose Peer Compass Review when parallel tasks, PRs, contracts, or DOD rows overlap across people or agents.
 - Run `git diff --check` before committing documentation changes.
 
 ## Repo Skills

@@ -1,7 +1,7 @@
 # Фреймворк совместной вайб-разработки
 
 Дата: 2026-06-10
-Версия: 1.4.5
+Версия: 1.4.6
 Статус: универсальный рабочий фреймворк для нескольких вайбкодеров и нескольких Codex-инстансов, работающих над одним продуктом
 История изменений: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -361,6 +361,19 @@ Orchestrator держит:
 
 Orchestrator не должен редактировать product code, деплоить, запускать приемочный smoke или делать merge. Его обычная работа - читать durable artifacts, обновлять GitHub shared memory, решать, может ли участник безопасно продолжать, и создавать или готовить task threads для реализации.
 
+### Human-As-Agent Operating Rule
+
+Фреймворк относится к человеку как к агенту операционной системы проекта, а не как к человеку, который должен помнить все правила. Когда появляется риск, задержка, stalled DOD burn, scope drift или неясность между owners, orchestrator должен дать человеку конкретную инструкцию:
+
+- что сделать;
+- какого человека, thread, issue, PR или meeting record это касается;
+- какую ссылку или prompt передать;
+- где должен появиться результат;
+- можно ли продолжать работу, пока ждем;
+- когда вернуться в orchestrator за next best action.
+
+Так фреймворк остается легким для людей: orchestrator замечает ситуацию, выбирает инструмент и говорит человеку, как действовать.
+
 ### Task Thread Dispatch
 
 Для каждой implementation task, которая может идти автономно, использовать отдельный task thread.
@@ -374,6 +387,7 @@ Orchestrator не должен редактировать product code, депл
 - orchestrator создает thread, делает readback фактического sidebar title, сам переименовывает thread через доступный thread tool или явно просит человека переименовать, отправляет startup prompt и записывает ссылку/id task thread, exact title, pending worktree или manual-start prompt в task issue или orchestrator state;
 - если Codex thread tools или rename недоступны, orchestrator готовит точный title и startup prompt, чтобы человек создал или переименовал thread вручную, и помечает launch как `thread title pending`;
 - задача не считается запущенной, пока title и id/link или manual-start prompt не записаны в GitHub shared memory;
+- launch не считается завершенным, если task thread только написал план, намерение открыть PR или summary задачи. После startup thread должен вернуть `EXECUTION_STARTED`, `BLOCKED_BEFORE_START` или `NEEDS_REBRIEF`;
 - когда task thread завершает implementation, он запускает `$accept-work` внутри task thread, организует fresh current-branch smoke когда требуется, готовит manual merge после ручного smoke, включает результат в final report и возвращает этот report в orchestrator.
 
 ### Research Thread Dispatch
@@ -391,12 +405,43 @@ Research thread не меняет product code без отдельного ре�
 
 Research thread тоже получает стабильный title, `gpt-5.5` или newest available model, `xhigh` reasoning, readback rename и запись id/link или manual-start prompt в GitHub shared memory.
 
+### Proactive Lab Mode
+
+Lab Mode - временный изолированный режим, чтобы разобраться или отладить сложный кусок до переноса в продуктовую поверхность. Пользователь не обязан заранее знать это понятие. Orchestrator сам предлагает lab, когда видит, что изоляция снизит стоимость, риск или ожидание.
+
+Предлагать Lab Mode, когда:
+
+- до нужного состояния долго, дорого или нужно проходить через paid generation/API calls;
+- нужны короткие итерации над algorithm, prompt, parser, model, visual result или нестабильной mechanic;
+- нужно быстро сравнить варианты до вмешательства в основной flow;
+- experiment может сломать существующий user/operator path.
+
+Отговаривать от Lab Mode, когда задача на самом деле про существующую product surface, замену mock data на реальные данные, контентные обновления, UI wiring или DOD, который должен доказываться в настоящем user/operator flow. В таких случаях работа идет в продуктовой поверхности с обычным smoke.
+
+У каждой lab должен быть короткий contract: вопрос, stop condition, burn cap когда material, expected proof и путь обратно в production. Когда proof достигнут или cap исчерпан, orchestrator прекращает lab polish и переводит работу в lab exit. Lab exit называет, что переносится в продукт, что выбрасывается, какие tests нужны и какой smoke доказывает результат уже в реальном flow. Lab может закрыть research или spike; product capability закрывается только после интеграции в настоящую surface и acceptance там.
+
+### Peer Compass Review
+
+Peer Compass Review - легкое cross-owner review до того, как параллельная работа уедет слишком далеко. Оно не передает ownership задачи. Оно дает orchestrator другого участника точный запрос на review, когда его контекст может защитить compass.
+
+Orchestrator должен предложить Peer Compass Review, когда:
+
+- задачи или PRs трогают один flow, surface, entity, API, data contract или DOD row;
+- один участник зависит от draft PR или локального направления другого;
+- задача уходит в technical slices без видимого DOD progress;
+- продолжение без контекста другого человека может привести к дорогому rework.
+
+Запрашивающий orchestrator готовит review request: ссылки, что проверить, почему это важно, какие вопросы нельзя решать без owner, и куда записать результат. Затем он простым языком инструктирует человека: кого попросить, какой prompt или ссылку отправить, надо ли ставить работу на паузу или можно продолжать with cautions, и когда запросить обратный sync.
+
+Reviewer возвращает короткий Peer Compass Review Packet в PR, issue или alignment journal: что проверено, compass risk, concerns по contracts или DOD, recommended owner action и safe continuation status. Orchestrator owner читает packet, делает обратный sync и выбирает `continue`, `continue with cautions`, `wait`, `rebrief` или `split`.
+
 ### Task Thread Auto-Launch And Resume
 
 Автоматизация должна быть нативной, но не фоновой магией. Когда человек в orchestrator thread говорит "продолжай", "запусти следующую", "проверь поток" или похожую короткую команду, orchestrator сам восстанавливает durable state и выбирает действие:
 
 - если следующая approved/ready задача не имеет task thread, создать его через Codex thread tools или подготовить точный manual-start prompt;
 - если task thread уже есть, открыть или инспектить его по сохраненному id/link;
+- если task thread запущен, но выдал только план или draft intention, отправить его обратно: начать execution, назвать blocker или запросить rebrief;
 - если task thread завершил implementation без `$accept-work`, отправить туда короткую команду запустить `$accept-work` из текущего task context;
 - если `$accept-work` уже дал `ACCEPT` или `ACCEPT_WITH_FOLLOWUPS`, проверить, прошел ли fresh current-branch smoke и был ли merge выполнен в task thread после ручного подтверждения, затем обновить sequence, DOD impact и выбрать next best action.
 
@@ -427,8 +472,10 @@ Orchestrator должен останавливаться на короткий h
 - после milestone или крупного merge;
 - после 3-5 accepted task slices;
 - когда один и тот же follow-up повторяется;
-- когда task зависла, owner выпал или scope начал расти;
-- когда accepted technical enablers не приводят к product loop.
+- когда task зависла, owner выпал, scope начал расти или DOD burn остановился;
+- когда accepted technical enablers не приводят к product loop;
+- когда Lab Mode продолжает полировать lab вместо lab exit;
+- когда пересекающаяся owner work требует Peer Compass Review до продолжения.
 
 Health review отвечает:
 
@@ -451,7 +498,10 @@ Health review отвечает:
 - приемка сильнее, когда orchestrator проверяет scope, latest alignment, handoff и current-branch smoke до того, как задача считается done;
 - DOD-burndown важнее количества закрытых slices: каждая новая task должна двигать named epic или milestone DoD row, иначе она остается backlog/follow-up;
 - продуктовые комментарии во время реализации требуют triage до tasking: нужно отличать current scope changes, DOD gaps, vision guardrails и future options, чтобы product compass улучшался без неконтролируемого slice growth;
-- burn нужно проверять только там, где есть реальный риск затрат: AI generation, paid APIs, долгие agent loops, тяжелые smoke/build циклы, внешнее demo или repeated retries.
+- burn нужно проверять только там, где есть реальный риск затрат: AI generation, paid APIs, долгие agent loops, тяжелые smoke/build циклы, внешнее demo или repeated retries;
+- plan-only запуск task thread - ложный прогресс: запущенный thread должен начать execution, назвать blocker или запросить rebrief;
+- Lab Mode полезен, когда снижает burn или риск, но у него должен быть проактивный выход в production flow;
+- Peer Compass Review нужно запрашивать рано, когда контекст другого участника может предотвратить drift или duplicate work.
 
 ## Операционный цикл
 
@@ -947,7 +997,7 @@ Codex проверяет:
 - Если сначала нужно понять source of truth/foundation/design template/affected contracts, orchestrator запускает research thread без product-code changes, а не implementation thread.
 - Task thread name должен включать issue id и sequence, если они есть, чтобы люди и Codex могли сопоставить sidebar с brief/GitHub без открытия issue.
 - Orchestrator должен делать readback фактического title, сам переименовывать task/research thread доступным thread tool или явно просить человека, и записывать exact title, ссылки/ids активных threads, pending worktree или manual-start prompt в GitHub shared memory.
-- Task thread не считается запущенным, пока title и id/link или manual-start prompt не записаны.
+- Task thread не считается запущенным, пока title и id/link или manual-start prompt не записаны. После запуска он должен показать `EXECUTION_STARTED`, `BLOCKED_BEFORE_START` или `NEEDS_REBRIEF`, а не остановиться на плане.
 - При короткой команде продолжения orchestrator сам запускает или возобновляет next ready task thread; если task thread завершился без `$accept-work`, orchestrator отправляет туда команду на `$accept-work`.
 - Если task thread accepted, но smoke или merge еще не выполнены, orchestrator направляет человека обратно в task thread. Merge и corrective fixes не выполняются в orchestrator.
 - Если smoke нужен, но Runtime Coherence Check отсутствует или не доказывает exact branch/worktree/runtime, orchestrator не считает task accepted и отправляет работу обратно в task thread.
@@ -959,7 +1009,10 @@ Codex проверяет:
 - Route, backend/API test, projection или readiness card не считаются product capability без видимого UI/operator action или human-approved linked exception.
 - `Burn / Limits` обязателен для задач с material cost/retry/generation risk и может быть `not material` для обычных задач.
 - Если shared packets отсутствуют, orchestrator должен вернуть `continue with cautions`, `wait` или `blocked`, а не придумывать локальное состояние другого участника.
-- Orchestrator должен запускать health review после milestone/large merge, после 3-5 accepted slices, при repeated follow-ups, stalled task, scope growth или выпадении owner.
+- Orchestrator должен запускать health review после milestone/large merge, после 3-5 accepted slices, при repeated follow-ups, stalled task, scope growth, выпадении owner или stalled DOD burn.
+- Orchestrator должен проактивно предлагать Lab Mode, когда это снижает burn/risk, но также требовать lab exit и production transfer до acceptance product capability.
+- Orchestrator должен проактивно предлагать Peer Compass Review, когда задачи/PRs/контракты/DOD разных участников пересекаются, и давать человеку готовый запрос к коллеге плюс правило обратного sync.
+- Orchestrator должен обращаться к человеку как к агенту: давать конкретное действие, адресата, ссылку/prompt, место результата, safe continuation status и момент возврата за next best action.
 
 ### Git And Environment Rules
 
@@ -1147,6 +1200,9 @@ Task type:
 Product Capability Loop:
 Compass calibration:
 Burn / Limits:
+Lab Mode:
+Peer Compass Review:
+Launch expectation:
 
 Read first:
 - AGENTS.md
@@ -1161,11 +1217,15 @@ Out of scope:
 
 Acceptance criteria:
 
+Lab exit / production transfer:
+
 Verification:
 - include current-branch smoke when user-facing or integration-affecting
 - include Runtime Coherence Check when frontend/backend/browser runtime is involved
 
 Completion gate:
+- do not stop at a plan if launch expectation is execution; start work, name a blocker, or request rebrief
+- if Lab Mode was used, stop lab polish after proof/cap and transfer the result into the production surface before product acceptance
 - before final completion, run $accept-work inside this task thread
 - for user-facing or integration-affecting work, organize fresh current-branch smoke from this worktree
 - if smoke is required, include Runtime Coherence Check in the final report

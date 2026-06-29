@@ -27,6 +27,8 @@ Load related epic briefs, task issues, PRs, Team Alignment Deltas, Brief Patches
 - Check task type and Product Capability Loop. Product capabilities are not accepted as complete when they only deliver backend state, APIs, projections, readiness cards, or accounting without the closed user/operator loop; technical enablers must remain linked to the task that closes the loop; UI/product-surface work must have real or explicitly linked backing backend/API/data/permissions/error-state implementation.
 - Require a visible UI/operator entry/action for product capability closure, or a human-approved linked exception. Route existence and backend/API tests are not enough by themselves.
 - Check `Burn / Limits` when material; classify exceeded or unmeasured material burn as a decision/blocker instead of silently accepting.
+- If Lab Mode was used, do not accept a product capability until lab exit, production transfer, tests, and real-flow smoke are complete.
+- If Peer Compass Review was requested for overlapping work, incorporate or resolve the packet before accepting.
 - Check affected entities, neighboring epics, docs, tests, and handoff.
 - For user-facing or integration-affecting work, require a fresh smoke pass from the exact current branch/worktree. Do not rely on old servers, old browser tabs, or processes from another branch.
 - When smoke uses frontend/backend/browser runtime, require Runtime Coherence Check: repo/worktree, branch, HEAD, dirty state, frontend/backend command+URL+cwd, browser target, and smoke result. Without this proof, classify acceptance as `NEEDS_FIXES` or `BLOCKED`.

@@ -61,6 +61,8 @@ Choose one mode:
 - `plan`: the human is starting or reshaping a large topic;
 - `align`: a meeting, daily, merge, blocked event, accepted result, or follow-up split may affect shared work;
 - `research`: source of truth, foundation, design template, or affected contracts must be clarified before implementation;
+- `lab`: isolated learning would reduce burn or risk before production transfer;
+- `peer-review`: another participant's context is needed before overlapping work continues safely;
 - `dispatch`: the next approved task should be launched or resumed;
 - `accept`: a task, PR, milestone, or epic needs acceptance;
 - `sequence`: the human asks what should happen next;
@@ -110,6 +112,10 @@ For high-ambiguity product/design/IA/UI shell/entity-model/AI workflow work, run
 
 If the agent confuses a technical/internal surface with a product template, a visual shell with a finished capability, or a route/test/backend state with a visible product loop, stop implementation and correct the brief/task first.
 
+Run Proactive Lab Mode check before dispatch or continuation. Suggest Lab Mode when a hard middle step is expensive to reach, depends on paid generation/API calls, needs many short iterations, or might break a real user path. Push back when the task is an existing product surface, real-data/content replacement, UI wiring, or a DOD that must be proven in the real flow. If Lab Mode is used, require a lab question, proof, stop condition, burn cap when material, production transfer plan, tests, and real-flow smoke.
+
+Run Peer Compass Review check when active tasks or PRs overlap on a flow, surface, entity, API, data contract, or DOD row, or when another participant's draft can change this task's safe path. Prepare the review request for the human: links, what to inspect, why it matters, where the packet should be written, safe continuation status, and when to run return sync.
+
 ### 3. Check Alignment Freshness
 
 Before recommending work that touches shared surfaces, verify:
@@ -118,6 +124,7 @@ Before recommending work that touches shared surfaces, verify:
 - this participant has a current Local Alignment Packet when needed;
 - latest Team Alignment Delta covers the packets that matter for this task;
 - missing participants or stale packets are visible;
+- relevant Peer Compass Review requests or packets are visible;
 - relevant merge events have a delta or clear handoff.
 
 If alignment is incomplete, return one of:
@@ -156,6 +163,9 @@ Only dispatch when the task has:
   - technical enablers need the linked product-loop task or parent capability;
   - UI/product-surface tasks need the backing backend/API/data/permissions/scenario contracts in scope or linked;
 - `Burn / Limits` set to `not material` or a concrete cap/stop condition;
+- `Lab Mode` set to `not needed`, `recommended`, or `active`, with lab exit/production transfer expectations when used;
+- `Peer Compass Review` set to `not needed`, `requested`, `waiting`, or `incorporated` when cross-owner overlap exists;
+- `Launch expectation`: start execution after a short sanity check, or name a blocker/rebrief need;
 - clear scope and out of scope;
 - Compass Calibration result when the target object/source of truth can be misunderstood;
 - acceptance criteria;
@@ -179,6 +189,8 @@ If the task title already contains the sequence, keep it visible in the sidebar 
 
 If thread tools or rename are unavailable, provide the exact title and startup prompt for manual creation or manual rename, and record that manual-start prompt as the task's current dispatch state. A task is not considered launched until the title and id/link or manual-start prompt are recorded in GitHub shared memory.
 
+After launch, verify execution evidence. If the child thread only writes a plan, draft PR intention, or task summary, send it a short follow-up: start implementation within scope now, name a blocker, or request rebrief. Record launch as `EXECUTION_STARTED`, `BLOCKED_BEFORE_START`, or `NEEDS_REBRIEF`; do not count plan-only launch as progress.
+
 ### 6. Supervise Task Thread
 
 When the human asks to check a task, continue a stream, or inspect task status, the orchestrator should inspect the GitHub task issue, task thread, PR, and latest alignment state.
@@ -187,6 +199,9 @@ Use this simple state machine:
 
 - no task thread exists: create or prepare it, then record the thread id/link, pending worktree, or manual-start prompt;
 - task thread is still working: summarize current state and next expected checkpoint;
+- task thread has only planned or opened a draft intention without execution evidence: send it back to start execution, name a blocker, or request rebrief;
+- task thread is in Lab Mode and proof/cap is reached: stop lab polish and route to production transfer, tests, and real-flow smoke;
+- cross-owner overlap is detected and no Peer Compass Review packet exists: prepare the review request, instruct the human who to ask, and set safe continuation status;
 - task thread says work is complete but no `$accept-work` result is present: send the task thread a short command to run `$accept-work` from its task context;
 - `$accept-work` result is `NEEDS_FIXES`: send the concrete fix request back to the task thread;
 - `$accept-work` result is `BLOCKED`: record the blocker or missing decision in GitHub shared memory and tell the human what decision is needed;
@@ -205,6 +220,9 @@ Do not merge from the orchestrator. If smoke or merge fails, the task thread has
 After an accepted task, merge, blocker, or follow-up split, do not stop at status reporting. Choose the next useful action:
 
 - launch or prepare the next ready task thread;
+- move a successful lab into production transfer instead of continuing lab polish;
+- request or incorporate Peer Compass Review when overlapping work affects safe continuation;
+- give the human an explicit action with links, addressee, output location, safe continuation rule, and return-sync instruction when human action is needed;
 - run a parent epic/milestone DOD burndown check before creating another slice in the same area;
 - check whether accepted technical enablers now require the linked product-loop task to be launched, updated, or re-sequenced;
 - classify any new product compass notes before deciding whether they are current scope, DOD gaps, vision guardrails, or future options;
