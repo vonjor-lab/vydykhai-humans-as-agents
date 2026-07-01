@@ -1,7 +1,7 @@
 # Фреймворк совместной вайб-разработки
 
 Дата: 2026-06-10
-Версия: 1.4.6
+Версия: 1.4.7
 Статус: универсальный рабочий фреймворк для нескольких вайбкодеров и нескольких Codex-инстансов, работающих над одним продуктом
 История изменений: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -153,7 +153,7 @@ Orchestrator thread - это только организация работы. �
 
 Канонический source фреймворка - standalone repository: `https://github.com/vonjor-lab/vydykhai-humans-as-agents`.
 
-Product repos могут держать локальные копии docs, workflows и `.agents/skills`, чтобы Codex работал внутри конкретного проекта. Эти копии нужны для execution, но они не являются canonical source.
+Product repos должны держать локальные execution copies docs, workflows и `.agents/skills`, если Codex должен запускать фреймворк внутри конкретного проекта. Эти копии обязательны для execution, но они не являются canonical source.
 
 Правило изменений:
 
@@ -202,7 +202,18 @@ Transcript встречи - это raw input. Дистилляция Codex пл�
 
 ## Запуск проекта
 
-Новый проект начинается не с задач, а с отдельного Framework Orchestrator thread. В этом thread команда поднимает фреймворк, подключает repo и durable память проекта, но не делает implementation work.
+Новый проект начинается с импорта framework kit в продуктовый репозиторий и отдельного Framework Orchestrator thread, запущенного из этого репозитория. Ссылки на standalone repo недостаточно. Repo-scoped skills и workflows работают только когда файлы фреймворка лежат в целевом repo, а Codex session стартует оттуда.
+
+Порядок запуска обязательный:
+
+1. Создать или открыть целевой продуктовый репозиторий.
+2. Импортировать из этого repo `.agents/skills`, `docs/codex-workflows`, оба framework docs и changelog.
+3. Добавить core rules фреймворка в `AGENTS.md` целевого repo.
+4. Закоммитить импорт и убедиться, что участники команды сделали pull.
+5. Запустить новый Codex thread из целевого repo. Это личный Framework Orchestrator thread, не Git branch и не implementation task thread.
+6. Запустить `$project-launch` в этом orchestrator thread.
+
+В orchestrator thread команда поднимает фреймворк, подключает repo и durable память проекта, но не делает implementation work.
 
 Минимальный стартовый запрос:
 

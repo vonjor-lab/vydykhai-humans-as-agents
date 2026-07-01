@@ -4,6 +4,21 @@ Use this repo-local workflow when a team starts a new project, imports the frame
 
 Goal: create the minimum shared operating system before implementation starts: repo, sources, team, orchestrator discipline, compass, DOD, and first planning path.
 
+## Activation Requirement
+
+This framework is not active in a project just because someone has a link to the standalone repository. For Codex reference implementation, the framework kit must be imported into the target product repository and the Codex session must start from that repository.
+
+Required before implementation:
+
+- target product repo exists;
+- `.agents/skills`, `docs/codex-workflows`, both framework docs, and changelog are present in the target repo;
+- target repo `AGENTS.md` includes the framework's core rules plus any project-specific rules;
+- the import is committed and available to teammates through pull;
+- the human has started a new personal Framework Orchestrator thread from inside the target repo;
+- `$project-launch` is run in that orchestrator thread.
+
+If any of these are missing, stop launch and give the human the exact bootstrap steps. Do not create implementation tasks or claim the framework is active yet.
+
 ## Inputs To Read
 
 1. Human project description, existing brief, meeting notes, transcript, or chat summary.
@@ -30,7 +45,7 @@ Draft a compact brief:
 
 Treat meetings, recordings, transcripts, and team chats as one coordination input layer. They are raw inputs until Codex distills them and a human approves the resulting artifact.
 
-The standalone framework repo is the canonical source for universal framework rules. Product-local copies are execution mirrors. If the project needs a local rule, keep it in the project `AGENTS.md`, project docs, or runbooks rather than silently changing the universal framework copy.
+The standalone framework repo is the canonical source for universal framework rules. Product-local copies are required execution mirrors, not optional references. If the project needs a local rule, keep it in the project `AGENTS.md`, project docs, or runbooks rather than silently changing the universal framework copy.
 
 ### 2. Onboard The Team
 

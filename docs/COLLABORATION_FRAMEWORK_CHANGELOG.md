@@ -8,6 +8,18 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.4.7 - 2026-07-01
+
+Уточнен обязательный порядок активации фреймворка в новом или существующем проекте.
+
+- README больше не описывает импорт как optional/recommended copy: framework kit нужно импортировать в целевой product repo.
+- Repo-scoped skills считаются активными только после того, как `.agents/skills`, `docs/codex-workflows`, framework docs, changelog и core `AGENTS.md` rules лежат в target repo, закоммичены и подтянуты участниками.
+- `$project-launch` теперь должен проверять activation preflight: target repo, local framework kit, target `AGENTS.md`, Codex session from target repo и personal Framework Orchestrator thread.
+- Project launch docs прямо говорят, что standalone repo является canonical source, но не execution context для чужого проекта.
+- Orchestrator thread описан как standing personal thread из target repo, не Git branch и не implementation task thread.
+
+Зачем: убрать ложное ощущение, что достаточно ссылки на framework repo или чтения README. Для успешной работы фреймворк должен быть установлен в проект и запущен через личный orchestrator thread.
+
 ## 1.4.6 - 2026-06-29
 
 Добавлен проактивный operating layer для orchestration: orchestrator сам замечает риск, выбирает подходящий инструмент и дает человеку конкретное действие.

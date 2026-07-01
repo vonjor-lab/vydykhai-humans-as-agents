@@ -1,7 +1,7 @@
 # Framework for Collaborative Vibe Coding
 
 Date: 2026-06-10
-Version: 1.4.6
+Version: 1.4.7
 Status: universal working framework for several vibe coders and several Codex instances working on one product
 Changelog: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -153,7 +153,7 @@ These skills keep the process human-readable: orchestrate the stream, start the 
 
 The canonical source for the framework is the standalone repository: `https://github.com/vonjor-lab/vydykhai-humans-as-agents`.
 
-Product repositories may keep local copies of docs, workflows, and `.agents/skills` so Codex can execute the framework inside a specific project. These copies are useful for execution, but they are not the canonical source.
+Product repositories must keep local execution copies of docs, workflows, and `.agents/skills` when Codex should run the framework inside that project. These copies are required for execution, but they are not the canonical source.
 
 Change rule:
 
@@ -202,7 +202,18 @@ Meeting transcript is raw input. Codex distillation plus human approval is the o
 
 ## Project Launch
 
-A new project starts with a separate Framework Orchestrator thread, not with a task. In that thread the team loads the framework, connects the repo and durable project memory, but does not perform implementation work.
+A new project starts by importing the framework kit into the product repository and then opening a separate Framework Orchestrator thread from inside that repository. A link to this standalone repository is not enough. Repo-scoped skills and workflows run only when the framework files are present in the target repo and the Codex session starts there.
+
+The launch order is mandatory:
+
+1. Create or open the target product repository.
+2. Import `.agents/skills`, `docs/codex-workflows`, both framework docs, and the changelog from this repository.
+3. Add the core framework rules to the target repo `AGENTS.md`.
+4. Commit the import and make sure teammates pull it.
+5. Start a new Codex thread from inside the target repo. This is the personal Framework Orchestrator thread, not a Git branch and not an implementation task thread.
+6. Run `$project-launch` in that orchestrator thread.
+
+In the orchestrator thread the team loads the framework, connects the repo and durable project memory, but does not perform implementation work.
 
 Minimal launch request:
 

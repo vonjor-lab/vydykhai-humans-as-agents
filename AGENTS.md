@@ -8,6 +8,7 @@ This repository contains the standalone Codex Collaboration Framework. Keep it g
 
 - When changing the framework, update the version header in both language versions and add a conceptual entry to `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`.
 - Treat this standalone repository as the canonical source for universal framework rules. Product-local copies are execution mirrors and should be synced from here.
+- Describe framework activation as a required import into the target product repository, not as an optional copy or link. Repo-scoped skills work only after the kit is committed in the target repo and Codex starts from that repo.
 - Before promoting a rule from a product repo into this framework, strip product-specific details and confirm it is universal.
 - If a rule belongs only to one product, team, environment, or infrastructure setup, keep it in that product repo's `AGENTS.md`, project docs, or local runbooks.
 - Keep the Russian and English framework documents aligned in meaning.

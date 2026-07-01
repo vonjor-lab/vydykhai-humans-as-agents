@@ -19,6 +19,8 @@ Load `docs/codex-workflows/start-work.md` only when the launch needs epic decomp
 
 ## Operating Contract
 
+- Do not treat a link to the standalone framework repo as activation. The framework is active only after the framework kit is imported into the target repo, committed, pulled by the team, and this Codex session starts from that target repo.
+- If the target repo is missing `.agents/skills`, `docs/codex-workflows`, framework docs, changelog, or AGENTS core rules, stop and give the human the exact bootstrap steps before planning implementation.
 - Treat meeting recordings, transcripts, team chat, docs, and manual notes as one coordination input layer.
 - Create a compact Project Operating Brief: repo, source of truth, team, decision owner, owners/backups, coordination sources, privacy constraints, compass, DOD, and first next action.
 - Record the framework upstream when importing into a product repo. The standalone framework repo is the canonical source; product-local copies are execution mirrors.
@@ -28,7 +30,7 @@ Load `docs/codex-workflows/start-work.md` only when the launch needs epic decomp
 - Do not implement, fix, deploy, smoke test, or merge inside the launch/orchestrator thread.
 - Ask for human approval before creating or updating GitHub issues, labels, milestones, docs, or shared-memory artifacts.
 - Route large or vague work to `$start-work`; route recent meeting/chat changes to `$daily-alignment`; route ready execution to `$framework-orchestrator`.
-- If the framework was imported into another repo, verify that repo-scoped `.agents/skills` and `docs/codex-workflows` are present and that the Codex session started from the target repo.
+- Verify that the new standing thread is the personal Framework Orchestrator thread for the project or product stream. It is not a Git branch and not an implementation task thread.
 
 ## User-Facing Outcome
 

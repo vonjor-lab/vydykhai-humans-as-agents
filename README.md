@@ -24,30 +24,33 @@ This repo contains the current Codex-first reference implementation. The same op
 
 This repository is the canonical source for Vydykhai framework rules, docs, workflows, and repo-scoped skills.
 
-Target product repositories may keep local copies so Codex can run the framework inside that project. Treat those copies as execution mirrors: universal framework changes should land here first, then be synced into product repos. Product-specific rules belong in the target repo's `AGENTS.md`, project docs, or local runbooks.
+Target product repositories must import the framework kit before the framework can run inside that project. Treat those imported copies as execution mirrors: universal framework changes should land here first, then be synced into product repos. Product-specific rules belong in the target repo's `AGENTS.md`, project docs, or local runbooks.
 
 ## Add The Framework To Your Project
 
-Repo-scoped skills do not activate from a link to this repository. They activate when the framework kit is present inside the target repository and a new Codex session starts from that target repository.
+Repo-scoped skills do not activate from a link to this repository. The framework becomes operational only after the framework kit is present inside the target repository, committed there, pulled by the team, and a new Codex session starts from that target repository.
 
-Recommended import:
+Required activation path:
 
-1. Copy these paths into the target repo:
+1. Create or open the product repository where the project will actually be built.
+2. Import these framework paths into that target repo:
    - `.agents/skills`
    - `docs/codex-workflows`
    - `docs/COLLABORATION_FRAMEWORK_2026-06-10.md`
    - `docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md`
    - `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
-2. Add the core rules from this repo's `AGENTS.md` into the target repo's `AGENTS.md`. If the target already has `AGENTS.md`, append the framework rules instead of replacing project-specific instructions.
-3. Record this repository as the framework upstream for future syncs.
-4. Keep project-specific rules in the target repo's own `AGENTS.md`, project docs, or local runbooks instead of changing the universal framework copy silently.
-5. Commit and pull the changes on each teammate's machine.
-6. Start a new Codex thread from inside the target repo.
-7. In the first orchestrator thread, run:
+3. Add the core rules from this repo's `AGENTS.md` into the target repo's `AGENTS.md`. If the target already has `AGENTS.md`, append the framework rules instead of replacing project-specific instructions.
+4. Record this repository as the framework upstream for future syncs.
+5. Keep project-specific rules in the target repo's own `AGENTS.md`, project docs, or local runbooks instead of changing the universal framework copy silently.
+6. Commit the import and make sure every teammate pulls it before relying on repo-scoped skills.
+7. Start a new Codex thread from inside the target repo. This is the personal Framework Orchestrator thread for the project or product stream, not a Git branch and not an implementation task thread.
+8. In that orchestrator thread, run:
 
 ```text
 Use $project-launch to set up this project with Vydykhai: Collaborative Vibe Coding with Humans as Agents.
 ```
+
+Do not start implementation until `$project-launch` has created or updated the Project Operating Brief, named the coordination sources, confirmed the source of truth, and chosen the first route into `$start-work`, `$daily-alignment`, or `$framework-orchestrator`.
 
 External users need GitHub access to the target repo and permission to read/create issues and PRs if Codex should update shared memory. Meeting recorders or Telegram/Slack/Teams chats are optional coordination sources; if no connector exists, paste approved summaries or transcripts manually.
 
