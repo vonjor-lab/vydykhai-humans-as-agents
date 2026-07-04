@@ -1,7 +1,7 @@
 # Фреймворк совместной вайб-разработки
 
 Дата: 2026-06-10
-Версия: 1.4.7
+Версия: 1.4.8
 Статус: универсальный рабочий фреймворк для нескольких вайбкодеров и нескольких Codex-инстансов, работающих над одним продуктом
 История изменений: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -403,7 +403,11 @@ Orchestrator не должен редактировать product code, депл
 
 ### Research Thread Dispatch
 
-Если перед implementation нужно понять foundation, source of truth, design template, affected contracts или применимость прошлой работы, orchestrator запускает research thread вместо implementation thread.
+Если тема еще не готова для task brief, или перед implementation нужно понять concept, варианты, source of truth, product model, design template, affected contracts или применимость прошлой работы, orchestrator запускает research thread вместо того, чтобы держать все размышления в orchestrator или начинать implementation.
+
+Research thread защищает контекст orchestrator. Он нужен для ограниченного осмысления, сравнения вариантов и source review по конкретному вопросу. Это не второй orchestrator, не место для общего project management и не место для product-code implementation.
+
+Orchestrator должен проактивно предлагать research thread, когда видит, что узкая нерешенная тема иначе заполнит главный orchestrator долгими размышлениями или заставит делать task brief до понимания идеи.
 
 Research thread не меняет product code без отдельного решения. Его output:
 
@@ -411,8 +415,15 @@ Research thread не меняет product code без отдельного ре�
 - какой source of truth найден или отсутствует;
 - что можно использовать как shared foundation;
 - что выглядит как визуальный shell, experiment или incomplete slice;
+- какие варианты сравнивались;
+- какой вариант рекомендован и почему;
+- какие варианты отброшены и почему;
+- какие assumptions, risks или open questions остались;
+- что нужно изменить в compass, brief, task map или project memory;
 - какие blockers или pending inputs мешают implementation;
-- можно ли запускать implementation task, или сначала нужен brief/task update.
+- следующий шаг: `$start-work`, Lab Mode, implementation task thread, еще один research thread или no action.
+
+Output должен быть коротким Research Packet, который orchestrator может забрать без пересмотра всего thread. После того как packet внесен в durable memory, research thread нужно архивировать или пометить inactive, чтобы он не продолжал управлять проектом.
 
 Research thread тоже получает стабильный title, `gpt-5.5` или newest available model, `xhigh` reasoning, readback rename и запись id/link или manual-start prompt в GitHub shared memory.
 
@@ -482,10 +493,12 @@ Orchestrator должен останавливаться на короткий h
 
 - после milestone или крупного merge;
 - после 3-5 accepted task slices;
+- после нескольких research, lab или task threads, которые изменили форму работы;
 - когда один и тот же follow-up повторяется;
 - когда task зависла, owner выпал, scope начал расти или DOD burn остановился;
 - когда accepted technical enablers не приводят к product loop;
 - когда Lab Mode продолжает полировать lab вместо lab exit;
+- когда research threads продолжают производить инсайты, которые не попадают в compass, brief или task map;
 - когда пересекающаяся owner work требует Peer Compass Review до продолжения.
 
 Health review отвечает:
@@ -493,6 +506,10 @@ Health review отвечает:
 - продвинулись ли мы к compass и DOD;
 - какие blockers, stale assumptions или repeated costs появились;
 - не размывается ли scope;
+- связаны ли outputs research, lab и task threads между собой;
+- какие active threads, old worktrees, monitors, branches и alignment artifacts еще полезны, а какие нужно закрыть, архивировать или почистить;
+- не остались ли решения только в chat/thread history вместо durable project memory;
+- не ушла ли работа в technical slicing без product progress;
 - какие задачи нужно остановить, объединить, переупорядочить или передать backup owner;
 - нужно ли обновить brief, rules или lessons.
 
@@ -511,6 +528,7 @@ Health review отвечает:
 - продуктовые комментарии во время реализации требуют triage до tasking: нужно отличать current scope changes, DOD gaps, vision guardrails и future options, чтобы product compass улучшался без неконтролируемого slice growth;
 - burn нужно проверять только там, где есть реальный риск затрат: AI generation, paid APIs, долгие agent loops, тяжелые smoke/build циклы, внешнее demo или repeated retries;
 - plan-only запуск task thread - ложный прогресс: запущенный thread должен начать execution, назвать blocker или запросить rebrief;
+- research thread полезен, когда узкая идея или source question еще не готовы для task brief, но его output должен возвращаться коротким packet в orchestrator;
 - Lab Mode полезен, когда снижает burn или риск, но у него должен быть проактивный выход в production flow;
 - Peer Compass Review нужно запрашивать рано, когда контекст другого участника может предотвратить drift или duplicate work.
 

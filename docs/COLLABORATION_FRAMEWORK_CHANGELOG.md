@@ -8,6 +8,18 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.4.8 - 2026-07-04
+
+Расширен Research Thread как единственный режим для проработки непонятной идеи до brief/task, без введения второго термина.
+
+- Research Thread теперь используется не только для source of truth/foundation, но и для узкой идеи, product model, option set, design question или affected contracts, когда тема еще не готова для task brief.
+- Добавлен проактивный вход: orchestrator предлагает research thread, если размышление начинает засорять основной orchestrator или преждевременно тянет тему в implementation.
+- Добавлен проактивный выход: research thread возвращает короткий Research Packet с findings, recommended/rejected options, assumptions, risks, impact on compass/brief/task map и next route.
+- После incorporation Research Packet в durable memory research thread должен быть archived/inactive, чтобы не становиться вторым orchestrator.
+- Health Review расширен до context hygiene: проверять связность research/lab/task outputs, stale threads/worktrees/monitors/branches, trapped chat decisions, stalled DOD burn и technical slicing без product progress.
+
+Зачем: сохранить чистый orchestrator context и при этом дать команде безопасный способ осмыслять частные неопределенные темы до планирования и реализации.
+
 ## 1.4.7 - 2026-07-01
 
 Уточнен обязательный порядок активации фреймворка в новом или существующем проекте.

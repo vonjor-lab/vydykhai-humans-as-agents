@@ -25,6 +25,7 @@ Load `docs/codex-workflows/daily-alignment.md` when the topic comes from recent 
 - Classify task concepts by type (`product capability`, `technical enabler`, `maintenance`, `research/spike`, or `future option`) before tasking.
 - For product capabilities, define the closed user/operator loop before creating tasks; for technical enablers, link the task to the capability or later task that closes the loop; for UI/product-surface work, identify backing backend/API/data/persistence/permission contracts and realistic states.
 - For ambiguous product/design/IA/UI shell/entity-model/AI workflow tasks, include Compass Calibration: target object, source of truth, non-foundation references, nearest visible result, and smoke artifact.
+- If a narrow idea, source question, option set, or product model is not ready for a brief, route it to a Research Thread instead of forcing a premature task map.
 - Propose Lab Mode when isolated learning reduces burn or risk, and include lab exit / production transfer before product acceptance.
 - Propose Peer Compass Review when another participant's task, PR, contract, or DOD row overlaps and their context can prevent drift.
 - Ask for human approval before creating or updating GitHub issues.

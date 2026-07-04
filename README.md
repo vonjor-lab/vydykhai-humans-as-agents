@@ -75,6 +75,7 @@ If a tool cannot create resumable task threads, use GitHub issue/PR links as the
 - The human holds the compass: meaning, direction, decisions, and risk.
 - The orchestrator helps research, brainstorm, brief, split, sync, accept, recover the work, and keep the next-best-action visible.
 - One personal Framework Orchestrator thread per participant and product stream.
+- Research Threads for unclear ideas, source questions, or option comparison before the topic is ready for a brief or task.
 - Separate implementation task threads for focused work.
 - `$project-launch` for setting up a repo, team, coordination sources, onboarding, compass, DOD, and first planning route.
 - Daily and event-triggered alignment through durable shared memory.

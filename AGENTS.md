@@ -20,7 +20,7 @@ This repository contains the standalone Codex Collaboration Framework. Keep it g
 - Task threads own implementation, `$accept-work`, fresh current-branch smoke when required, Runtime Coherence Check when runtime is involved, and manual merge after human smoke.
 - Treat Codex as the reference implementation. For other agent harnesses, document the adapter mapping before claiming the framework is active there.
 - Before high-ambiguity product/design/IA/UI shell/entity-model/AI workflow work, require Compass Calibration: target object, source of truth, non-foundation references, nearest visible result, and smoke artifact.
-- Use research threads, not implementation threads, when source of truth, foundation, design template, or affected contracts are unclear. Research threads should not change product code without explicit promotion.
+- Use research threads, not implementation threads, when an idea, source of truth, foundation, design template, option set, or affected contracts are unclear. Research threads should return a short Research Packet and should not change product code without explicit promotion.
 - New task/research threads should use `gpt-5.5` or newest available model and `xhigh` / very high reasoning; record any fallback explicitly.
 - Orchestrator must read back and verify actual task/research thread titles. Child-thread self-rename is not enough.
 - Accepted sub-slices or merged PRs do not close parent issues unless the named DOD/product loop is closed or the human explicitly moves the remainder out of scope.
@@ -30,6 +30,7 @@ This repository contains the standalone Codex Collaboration Framework. Keep it g
 - A task thread launch is not complete when the child thread only writes a plan; it must show execution started, a named blocker, or a need to rebrief.
 - Proactively propose Lab Mode when an isolated experiment reduces burn or risk, and require lab exit plus production transfer before product capability acceptance.
 - Proactively propose Peer Compass Review when parallel tasks, PRs, contracts, or DOD rows overlap across people or agents.
+- Run Health Review as context hygiene when research/lab/task threads accumulate, DOD burn stalls, or work drifts into technical slicing without product progress.
 - Run `git diff --check` before committing documentation changes.
 
 ## Repo Skills

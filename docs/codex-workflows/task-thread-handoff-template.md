@@ -2,7 +2,7 @@
 
 Use this template when a Framework Orchestrator launches or prepares a separate task thread.
 
-For a research thread, keep the same header fields but set scope to investigation only. The thread must not change product code unless the orchestrator and human explicitly promote it to implementation.
+For a research thread, keep the same header fields but set scope to investigation only. The thread must not change product code unless the orchestrator and human explicitly promote it to implementation. It should end with a short Research Packet: findings, recommended option, rejected options, assumptions, open questions, impact on compass/brief/task map, and next route.
 
 ```md
 # Task Thread Startup

@@ -60,7 +60,7 @@ Choose one mode:
 - `launch`: the project is being started or imported into the framework;
 - `plan`: the human is starting or reshaping a large topic;
 - `align`: a meeting, daily, merge, blocked event, accepted result, or follow-up split may affect shared work;
-- `research`: source of truth, foundation, design template, or affected contracts must be clarified before implementation;
+- `research`: an idea, option set, source of truth, foundation, design template, or affected contracts must be clarified before brief/task/implementation;
 - `lab`: isolated learning would reduce burn or risk before production transfer;
 - `peer-review`: another participant's context is needed before overlapping work continues safely;
 - `dispatch`: the next approved task should be launched or resumed;
@@ -111,6 +111,8 @@ For high-ambiguity product/design/IA/UI shell/entity-model/AI workflow work, run
 - which nearest smoke artifact proves the object was understood correctly.
 
 If the agent confuses a technical/internal surface with a product template, a visual shell with a finished capability, or a route/test/backend state with a visible product loop, stop implementation and correct the brief/task first.
+
+Run Research Thread check before forcing a topic into `$start-work`, Lab Mode, or implementation. Suggest a research thread when a narrow idea, source question, option comparison, product model, or affected-contract question is not ready for a task brief and would otherwise pollute the orchestrator with long speculation. Give the research thread one question, sources to inspect, options to compare, explicit non-goals, and a stop condition. Its output is a short Research Packet: findings, recommended option, rejected options, assumptions, open questions, impact on compass/brief/task map, and next route.
 
 Run Proactive Lab Mode check before dispatch or continuation. Suggest Lab Mode when a hard middle step is expensive to reach, depends on paid generation/API calls, needs many short iterations, or might break a real user path. Push back when the task is an existing product surface, real-data/content replacement, UI wiring, or a DOD that must be proven in the real flow. If Lab Mode is used, require a lab question, proof, stop condition, burn cap when material, production transfer plan, tests, and real-flow smoke.
 
@@ -176,7 +178,7 @@ Only dispatch when the task has:
 
 Use `task-thread-handoff-template.md` to prepare the startup prompt.
 
-If the next step is `research`, launch a research thread with the same title/readback/recording discipline, but explicitly forbid product-code changes. Its output should identify what exists, source of truth, usable foundation, gaps/blockers, and whether implementation can start or the brief/task must change first.
+If the next step is `research`, launch a research thread with the same title/readback/recording discipline, but explicitly forbid product-code changes unless the human later promotes the output to implementation. Its output should be a compact Research Packet: what exists, source of truth, compared options, recommended option, rejected options, usable foundation, assumptions, gaps/blockers, impact on compass/brief/task map, and whether the next route is `$start-work`, Lab Mode, implementation task thread, another research thread, or no action. After the packet is incorporated, mark the research thread inactive or archive it so it does not keep governing the project.
 
 If Codex thread tools are available and the human has authorized launching the next task, create the task thread. Title it from the task:
 
@@ -201,6 +203,7 @@ Use this simple state machine:
 - task thread is still working: summarize current state and next expected checkpoint;
 - task thread has only planned or opened a draft intention without execution evidence: send it back to start execution, name a blocker, or request rebrief;
 - task thread is in Lab Mode and proof/cap is reached: stop lab polish and route to production transfer, tests, and real-flow smoke;
+- research thread returned a Research Packet: incorporate only the packet into durable memory, update compass/brief/task map when needed, then mark the research thread inactive or archive it;
 - cross-owner overlap is detected and no Peer Compass Review packet exists: prepare the review request, instruct the human who to ask, and set safe continuation status;
 - task thread says work is complete but no `$accept-work` result is present: send the task thread a short command to run `$accept-work` from its task context;
 - `$accept-work` result is `NEEDS_FIXES`: send the concrete fix request back to the task thread;
@@ -226,12 +229,13 @@ After an accepted task, merge, blocker, or follow-up split, do not stop at statu
 - run a parent epic/milestone DOD burndown check before creating another slice in the same area;
 - check whether accepted technical enablers now require the linked product-loop task to be launched, updated, or re-sequenced;
 - classify any new product compass notes before deciding whether they are current scope, DOD gaps, vision guardrails, or future options;
-- run a health review after a milestone/large merge, after 3-5 accepted slices, or when follow-ups repeat, a task stalls, scope grows, or an owner drops out;
+- run a health review after a milestone/large merge, after 3-5 accepted slices, after several research/lab/task threads, or when follow-ups repeat, a task stalls, DOD burn stops, scope grows, context becomes dirty, or an owner drops out;
 - run or route to `$daily-alignment` when the accepted result or merge affects another participant's work;
 - send fixes back to the current task thread;
 - ask for a named human decision;
 - wait for a named packet, review, merge, or external input;
 - close or archive completed alignment artifacts when their final delta is already reflected in durable docs, tasks, or PRs.
+- close or archive completed research/lab/task artifacts when their final packet or accepted result is already reflected in durable docs, tasks, or PRs.
 
 ### 8. Update Shared Memory
 

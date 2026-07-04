@@ -47,6 +47,8 @@ Also classify each proposed task or backlog item by task type:
 
 If a proposed product capability lacks a closed user/operator loop, draft the likely loop and ask the human to confirm or trim it before creating tasks. If a proposed technical task is actually only an enabler for a promised product capability, keep it technical but link it to the task that will close the product loop. If a proposed UI/product-surface task lacks backing contracts, identify the missing backend/API/data/persistence/permission/error-state work and link or create the required technical enabler before treating the UI as product-complete.
 
+If the topic cannot yet be briefed without long speculation, do not force a task map. Route the narrow unclear part into a Research Thread with one question, sources/options to inspect, stop condition, and expected Research Packet. The orchestrator incorporates the packet later and then resumes `$start-work`, Lab Mode, or task dispatch.
+
 Also check whether the topic would benefit from Lab Mode or Peer Compass Review. Suggest Lab Mode when isolated learning reduces burn/risk and include lab exit/production transfer in the task map. Suggest Peer Compass Review when another participant's context or active task could change safe sequencing.
 
 ### 2. Define The Epic Brief
@@ -115,7 +117,7 @@ Each task concept should include:
   - for `product capability`: actor, entry point, setup/configuration, input/action, processing/enforcement, feedback, state, recovery/next action, audit/provenance, and verification;
   - for `technical enabler`: the linked product capability or later task that will close the loop;
   - for UI/product-surface work: the backing backend/API/data/persistence/permission contracts, realistic states, and scenarios required for the UI to be usable;
-  - for `maintenance` or `research/spike`: payoff/question, owner, timing, and stop condition;
+  - for `maintenance` or `research/spike`: payoff/question, sources or options to inspect, owner, timing, stop condition, and expected Research Packet when this is a research thread;
 - Compass Calibration for high-ambiguity product/design/IA/UI shell/entity-model/AI workflow tasks: target object, source of truth, non-foundation references, nearest visible result, and smoke artifact;
 - Burn / Limits: `not material` or a concrete cap/stop condition for generation/API/retry/verification risk;
 - Lab Mode: `not needed`, `recommended`, or `active`; when used, include question, proof, stop condition, burn cap, lab exit, production transfer, tests, and real-flow smoke;

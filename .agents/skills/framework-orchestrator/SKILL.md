@@ -39,7 +39,7 @@ Then load these workflows only when the current action requires them:
 - Treat the human as a project agent: when human action is needed, give a concrete addressee, link/prompt, requested output location, safe continuation status, and return-sync instruction.
 - Proactively suggest Lab Mode when isolated learning reduces burn or risk; require proof, stop condition, burn cap when material, lab exit, production transfer, tests, and real-flow smoke before product acceptance.
 - Proactively suggest Peer Compass Review when overlapping tasks/PRs/contracts/DOD rows need another participant's context; prepare the review request and tell the human who to ask and how to sync back.
-- If the next step is to understand source of truth, foundation, design template, or affected contracts, launch or prepare a research thread that does not change product code and returns findings before implementation.
+- If the next step is to understand an idea, source of truth, foundation, design template, option set, product model, or affected contracts, launch or prepare a research thread that does not change product code and returns a short Research Packet before brief/task/implementation.
 - Create or prepare a separate task thread for implementation work when the task is ready enough to have a GitHub issue with a `Codex Task Contract`, `DOD Impact`, task type / Product Capability Loop, `Burn / Limits`, scope, out of scope, acceptance criteria, and verification.
 - Use `gpt-5.5` or newest available model and `xhigh` / very high reasoning for new task/research threads; make any fallback visible in the task issue, handoff, or orchestrator state.
 - If Codex thread tools are available and the human has authorized launching or continuing the next task, create or resume the task/research thread, title it as `[#<issue>] <sequence> <short title>` when issue id or sequence is available, read back the actual sidebar title, rename it yourself through the available thread tool or explicitly ask the human, and record the exact title plus id/link in GitHub shared memory. If thread tools or rename are unavailable, provide the exact title and startup prompt and mark the launch as pending.
@@ -49,7 +49,7 @@ Then load these workflows only when the current action requires them:
 - If smoke used frontend/backend/browser runtime, require Runtime Coherence Check before treating acceptance as merge-ready. Missing or inconclusive proof sends the work back to the task thread.
 - An accepted sub-slice or merged PR does not close the parent issue unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope. Keep parent closure status visible.
 - Record task thread links/ids, pending worktrees, or manual-start prompts in GitHub shared memory when available.
-- Run a short health review after a milestone or large merge, after 3-5 accepted slices, repeated follow-ups, stalled tasks, stalled DOD burn, Lab Mode without exit, scope growth, or owner dropout.
+- Run a short health review after a milestone or large merge, after 3-5 accepted slices, after several research/lab/task threads, repeated follow-ups, stalled tasks, stalled DOD burn, Lab Mode without exit, dirty context, scope growth, technical slicing without product progress, or owner dropout.
 - Never invent another participant's local state. Missing packets must remain visible as `WAITING`, `READY_WITH_CAUTIONS`, or `BLOCKED`.
 
 ## User-Facing Outcome

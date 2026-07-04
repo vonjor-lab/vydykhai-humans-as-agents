@@ -1,7 +1,7 @@
 # Framework for Collaborative Vibe Coding
 
 Date: 2026-06-10
-Version: 1.4.7
+Version: 1.4.8
 Status: universal working framework for several vibe coders and several Codex instances working on one product
 Changelog: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
 
@@ -403,7 +403,11 @@ Dispatch rules:
 
 ### Research Thread Dispatch
 
-When implementation first requires understanding a foundation, source of truth, design template, affected contracts, or whether previous work is usable, the orchestrator launches a research thread instead of an implementation thread.
+When a topic is not ready for a task brief, or implementation first requires understanding a concept, option set, source of truth, product model, design template, affected contracts, or whether previous work is usable, the orchestrator launches a research thread instead of keeping the thinking inside the orchestrator or starting implementation.
+
+Research threads protect the orchestrator context. They are for bounded thinking, comparison, and source review on a specific question. They are not a second orchestrator, not a place for broad project management, and not a place for product-code implementation.
+
+The orchestrator should propose a research thread proactively when it sees that a narrow unresolved theme would otherwise fill the main orchestrator thread with long speculation or force a task brief before the team understands the idea.
 
 A research thread must not change product code without a separate decision. Its output is:
 
@@ -411,8 +415,15 @@ A research thread must not change product code without a separate decision. Its 
 - which source of truth was found or is missing;
 - what can be used as shared foundation;
 - what looks like a visual shell, experiment, or incomplete slice;
+- which options were compared;
+- which option is recommended and why;
+- which options were rejected and why;
+- which assumptions, risks, or open questions remain;
+- what should change in the compass, brief, task map, or project memory;
 - which blockers or pending inputs prevent implementation;
-- whether an implementation task can start, or whether the brief/task needs an update first.
+- whether the next step is `$start-work`, Lab Mode, implementation task thread, another research thread, or no action.
+
+The output should be a short Research Packet that the orchestrator can absorb without replaying the whole thread. After the packet is incorporated into durable memory, the research thread should be archived or marked inactive so it does not keep governing the project.
 
 Research threads also get a stable title, `gpt-5.5` or newest available model, `xhigh` reasoning, readback rename, and recorded id/link or manual-start prompt in GitHub shared memory.
 
@@ -482,10 +493,12 @@ The orchestrator should pause for a short health review:
 
 - after a milestone or large merge;
 - after 3-5 accepted task slices;
+- after several research, lab, or task threads have changed the shape of the work;
 - when the same follow-up repeats;
 - when a task stalls, an owner drops out, scope keeps growing, or DOD burn stops;
 - when accepted technical enablers are not turning into a product loop;
 - when Lab Mode keeps producing polish instead of lab exit;
+- when research threads keep producing insight that is not entering the compass, brief, or task map;
 - when overlapping owner work needs Peer Compass Review before continuing.
 
 The health review answers:
@@ -493,6 +506,10 @@ The health review answers:
 - whether the team is moving toward the compass and DOD;
 - which blockers, stale assumptions, or repeated costs appeared;
 - whether scope is drifting;
+- whether research, lab, and task outputs are still connected to each other;
+- whether active threads, old worktrees, monitors, branches, and alignment artifacts are still useful or should be closed, archived, or cleaned up;
+- whether decisions are trapped in chat/thread history instead of durable project memory;
+- whether the work has drifted into technical slicing without product progress;
 - which tasks should stop, merge, be resequenced, or move to a backup owner;
 - whether the brief, rules, or lessons need an update.
 
@@ -511,6 +528,7 @@ Recent parallel work showed several reusable lessons:
 - product comments during implementation need triage before tasking: distinguish current scope changes, DOD gaps, vision guardrails, and future options so the product compass improves without uncontrolled slice growth;
 - burn should be checked only where there is real cost risk: AI generation, paid APIs, long agent loops, heavy smoke/build cycles, external demos, or repeated retries;
 - plan-only task thread launches are false progress; a launched thread must start execution, name a blocker, or request rebrief;
+- research threads are useful when a narrow idea or source question is not ready for a task brief, but their output must return as a short packet into the orchestrator;
 - Lab Mode is useful when it reduces burn or risk, but it needs a proactive exit into the production flow;
 - Peer Compass Review should be requested early when another participant's context can prevent drift or duplicate work.
 
