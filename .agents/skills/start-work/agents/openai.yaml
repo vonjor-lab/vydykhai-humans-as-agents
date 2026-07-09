@@ -1,7 +1,4 @@
 interface:
   display_name: "Start Work"
-  short_description: "Shape big topics into epics"
-  default_prompt: "Use $start-work to turn this topic into an epic and task map."
-
-policy:
-  allow_implicit_invocation: true
+  short_description: "Shape goals into epics and tasks"
+  default_prompt: "Use $start-work to turn this goal into an epic and task map."

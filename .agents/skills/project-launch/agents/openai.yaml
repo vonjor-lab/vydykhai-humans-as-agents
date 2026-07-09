@@ -1,7 +1,4 @@
 interface:
   display_name: "Project Launch"
-  short_description: "Launch a project into the framework"
-  default_prompt: "Use $project-launch to set up this project with the Codex Collaboration Framework."
-
-policy:
-  allow_implicit_invocation: true
+  short_description: "Activate a project with Vydykhai"
+  default_prompt: "Use $project-launch to activate this project with Vydykhai."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Framework Orchestrator"
+  short_description: "Coordinate work and next-best-action"
+  default_prompt: "Use $framework-orchestrator to restore this stream and choose the next-best-action."

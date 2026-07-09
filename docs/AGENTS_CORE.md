@@ -1,0 +1,24 @@
+## Vydykhai Managed Rules
+
+- Read `docs/FRAMEWORK.md` for the current operating core.
+- Run `node scripts/vydykhai.mjs doctor` when starting a new orchestrator, after a framework update, or when framework state may be stale.
+- Keep one active Framework Orchestrator per participant and product stream. It organizes work and does not implement, fix product code, deploy, run acceptance smoke, or merge.
+- Register active orchestrator links, installed framework versions, latest packets, and active tasks in Project State.
+- Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo state; agent plan; inference.
+- Use `$project-launch` to activate or reconnect a project.
+- Use `$start-work` to shape a large or changed topic into a brief and task map.
+- Use `$daily-alignment` when a meeting or event changes another participant's safe next action.
+- Use `$accept-work` inside the task thread before claiming completion.
+- Implementation tasks require goal and DOD impact, scope/out of scope, product loop or linked enabler, human checkpoint, material burn limit, and verification route.
+- Use Research Thread for bounded uncertainty without product-code changes.
+- Use Lab Mode only when isolation reduces cost or risk; require proof, stop condition, production transfer, and real-flow verification.
+- Use Peer Compass Review when owners overlap on a flow, surface, contract, PR, or DOD row.
+- Do not invent another participant's uncommitted state. Missing participants block only overlapping work.
+- Rebuild the alignment dashboard whenever publishing a Team Alignment Delta; rotate stale alignment windows.
+- A task launch must start execution, name a blocker, or request re-brief. A plan-only launch is not progress.
+- Product capability acceptance requires the promised user/operator loop, not only backend state, UI shell, route, test, or lab proof.
+- Smoke user-facing or integration work on the exact branch, worktree, commit, frontend, backend, and browser target being accepted.
+- After human smoke, merge manually from the task thread. The orchestrator updates DOD burn, parent closure, alignment, and next-best-action.
+- Use one monitor for one named gate; keep it quiet while unchanged, do not let it expand scope or spend money, and delete it at terminal state.
+- Rotate the orchestrator after a milestone, repeated context compaction, stale durable state, or when recovery depends on chat archaeology.
+- Keep project-specific rules outside this managed block.

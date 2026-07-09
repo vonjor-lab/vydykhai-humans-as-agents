@@ -1,51 +1,42 @@
-# Alignment Issue Template
+# Alignment Window Template
 
-Use this as the body of a GitHub issue for a meeting, daily cycle, or short product stream window. The body is a dashboard rebuilt from comments; comments remain canonical.
+Use one issue for one meeting, milestone, or compact work period. Comments are append-only evidence; this body is rebuilt whenever a Team Alignment Delta is published.
 
 ```md
-<!-- codex-alignment:dashboard v1 -->
+<!-- vydykhai:alignment-window v1 -->
 
-# Alignment Journal: <date or product stream>
+# Alignment Window: <scope>
 
 Status: <READY | READY_WITH_CAUTIONS | WAITING | BLOCKED>
-Meeting scope: <date, title, transcript or recording link>
-Expected participants: <owners or "unknown">
-Latest Team Alignment Delta: <delta id and comment link, or none>
+Scope/source: <meeting, event, links>
+Project State: <link>
+Expected participants: <names>
+Latest delta: <id/link>
+Dashboard rebuilt from event: <id/date>
 
-## Packet Status
+## Packet Coverage
 
-| Participant | Latest packet | Packet state | Covered by latest delta | Notes |
-| --- | --- | --- | --- | --- |
-| <owner> | <packet id or none> | <posted / missing / not_applicable / stale> | <yes / no> | <short note> |
+| Participant | Orchestrator | Framework | Latest packet | State | Covered |
+| --- | --- | --- | --- | --- | --- |
+| <name> | <link/title> | <version> | <id/link> | <posted / missing / n/a / stale> | <yes/no> |
 
-## Current Shared Delta
+## Shared Delta
 
-- <short human-readable summary of latest Team Alignment Delta>
+- <what changed and cross-work impact>
 
-## Active Task Threads
+## Safe Continuation
 
-| Task | Owner | Task thread | Branch / PR | DOD impact | Status | Next |
-| --- | --- | --- | --- | --- | --- | --- |
-| <issue> | <owner> | <thread link, id, pending, or manual prompt> | <branch or PR> | <named DoD row> | <active / paused / review / accepted / blocked> | <next action> |
+- <continue, cautions, wait, or blocked boundary>
 
 ## Pending Inputs
 
-- <participant, packet, decision, or none>
+- <participant, decision, review, or none>
 
-## Safe-To-Continue Guidance
+## Next Action
 
-- <continue, continue with cautions, or wait>
+- <one exact action>
 
-## Next Required Action
-
-- <who or which Codex should do what next>
-
-<!-- codex-alignment:dashboard:end -->
+<!-- vydykhai:alignment-window:end -->
 ```
 
-Operating rules:
-
-- Create one issue per meaningful meeting, daily cycle, or compact stream window.
-- Prefer comments for new facts; update the body only as a derived scan-friendly dashboard.
-- If two Codex instances update concurrently, preserve both comments and rebuild the body from the combined log.
-- Close the issue after the final delta is reflected in durable docs, tasks, briefs, or PRs.
+Publish the delta comment and rebuild this body in the same operation. Close/archive the window once its final state is reflected in Project State, briefs, tasks, or PRs.

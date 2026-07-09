@@ -8,6 +8,23 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.5.0 - 2026-07-10
+
+Фреймворк сокращен до компактного операционного ядра и получил воспроизводимый installation/runtime layer.
+
+- Каноническими стали стабильные `docs/FRAMEWORK.md` и `docs/FRAMEWORK_RU.md`; подробная версия 1.4.8 сохранена Git-тегом и больше не загружается skills.
+- Добавлен порядок авторитетности источников: последнее явное решение человека имеет приоритет над brief, issue и планом агента.
+- В минимальный task contract добавлен один обязательный `Human checkpoint`, чтобы orchestrator заранее знал момент участия человека.
+- Один active orchestrator больше не считается вечным: добавлена checkpoint-and-rotate процедура при milestone, context pollution и repeated compaction.
+- Project State отделен от коротких Alignment Windows; participant registry показывает orchestrator, framework version, latest packet и active task.
+- Team Alignment Delta и перестройка issue dashboard стали одной операцией; stale alignment windows должны ротироваться.
+- Закреплен контракт монитора: один gate, тишина без изменений, отсутствие нового scope/merge/spend и удаление в terminal state.
+- Model/reasoning вынесены из universal rules в project configuration, чтобы фреймворк не устаревал при смене моделей.
+- Добавлены machine-readable manifest, managed `AGENTS.md` block, installer/updater/doctor и автоматическая validation.
+- Человеческий интерфейс сведен к естественным командам в orchestrator; пять repo skills остаются внутренней реализацией.
+
+Зачем: сохранить сильные safety gates, но убрать контекстный вес, ручной sync и скрытую координационную работу человека.
+
 ## 1.4.8 - 2026-07-04
 
 Расширен Research Thread как единственный режим для проработки непонятной идеи до brief/task, без введения второго термина.

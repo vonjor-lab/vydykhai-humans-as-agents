@@ -1,94 +1,94 @@
 # Vydykhai: Collaborative Vibe Coding with Humans as Agents
 
-«Выдыхай» - это фреймворк для совместного вайбкодинга, где люди определяют цель и работают как агенты, а AI-оркестратор разворачивает вокруг операционную систему и координирует next-best-action каждого участника.
+«Выдыхай» - это фреймворк для совместного вайбкодинга, где люди определяют смысл и направление, а AI-оркестратор превращает сырую цель в компас, брифы, согласованные задачи, приемку и следующий лучший шаг.
 
-Оркестратор помогает брейнстормить идею до продуманной концепции, определить эпики, описать задачи, скоординировать совместную работу людей, чтобы они "не наступали друг другу на ноги" работая в одном проекте с отдельных машин.
+Vydykhai is a framework for collaborative vibe coding with humans as agents: people carry meaning and judgment, while an AI orchestrator maintains the compass, task flow, alignment, acceptance, and next-best-action.
 
-Vydykhai is a framework for collaborative vibe coding with humans as agents: people carry meaning and direction, while an AI orchestrator helps turn a raw goal into a compass, briefs, tasks, alignment, acceptance, and next-best-action.
-
-The orchestrator helps brainstorm the idea, shape the product compass, write briefs, split epics into tasks, coordinate people and agents, run alignment, accept work, and keep the next-best-action visible when the team has uneven context, time, or confidence.
-
-This repo contains the current Codex-first reference implementation. The same operating model can be adapted to other agent harnesses when they provide equivalent task contexts, shared memory, verification, and handoff mechanics.
-
-Техническое ядро текущей версии отлажено на Codex. Другие harnesses могут использовать ее через adapter mapping: отдельный task context, общий source of truth, проверка результата и видимый handoff.
+Current version: `1.5.0`
 
 ## Start Here
 
-- Russian framework: `docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md`
-- English framework: `docs/COLLABORATION_FRAMEWORK_2026-06-10.md`
-- Changelog: `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
-- Workflow index: `docs/codex-workflows/README.md`
-- Repo-scoped skills: `.agents/skills`
+- Russian operating core: [`docs/FRAMEWORK_RU.md`](docs/FRAMEWORK_RU.md)
+- English operating core: [`docs/FRAMEWORK.md`](docs/FRAMEWORK.md)
+- Changelog: [`docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`](docs/COLLABORATION_FRAMEWORK_CHANGELOG.md)
+- Workflow index: [`docs/codex-workflows/README.md`](docs/codex-workflows/README.md)
+- Repo-scoped skills: [`.agents/skills`](.agents/skills)
+
+The detailed 1.4.8 documents remain available through the `v1.4.8` Git tag. Current skills do not load them.
+
+## What It Does
+
+- Helps brainstorm an unclear idea into a product compass and brief.
+- Turns large topics into epics and autonomous task contracts.
+- Keeps implementation in focused task threads and orchestration in one clean control thread.
+- Reconciles meetings and asynchronous local work through durable shared state.
+- Calls humans only at explicit product, visual, paid-action, smoke, or merge checkpoints.
+- Checks product-loop closure, DOD burn, exact-current-code smoke, and next-best-action.
+- Rotates stale orchestrators, journals, monitors, and task contexts before they become hidden project memory.
+
+## Install Into A Project
+
+A link to this repository does not activate repo-scoped skills. Install the framework kit into the product repository:
+
+```bash
+git clone https://github.com/vonjor-lab/vydykhai-humans-as-agents.git
+node vydykhai-humans-as-agents/scripts/vydykhai.mjs install /path/to/product-repo
+```
+
+The installer writes only framework-managed files and one marked block in the target `AGENTS.md`. Project-specific rules stay outside that block.
+
+Then:
+
+1. Review and commit the installed files.
+2. Let every participant pull them.
+3. Start a new Codex thread from the product repo.
+4. Say: `Start this project with Vydykhai.`
+
+The orchestrator applies `$project-launch`, registers the project and participants, creates the first compass and DOD, and chooses the next route. People do not need to select skills manually afterward.
+
+## Update And Diagnose
+
+From an installed product repository:
+
+```bash
+node scripts/vydykhai.mjs doctor
+node scripts/vydykhai.mjs update
+```
+
+`doctor` checks the installed version, managed-file integrity, `AGENTS.md` block, and upstream version when network access is available. `update` pulls the current canonical kit, preserves project-specific files, and stops before overwriting locally modified managed files unless explicitly forced.
+
+## Human Interface
+
+The normal interface is one personal orchestrator and natural language:
+
+```text
+Start this project.
+Continue this stream.
+Process the latest meeting.
+Check the work and continue.
+```
+
+The orchestrator chooses `$start-work`, `$daily-alignment`, `$accept-work`, Research Thread, Lab Mode, Peer Compass Review, task dispatch, health review, or rotation as needed.
 
 ## Canonical Source
 
-This repository is the canonical source for Vydykhai framework rules, docs, workflows, and repo-scoped skills.
+This repository is the canonical source for universal Vydykhai rules, workflows, skills, and tooling. Product repositories contain execution mirrors. Universal changes land here first; product-specific rules belong in the product repo outside framework-managed files.
 
-Target product repositories must import the framework kit before the framework can run inside that project. Treat those imported copies as execution mirrors: universal framework changes should land here first, then be synced into product repos. Product-specific rules belong in the target repo's `AGENTS.md`, project docs, or local runbooks.
+## Other Agent Harnesses
 
-## Add The Framework To Your Project
+The reference implementation is Codex-first. Another harness can use the operating model when it provides equivalents for:
 
-Repo-scoped skills do not activate from a link to this repository. The framework becomes operational only after the framework kit is present inside the target repository, committed there, pulled by the team, and a new Codex session starts from that target repository.
+- project instructions;
+- separate resumable task contexts;
+- stable context links or ids;
+- shared durable memory;
+- verification and exact-current-code smoke;
+- handoff and acceptance results.
 
-Required activation path:
+When resumable threads are unavailable, use issue or PR links as task handles and preserve the orchestrator/implementation split as a team convention.
 
-1. Create or open the product repository where the project will actually be built.
-2. Import these framework paths into that target repo:
-   - `.agents/skills`
-   - `docs/codex-workflows`
-   - `docs/COLLABORATION_FRAMEWORK_2026-06-10.md`
-   - `docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md`
-   - `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`
-3. Add the core rules from this repo's `AGENTS.md` into the target repo's `AGENTS.md`. If the target already has `AGENTS.md`, append the framework rules instead of replacing project-specific instructions.
-4. Record this repository as the framework upstream for future syncs.
-5. Keep project-specific rules in the target repo's own `AGENTS.md`, project docs, or local runbooks instead of changing the universal framework copy silently.
-6. Commit the import and make sure every teammate pulls it before relying on repo-scoped skills.
-7. Start a new Codex thread from inside the target repo. This is the personal Framework Orchestrator thread for the project or product stream, not a Git branch and not an implementation task thread.
-8. In that orchestrator thread, run:
+## Privacy And License
 
-```text
-Use $project-launch to set up this project with Vydykhai: Collaborative Vibe Coding with Humans as Agents.
-```
+The public repository contains only reusable framework mechanics. Do not add meeting transcripts, credentials, customer data, proprietary prompts, private product details, or internal thread links.
 
-Do not start implementation until `$project-launch` has created or updated the Project Operating Brief, named the coordination sources, confirmed the source of truth, and chosen the first route into `$start-work`, `$daily-alignment`, or `$framework-orchestrator`.
-
-External users need GitHub access to the target repo and permission to read/create issues and PRs if Codex should update shared memory. Meeting recorders or Telegram/Slack/Teams chats are optional coordination sources; if no connector exists, paste approved summaries or transcripts manually.
-
-## Using Another Agent Harness
-
-The framework is Codex-first in implementation, not Codex-only in concept. The repo-scoped skills, thread naming, and orchestrator/task-thread handoff are guaranteed only in Codex.
-
-For Claude Code, Cursor, Windsurf/Devin Desktop, GitHub Copilot cloud agent, Gemini CLI, or another harness, use the same operating model only after mapping these capabilities:
-
-- project instructions in the repo;
-- separate task context: thread, session, subagent, cloud agent, worktree run, PR, or issue-run;
-- stable context id/link that can be recorded in GitHub;
-- shared memory through GitHub issues/PRs or an equivalent tracker;
-- verification and fresh-branch smoke path;
-- handoff and acceptance result visible to the next participant.
-
-If a tool cannot create resumable task threads, use GitHub issue/PR links as the coordination handle and keep the orchestration/implementation split as a human convention.
-
-## Core Ideas
-
-- Start from a goal, not from a perfect spec.
-- The human holds the compass: meaning, direction, decisions, and risk.
-- The orchestrator helps research, brainstorm, brief, split, sync, accept, recover the work, and keep the next-best-action visible.
-- One personal Framework Orchestrator thread per participant and product stream.
-- Research Threads for unclear ideas, source questions, or option comparison before the topic is ready for a brief or task.
-- Separate implementation task threads for focused work.
-- `$project-launch` for setting up a repo, team, coordination sources, onboarding, compass, DOD, and first planning route.
-- Daily and event-triggered alignment through durable shared memory.
-- `$start-work` for shaping large topics into epics and task maps.
-- `$daily-alignment` for meeting and event alignment.
-- Proactive Lab Mode for expensive, risky, or hard-to-reach pieces, with explicit exit into the real product flow.
-- Peer Compass Review when another participant's context can prevent drift across overlapping work.
-- `$accept-work` for acceptance against brief, alignment history, verification, product loop, and DOD.
-- The orchestrator thread organizes work only; implementation, acceptance smoke, and merge stay in task threads.
-- Product Capability Closed Loop: backend/API/data work must link to the user/operator workflow it enables; UI/product-surface work must link to backing backend/data/permissions/scenarios.
-
-## Privacy
-
-This repository intentionally contains the reusable framework and workflow mechanics only. Do not add private product data, meeting transcripts, credentials, customer information, proprietary prompts, or project-specific implementation details unless the repository's sharing model is explicitly changed.
-
-No open-source license is included yet. Treat the contents as private unless the owner decides otherwise.
+No reuse license has been selected yet. The source is publicly visible, but redistribution and reuse terms remain ungranted until a license is added.
