@@ -8,6 +8,20 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.5.1 - 2026-07-10
+
+Установка сведена к одному запросу агенту, а выбор модели стал динамической политикой вместо project-specific номера.
+
+- Добавлен `BOOTSTRAP.md`: пользователь открывает задачу в своем проекте, дает Codex ссылку и просит подключить Vydykhai; clone, install, `doctor`, setup branch/PR, Project State и запуск orchestrator выполняет агент.
+- Bootstrap-запрос сразу разрешает безопасные setup artifacts, но не merge, destructive overwrite, paid actions или production changes.
+- Основной README больше не требует от человека git-команд; команды установки остаются внутренней механикой агента.
+- Default agent policy теперь `latest available flagship / xhigh`: выбирается сильнейшая доступная универсальная coding/agentic модель, а не максимальный номер версии.
+- Project State хранит resolved model, reasoning, дату/источник проверки и fallback для каждого участника.
+- Orchestrator повторно проверяет актуальность модели при setup, framework update, rotation, rejection/deprecation и не реже раза в семь дней в активном проекте.
+- Silent downgrade запрещен; более дешевый или быстрый profile возможен только как явное человеческое решение для названного scope.
+
+Зачем: дать вайбкодеру понятный вход «отправь ссылку агенту» и автоматически переходить на будущие flagship-модели без переписывания universal framework.
+
 ## 1.5.0 - 2026-07-10
 
 Фреймворк сокращен до компактного операционного ядра и получил воспроизводимый installation/runtime layer.

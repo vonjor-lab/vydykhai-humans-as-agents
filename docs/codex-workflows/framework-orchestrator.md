@@ -11,6 +11,7 @@ Run on first use, after update, after restart, or when state looks stale:
 3. Verify this thread is the registered active orchestrator for this participant/stream.
 4. Compare dashboard timestamps and claims with the newest durable event.
 5. Apply source precedence before trusting an old issue or agent plan.
+6. Resolve `latest available flagship / xhigh` when the recorded check is missing, older than seven days, follows framework update/rotation, or the model was rejected/deprecated.
 
 Compact state:
 
@@ -19,7 +20,7 @@ Owner / stream:
 Compass / DOD:
 Project State:
 Active Alignment Window:
-Framework version / model profile:
+Framework version / agent policy / resolved model / checked:
 Active tasks: <task | owner | thread | PR | human checkpoint | DOD impact | status | next>
 Pending decisions / participants:
 Can continue:
@@ -63,7 +64,7 @@ Require the minimum task contract:
 - material burn/stop limit;
 - verification and completion route.
 
-Add research, lab, peer review, or model details only when relevant.
+Add research, lab, or peer review details only when relevant. Always pass the current resolved agent profile when thread tools support it; any fallback is human-visible and recorded.
 
 When tools allow:
 
@@ -105,7 +106,7 @@ Run Health Review after milestones, several slices, repeated follow-ups, stalled
 If rotation is needed:
 
 1. Write the compact state to Project State.
-2. Create a fresh orchestrator from current repo/framework.
+2. Re-resolve the flagship profile and create a fresh orchestrator from current repo/framework.
 3. Register it and mark the old thread superseded.
 4. Ask the new thread to restate compass, DOD, tasks, blockers, latest delta, and next action.
 5. Archive the old thread after successful reconstruction.

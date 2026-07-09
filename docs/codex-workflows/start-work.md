@@ -56,7 +56,7 @@ Verification / completion route:
 Dependencies / parallel boundary:
 ```
 
-Classify task as product capability, technical enabler, maintenance, research, or future option. Use the project model profile and make fallback visible only in dispatch metadata.
+Classify task as product capability, technical enabler, maintenance, research, or future option. Use the current resolved flagship / `xhigh` agent profile and make fallback visible only in dispatch metadata.
 
 Before adding another slice, show what already closed, what remains before parent acceptance, and why this is a DOD gap rather than polish.
 

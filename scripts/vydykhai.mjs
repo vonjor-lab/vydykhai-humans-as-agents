@@ -79,6 +79,12 @@ async function loadManifest(root) {
     throw new Error(`Invalid framework manifest: ${file}`);
   }
   if (manifest.name !== "vydykhai") throw new Error(`Unexpected framework name in ${file}`);
+  if (
+    manifest.defaultAgentProfile?.modelPolicy !== "latest-available-flagship" ||
+    manifest.defaultAgentProfile?.reasoningEffort !== "xhigh"
+  ) {
+    throw new Error(`Invalid default agent profile in ${file}`);
+  }
   manifest.managedPaths = manifest.managedPaths.map(normalizeManagedPath);
   return manifest;
 }
@@ -305,6 +311,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
     upstreamVersion,
     updateAvailable: Boolean(upstreamVersion && upstreamVersion !== installedVersion),
     sourceRevision: lock?.sourceRevision || (await sourceRevision(targetRoot)),
+    agentProfilePolicy: manifest.defaultAgentProfile,
     missing,
     modified,
     warnings,
@@ -318,6 +325,9 @@ function printDoctor(result, asJson) {
   }
   console.log(`Vydykhai ${result.installedVersion} (${result.mode})`);
   console.log(`Integrity: ${result.ok ? "OK" : "FAILED"}`);
+  console.log(
+    `Agent policy: ${result.agentProfilePolicy.modelPolicy} / ${result.agentProfilePolicy.reasoningEffort}`,
+  );
   if (result.upstreamVersion) {
     console.log(`Upstream: ${result.upstreamVersion}${result.updateAvailable ? " (update available)" : " (current)"}`);
   }

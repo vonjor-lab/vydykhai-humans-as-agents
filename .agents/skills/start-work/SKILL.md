@@ -25,7 +25,7 @@ Load `$daily-alignment` inputs when this is a re-brief from a meeting or executi
 - Propose Peer Compass Review when another owner can prevent drift on an overlapping flow, surface, contract, PR, or DOD row.
 - Build autonomous tasks with the minimum contract: goal/DOD impact, scope/out of scope, product loop or linked enabler, human checkpoint, material burn limit, and verification/completion route.
 - Add detailed metadata only when it changes execution safety.
-- Use the project model/reasoning profile and expose fallback.
+- Use the current resolved flagship / `xhigh` agent profile and expose fallback.
 - Show parent closure: what is already closed, what remains, and why another slice is needed.
 - Recommend sequence, owner, backup/failover, and parallel-safe boundaries.
 - Ask for human approval before creating or changing GitHub issues.

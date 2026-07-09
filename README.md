@@ -4,7 +4,19 @@
 
 Vydykhai is a framework for collaborative vibe coding with humans as agents: people carry meaning and judgment, while an AI orchestrator maintains the compass, task flow, alignment, acceptance, and next-best-action.
 
-Current version: `1.5.0`
+Current version: `1.5.1`
+
+## Give This To Your Agent
+
+Open a Codex task in the project you want to build and send one message:
+
+```text
+Подключи Vydykhai к этому проекту и запусти оркестратор. Все технические шаги сделай сам по BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents
+```
+
+That is the normal installation path. The agent identifies the target repo, installs and validates the framework, prepares the setup change, creates Project State, and starts the dedicated orchestrator. A bare URL is not enough to express intent; the one sentence above is.
+
+The human may still need to grant repository/network access or approve merge. They should not need to clone repositories, run installer commands, choose skills, or copy prompts.
 
 ## Start Here
 
@@ -13,6 +25,7 @@ Current version: `1.5.0`
 - Changelog: [`docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`](docs/COLLABORATION_FRAMEWORK_CHANGELOG.md)
 - Workflow index: [`docs/codex-workflows/README.md`](docs/codex-workflows/README.md)
 - Repo-scoped skills: [`.agents/skills`](.agents/skills)
+- Agent bootstrap contract: [`BOOTSTRAP.md`](BOOTSTRAP.md)
 
 The detailed 1.4.8 documents remain available through the `v1.4.8` Git tag. Current skills do not load them.
 
@@ -28,34 +41,23 @@ The detailed 1.4.8 documents remain available through the `v1.4.8` Git tag. Curr
 
 ## Install Into A Project
 
-A link to this repository does not activate repo-scoped skills. Install the framework kit into the product repository:
+Give the agent the request above from a task attached to the target project. [`BOOTSTRAP.md`](BOOTSTRAP.md) contains the deterministic setup contract and the installer remains an internal implementation detail.
 
-```bash
-git clone https://github.com/vonjor-lab/vydykhai-humans-as-agents.git
-node vydykhai-humans-as-agents/scripts/vydykhai.mjs install /path/to/product-repo
-```
-
-The installer writes only framework-managed files and one marked block in the target `AGENTS.md`. Project-specific rules stay outside that block.
-
-Then:
-
-1. Review and commit the installed files.
-2. Let every participant pull them.
-3. Start a new Codex thread from the product repo.
-4. Say: `Start this project with Vydykhai.`
+The installer writes only framework-managed files and one marked block in the target `AGENTS.md`. Project-specific rules stay outside that block. The agent reviews and validates the diff, prepares the setup branch or PR, and leaves merge under the project's normal policy.
 
 The orchestrator applies `$project-launch`, registers the project and participants, creates the first compass and DOD, and chooses the next route. People do not need to select skills manually afterward.
 
 ## Update And Diagnose
 
-From an installed product repository:
+Tell the orchestrator: `Update Vydykhai and verify this project.` It runs `doctor` and `update` itself. `doctor` checks installed version, managed-file integrity, the `AGENTS.md` block, upstream version, and the default agent policy. `update` preserves project-specific files and stops before overwriting locally modified managed files unless explicitly approved.
 
-```bash
-node scripts/vydykhai.mjs doctor
-node scripts/vydykhai.mjs update
-```
+## Agent Profile
 
-`doctor` checks the installed version, managed-file integrity, `AGENTS.md` block, and upstream version when network access is available. `update` pulls the current canonical kit, preserves project-specific files, and stops before overwriting locally modified managed files unless explicitly forced.
+Vydykhai defaults to `latest available flagship / xhigh`: the strongest broadly capable coding and agentic model available to that participant, using Extra High reasoning. It records the resolved model and check date in Project State and rechecks at setup, framework update, orchestrator rotation, model rejection/deprecation, and at least weekly while the project is active.
+
+The framework does not pin today's model id, so a future flagship can replace it. If discovery or the preferred model is unavailable, the orchestrator uses the best verified fallback only after making that fallback visible. A human can explicitly choose a cheaper or faster profile for a named scope.
+
+On Codex, bootstrap also prefers a project default of `xhigh` while leaving the model unpinned. This lets the recommended model advance without editing the framework, while Project State still records which model was actually used.
 
 ## Human Interface
 

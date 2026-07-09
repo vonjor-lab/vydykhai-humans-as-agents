@@ -4,6 +4,7 @@
 - Run `node scripts/vydykhai.mjs doctor` when starting a new orchestrator, after a framework update, or when framework state may be stale.
 - Keep one active Framework Orchestrator per participant and product stream. It organizes work and does not implement, fix product code, deploy, run acceptance smoke, or merge.
 - Register active orchestrator links, installed framework versions, latest packets, and active tasks in Project State.
+- Use `latest available flagship / xhigh`. Record the resolved model, check date/source, and fallback in Project State; recheck at setup, update, orchestrator rotation, model failure/deprecation, and at least weekly Health Review.
 - Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo state; agent plan; inference.
 - Use `$project-launch` to activate or reconnect a project.
 - Use `$start-work` to shape a large or changed topic into a brief and task map.

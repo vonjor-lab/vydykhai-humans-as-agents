@@ -6,9 +6,10 @@ Goal: establish the minimum operating system before implementation starts.
 
 1. Confirm the target product repo and session cwd.
 2. Run `node scripts/vydykhai.mjs doctor` when the kit is installed.
-3. If missing, install from the canonical repo before planning tasks.
+3. If missing and the user supplied the canonical link, execute `BOOTSTRAP.md` yourself before planning tasks. Ask only for missing access or target identity.
 4. Confirm framework-managed files can be committed and pulled by the team.
 5. Keep project rules outside managed files and the managed `AGENTS.md` block.
+6. Resolve `latest available flagship / xhigh`; record actual model, check date/source, and any fallback.
 
 ## Project Operating Brief
 
@@ -21,7 +22,7 @@ Capture only:
 - source of truth and privacy boundary;
 - coordination inputs: meetings, recordings, chat, docs, or manual notes;
 - participants, decision owner, owner/backup convention, and availability;
-- project model/reasoning profile and visible fallback rule;
+- agent profile policy, resolved model, check date/source, and visible fallback rule;
 - first milestone DOD;
 - open decisions and immediate risks.
 
@@ -35,6 +36,7 @@ Register each participant with:
 
 - active orchestrator link/title;
 - installed framework version;
+- resolved agent profile and last check;
 - latest alignment packet;
 - active task;
 - current status.
@@ -50,6 +52,7 @@ Explain:
 - finish tasks with `$accept-work` in the task thread;
 - perform manual smoke and merge in the task thread after human confirmation;
 - let GitHub or the chosen tracker carry durable state between people and agents.
+- expect setup, update, `doctor`, skill routing, and thread launch to be agent-owned rather than manual command work.
 
 ## First Route
 

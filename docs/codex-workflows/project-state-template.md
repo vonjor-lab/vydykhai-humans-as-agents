@@ -8,6 +8,8 @@ Use one compact issue or equivalent artifact per project or product stream. It i
 # Project State: <project or stream>
 
 Framework: <installed version> | Upstream: <url> | Last doctor: <result/date>
+Agent policy: latest available flagship / xhigh
+Resolved agent: <model id> | Checked: <date/source> | Fallback: <none, pending, or reason>
 Compass: <brief/doc/issue link>
 Current DOD: <milestone and rows>
 Active Alignment Window: <link or none>
@@ -16,9 +18,9 @@ Updated from durable event: <event/link/date>
 
 ## Participants
 
-| Participant | Active orchestrator | Framework | Latest packet | Active task | Status |
-| --- | --- | --- | --- | --- | --- |
-| <name> | <thread link/title> | <version> | <packet/link> | <task/link> | <active / away / waiting / superseded> |
+| Participant | Active orchestrator | Framework | Agent profile | Latest packet | Active task | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| <name> | <thread link/title> | <version> | <model / effort / checked> | <packet/link> | <task/link> | <active / away / waiting / superseded> |
 
 ## Active Work
 

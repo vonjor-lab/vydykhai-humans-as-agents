@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.5.0
+Версия: 1.5.1
 Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк для совместного вайбкодинга, где люди работают как агенты смысла и продуктового направления. AI-оркестратор помогает превратить сырую цель в компас, брифы, согласованные task threads, alignment, приемку и понятный next-best-action.
@@ -43,23 +43,35 @@
 
 ## Активация
 
-Фреймворк работает только после установки комплекта в целевой product repo и запуска агентской сессии из этого репозитория.
+Фреймворк работает только после установки комплекта в целевой product repo и запуска агентской сессии из этого репозитория. Обычный человеческий интерфейс - один запрос в задаче агента, подключенной к целевому repo:
+
+```text
+Подключи Vydykhai к этому проекту и запусти оркестратор. Все технические шаги сделай сам по BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents
+```
 
 Обязательный порядок:
 
-1. Установить или обновить framework kit в целевом repo.
-2. Закоммитить managed framework files и дать всем участникам их подтянуть.
-3. Держать project-specific правила вне файлов, управляемых фреймворком.
-4. Запустить личный Framework Orchestrator из целевого repo.
-5. Запустить `$project-launch`, чтобы создать Project Operating Brief, компас, первый DOD, registry участников, общую память и первый маршрут работы.
+1. Bootstrap-агент определяет target repo, сохраняет существующую работу, устанавливает или обновляет kit и запускает `doctor`.
+2. Он проверяет diff, готовит setup commit или PR и оставляет project rules вне managed files.
+3. Он создает Project State и запускает личный Framework Orchestrator из target repo.
+4. `$project-launch` создает Project Operating Brief, компас, первый DOD, registry участников, общую память и первый маршрут.
+5. После принятия setup change каждый участник делает обычный pull и подтверждает активацию через своего orchestrator.
 
-Референсная установка:
+Bootstrap-запрос разрешает setup branch/PR и общие operating artifacts. Он не разрешает merge, destructive overwrite, платные действия, production changes или раскрытие private data. Если не хватает tool или доступа, агент просит только эту возможность и не перекладывает команды установки на человека.
 
-```text
-node scripts/vydykhai.mjs install /path/to/product-repo
-```
+## Профиль агента
 
-В установленном product repo команда `node scripts/vydykhai.mjs doctor` проверяет локальную целостность и upstream-версию, а `node scripts/vydykhai.mjs update` подтягивает текущий канонический комплект.
+Политика по умолчанию - `latest available flagship / xhigh`: самая сильная доступная участнику универсальная модель для coding и agentic work с reasoning Extra High.
+
+- Выбирать по текущей доступности в harness и актуальному авторитетному model guidance, а не только по номеру версии.
+- Записывать policy, resolved model id, reasoning effort, дату/источник проверки и fallback в Project State.
+- Повторять проверку при bootstrap, framework update, создании или ротации orchestrator, model rejection/deprecation и активном Health Review не реже одного раза в семь дней.
+- Явно передавать resolved profile новым и возобновляемым контекстам, если tools это поддерживают.
+- Если discovery недоступен, использовать рекомендованный harness flagship и отмечать verification pending.
+- Если flagship не поддерживает `xhigh`, использовать его максимальный поддерживаемый reasoning и записывать fallback; не выбирать автоматически Max или Ultra.
+- Не делать silent downgrade. Человек может явно выбрать более дешевый или быстрый profile для названного scope.
+
+Universal rules не фиксируют сегодняшний model id, поэтому будущий flagship можно принять без нового релиза фреймворка.
 
 ## Приоритет источников
 
@@ -167,7 +179,7 @@ Task thread автономно реализует задачу внутри ко
 - Project State: compass, DOD, registry участников, активные orchestrators, текущие задачи и последнее alignment window.
 - Alignment Window: append-only packets и deltas одной встречи, milestone или компактного рабочего периода.
 
-Registry участников содержит: participant, orchestrator link, установленную версию фреймворка, latest packet, active task и status.
+Registry участников содержит: participant, orchestrator link, установленную версию фреймворка, resolved agent profile и дату проверки, latest packet, active task и status.
 
 Перед стартом или продолжением работы на общей поверхности orchestrator каждого участника проверяет свою строку и публикует новый packet, если локальное состояние или результаты встречи существенно изменились. Нельзя придумывать незакоммиченное состояние другого участника.
 
@@ -211,7 +223,7 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - Принятый sub-slice не закрывает parent, пока обещанные product loop и DOD не закрыты или явно не вынесены out of scope.
 - Lab Mode не принимается как продуктовый результат без production transfer и real-flow verification.
 - Secrets, transcripts, private product data, proprietary prompts и customer information не попадают в public framework artifacts.
-- Model и reasoning profile являются project configuration. Используется текущий согласованный profile, fallback показывается явно; universal rules не содержат hardcoded model version.
+- Используется `latest available flagship / xhigh`; resolved profile и дата проверки хранятся в Project State, fallback показывается явно. Universal rules не содержат hardcoded model version.
 - Append-only evidence сохраняется, но текущие dashboards остаются короткими и актуальными.
 - Next-best-action важнее status-only ответа.
 

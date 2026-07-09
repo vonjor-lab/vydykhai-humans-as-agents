@@ -34,7 +34,7 @@ Do not paste large diffs or routine commit updates.
 
 ## 3. Publish Local Packet
 
-Append a packet using `local-alignment-packet.md`. Include participant, orchestrator, installed framework version, scope, local delta, conflicts/needs, and safe continuation.
+Append a packet using `local-alignment-packet.md`. Include participant, orchestrator, installed framework version, resolved agent profile/check date, scope, local delta, conflicts/needs, and safe continuation.
 
 Supersede this participant's older packet; never overwrite another participant's packet or invent their local state.
 

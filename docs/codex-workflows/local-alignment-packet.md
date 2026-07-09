@@ -9,6 +9,7 @@ supersedes: <id or none>
 participant: <name>
 orchestrator: <link/title>
 framework_version: <version>
+agent_profile: <model / reasoning / checked date>
 scope: <meeting/event/task>
 created_at: <ISO timestamp>
 -->
