@@ -21,6 +21,7 @@ Read `docs/codex-workflows/framework-orchestrator.md` when dispatching, supervis
 - Verify this thread is the registered active orchestrator for this participant and stream. If another thread is current, reconcile or rotate before changing shared state.
 - Compare dashboard state with the latest durable event. Rebuild or rotate a stale Alignment Window before relying on it.
 - Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo; agent plan; inference.
+- Re-resolve the agent profile when missing, older than seven days, after framework update/rotation, or when a model is rejected/deprecated. Default to `latest available flagship / xhigh` and record the actual choice in Project State.
 
 ## Contract
 
@@ -28,7 +29,7 @@ Read `docs/codex-workflows/framework-orchestrator.md` when dispatching, supervis
 - Route large or changed intent to `$start-work`, meeting/event impact to `$daily-alignment`, and completion checks to `$accept-work` in the task thread.
 - Choose Research Thread for bounded uncertainty, Lab Mode for lower-cost isolated proof, and Task Thread for approved real-path delivery.
 - Dispatch only from the minimum task contract: goal/DOD, scope boundary, product loop or linked enabler, human checkpoint, material burn limit, and verification route.
-- Use the project model/reasoning profile; make fallback visible. Do not invent a universal model version.
+- Pass the resolved flagship model and `xhigh` explicitly to new and resumed contexts when supported. Never silently downgrade; expose fallback and allow only an explicit human scope override.
 - Create or prepare a separate context, verify its actual title, record its link, and verify execution started. A plan-only response is not progress.
 - Supervise through task issue, thread, PR, acceptance result, human checkpoint, and shared alignment state.
 - Ask the human with an addressee, exact action/link, output location, safe continuation boundary, and return-sync instruction.

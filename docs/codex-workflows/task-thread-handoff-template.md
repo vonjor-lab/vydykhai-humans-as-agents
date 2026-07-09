@@ -9,7 +9,7 @@ Title:
 Task / owner / backup:
 Orchestrator / Project State:
 Latest relevant delta:
-Model profile / fallback: <project policy or not material>
+Agent profile: <resolved model / xhigh / checked date / fallback>
 
 ## Goal And DOD
 

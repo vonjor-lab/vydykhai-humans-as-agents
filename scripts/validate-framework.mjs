@@ -23,6 +23,15 @@ function lineCount(value) {
 const manifest = JSON.parse(await text("vydykhai.json"));
 if (manifest.schemaVersion !== 1) fail("vydykhai.json schemaVersion must be 1");
 if (!/^\d+\.\d+\.\d+$/.test(manifest.version || "")) fail("vydykhai.json version must be semantic");
+if (!existsSync(path.join(root, "BOOTSTRAP.md"))) fail("BOOTSTRAP.md is missing");
+if (manifest.defaultAgentProfile?.modelPolicy !== "latest-available-flagship") {
+  fail("Default model policy must be latest-available-flagship");
+}
+if (manifest.defaultAgentProfile?.reasoningEffort !== "xhigh") {
+  fail("Default reasoning effort must be xhigh");
+}
+if (manifest.defaultAgentProfile?.refreshDays !== 7) fail("Default agent profile refreshDays must be 7");
+if (!String(manifest.bootstrap || "").endsWith("/BOOTSTRAP.md")) fail("Manifest bootstrap URL is invalid");
 
 for (const managedPath of manifest.managedPaths || []) {
   if (!existsSync(path.join(root, managedPath))) fail(`Managed path is missing: ${managedPath}`);
@@ -64,6 +73,7 @@ for (const entry of await readdir(skillsRoot, { withFileTypes: true })) {
 
 const runtimeFiles = [
   "AGENTS.md",
+  "BOOTSTRAP.md",
   "README.md",
   "docs/AGENTS_CORE.md",
   "docs/FRAMEWORK.md",

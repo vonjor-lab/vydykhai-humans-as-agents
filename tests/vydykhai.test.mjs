@@ -33,11 +33,12 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.equal(await readFile(path.join(target, ".agents/skills/project-only/SKILL.md"), "utf8"), "project-only\n");
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.5.0");
+    assert.equal(lock.installedVersion, "1.5.1");
 
     const doctor = run(["doctor", target, "--offline"]);
     assert.equal(doctor.status, 0, doctor.stderr);
     assert.match(doctor.stdout, /Integrity: OK/);
+    assert.match(doctor.stdout, /latest-available-flagship \/ xhigh/);
 
     const corePath = path.join(target, "docs/FRAMEWORK.md");
     await writeFile(corePath, "local modification\n");
@@ -52,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.5\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.5\.1/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }

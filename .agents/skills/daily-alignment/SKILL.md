@@ -26,7 +26,7 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 - Let unrelated work continue. Use cautions or wait only for overlapping surfaces, contracts, decisions, or sequence.
 - Publish a Team Alignment Delta when several packets need reconciliation or shared guidance changes.
 - Rebuild the Alignment Window body in the same operation as the delta.
-- Update the participant registry with orchestrator link, installed framework version, latest packet, active task, and status.
+- Update the participant registry with orchestrator link, installed framework version, resolved agent profile/check date, latest packet, active task, and status.
 - Create a Brief Patch for a small approved change; route material goal, scope, sequence, ownership, or task-map changes to `$start-work`.
 - Rotate and archive the Alignment Window after a milestone or when it is no longer quickly scannable.
 - Update the Framework Orchestrator state and next-best-action.

@@ -12,7 +12,8 @@ This repository is the canonical source for the universal Vydykhai collaboration
 - Keep the dated framework files as compatibility pointers only. Preserve detailed pre-1.5 material through Git tags instead of duplicating it in the active tree.
 - Keep `.agents/skills` concise. Skills load `docs/FRAMEWORK.md` plus only the workflow needed for the current action.
 - Keep `docs/AGENTS_CORE.md`, skill contracts, and workflows behaviorally aligned.
-- Do not hardcode a model version in universal runtime rules. Model and reasoning profiles belong to project configuration; fallback must be visible.
+- Keep `BOOTSTRAP.md` as the agent-owned installation contract. Human-facing setup should remain one natural-language request, not a list of shell commands.
+- Default to `latest available flagship / xhigh`. Resolve the actual model in Project State and make fallback visible; never hardcode a model version in universal runtime rules.
 - Product-local copies are execution mirrors. Universal changes land here first, then product repos update through `scripts/vydykhai.mjs`.
 - Product-specific rules stay outside framework-managed files in the target repo.
 - Do not add product names, customer data, meeting transcripts, credentials, proprietary prompts, internal thread ids, or implementation details from another repository.

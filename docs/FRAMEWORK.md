@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.5.0
+Version: 1.5.1
 Status: canonical operating core
 
 Vydykhai is a framework for collaborative vibe coding with humans as agents. People hold product meaning, direction, and judgment. The AI orchestrator turns a raw goal into a compass, briefs, coordinated task threads, alignment, acceptance, and the next-best-action.
@@ -43,23 +43,35 @@ One active orchestrator does not mean one eternal thread. Rotate it when its con
 
 ## Activation
 
-The framework is active only when its kit is installed in the target product repository and the agent session starts from that repository.
+The framework is active only when its kit is installed in the target product repository and the agent session starts from that repository. The normal human interface is one request from an agent task attached to the target repo:
+
+```text
+Connect Vydykhai to this project and start the orchestrator. Follow BOOTSTRAP.md end to end and ask me only for missing access or a decision: https://github.com/vonjor-lab/vydykhai-humans-as-agents
+```
 
 Required launch path:
 
-1. Install or update the framework kit in the target repo.
-2. Commit the managed framework files and let all participants pull them.
-3. Keep project-specific rules outside framework-managed files.
-4. Start a personal Framework Orchestrator from the target repo.
-5. Run `$project-launch` to create the Project Operating Brief, compass, first DOD, participant registry, shared state location, and first route.
+1. The bootstrap agent identifies the target repo, preserves existing work, installs or updates the kit, and runs `doctor`.
+2. It reviews the diff, prepares the setup commit or PR, and keeps project rules outside managed files.
+3. It creates Project State and starts a personal Framework Orchestrator from the target repo.
+4. `$project-launch` creates the Project Operating Brief, compass, first DOD, participant registry, shared state location, and first route.
+5. After the setup change is accepted, every participant pulls it and confirms activation through their orchestrator.
 
-The reference installer is:
+The bootstrap request authorizes setup branch/PR and shared operating artifacts. It does not authorize merge, destructive overwrite, paid actions, production changes, or disclosure of private data. If tools or access are missing, the agent asks only for that capability instead of delegating setup commands to the human.
 
-```text
-node scripts/vydykhai.mjs install /path/to/product-repo
-```
+## Agent Profile
 
-From an installed product repo, use `node scripts/vydykhai.mjs doctor` to inspect local integrity and upstream version, and `node scripts/vydykhai.mjs update` to pull the current canonical kit.
+The default policy is `latest available flagship / xhigh`: the strongest broadly capable coding and agentic model available to that participant, with Extra High reasoning.
+
+- Resolve by current harness availability and current authoritative model guidance, not by version number alone.
+- Record the policy, resolved model id, reasoning effort, check date/source, and fallback in Project State.
+- Re-resolve at bootstrap, framework update, new or rotated orchestrator, model rejection/deprecation, and active-project Health Review at least every seven days.
+- Pass the resolved profile explicitly to new and resumed contexts when tools support it.
+- If discovery is unavailable, use the harness's recommended flagship and mark verification pending.
+- If the flagship does not support `xhigh`, use its highest supported effort and record the fallback; do not automatically choose Max or Ultra.
+- Never silently downgrade. A human may explicitly choose a cheaper or faster profile for a named scope.
+
+Universal rules never pin today's model id, allowing the project to adopt a future flagship without a framework release.
 
 ## Source Precedence
 
@@ -167,7 +179,7 @@ Keep two compact durable artifacts:
 - Project State: compass, DOD, participant registry, active orchestrators, current tasks, and latest alignment window.
 - Alignment Window: append-only packets and deltas for one meeting, milestone, or compact work period.
 
-The participant registry includes: participant, orchestrator link, installed framework version, latest packet, active task, and status.
+The participant registry includes: participant, orchestrator link, installed framework version, resolved agent profile and check date, latest packet, active task, and status.
 
 Before starting or resuming work on a shared surface, each participant's orchestrator checks its registry row and publishes a new packet when local or meeting state materially changed. Never invent another participant's uncommitted state.
 
@@ -211,7 +223,7 @@ One active orchestrator is authoritative for one participant and stream. When ro
 - Do not close a parent from an accepted sub-slice unless its promised product loop and DOD are closed or explicitly moved out of scope.
 - Do not accept Lab Mode as product completion without production transfer and real-flow verification.
 - Do not expose secrets, transcripts, private product data, proprietary prompts, or customer information in public framework artifacts.
-- Keep the model and reasoning profile in project configuration. Use the current approved profile and make fallback visible; do not hardcode a model version in universal rules.
+- Use `latest available flagship / xhigh`, keep the resolved profile and check date in Project State, and make fallback visible. Do not hardcode a model version in universal rules.
 - Preserve append-only evidence, but keep current dashboards short and current.
 - Prefer next-best-action over status-only reporting.
 
