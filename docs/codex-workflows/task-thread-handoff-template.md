@@ -1,104 +1,65 @@
-# Task Thread Startup Template
+# Task Thread Handoff
 
-Use this template when a Framework Orchestrator launches or prepares a separate task thread.
-
-For a research thread, keep the same header fields but set scope to investigation only. The thread must not change product code unless the orchestrator and human explicitly promote it to implementation. It should end with a short Research Packet: findings, recommended option, rejected options, assumptions, open questions, impact on compass/brief/task map, and next route.
+Use the minimum contract. Add optional fields only when they alter execution safety.
 
 ```md
 # Task Thread Startup
 
-Thread title:
-Task issue:
-Owner:
-Backup owner / failover:
-Orchestrator thread:
-Alignment issue:
-Task thread launch state:
-Latest Team Alignment Delta:
-Model / Reasoning:
-Compass Calibration:
-Codex Task Contract: use the contract in the task issue as the completion source of truth.
-DOD impact:
-Accepted as sub-slice:
-Parent closure status:
-Task type:
-Product Capability Loop:
-Burn / Limits:
-Lab Mode:
-Peer Compass Review:
-Launch expectation:
+Title:
+Task / owner / backup:
+Orchestrator / Project State:
+Latest relevant delta:
+Model profile / fallback: <project policy or not material>
 
-## Read First
+## Goal And DOD
 
-- `AGENTS.md`
-- `docs/COLLABORATION_FRAMEWORK_2026-06-10.md`
-- task issue or approved task brief
-- latest relevant Team Alignment Delta
-- related brief, design doc, contract, or API doc
+<one outcome and named DOD impact>
 
-## Goal
+## Scope Boundary
 
-<one primary outcome>
+In scope:
+- <work>
 
-## Scope
+Out of scope:
+- <work>
 
-- <included work>
+## Product Loop Or Enabler
 
-## Out Of Scope
+<actor, entry/action, result/recovery, or linked capability/contract>
 
-- <excluded work>
+## Human Checkpoint
 
-## Contracts And Alignment
+<none | product decision | visual review | paid/external approval | manual smoke and merge>
 
-- <shared contracts or affected surfaces>
-- <assumptions this task must preserve>
-- <closed product loop if this is a product capability, or linked product-loop task if this is a technical enabler>
-- <backing backend/API/data/persistence/permission contracts and realistic states if this is UI/product-surface work>
-- <visible UI/operator entry/action, or human-approved linked exception if the loop is intentionally deferred>
-- <Lab Mode question/proof/stop condition/production transfer, or `not needed`>
-- <Peer Compass Review packet to read or request, or `not needed`>
-- <when to stop and return to orchestrator>
+Trigger and exact requested evidence:
+Safe continuation before checkpoint:
 
-## Verification
+## Burn / Stop Limit
 
-- <tests or checks>
-- current-branch smoke is required when this is user-facing or integration-affecting
-- Runtime Coherence Check is required when frontend/backend/browser runtime is involved
-- burn check is required when `Burn / Limits` is not `not material`
+<not material or concrete cap and stop condition>
 
-## Completion Gate
+## Verification And Completion
 
-- do not stop at a plan when launch expectation is execution; after a short sanity check, start work, name a blocker, or request rebrief;
-- if Lab Mode was used, stop lab polish after proof/cap and transfer the result into the production surface before product capability acceptance;
-- before final completion, run `$accept-work` in this task thread;
-- `$accept-work` must inspect this task issue, PR or diff, latest relevant alignment, DOD impact, parent closure status, task type, Product Capability Loop, verification, burn check when material, and current-branch smoke when required;
-- accepted sub-slice or merged PR does not close the parent issue unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope;
-- for user-facing or integration-affecting work, organize fresh current-branch smoke from this exact worktree before claiming acceptance;
-- if runtime smoke is required, include Runtime Coherence Check: repo/worktree, branch, HEAD, dirty state, frontend/backend command+URL+cwd, browser target, smoke scenario/result;
-- if merge is needed, perform manual merge from this task thread after manual smoke and human confirmation;
-- finish only with one acceptance status: `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES`, or `BLOCKED`;
-- do not say the task is done before the `$accept-work` result is included.
+- <tests/checks>
+- exact-current-code runtime smoke when user-facing or integration-affecting
+- run `$accept-work` in this task thread before completion
+- keep corrective fixes, human smoke, and manual merge in this task thread
 
-## Handoff Back To Orchestrator
+## Optional Safety Modes
 
-Branch / worktree:
-PR / commit:
-Accept Work status:
-Launch state: <EXECUTION_STARTED | BLOCKED_BEFORE_START | NEEDS_REBRIEF>
-Lab exit / production transfer:
-Peer Compass Review:
-Smoke / merge status:
-DOD impact result:
-Accepted as sub-slice:
-Parent closure status:
-Task type / product loop result:
-Runtime Coherence Check:
-Burn check:
-Changed surfaces:
-Verification:
-Not verified:
-Risks:
-Follow-ups:
-Event-triggered alignment packet needed:
+Research / Lab / Peer Compass Review: <only when relevant>
+
+## Handoff Back
+
+Status: <EXECUTION_STARTED | BLOCKED_BEFORE_START | NEEDS_REBRIEF | ACCEPT | ACCEPT_WITH_FOLLOWUPS | NEEDS_FIXES | BLOCKED>
+PR / commit / artifact:
+DOD and parent result:
+Human checkpoint result:
+Burn result:
+Exact-current-code smoke / merge:
+Participant impact / alignment needed:
+Risks / follow-ups:
 Recommended orchestrator next action:
 ```
+
+A launch is incomplete when the child only writes a plan. It must start execution, name a blocker, or request re-brief.

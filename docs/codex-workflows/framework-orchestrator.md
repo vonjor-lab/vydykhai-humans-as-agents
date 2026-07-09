@@ -1,271 +1,115 @@
 # Framework Orchestrator Workflow
 
-Use this repo-local workflow inside a standing personal Codex thread for one participant and one product stream or epic.
+Goal: preserve compass, sequence, shared state, and next-best-action without implementing product work.
 
-Goal: keep the brief, task sequence, GitHub shared memory, daily/merge alignment, task threads, and acceptance gates connected without making humans discuss implementation mechanics.
+## 1. Preflight
 
-## What This Thread Owns
+Run on first use, after update, after restart, or when state looks stale:
 
-The orchestrator thread owns coordination, not implementation:
+1. Run `node scripts/vydykhai.mjs doctor` when available.
+2. Read Project State, latest explicit human decisions, active Alignment Window, tasks, PRs, and verified repo state.
+3. Verify this thread is the registered active orchestrator for this participant/stream.
+4. Compare dashboard timestamps and claims with the newest durable event.
+5. Apply source precedence before trusting an old issue or agent plan.
 
-- current compass, brief, and task sequence;
-- links to the epic, task issues, PRs, and shared alignment issue;
-- latest Local Alignment Packet and Team Alignment Delta;
-- active task/research thread ids or links when available;
-- pending decisions, missing inputs, merge events, and acceptance gates;
-- next recommended action for the participant.
-
-Implementation, product-code fixes, deploys, acceptance smoke, and merges must happen in task threads. The orchestrator stays clean so it can protect the project goal, DOD, sequence, alignment state, and next best action.
-
-## Inputs To Read
-
-1. Human request and the active product stream or epic.
-2. `AGENTS.md` and the collaboration framework.
-3. Relevant brief, epic issue, task issues, PRs, and docs.
-4. Current shared alignment issue and latest Team Alignment Delta.
-5. Latest task handoffs and local repo state.
-6. Latest meeting transcript or summary when the request follows a meeting.
-
-## Steps
-
-### 1. Restore Orchestrator State
-
-Rebuild the compact state:
+Compact state:
 
 ```md
-## Framework Orchestrator State
-
-Owner:
-Product stream / epic:
-Compass / brief:
-Alignment issue:
-Latest meeting or event processed:
-Latest Team Alignment Delta:
-
-Active tasks:
-- <issue> | <sequence/title> | <owner> | <task thread/pending> | <branch/PR> | <DOD impact> | <status> | <next>
-
-Pending decisions or inputs:
-
+Owner / stream:
+Compass / DOD:
+Project State:
+Active Alignment Window:
+Framework version / model profile:
+Active tasks: <task | owner | thread | PR | human checkpoint | DOD impact | status | next>
+Pending decisions / participants:
 Can continue:
-Next action:
+Next-best-action:
 ```
 
-If the state already exists in an issue comment or body, update it from durable sources instead of trusting stale text.
+Rebuild a stale dashboard or rotate an unreadable Alignment Window before relying on it.
 
-### 2. Classify The Request
+## 2. Classify The Request
 
-Choose one mode:
+- `launch`: project activation or missing operating memory -> `$project-launch`.
+- `shape`: raw goal, major change, or task-map revision -> `$start-work`.
+- `align`: meeting/event changed another participant's safe action -> `$daily-alignment`.
+- `research`: bounded uncertainty before brief/task, no product code.
+- `lab`: isolated proof reduces cost or risk and has an exit plan.
+- `dispatch`: launch or resume an approved task.
+- `accept`: completion requires `$accept-work` in the task thread.
+- `sequence`: choose what happens next.
+- `health`: detect drift, stale context, repeated cost, or rotation need.
 
-- `launch`: the project is being started or imported into the framework;
-- `plan`: the human is starting or reshaping a large topic;
-- `align`: a meeting, daily, merge, blocked event, accepted result, or follow-up split may affect shared work;
-- `research`: an idea, option set, source of truth, foundation, design template, or affected contracts must be clarified before brief/task/implementation;
-- `lab`: isolated learning would reduce burn or risk before production transfer;
-- `peer-review`: another participant's context is needed before overlapping work continues safely;
-- `dispatch`: the next approved task should be launched or resumed;
-- `accept`: a task, PR, milestone, or epic needs acceptance;
-- `sequence`: the human asks what should happen next;
-- `maintain`: stale tasks, missing inputs, stale branches, or unclear GitHub state need cleanup.
+## 3. Check Shared Safety
 
-Route to the specialized workflow when appropriate:
+Before work on a shared surface, check:
 
-- `launch` -> `$project-launch`;
-- `plan` -> `$start-work`;
-- `align` -> `$daily-alignment`;
-- `accept` -> `$accept-work`.
+- latest relevant human decision and delta;
+- participant packets and active tasks;
+- overlapping flows, contracts, PRs, or DOD rows;
+- requested Peer Compass Review;
+- human checkpoint and safe continuation boundary.
 
-The orchestrator can perform `sequence`, `dispatch`, and light `maintain` directly.
+Missing participants do not block unrelated work. Never infer their uncommitted state.
 
-When the request contains product vision, future-state commentary, or concerns about slice growth, also run Product Compass Note Triage before changing scope or sequence:
+## 4. Dispatch
 
-- `scope change`: requires explicit human confirmation before changing the active task;
-- `DOD gap`: propose a named follow-up with parent issue, sequence, owner, blocker status, and expected timing;
-- `vision guardrail`: record or propose a brief/alignment/doc update without expanding the current task;
-- `future option`: keep as a parking/vision note only when it is valuable enough to preserve.
+Require the minimum task contract:
 
-Do not turn a compass note into a GitHub issue or task thread until it is classified and the human has approved the resulting action.
+- goal and DOD impact;
+- scope and out of scope;
+- product loop or linked enabler;
+- human checkpoint;
+- material burn/stop limit;
+- verification and completion route.
 
-When inspecting or preparing backlog/tasks, classify each item by task type before dispatch:
+Add research, lab, peer review, or model details only when relevant.
 
-- `product capability`;
-- `technical enabler`;
-- `maintenance`;
-- `research/spike`;
-- `future option`.
+When tools allow:
 
-For a `product capability`, require a closed user/operator loop: actor, entry point, setup/configuration, input/action, processing/enforcement, feedback, state, recovery/next action, audit/provenance, and verification. If the loop is missing, draft the likely loop, ask the human to confirm or trim it, and update the task map before launch.
+1. Create the separate task/research context from current approved base.
+2. Name it from issue/sequence and short outcome.
+3. Read back and correct the actual title.
+4. Record the link/title in Project State and task issue.
+5. Verify the child starts execution, names a blocker, or requests re-brief.
 
-Do not treat route existence, backend/API tests, projections, readiness cards, or passive records as product capability closure. There must be a visible UI/operator entry/action or a human-approved linked exception.
+A plan-only response is not a launched task. Send it back to execute within scope or name the blocking decision.
 
-For a `technical enabler`, require a named linked product capability or later task that will close the loop. Do not describe a technical enabler as a completed product capability unless the linked loop has already been accepted or explicitly moved out of scope by human decision.
+## 5. Supervise
 
-For UI, product surface, design, navigation, or copy work, run the reverse check: identify the backend/API/data/persistence/permission contracts, loading/empty/error states, recovery path, audit/provenance, and realistic scenarios required underneath the UI. If they are missing, draft the missing technical enabler and ask the human to confirm sequencing before launch.
+Use this state machine:
 
-For high-ambiguity product/design/IA/UI shell/entity-model/AI workflow work, run Compass Calibration Check before dispatch or continuation. Ask the task or research thread to state:
+- No thread: create/prepare and record it.
+- Plan only: request execution, blocker, or re-brief.
+- Working inside scope: stay quiet and name the next checkpoint.
+- Waiting at human checkpoint: give the human exact action, link, output location, safe continuation, and return sync.
+- Research complete: incorporate the Research Packet, update durable state, archive the thread.
+- Lab proof/cap reached: stop lab polish; route production transfer, tests, and real-flow smoke.
+- Cross-owner overlap: request Peer Compass Review before affected work continues.
+- Task claims completion without `$accept-work`: send it to `$accept-work` in the same thread.
+- `NEEDS_FIXES`: return exact fixes to the same task thread.
+- `BLOCKED`: record the missing decision/input and tell the human precisely.
+- Accepted but smoke/merge pending: return human to the task thread.
+- Accepted and merged: update DOD burn, parent closure, participant impact, and next-best-action.
 
-- what exactly is being built;
-- which source of truth is available and in what form;
-- what is not a foundation or reference;
-- which nearest user/operator result should be visible;
-- which nearest smoke artifact proves the object was understood correctly.
+Do not implement, smoke, or merge from the orchestrator.
 
-If the agent confuses a technical/internal surface with a product template, a visual shell with a finished capability, or a route/test/backend state with a visible product loop, stop implementation and correct the brief/task first.
+## 6. Monitor
 
-Run Research Thread check before forcing a topic into `$start-work`, Lab Mode, or implementation. Suggest a research thread when a narrow idea, source question, option comparison, product model, or affected-contract question is not ready for a task brief and would otherwise pollute the orchestrator with long speculation. Give the research thread one question, sources to inspect, options to compare, explicit non-goals, and a stop condition. Its output is a short Research Packet: findings, recommended option, rejected options, assumptions, open questions, impact on compass/brief/task map, and next route.
+Use one monitor for one named gate. It may inspect or resume the existing task within approved scope. It must remain quiet while unchanged, avoid new scope/merge/spend, notify only on decision/drift/checkpoint/terminal state, and delete itself when finished.
 
-Run Proactive Lab Mode check before dispatch or continuation. Suggest Lab Mode when a hard middle step is expensive to reach, depends on paid generation/API calls, needs many short iterations, or might break a real user path. Push back when the task is an existing product surface, real-data/content replacement, UI wiring, or a DOD that must be proven in the real flow. If Lab Mode is used, require a lab question, proof, stop condition, burn cap when material, production transfer plan, tests, and real-flow smoke.
+## 7. Health And Rotation
 
-Run Peer Compass Review check when active tasks or PRs overlap on a flow, surface, entity, API, data contract, or DOD row, or when another participant's draft can change this task's safe path. Prepare the review request for the human: links, what to inspect, why it matters, where the packet should be written, safe continuation status, and when to run return sync.
+Run Health Review after milestones, several slices, repeated follow-ups, stalled DOD burn, owner dropout, repeated context compaction, stale dashboards, or chat archaeology.
 
-### 3. Check Alignment Freshness
+If rotation is needed:
 
-Before recommending work that touches shared surfaces, verify:
+1. Write the compact state to Project State.
+2. Create a fresh orchestrator from current repo/framework.
+3. Register it and mark the old thread superseded.
+4. Ask the new thread to restate compass, DOD, tasks, blockers, latest delta, and next action.
+5. Archive the old thread after successful reconstruction.
 
-- latest relevant meeting or event has been processed;
-- this participant has a current Local Alignment Packet when needed;
-- latest Team Alignment Delta covers the packets that matter for this task;
-- missing participants or stale packets are visible;
-- relevant Peer Compass Review requests or packets are visible;
-- relevant merge events have a delta or clear handoff.
+## 8. Finish
 
-If alignment is incomplete, return one of:
-
-- `continue with cautions`: safe only inside named boundaries;
-- `wait`: missing packet or decision may change the next action;
-- `blocked`: known conflict or missing decision prevents work.
-
-Do not invent another participant's uncommitted local state.
-
-### 4. Maintain The Sequence
-
-Keep the task order human-readable:
-
-- what is already merged or accepted;
-- what is active now;
-- what is paused for review, smoke, or decision;
-- what follows next;
-- how many implementation slices remain before the nearest parent epic or milestone DOD row can be accepted;
-- which tasks are parallel-safe and which are sequential;
-- which contracts or shared surfaces must not be changed silently.
-
-For stacked PRs, write the baton explicitly: merged PR, next PR, remaining validation, and whether dependent work may continue.
-
-### 5. Dispatch A Task Thread
-
-Only dispatch when the task has:
-
-- task issue or approved task brief;
-- `Model / Reasoning`: `gpt-5.5` or newest available model and `xhigh` / very high reasoning, with explicit fallback if unavailable;
-- `Codex Task Contract` in the task issue;
-- `DOD Impact` that maps the task to a named epic or milestone DoD row, unless the human explicitly accepted an exception;
-- `Parent Closure` stating whether this is parent closure or an accepted sub-slice;
-- `Task type` and `Product Capability Loop` status:
-  - product capabilities need the closed loop in scope or a named human-approved exception;
-  - technical enablers need the linked product-loop task or parent capability;
-  - UI/product-surface tasks need the backing backend/API/data/permissions/scenario contracts in scope or linked;
-- `Burn / Limits` set to `not material` or a concrete cap/stop condition;
-- `Lab Mode` set to `not needed`, `recommended`, or `active`, with lab exit/production transfer expectations when used;
-- `Peer Compass Review` set to `not needed`, `requested`, `waiting`, or `incorporated` when cross-owner overlap exists;
-- `Launch expectation`: start execution after a short sanity check, or name a blocker/rebrief need;
-- clear scope and out of scope;
-- Compass Calibration result when the target object/source of truth can be misunderstood;
-- acceptance criteria;
-- verification expectation;
-- Runtime Coherence Check expectation when current-branch smoke may involve frontend/backend/browser runtime;
-- latest relevant Team Alignment Delta;
-- handoff destination back to this orchestrator.
-
-Use `task-thread-handoff-template.md` to prepare the startup prompt.
-
-If the next step is `research`, launch a research thread with the same title/readback/recording discipline, but explicitly forbid product-code changes unless the human later promotes the output to implementation. Its output should be a compact Research Packet: what exists, source of truth, compared options, recommended option, rejected options, usable foundation, assumptions, gaps/blockers, impact on compass/brief/task map, and whether the next route is `$start-work`, Lab Mode, implementation task thread, another research thread, or no action. After the packet is incorporated, mark the research thread inactive or archive it so it does not keep governing the project.
-
-If Codex thread tools are available and the human has authorized launching the next task, create the task thread. Title it from the task:
-
-```text
-[#<issue>] <sequence> <short task title>
-[<epic>] <short task title>
-```
-
-If the task title already contains the sequence, keep it visible in the sidebar title. Then send the startup prompt to the new thread, read back the actual sidebar title, rename the thread yourself through the available thread tool or ask the human to rename it, and record the task thread link/id, exact title, or pending worktree in GitHub shared memory when available. The startup title inside a child thread is only a hint; the orchestrator owns readback and rename verification.
-
-If thread tools or rename are unavailable, provide the exact title and startup prompt for manual creation or manual rename, and record that manual-start prompt as the task's current dispatch state. A task is not considered launched until the title and id/link or manual-start prompt are recorded in GitHub shared memory.
-
-After launch, verify execution evidence. If the child thread only writes a plan, draft PR intention, or task summary, send it a short follow-up: start implementation within scope now, name a blocker, or request rebrief. Record launch as `EXECUTION_STARTED`, `BLOCKED_BEFORE_START`, or `NEEDS_REBRIEF`; do not count plan-only launch as progress.
-
-### 6. Supervise Task Thread
-
-When the human asks to check a task, continue a stream, or inspect task status, the orchestrator should inspect the GitHub task issue, task thread, PR, and latest alignment state.
-
-Use this simple state machine:
-
-- no task thread exists: create or prepare it, then record the thread id/link, pending worktree, or manual-start prompt;
-- task thread is still working: summarize current state and next expected checkpoint;
-- task thread has only planned or opened a draft intention without execution evidence: send it back to start execution, name a blocker, or request rebrief;
-- task thread is in Lab Mode and proof/cap is reached: stop lab polish and route to production transfer, tests, and real-flow smoke;
-- research thread returned a Research Packet: incorporate only the packet into durable memory, update compass/brief/task map when needed, then mark the research thread inactive or archive it;
-- cross-owner overlap is detected and no Peer Compass Review packet exists: prepare the review request, instruct the human who to ask, and set safe continuation status;
-- task thread says work is complete but no `$accept-work` result is present: send the task thread a short command to run `$accept-work` from its task context;
-- `$accept-work` result is `NEEDS_FIXES`: send the concrete fix request back to the task thread;
-- `$accept-work` result is `BLOCKED`: record the blocker or missing decision in GitHub shared memory and tell the human what decision is needed;
-- `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` but required Runtime Coherence Check is missing or inconclusive: send the task thread back to prove exact branch/worktree/runtime before merge;
-- `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` and required smoke or merge is not done: send the human back to the task thread for manual smoke and merge after human confirmation;
-- `$accept-work` result is `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS` and PR is merged or no merge is needed: update the sequence, DOD impact/burndown, parent closure status, burn status when material, and choose the next best action.
-
-The task thread is responsible for running `$accept-work` before final completion. The orchestrator is responsible for noticing whether that happened and for moving the stream forward from the accepted result.
-
-An accepted sub-slice or merged PR does not close a parent issue unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope. Keep the parent open and route the next best action to the missing visible loop, follow-up, decision, or health review.
-
-Do not merge from the orchestrator. If smoke or merge fails, the task thread has the implementation context needed to correct the work.
-
-### 7. Choose Next Best Action
-
-After an accepted task, merge, blocker, or follow-up split, do not stop at status reporting. Choose the next useful action:
-
-- launch or prepare the next ready task thread;
-- move a successful lab into production transfer instead of continuing lab polish;
-- request or incorporate Peer Compass Review when overlapping work affects safe continuation;
-- give the human an explicit action with links, addressee, output location, safe continuation rule, and return-sync instruction when human action is needed;
-- run a parent epic/milestone DOD burndown check before creating another slice in the same area;
-- check whether accepted technical enablers now require the linked product-loop task to be launched, updated, or re-sequenced;
-- classify any new product compass notes before deciding whether they are current scope, DOD gaps, vision guardrails, or future options;
-- run a health review after a milestone/large merge, after 3-5 accepted slices, after several research/lab/task threads, or when follow-ups repeat, a task stalls, DOD burn stops, scope grows, context becomes dirty, or an owner drops out;
-- run or route to `$daily-alignment` when the accepted result or merge affects another participant's work;
-- send fixes back to the current task thread;
-- ask for a named human decision;
-- wait for a named packet, review, merge, or external input;
-- close or archive completed alignment artifacts when their final delta is already reflected in durable docs, tasks, or PRs.
-- close or archive completed research/lab/task artifacts when their final packet or accepted result is already reflected in durable docs, tasks, or PRs.
-
-### 8. Update Shared Memory
-
-When the human approves updates, write the durable result into the right place:
-
-- task or epic issue body;
-- alignment issue dashboard or comments;
-- PR body or comment;
-- brief patch;
-- repository docs or rules when a lesson should persist.
-
-Keep the alignment issue operationally short. Archive or close it after the final delta is reflected in durable briefs, tasks, or docs.
-
-### 9. Tell The Human The Next Move
-
-End with:
-
-- current status;
-- latest durable links;
-- whether work can continue;
-- exact next action;
-- what is missing, if anything.
-
-Use one of these statuses:
-
-- `CONTINUE`;
-- `CONTINUE_WITH_CAUTIONS`;
-- `WAIT`;
-- `LAUNCH_TASK_THREAD`;
-- `LAUNCH_RESEARCH_THREAD`;
-- `SEND_ACCEPT_WORK_TO_TASK_THREAD`;
-- `NEEDS_DECISION`;
-- `BLOCKED`.
+Do not stop at status. Return current state, durable links, safe continuation, one explicit next-best-action, and any named missing decision.

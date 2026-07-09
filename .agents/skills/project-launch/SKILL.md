@@ -1,44 +1,36 @@
 ---
 name: project-launch
-description: Use when starting a new project, connecting this framework to an existing repository, onboarding a team into the framework, defining project coordination sources, or creating the first operating brief before tasks exist.
+description: Activate Vydykhai in a new or existing project, reconnect a project with stale operating memory, onboard participants, define coordination sources, create the first compass and DOD, or start a personal Framework Orchestrator.
 ---
 
 # Project Launch
 
-Launch a project into the collaboration framework before implementation work begins.
+Create the minimum shared operating system before implementation starts.
 
-## Required References
-
-Read these files before acting:
+## Read
 
 1. `AGENTS.md`
-2. `docs/COLLABORATION_FRAMEWORK_2026-06-10.md`
+2. `docs/FRAMEWORK.md`
 3. `docs/codex-workflows/project-launch.md`
 
-Load `docs/codex-workflows/start-work.md` only when the launch needs epic decomposition or task mapping.
+Load `docs/codex-workflows/start-work.md` only when the initial goal needs decomposition.
 
-## Operating Contract
+## Contract
 
-- Do not treat a link to the standalone framework repo as activation. The framework is active only after the framework kit is imported into the target repo, committed, pulled by the team, and this Codex session starts from that target repo.
-- If the target repo is missing `.agents/skills`, `docs/codex-workflows`, framework docs, changelog, or AGENTS core rules, stop and give the human the exact bootstrap steps before planning implementation.
-- Treat meeting recordings, transcripts, team chat, docs, and manual notes as one coordination input layer.
-- Create a compact Project Operating Brief: repo, source of truth, team, decision owner, owners/backups, coordination sources, privacy constraints, compass, DOD, and first next action.
-- Record the framework upstream when importing into a product repo. The standalone framework repo is the canonical source; product-local copies are execution mirrors.
-- Keep product-specific rules in the target repo's `AGENTS.md`, project docs, or local runbooks instead of silently changing universal framework rules.
-- Treat Codex as the reference implementation. When the team uses another harness, document the adapter: separate task context, context id/link, shared memory, verification/smoke path, and handoff location.
-- Explain onboarding plainly: personal orchestrator thread for organization, separate task threads for implementation, GitHub shared memory for durable state.
-- Do not implement, fix, deploy, smoke test, or merge inside the launch/orchestrator thread.
-- Ask for human approval before creating or updating GitHub issues, labels, milestones, docs, or shared-memory artifacts.
-- Route large or vague work to `$start-work`; route recent meeting/chat changes to `$daily-alignment`; route ready execution to `$framework-orchestrator`.
-- Verify that the new standing thread is the personal Framework Orchestrator thread for the project or product stream. It is not a Git branch and not an implementation task thread.
+- Run `node scripts/vydykhai.mjs doctor` when available.
+- If the framework is not installed, stop task planning and give the exact install command.
+- Confirm the session runs from the target product repo.
+- Create or update a compact Project Operating Brief: repo, source of truth, coordination inputs, privacy, participants, decision owner, owner/backup convention, model profile, compass, DOD, and first next action.
+- Create Project State with participant registry, active orchestrator links, installed framework versions, current tasks, and active Alignment Window.
+- Treat meetings, recordings, transcripts, chat, and notes as raw coordination inputs until distilled and approved.
+- Explain the working model plainly: personal orchestrator for organization; separate research, lab, and task threads; task-thread acceptance and merge; durable shared state.
+- Keep project-specific rules outside framework-managed files.
+- Ask for human approval before creating or changing shared GitHub artifacts.
+- Route unclear goals to `$start-work`, recent meeting changes to `$daily-alignment`, and ready work to `$framework-orchestrator`.
+- Do not implement, deploy, smoke, or merge from the launch/orchestrator context.
 
-## User-Facing Outcome
+## Finish
 
-End with one status:
+Return one status: `READY_FOR_START_WORK`, `READY_FOR_ORCHESTRATOR`, `NEEDS_DECISION`, or `BLOCKED_BY_ACCESS`.
 
-- ready for start-work;
-- ready for orchestrator;
-- needs decision;
-- blocked by access.
-
-Include the operating brief location, coordination sources, source of truth, first DOD rows, and next action.
+Include Project State, compass/DOD, participants, active orchestrator registration, and exact next action.

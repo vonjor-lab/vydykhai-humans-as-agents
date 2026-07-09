@@ -1,45 +1,36 @@
 ---
 name: daily-alignment
-description: Use when the user asks for daily alignment, post-meeting alignment, meeting update, "daily alignment", "продолжи по daily", "сделай апдейт после встречи", "сделай daily alignment", or similar. Use for execution-time team alignment, not ordinary implementation.
+description: Process a daily or meaningful meeting, transcript, chat decision, merge, blocker, accepted result, owner change, or return-to-work event that may change another participant's safe next action.
 ---
 
 # Daily Alignment
 
-Run the repository's asynchronous post-meeting alignment workflow.
+Reconcile asynchronous human and agent work without requiring simultaneous availability.
 
-## Required References
-
-Read these files before acting:
+## Read
 
 1. `AGENTS.md`
-2. `docs/COLLABORATION_FRAMEWORK_2026-06-10.md`
+2. `docs/FRAMEWORK.md`
 3. `docs/codex-workflows/daily-alignment.md`
 
-Then load these templates only when needed:
+Load packet, delta, dashboard, and brief-patch templates only when writing them.
 
-- `docs/codex-workflows/local-alignment-packet.md`
-- `docs/codex-workflows/team-alignment-delta.md`
-- `docs/codex-workflows/alignment-issue-template.md`
-- `docs/codex-workflows/brief-patch-template.md`
+## Contract
 
-## Operating Contract
+- Treat meeting recordings, transcripts, chat, and notes as raw inputs.
+- Identify the meeting/event scope, expected participants, affected tasks/contracts, active Alignment Window, and latest delta.
+- Apply source precedence; a current human correction supersedes an old task-thread plan.
+- Publish this participant's Local Alignment Packet only when meeting or local state materially changes shared work.
+- Never overwrite or invent another participant's packet or uncommitted state.
+- Reconcile the packets that matter and list missing participants explicitly.
+- Let unrelated work continue. Use cautions or wait only for overlapping surfaces, contracts, decisions, or sequence.
+- Publish a Team Alignment Delta when several packets need reconciliation or shared guidance changes.
+- Rebuild the Alignment Window body in the same operation as the delta.
+- Update the participant registry with orchestrator link, installed framework version, latest packet, active task, and status.
+- Create a Brief Patch for a small approved change; route material goal, scope, sequence, ownership, or task-map changes to `$start-work`.
+- Rotate and archive the Alignment Window after a milestone or when it is no longer quickly scannable.
+- Update the Framework Orchestrator state and next-best-action.
 
-- Treat the GitHub alignment issue comments as the canonical append-only journal.
-- Treat the GitHub alignment issue body as a rebuildable dashboard.
-- Publish this participant's Local Alignment Packet before claiming alignment is complete.
-- Never overwrite another participant's packet.
-- A Team Alignment Delta must list covered packet ids and pending participants or packets.
-- When running inside a Framework Orchestrator thread, update the orchestrator state after publishing or reading the latest delta.
-- If other participants have not posted yet, return `READY_WITH_CAUTIONS` or `WAITING` instead of pretending the team is fully aligned.
-- Local uncommitted work from other participants is unknowable until their Codex publishes a packet; say this explicitly when it matters.
-- If the meeting or merge event changes an epic brief, create a Brief Patch. If it changes goal, scope, sequence, ownership, or task map materially, route to `$start-work` for re-briefing.
+## Finish
 
-## User-Facing Outcome
-
-End with one clear recommendation:
-
-- continue;
-- continue with cautions;
-- wait.
-
-Include the alignment issue link, packet id, latest delta id, and missing participants or packets when available.
+Return `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, or `BLOCKED`, with links to the active window, packet/delta, missing inputs, and exact next action.

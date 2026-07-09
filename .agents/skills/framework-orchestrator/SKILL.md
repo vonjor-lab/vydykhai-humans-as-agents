@@ -1,67 +1,47 @@
 ---
 name: framework-orchestrator
-description: Use when the user asks to continue a product stream, coordinate Codex work, launch or resume a task thread, process a merge/daily event, check task sequence, or keep an epic aligned across several humans and Codex instances.
+description: Continue a Vydykhai product stream, restore project state, coordinate people and agent threads, process meetings or merges, launch or resume work, supervise acceptance, recover stalled work, rotate stale orchestration context, or choose the next-best-action.
 ---
 
 # Framework Orchestrator
 
-Run the repository's personal orchestration workflow for one participant and one active product stream or epic.
+Act as the organization-only control thread for one participant and product stream.
 
-## Required References
-
-Read these files before acting:
+## Read
 
 1. `AGENTS.md`
-2. `docs/COLLABORATION_FRAMEWORK_2026-06-10.md`
-3. `docs/codex-workflows/framework-orchestrator.md`
+2. `docs/FRAMEWORK.md`
 
-Then load these workflows only when the current action requires them:
+Read `docs/codex-workflows/framework-orchestrator.md` when dispatching, supervising, recovering, or rotating. Load other workflows only when routing into their action.
 
-- `docs/codex-workflows/project-launch.md`
-- `docs/codex-workflows/start-work.md`
-- `docs/codex-workflows/daily-alignment.md`
-- `docs/codex-workflows/accept-work.md`
-- `docs/codex-workflows/task-thread-handoff-template.md`
+## Preflight
 
-## Operating Contract
+- Run `node scripts/vydykhai.mjs doctor` on first use, after update, or when version integrity is uncertain.
+- Restore Project State, current compass/DOD, participant registry, active Alignment Window, tasks, PRs, task-thread links, human checkpoints, and latest verified repository state.
+- Verify this thread is the registered active orchestrator for this participant and stream. If another thread is current, reconcile or rotate before changing shared state.
+- Compare dashboard state with the latest durable event. Rebuild or rotate a stale Alignment Window before relying on it.
+- Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo; agent plan; inference.
 
-- Treat the orchestrator thread as the stream control room, not the implementation worker.
-- Do not implement, fix product code, deploy, run acceptance smoke, or merge from the orchestrator thread.
-- Restore state from durable artifacts before recommending action: GitHub issues, PRs, alignment journal, brief, task handoffs, and local repo state.
-- Keep the current task sequence visible: what is active, what is blocked, what can continue, and what needs a decision.
-- Use `$project-launch` when a project is being started, imported into the framework, or missing an operating brief, coordination sources, onboarding, compass, DOD, or source of truth.
-- Use `$start-work` when a topic needs an epic brief, re-brief, task map, or task split.
-- Use `$daily-alignment` after daily meetings, meaningful meetings, merge events, blocked events, accepted results, and follow-up splits when they affect dependent work.
-- For implementation tasks, expect the task thread to run `$accept-work` before final completion; do not treat a task thread's "done" message as accepted unless the `$accept-work` result is present.
-- Before dispatch, classify task type and Product Capability Loop status. Product capabilities need a closed user/operator loop; technical enablers need a linked capability or later task that closes the loop; UI/product-surface work needs backing backend/API/data/persistence/permission contracts and realistic states.
-- Do not treat routes, backend/API tests, projections, readiness cards, or passive records as product capability closure unless there is a visible UI/operator entry/action or a human-approved linked exception.
-- Before high-ambiguity product/design/IA/UI shell/entity-model/AI workflow work, run Compass Calibration Check: confirm target object, source of truth, non-foundation references, nearest visible result, and nearest smoke artifact before implementation continues.
-- Treat the human as a project agent: when human action is needed, give a concrete addressee, link/prompt, requested output location, safe continuation status, and return-sync instruction.
-- Proactively suggest Lab Mode when isolated learning reduces burn or risk; require proof, stop condition, burn cap when material, lab exit, production transfer, tests, and real-flow smoke before product acceptance.
-- Proactively suggest Peer Compass Review when overlapping tasks/PRs/contracts/DOD rows need another participant's context; prepare the review request and tell the human who to ask and how to sync back.
-- If the next step is to understand an idea, source of truth, foundation, design template, option set, product model, or affected contracts, launch or prepare a research thread that does not change product code and returns a short Research Packet before brief/task/implementation.
-- Create or prepare a separate task thread for implementation work when the task is ready enough to have a GitHub issue with a `Codex Task Contract`, `DOD Impact`, task type / Product Capability Loop, `Burn / Limits`, scope, out of scope, acceptance criteria, and verification.
-- Use `gpt-5.5` or newest available model and `xhigh` / very high reasoning for new task/research threads; make any fallback visible in the task issue, handoff, or orchestrator state.
-- If Codex thread tools are available and the human has authorized launching or continuing the next task, create or resume the task/research thread, title it as `[#<issue>] <sequence> <short title>` when issue id or sequence is available, read back the actual sidebar title, rename it yourself through the available thread tool or explicitly ask the human, and record the exact title plus id/link in GitHub shared memory. If thread tools or rename are unavailable, provide the exact title and startup prompt and mark the launch as pending.
-- After launch, do not count a plan-only child response as progress; the child must start execution, name a blocker, or request rebrief.
-- When checking a task, read or inspect the task thread when its id or link is known. If `$accept-work` has not run, send the task thread a short command to run it from its current task context.
-- After `$accept-work` reports `ACCEPT` or `ACCEPT_WITH_FOLLOWUPS`, check whether required fresh current-branch smoke and manual merge happened in the task thread. If not, send the human back to the task thread. If yes, update sequence, DOD burndown, burn status when material, and recommend the next best action instead of stopping at the acceptance status.
-- If smoke used frontend/backend/browser runtime, require Runtime Coherence Check before treating acceptance as merge-ready. Missing or inconclusive proof sends the work back to the task thread.
-- An accepted sub-slice or merged PR does not close the parent issue unless the named DOD row and promised product loop are closed or the human explicitly moved the remainder out of scope. Keep parent closure status visible.
-- Record task thread links/ids, pending worktrees, or manual-start prompts in GitHub shared memory when available.
-- Run a short health review after a milestone or large merge, after 3-5 accepted slices, after several research/lab/task threads, repeated follow-ups, stalled tasks, stalled DOD burn, Lab Mode without exit, dirty context, scope growth, technical slicing without product progress, or owner dropout.
-- Never invent another participant's local state. Missing packets must remain visible as `WAITING`, `READY_WITH_CAUTIONS`, or `BLOCKED`.
+## Contract
 
-## User-Facing Outcome
+- Never implement product code, fix defects, deploy, run acceptance smoke, or merge here.
+- Route large or changed intent to `$start-work`, meeting/event impact to `$daily-alignment`, and completion checks to `$accept-work` in the task thread.
+- Choose Research Thread for bounded uncertainty, Lab Mode for lower-cost isolated proof, and Task Thread for approved real-path delivery.
+- Dispatch only from the minimum task contract: goal/DOD, scope boundary, product loop or linked enabler, human checkpoint, material burn limit, and verification route.
+- Use the project model/reasoning profile; make fallback visible. Do not invent a universal model version.
+- Create or prepare a separate context, verify its actual title, record its link, and verify execution started. A plan-only response is not progress.
+- Supervise through task issue, thread, PR, acceptance result, human checkpoint, and shared alignment state.
+- Ask the human with an addressee, exact action/link, output location, safe continuation boundary, and return-sync instruction.
+- Never say human participation is unnecessary while a named checkpoint remains.
+- Request Peer Compass Review before overlapping owner work changes a shared flow, surface, contract, PR, or DOD row.
+- Keep one monitor on one gate; keep it quiet while unchanged, prevent scope/spend/merge, update it when the gate changes, and delete it at terminal state.
+- After acceptance or merge, update DOD burn, parent closure, participant impact, Project State, and next-best-action instead of stopping at status.
+- Run Health Review after a milestone, several slices, repeated follow-ups, stalled DOD burn, owner dropout, repeated compaction, or chat archaeology.
+- Rotate the orchestrator when context is no longer compact: snapshot durable state, create/register a fresh thread, verify reconstruction, then archive the superseded thread.
+- Never invent another participant's uncommitted state. Missing participants block only overlapping work.
 
-End with one clear status:
+## Finish
 
-- continue;
-- continue with cautions;
-- wait;
-- launch task thread;
-- launch research thread;
-- accept work;
-- needs human decision.
+Return one status: `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, `LAUNCH_TASK_THREAD`, `LAUNCH_RESEARCH_THREAD`, `SEND_ACCEPT_WORK`, `ROTATE_ORCHESTRATOR`, `NEEDS_DECISION`, or `BLOCKED`.
 
-Include the relevant issue, PR, alignment delta, task thread, and next action when available.
+Always include the exact next action.

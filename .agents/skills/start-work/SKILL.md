@@ -1,47 +1,36 @@
 ---
 name: start-work
-description: Use when the user wants to start a large topic, shape an idea into an epic, plan a major feature, turn meeting outcomes into an epic, create a task map, or decide what should happen first.
+description: Turn a raw goal, meeting insight, broad product theme, changed compass, or large request into an approved epic brief, task map, ownership proposal, sequence, and GitHub work ready for autonomous agent execution.
 ---
 
 # Start Work
 
-Turn a large product or engineering topic into an agreed epic and task map.
+Shape large work before implementation begins.
 
-## Required References
-
-Read these files before acting:
+## Read
 
 1. `AGENTS.md`
-2. `docs/COLLABORATION_FRAMEWORK_2026-06-10.md`
+2. `docs/FRAMEWORK.md`
 3. `docs/codex-workflows/start-work.md`
 
-Load `docs/codex-workflows/daily-alignment.md` when the topic comes from recent meeting alignment or re-briefing.
+Load `$daily-alignment` inputs when this is a re-brief from a meeting or execution event.
 
-## Operating Contract
+## Contract
 
-- Start from product intent, not implementation mechanics.
-- Restore context from meetings, docs, issues, PRs, and current repo state before proposing an epic.
-- Produce an epic brief, affected entities, dependency map, task concepts, sequencing, and proposed ownership.
-- Classify task concepts by type (`product capability`, `technical enabler`, `maintenance`, `research/spike`, or `future option`) before tasking.
-- For product capabilities, define the closed user/operator loop before creating tasks; for technical enablers, link the task to the capability or later task that closes the loop; for UI/product-surface work, identify backing backend/API/data/persistence/permission contracts and realistic states.
-- For ambiguous product/design/IA/UI shell/entity-model/AI workflow tasks, include Compass Calibration: target object, source of truth, non-foundation references, nearest visible result, and smoke artifact.
-- If a narrow idea, source question, option set, or product model is not ready for a brief, route it to a Research Thread instead of forcing a premature task map.
-- Propose Lab Mode when isolated learning reduces burn or risk, and include lab exit / production transfer before product acceptance.
-- Propose Peer Compass Review when another participant's task, PR, contract, or DOD row overlaps and their context can prevent drift.
-- Ask for human approval before creating or updating GitHub issues.
-- Keep tasks sized for autonomous Codex execution with clear acceptance and verification.
-- Include a compact `Codex Task Contract` in implementation task issues so task threads know their deterministic thread title, `Model / Reasoning`, `DOD Impact`, `Parent Closure`, task type / Product Capability Loop, `Burn / Limits`, Lab Mode, Peer Compass Review, Launch expectation, and requirement to run `$accept-work` before final completion.
-- Include Runtime Coherence Check expectation for user-facing or integration-affecting tasks where smoke may involve frontend/backend/browser runtime.
-- Use `gpt-5.5` or newest available model and `xhigh` / very high reasoning for new task/research threads, with explicit fallback if unavailable.
-- Include owner/backup or failover condition for blocking tasks.
-- State that fresh current-branch smoke when required and manual merge after human smoke happen inside the task thread, not the orchestrator thread.
-- Return approved task sequence to the Framework Orchestrator so implementation can happen in separate task threads.
-- If the topic is too large or ambiguous, decompose it before writing tasks.
+- Restore product intent, latest explicit human decisions, compass, DOD, related epics, issues, PRs, and verified repo state.
+- Apply source precedence before using an old plan or issue as current intent.
+- Start from actor, problem, desired outcome, non-goals, and product loop; then identify entities, surfaces, contracts, dependencies, risks, and verification.
+- Route a narrow unresolved question into Research Thread instead of filling the orchestrator with speculation.
+- Propose Lab Mode only when isolation lowers cost or risk; include proof, stop condition, burn cap, production transfer, and real-flow verification.
+- Propose Peer Compass Review when another owner can prevent drift on an overlapping flow, surface, contract, PR, or DOD row.
+- Build autonomous tasks with the minimum contract: goal/DOD impact, scope/out of scope, product loop or linked enabler, human checkpoint, material burn limit, and verification/completion route.
+- Add detailed metadata only when it changes execution safety.
+- Use the project model/reasoning profile and expose fallback.
+- Show parent closure: what is already closed, what remains, and why another slice is needed.
+- Recommend sequence, owner, backup/failover, and parallel-safe boundaries.
+- Ask for human approval before creating or changing GitHub issues.
+- Return approved work to the Framework Orchestrator. Do not implement in this workflow.
 
-## User-Facing Outcome
+## Finish
 
-End with one of:
-
-- ready for approval: epic brief and task map are coherent;
-- needs decision: named product or scope decision is missing;
-- needs split: topic must be decomposed before planning.
+Return `READY_FOR_APPROVAL`, `NEEDS_DECISION`, or `NEEDS_RESEARCH_OR_SPLIT`, with the first next-best-action.

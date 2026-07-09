@@ -1,7 +1,4 @@
 interface:
   display_name: "Daily Alignment"
-  short_description: "Async post-meeting team alignment"
-  default_prompt: "Use $daily-alignment to run alignment after the latest meeting."
-
-policy:
-  allow_implicit_invocation: true
+  short_description: "Align meetings and async team work"
+  default_prompt: "Use $daily-alignment to process the latest meeting or shared-work event."
