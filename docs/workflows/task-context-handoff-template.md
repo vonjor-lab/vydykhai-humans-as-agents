@@ -1,15 +1,15 @@
-# Task Thread Handoff
+# Task Context Handoff
 
 Use the minimum contract. Add optional fields only when they alter execution safety.
 
 ```md
-# Task Thread Startup
+# Task Context Startup
 
 Title:
 Task / owner / backup:
 Orchestrator / Project State:
 Latest relevant delta:
-Agent profile: <resolved model / xhigh / checked date / fallback>
+Agent profile: <resolved model / reasoning mapping / checked date / fallback>
 
 ## Goal And DOD
 
@@ -42,8 +42,8 @@ Safe continuation before checkpoint:
 
 - <tests/checks>
 - exact-current-code runtime smoke when user-facing or integration-affecting
-- run `$accept-work` in this task thread before completion
-- keep corrective fixes, human smoke, and manual merge in this task thread
+- run `$accept-work` in this task context before completion
+- keep corrective fixes, human smoke, and manual merge in this task context
 
 ## Optional Safety Modes
 

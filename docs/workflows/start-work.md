@@ -15,9 +15,9 @@ Apply source precedence. Classify new commentary as current scope change, DOD ga
 
 ## 2. Decide Whether To Research
 
-Use Research Thread when one bounded question prevents a useful brief: source of truth, option comparison, product model, foundation, or affected contract.
+Use Research Context when one bounded question prevents a useful brief: source of truth, option comparison, product model, foundation, or affected contract.
 
-Give it one question, sources, non-goals, stop condition, and expected Research Packet. Do not change product code. Incorporate the packet and archive the thread before resuming the brief.
+Give it one question, sources, non-goals, stop condition, and expected Research Packet. Do not change product code. Incorporate the packet and close or archive the context before resuming the brief.
 
 ## 3. Draft The Epic Brief
 
@@ -56,7 +56,7 @@ Verification / completion route:
 Dependencies / parallel boundary:
 ```
 
-Classify task as product capability, technical enabler, maintenance, research, or future option. Use the current resolved flagship / `xhigh` agent profile and make fallback visible only in dispatch metadata.
+Classify task as product capability, technical enabler, maintenance, research, or future option. Use the current resolved flagship / deepest bounded reasoning profile and make its environment mapping or fallback visible only in dispatch metadata.
 
 Before adding another slice, show what already closed, what remains before parent acceptance, and why this is a DOD gap rather than polish.
 
@@ -64,6 +64,6 @@ Before adding another slice, show what already closed, what remains before paren
 
 Show the brief, task map, sequence, ownership, human checkpoints, open decisions, and risks. Ask for human approval.
 
-After approval, create/update GitHub issues and return the sequence to the Framework Orchestrator. Every implementation issue must instruct its task thread to run `$accept-work` before completion.
+After approval, create/update tasks in the shared tracker and return the sequence to the Framework Orchestrator. Every implementation task must instruct its task context to run `$accept-work` before completion.
 
 Do not implement in this workflow.

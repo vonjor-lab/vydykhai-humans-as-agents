@@ -1,9 +1,9 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.6.0
+Version: 1.7.0
 Status: canonical operating core
 
-Vydykhai is a framework for collaborative vibe coding with humans as agents. People hold product meaning, direction, and judgment. The AI orchestrator turns a raw goal into a compass, briefs, coordinated task threads, alignment, acceptance, and the next-best-action.
+Vydykhai is a framework for collaborative vibe coding with humans as agents. People hold product meaning, direction, and judgment. The AI orchestrator turns a raw goal into a compass, briefs, coordinated task contexts, alignment, acceptance, and the next-best-action.
 
 ## Sources
 
@@ -36,14 +36,16 @@ Vydykhai combines them: design the compass and task contract top-down, let agent
 - Each participant has one active Framework Orchestrator for a product stream. It organizes work and never implements product code.
 - Research, lab, and implementation run in separate focused contexts.
 - GitHub issues and PRs, or an equivalent shared tracker, hold durable state. Chat history is evidence, not the source of truth.
-- Task threads own implementation, corrective fixes, `$accept-work`, exact-current-code smoke, and manual merge after human confirmation.
+- Task contexts own implementation, corrective fixes, `$accept-work`, exact-current-code smoke, and manual merge after human confirmation.
 - The orchestrator owns sequence, alignment, task dispatch, human requests, health checks, and next-best-action.
 
-One active orchestrator does not mean one eternal thread. Rotate it when its context is no longer compact or reliable.
+An agent context is a logical boundary, not a vendor feature. It may be implemented as a thread, chat, session, run, workspace, or tracker-linked agent.
+
+One active orchestrator does not mean one eternal context. Rotate it when its memory is no longer compact or reliable.
 
 ## Activation
 
-The framework is active only when its kit is installed in the target product repository and the agent session starts from that repository. The normal human interface is one request from an agent task attached to the target repo:
+The framework is active only when its kit is installed in the target product repository and the agent starts from that repository. The normal human interface is one request to the coding agent attached to the target repo:
 
 ```text
 Connect Vydykhai to this project and start the orchestrator. Follow BOOTSTRAP.md end to end and ask me only for missing access or a decision: https://github.com/vonjor-lab/vydykhai-humans-as-agents
@@ -53,22 +55,24 @@ Required launch path:
 
 1. The bootstrap agent identifies the target repo, preserves existing work, installs or updates the kit, and runs `doctor`.
 2. It reviews the diff, prepares the setup commit or PR, and keeps project rules outside managed files.
-3. It creates Project State and starts a personal Framework Orchestrator from the target repo.
+3. It creates Project State and starts a personal Framework Orchestrator context from the target repo.
 4. `$project-launch` creates the Project Operating Brief, compass, first DOD, participant registry, shared state location, and first route.
 5. After the setup change is accepted, every participant pulls it and confirms activation through their orchestrator.
 
 The bootstrap request authorizes setup branch/PR and shared operating artifacts. It does not authorize merge, destructive overwrite, paid actions, production changes, or disclosure of private data. If tools or access are missing, the agent asks only for that capability instead of delegating setup commands to the human.
 
+Bootstrap maps the current agent environment to project instructions, skill/rule invocation, separate resumable contexts, durable shared state, and execution/verification. If native skill discovery or context creation is unavailable, it creates one thin native adapter that points to the canonical files and records the mapping in Project State. It never copies the operating logic into environment-specific rules.
+
 ## Agent Profile
 
-The default policy is `latest available flagship / xhigh`: the strongest broadly capable coding and agentic model available to that participant, with Extra High reasoning.
+The default policy is `latest available flagship / deepest bounded reasoning`: the strongest broadly capable coding and agentic model available to that participant, with the deepest stable reasoning mode inside the agreed burn boundary.
 
-- Resolve by current harness availability and current authoritative model guidance, not by version number alone.
+- Resolve by current agent-environment availability and current authoritative model guidance, not by version number alone.
 - Record the policy, resolved model id, reasoning effort, check date/source, and fallback in Project State.
 - Re-resolve at bootstrap, framework update, new or rotated orchestrator, model rejection/deprecation, and active-project Health Review at least every seven days.
 - Pass the resolved profile explicitly to new and resumed contexts when tools support it.
-- If discovery is unavailable, use the harness's recommended flagship and mark verification pending.
-- If the flagship does not support `xhigh`, use its highest supported effort and record the fallback; do not automatically choose Max or Ultra.
+- If discovery is unavailable, use the agent environment's recommended flagship and mark verification pending.
+- Map the policy to Extra High / `xhigh` when that label exists. Otherwise use the closest supported bounded mode and record it; do not automatically choose Max, Ultra, or an unbounded tier.
 - Never silently downgrade. A human may explicitly choose a cheaper or faster profile for a named scope.
 
 Universal rules never pin today's model id, allowing the project to adopt a future flagship without a framework release.
@@ -89,7 +93,7 @@ An agent plan never overrides a later human correction. Record the correction in
 
 ### 0. Launch
 
-Connect the repo, participants, coordination inputs, source of truth, privacy rules, compass, and first DOD. Register each active orchestrator in Project State.
+Connect the repo, participants, coordination inputs, source of truth, privacy rules, compass, and first DOD. Register each active orchestrator context in Project State.
 
 ### 1. Shape
 
@@ -101,9 +105,9 @@ If the compass changes, publish a visible patch or re-brief. Do not silently mut
 
 Choose the smallest useful context:
 
-- Research Thread: a bounded product or technical question is not ready for a brief. No product-code changes. Return a short Research Packet and archive the thread after incorporation.
+- Research Context: a bounded product or technical question is not ready for a brief. No product-code changes. Return a short Research Packet and close or archive the context after incorporation.
 - Lab Mode: isolated implementation or experimentation reduces risk, cost, or time-to-feedback. Define proof, stop condition, burn cap, and production-transfer plan before starting.
-- Task Thread: the outcome and acceptance boundary are clear enough to implement in the real product path.
+- Task Context: the outcome and acceptance boundary are clear enough to implement in the real product path.
 
 Research reduces uncertainty. Lab reduces execution cost. A task delivers accepted product or enabling work.
 
@@ -118,11 +122,11 @@ The minimum task contract contains:
 - Burn / limits when material;
 - Verification and completion route.
 
-Add Lab Mode, Peer Compass Review, model profile, or detailed contracts only when relevant. The orchestrator creates or prepares the task thread, verifies its actual title, records its link, and checks that execution started. A plan-only child response is not progress.
+Add Lab Mode, Peer Compass Review, model profile, or detailed contracts only when relevant. The orchestrator creates or prepares the task context, verifies its title or stable handle, records its link, and checks that execution started. A plan-only child response is not progress.
 
 ### 4. Execute
 
-The task thread implements autonomously inside its contract. It stops and returns for re-brief when the goal, source of truth, shared contract, burn cap, or human checkpoint changes.
+The task context implements autonomously inside its contract. It stops and returns for re-brief when the goal, source of truth, shared contract, burn cap, or human checkpoint changes.
 
 ### 5. Align
 
@@ -132,11 +136,11 @@ Missing participants do not block unrelated work. Work touching their active sur
 
 ### 6. Accept
 
-The task thread runs `$accept-work` before completion. Acceptance compares the result with the latest human decision, brief, DOD, deltas, product loop, burn, tests, and smoke evidence.
+The task context runs `$accept-work` before completion. Acceptance compares the result with the latest human decision, brief, DOD, deltas, product loop, burn, tests, and smoke evidence.
 
 For runtime work, smoke the exact branch, worktree, commit, frontend, backend, and browser target being accepted. Do not use an old server or another branch. Product capability is not closed by backend state, UI shell, or lab proof alone.
 
-After human smoke, merge manually from the task thread. The orchestrator then updates DOD burn, alignment, parent closure, and next-best-action.
+After human smoke, merge manually through the task context. The orchestrator then updates DOD burn, alignment, parent closure, and next-best-action.
 
 ### 7. Review Health
 
@@ -149,7 +153,7 @@ Check:
 - research and lab outputs that never entered the real product path;
 - stale tasks, PRs, branches, worktrees, monitors, and alignment windows;
 - decisions trapped outside durable state;
-- whether the active orchestrator should rotate.
+- whether the active orchestrator context should rotate.
 
 ## Humans As Agents
 
@@ -176,10 +180,10 @@ The orchestrator should not say that a human is unnecessary when a named checkpo
 
 Keep two compact durable artifacts:
 
-- Project State: compass, DOD, participant registry, active orchestrators, current tasks, and latest alignment window.
+- Project State: compass, DOD, participant registry, active orchestrator contexts, current tasks, and latest alignment window.
 - Alignment Window: append-only packets and deltas for one meeting, milestone, or compact work period.
 
-The participant registry includes: participant, orchestrator link, installed framework version, resolved agent profile and check date, latest packet, active task, and status.
+The participant registry includes: participant, orchestrator context link, installed framework version, resolved agent profile and check date, latest packet, active task, and status.
 
 Before starting or resuming work on a shared surface, each participant's orchestrator checks its registry row and publishes a new packet when local or meeting state materially changed. Never invent another participant's uncommitted state.
 
@@ -208,12 +212,12 @@ Propose Peer Compass Review when tasks, PRs, product surfaces, contracts, or DOD
 
 One active orchestrator is authoritative for one participant and stream. Rotation is a two-phase handoff, not an automatic replacement:
 
-1. Keep the previous orchestrator active, intact, and linked. It publishes a Rotation Memory Packet covering compass/DOD, decisions, queued/promised/deferred work, human requests to remember, working rules, monitors/follow-ups, checkpoints, participants, and ambiguous or stale items.
-2. Compare the packet with Project State, issues/PRs, project instructions/docs, current repository state, and available thread history. Classify each item as already durable, missing durable state, ambiguous, or stale/superseded.
+1. Keep the previous orchestrator context active, intact, and linked. It publishes a Rotation Memory Packet covering compass/DOD, decisions, queued/promised/deferred work, human requests to remember, working rules, monitors/follow-ups, checkpoints, participants, and ambiguous or stale items.
+2. Compare the packet with Project State, issues/PRs, project instructions/docs, current repository state, and available context history. Classify each item as already durable, missing durable state, ambiguous, or stale/superseded.
 3. Create the candidate orchestrator from the current repo/framework in read-only mode. It independently runs Memory Coverage Check and reports omissions, conflicts, and proposed durable destinations.
 4. Put still-current missing items into their correct durable source only after the human sees the coverage delta; do not mass-create tasks or silently promote old ideas.
 5. Ask the human to confirm the active switch. Until confirmation, the candidate must not dispatch new work and the active pointer does not change.
-6. After confirmation, register the candidate as active and keep the previous thread as a pinned historical/reference link. Never delete or archive it automatically.
+6. After confirmation, register the candidate as active and keep the previous context as a pinned historical/reference link. Never delete or archive it automatically.
 
 If the previous orchestrator is unavailable, mark recovery as incomplete, preserve safe boundaries, and ask the human before claiming full memory coverage or changing shared direction.
 
@@ -227,14 +231,14 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Do not accept Lab Mode as product completion without production transfer and real-flow verification.
 - Do not expose secrets, transcripts, private product data, proprietary prompts, or customer information in public framework artifacts.
 - Preserve the framework license, creator metadata, and required notice in installed or redistributed framework copies; they do not claim ownership of project-specific work.
-- Use `latest available flagship / xhigh`, keep the resolved profile and check date in Project State, and make fallback visible. Do not hardcode a model version in universal rules.
+- Use `latest available flagship / deepest bounded reasoning`, keep the resolved profile and check date in Project State, and make fallback visible. Do not hardcode a model version or vendor-specific reasoning label in universal rules.
 - Preserve append-only evidence, but keep current dashboards short and current.
 - Prefer next-best-action over status-only reporting.
 - Do not switch active orchestrators without a Rotation Memory Packet, candidate Memory Coverage Check, and explicit human confirmation.
 
 ## Skills And Human Interface
 
-Internal repo-scoped skills:
+Canonical repo-scoped skills:
 
 - `$project-launch`: activate a project and create its operating brief.
 - `$framework-orchestrator`: restore state, coordinate, dispatch, supervise, and choose next-best-action.
@@ -242,7 +246,9 @@ Internal repo-scoped skills:
 - `$daily-alignment`: reconcile meeting and event changes asynchronously.
 - `$accept-work`: accept a task, milestone, or epic against current intent and evidence.
 
-People should not need to select skills manually. In the orchestrator, natural requests are enough:
+The `SKILL.md` contracts own behavior. Environments may expose them as `$skills`, commands, rules, or automatic routes; optional interface metadata does not change their meaning.
+
+People should not need to select skills manually. In the orchestrator context, natural requests are enough:
 
 - `Start this project.`
 - `Continue this stream.`

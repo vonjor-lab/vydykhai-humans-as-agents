@@ -8,10 +8,10 @@ Run on first use, after update, after restart, or when state looks stale:
 
 1. Run `node scripts/vydykhai.mjs doctor` when available.
 2. Read Project State, latest explicit human decisions, active Alignment Window, tasks, PRs, and verified repo state.
-3. Verify this thread is the registered active orchestrator for this participant/stream.
+3. Verify this context is the registered active orchestrator for this participant/stream.
 4. Compare dashboard timestamps and claims with the newest durable event.
 5. Apply source precedence before trusting an old issue or agent plan.
-6. Resolve `latest available flagship / xhigh` when the recorded check is missing, older than seven days, follows framework update/rotation, or the model was rejected/deprecated.
+6. Resolve `latest available flagship / deepest bounded reasoning` and its environment mapping when the recorded check is missing, older than seven days, follows framework update/rotation, or the model was rejected/deprecated.
 
 Compact state:
 
@@ -21,7 +21,7 @@ Compass / DOD:
 Project State:
 Active Alignment Window:
 Framework version / agent policy / resolved model / checked:
-Active tasks: <task | owner | thread | PR | human checkpoint | DOD impact | status | next>
+Active tasks: <task | owner | context | PR/artifact | human checkpoint | DOD impact | status | next>
 Pending decisions / participants:
 Can continue:
 Next-best-action:
@@ -37,7 +37,7 @@ Rebuild a stale dashboard or rotate an unreadable Alignment Window before relyin
 - `research`: bounded uncertainty before brief/task, no product code.
 - `lab`: isolated proof reduces cost or risk and has an exit plan.
 - `dispatch`: launch or resume an approved task.
-- `accept`: completion requires `$accept-work` in the task thread.
+- `accept`: completion requires `$accept-work` in the task context.
 - `sequence`: choose what happens next.
 - `health`: detect drift, stale context, repeated cost, or rotation need.
 
@@ -64,7 +64,7 @@ Require the minimum task contract:
 - material burn/stop limit;
 - verification and completion route.
 
-Add research, lab, or peer review details only when relevant. Always pass the current resolved agent profile when thread tools support it; any fallback is human-visible and recorded.
+Add research, lab, or peer review details only when relevant. Always pass the current resolved agent profile when context tools support it; any fallback is human-visible and recorded.
 
 When tools allow:
 
@@ -74,23 +74,25 @@ When tools allow:
 4. Record the link/title in Project State and task issue.
 5. Verify the child starts execution, names a blocker, or requests re-brief.
 
+Without native context creation, prepare the stable shared-tracker handle and startup packet, record both in Project State, and give one exact launch action. Do not implement in the orchestrator context.
+
 A plan-only response is not a launched task. Send it back to execute within scope or name the blocking decision.
 
 ## 5. Supervise
 
 Use this state machine:
 
-- No thread: create/prepare and record it.
+- No context: create/prepare and record it.
 - Plan only: request execution, blocker, or re-brief.
 - Working inside scope: stay quiet and name the next checkpoint.
 - Waiting at human checkpoint: give the human exact action, link, output location, safe continuation, and return sync.
-- Research complete: incorporate the Research Packet, update durable state, archive the thread.
+- Research complete: incorporate the Research Packet, update durable state, close or archive the context.
 - Lab proof/cap reached: stop lab polish; route production transfer, tests, and real-flow smoke.
 - Cross-owner overlap: request Peer Compass Review before affected work continues.
-- Task claims completion without `$accept-work`: send it to `$accept-work` in the same thread.
-- `NEEDS_FIXES`: return exact fixes to the same task thread.
+- Task claims completion without `$accept-work`: send it to `$accept-work` in the same context.
+- `NEEDS_FIXES`: return exact fixes to the same task context.
 - `BLOCKED`: record the missing decision/input and tell the human precisely.
-- Accepted but smoke/merge pending: return human to the task thread.
+- Accepted but smoke/merge pending: return the human to the task context.
 - Accepted and merged: update DOD burn, parent closure, participant impact, and next-best-action.
 
 Do not implement, smoke, or merge from the orchestrator.
@@ -106,7 +108,7 @@ Run Health Review after milestones, several slices, repeated follow-ups, stalled
 If rotation is needed:
 
 1. Freeze new dispatch, but keep the previous orchestrator active and intact.
-2. Publish one Rotation Memory Packet from the previous thread:
+2. Publish one Rotation Memory Packet from the previous context:
    - compass, DOD, decisions, and explicit corrections;
    - active, queued, promised, deferred, paused, and conditional work;
    - human requests to remember and project working rules;
@@ -117,10 +119,10 @@ If rotation is needed:
 4. Re-resolve the flagship profile and create a read-only candidate from current repo/framework. Do not register it active yet.
 5. Candidate independently compares the packet with Project State, issues/PRs, project instructions/docs, repo state, and available history. It returns covered, missing, conflicting, and human-decision items.
 6. Show the coverage delta to the human. Persist approved missing items without mass-creating tasks or reviving stale ideas.
-7. After explicit human confirmation, change the active pointer and verify the new thread can reconstruct compass, DOD, queue, remembered rules, blockers, latest delta, and next action.
-8. Keep the previous thread pinned and linked as history/reference. Archive or delete it only on an explicit human request.
+7. After explicit human confirmation, change the active pointer and verify the new context can reconstruct compass, DOD, queue, remembered rules, blockers, latest delta, and next action.
+8. Keep the previous context pinned and linked as history/reference. Archive or delete it only on an explicit human request.
 
-If the previous thread is unavailable, mark `MEMORY_RECOVERY_INCOMPLETE`, let only clearly safe work continue, and request human confirmation before the candidate becomes authoritative.
+If the previous context is unavailable, mark `MEMORY_RECOVERY_INCOMPLETE`, let only clearly safe work continue, and request human confirmation before the candidate becomes authoritative.
 
 ## 8. Finish
 

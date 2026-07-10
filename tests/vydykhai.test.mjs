@@ -35,9 +35,11 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.equal(await readFile(path.join(target, "LICENSE.md"), "utf8"), "product license\n");
     assert.equal(await readFile(path.join(target, "NOTICE.md"), "utf8"), "product notice\n");
     assert.equal(await readFile(path.join(target, ".agents/skills/project-only/SKILL.md"), "utf8"), "project-only\n");
+    assert.match(await readFile(path.join(target, "docs/workflows/README.md"), "utf8"), /environment-neutral workflows/);
+    await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.6.0");
+    assert.equal(lock.installedVersion, "1.7.0");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -47,7 +49,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const doctor = run(["doctor", target, "--offline"]);
     assert.equal(doctor.status, 0, doctor.stderr);
     assert.match(doctor.stdout, /Integrity: OK/);
-    assert.match(doctor.stdout, /latest-available-flagship \/ xhigh/);
+    assert.match(doctor.stdout, /latest-available-flagship \/ deepest-bounded/);
     assert.match(doctor.stdout, /Creator: Alexander Rozhnov \(@vonjor-lab\)/);
     assert.match(doctor.stdout, /License: PolyForm-Small-Business-1\.0\.0/);
 
@@ -64,10 +66,20 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.6\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.7\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
+});
+
+test("1.7 manifest preserves the 1.6 updater compatibility fields", async () => {
+  const manifest = JSON.parse(await readFile(path.join(root, "vydykhai.json"), "utf8"));
+  assert.equal(manifest.schemaVersion, 1);
+  assert.equal(manifest.defaultAgentProfile.modelPolicy, "latest-available-flagship");
+  assert.equal(manifest.defaultAgentProfile.reasoningEffort, "xhigh");
+  assert.equal(manifest.defaultAgentProfile.reasoningPolicy, "deepest-bounded");
+  assert.ok(manifest.managedPaths.includes("docs/workflows"));
+  assert.ok(!manifest.managedPaths.includes("docs/codex-workflows"));
 });
 
 test("update from a local canonical source preserves project files", async () => {

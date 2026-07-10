@@ -1,9 +1,9 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.6.0
+Версия: 1.7.0
 Статус: каноническое операционное ядро
 
-«Выдыхай» - это фреймворк для совместного вайбкодинга, где люди работают как агенты смысла и продуктового направления. AI-оркестратор помогает превратить сырую цель в компас, брифы, согласованные task threads, alignment, приемку и понятный next-best-action.
+«Выдыхай» - это фреймворк для совместного вайбкодинга, где люди работают как агенты смысла и продуктового направления. AI-оркестратор помогает превратить сырую цель в компас, брифы, согласованные task contexts, alignment, приемку и понятный next-best-action.
 
 ## Источники
 
@@ -36,39 +36,43 @@
 - У каждого участника есть один активный Framework Orchestrator на product stream. Он организует работу и не пишет продуктовый код.
 - Research, lab и implementation идут в отдельных сфокусированных контекстах.
 - GitHub issues и PR либо аналогичный общий tracker хранят durable state. История чата является свидетельством, но не source of truth.
-- Task threads отвечают за implementation, исправления, `$accept-work`, smoke на точном актуальном коде и ручной merge после подтверждения человека.
+- Task contexts отвечают за implementation, исправления, `$accept-work`, smoke на точном актуальном коде и ручной merge после подтверждения человека.
 - Оркестратор отвечает за sequence, alignment, dispatch, запросы человеку, health checks и next-best-action.
 
-Один активный оркестратор не означает один вечный тред. Его нужно менять, когда контекст перестает быть компактным и надежным.
+Agent context - это логическая граница, а не функция конкретного продукта. Он может быть thread, chat, session, run, workspace или tracker-linked agent.
+
+Один активный оркестратор не означает один вечный context. Его нужно менять, когда память перестает быть компактной и надежной.
 
 ## Активация
 
-Фреймворк работает только после установки комплекта в целевой product repo и запуска агентской сессии из этого репозитория. Обычный человеческий интерфейс - один запрос в задаче агента, подключенной к целевому repo:
+Фреймворк работает только после установки комплекта в целевой product repo и запуска агента из этого репозитория. Обычный человеческий интерфейс - один запрос coding agent, подключенному к целевому repo:
 
 ```text
-Подключи Vydykhai к этому проекту и запусти оркестратор. Все технические шаги сделай сам по BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents
+Подключи Vydykhai к этому проекту и запусти оркестратор. Сам определи возможности своей агентской среды и выполни BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents
 ```
 
 Обязательный порядок:
 
 1. Bootstrap-агент определяет target repo, сохраняет существующую работу, устанавливает или обновляет kit и запускает `doctor`.
 2. Он проверяет diff, готовит setup commit или PR и оставляет project rules вне managed files.
-3. Он создает Project State и запускает личный Framework Orchestrator из target repo.
+3. Он создает Project State и запускает личный Framework Orchestrator context из target repo.
 4. `$project-launch` создает Project Operating Brief, компас, первый DOD, registry участников, общую память и первый маршрут.
 5. После принятия setup change каждый участник делает обычный pull и подтверждает активацию через своего orchestrator.
 
 Bootstrap-запрос разрешает setup branch/PR и общие operating artifacts. Он не разрешает merge, destructive overwrite, платные действия, production changes или раскрытие private data. Если не хватает tool или доступа, агент просит только эту возможность и не перекладывает команды установки на человека.
 
+Bootstrap сопоставляет текущую агентскую среду с project instructions, вызовом skills/rules, отдельными resumable contexts, durable shared state и execution/verification. Если среда не умеет native skill discovery или context creation, создается один тонкий native adapter со ссылками на канонические файлы, а mapping записывается в Project State. Операционная логика не копируется в environment-specific rules.
+
 ## Профиль агента
 
-Политика по умолчанию - `latest available flagship / xhigh`: самая сильная доступная участнику универсальная модель для coding и agentic work с reasoning Extra High.
+Политика по умолчанию - `latest available flagship / deepest bounded reasoning`: самая сильная доступная участнику универсальная модель для coding и agentic work с самым глубоким стабильным reasoning внутри согласованного burn boundary.
 
-- Выбирать по текущей доступности в harness и актуальному авторитетному model guidance, а не только по номеру версии.
+- Выбирать по текущей доступности в agent environment и актуальному авторитетному model guidance, а не только по номеру версии.
 - Записывать policy, resolved model id, reasoning effort, дату/источник проверки и fallback в Project State.
 - Повторять проверку при bootstrap, framework update, создании или ротации orchestrator, model rejection/deprecation и активном Health Review не реже одного раза в семь дней.
 - Явно передавать resolved profile новым и возобновляемым контекстам, если tools это поддерживают.
-- Если discovery недоступен, использовать рекомендованный harness flagship и отмечать verification pending.
-- Если flagship не поддерживает `xhigh`, использовать его максимальный поддерживаемый reasoning и записывать fallback; не выбирать автоматически Max или Ultra.
+- Если discovery недоступен, использовать рекомендованный agent-environment flagship и отмечать verification pending.
+- Если среда использует название Extra High / `xhigh`, выбрать его. Иначе использовать ближайший bounded mode и записать mapping; не переходить автоматически на Max, Ultra или unbounded tier.
 - Не делать silent downgrade. Человек может явно выбрать более дешевый или быстрый profile для названного scope.
 
 Universal rules не фиксируют сегодняшний model id, поэтому будущий flagship можно принять без нового релиза фреймворка.
@@ -89,7 +93,7 @@ Universal rules не фиксируют сегодняшний model id, поэ�
 
 ### 0. Запуск
 
-Подключить repo, участников, coordination inputs, source of truth, privacy rules, компас и первый DOD. Зарегистрировать активные оркестраторы в Project State.
+Подключить repo, участников, coordination inputs, source of truth, privacy rules, компас и первый DOD. Зарегистрировать active orchestrator contexts в Project State.
 
 ### 1. Осмысление
 
@@ -101,9 +105,9 @@ Universal rules не фиксируют сегодняшний model id, поэ�
 
 Выбирать минимальный полезный контекст:
 
-- Research Thread: ограниченный продуктовый или технический вопрос еще не готов для brief. Product code не меняется. На выходе короткий Research Packet; после incorporation тред архивируется.
+- Research Context: ограниченный продуктовый или технический вопрос еще не готов для brief. Product code не меняется. На выходе короткий Research Packet; после incorporation context закрывается или архивируется.
 - Lab Mode: изолированная реализация или эксперимент сокращают риск, стоимость или время обратной связи. До запуска определить proof, stop condition, burn cap и production-transfer plan.
-- Task Thread: результат и граница приемки достаточно ясны, чтобы реализовывать их в реальном продуктовом пути.
+- Task Context: результат и граница приемки достаточно ясны, чтобы реализовывать их в реальном продуктовом пути.
 
 Research уменьшает неопределенность. Lab уменьшает стоимость исполнения. Task доставляет принятый продуктовый или enabling результат.
 
@@ -118,11 +122,11 @@ Research уменьшает неопределенность. Lab уменьша
 - Burn / limits, когда расходы существенны;
 - Verification и completion route.
 
-Lab Mode, Peer Compass Review, model profile и подробные contracts добавляются только когда нужны. Оркестратор создает или готовит task thread, проверяет его реальное название, записывает ссылку и убеждается, что работа началась. Ответ child thread только с планом не считается прогрессом.
+Lab Mode, Peer Compass Review, model profile и подробные contracts добавляются только когда нужны. Оркестратор создает или готовит task context, проверяет title или stable handle, записывает ссылку и убеждается, что работа началась. Ответ child context только с планом не считается прогрессом.
 
 ### 4. Исполнение
 
-Task thread автономно реализует задачу внутри контракта. Он останавливается и возвращается за re-brief, если меняются цель, source of truth, общий contract, burn cap или human checkpoint.
+Task context автономно реализует задачу внутри контракта. Он останавливается и возвращается за re-brief, если меняются цель, source of truth, общий contract, burn cap или human checkpoint.
 
 ### 5. Alignment
 
@@ -132,11 +136,11 @@ Task thread автономно реализует задачу внутри ко
 
 ### 6. Приемка
 
-Перед завершением task thread запускает `$accept-work`. Приемка сравнивает результат с последним решением человека, brief, DOD, deltas, product loop, burn, тестами и smoke evidence.
+Перед завершением task context запускает `$accept-work`. Приемка сравнивает результат с последним решением человека, brief, DOD, deltas, product loop, burn, тестами и smoke evidence.
 
 Для runtime-работы smoke проводится на точных branch, worktree, commit, frontend, backend и browser target, которые принимаются. Старый сервер или другая ветка не подходят. Backend state, UI shell или lab proof сами по себе не закрывают product capability.
 
-После ручного smoke человек делает manual merge из task thread. Затем оркестратор обновляет DOD burn, alignment, parent closure и next-best-action.
+После ручного smoke человек делает manual merge через task context. Затем оркестратор обновляет DOD burn, alignment, parent closure и next-best-action.
 
 ### 7. Health Review
 
@@ -149,7 +153,7 @@ Task thread автономно реализует задачу внутри ко
 - research и lab outputs, которые не попали в реальный продуктовый путь;
 - stale tasks, PR, branches, worktrees, monitors и alignment windows;
 - решения, оставшиеся вне durable state;
-- необходимость сменить активный orchestrator.
+- необходимость сменить active orchestrator context.
 
 ## Люди как агенты
 
@@ -176,10 +180,10 @@ Task thread автономно реализует задачу внутри ко
 
 Достаточно двух компактных durable artifacts:
 
-- Project State: compass, DOD, registry участников, активные orchestrators, текущие задачи и последнее alignment window.
+- Project State: compass, DOD, registry участников, active orchestrator contexts, текущие задачи и последнее alignment window.
 - Alignment Window: append-only packets и deltas одной встречи, milestone или компактного рабочего периода.
 
-Registry участников содержит: participant, orchestrator link, установленную версию фреймворка, resolved agent profile и дату проверки, latest packet, active task и status.
+Registry участников содержит: participant, orchestrator context link, установленную версию фреймворка, resolved agent profile и дату проверки, latest packet, active task и status.
 
 Перед стартом или продолжением работы на общей поверхности orchestrator каждого участника проверяет свою строку и публикует новый packet, если локальное состояние или результаты встречи существенно изменились. Нельзя придумывать незакоммиченное состояние другого участника.
 
@@ -208,12 +212,12 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 
 Для одного участника и stream авторитетен один активный orchestrator. Ротация является двухфазным handoff, а не автоматической заменой:
 
-1. Предыдущий orchestrator остается активным, целым и доступным по ссылке. Он публикует Rotation Memory Packet: compass/DOD, решения, queued/promised/deferred work, просьбы человека запомнить, working rules, monitors/follow-ups, checkpoints, participants, ambiguous и stale items.
-2. Packet сверяется с Project State, issues/PR, project instructions/docs, текущим repo state и доступной историей thread. Каждый item получает статус already durable, missing durable state, ambiguous или stale/superseded.
+1. Предыдущий orchestrator context остается активным, целым и доступным по ссылке. Он публикует Rotation Memory Packet: compass/DOD, решения, queued/promised/deferred work, просьбы человека запомнить, working rules, monitors/follow-ups, checkpoints, participants, ambiguous и stale items.
+2. Packet сверяется с Project State, issues/PR, project instructions/docs, текущим repo state и доступной историей context. Каждый item получает статус already durable, missing durable state, ambiguous или stale/superseded.
 3. Candidate orchestrator создается из актуальных repo/framework в read-only режиме. Он независимо проводит Memory Coverage Check и показывает omissions, conflicts и proposed durable destinations.
 4. Актуальные missing items попадают в правильный durable source только после того, как человек увидел coverage delta; нельзя массово создавать задачи или молча возвращать старые идеи.
 5. Человек явно подтверждает active switch. До подтверждения candidate не dispatch новые задачи, а active pointer не меняется.
-6. После подтверждения candidate регистрируется active, а previous thread остается pinned historical/reference link. Его нельзя удалять или архивировать автоматически.
+6. После подтверждения candidate регистрируется active, а previous context остается pinned historical/reference link. Его нельзя удалять или архивировать автоматически.
 
 Если previous orchestrator недоступен, recovery отмечается incomplete, сохраняются safe boundaries, а полное memory coverage и смена направления требуют решения человека.
 
@@ -227,14 +231,14 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - Lab Mode не принимается как продуктовый результат без production transfer и real-flow verification.
 - Secrets, transcripts, private product data, proprietary prompts и customer information не попадают в public framework artifacts.
 - В установленных или распространяемых копиях фреймворка сохраняются license, creator metadata и required notice; они не распространяют права на project-specific работу.
-- Используется `latest available flagship / xhigh`; resolved profile и дата проверки хранятся в Project State, fallback показывается явно. Universal rules не содержат hardcoded model version.
+- Используется `latest available flagship / deepest bounded reasoning`; resolved profile и дата проверки хранятся в Project State, fallback показывается явно. Universal rules не содержат hardcoded model version или vendor-specific reasoning label.
 - Append-only evidence сохраняется, но текущие dashboards остаются короткими и актуальными.
 - Next-best-action важнее status-only ответа.
 - Active orchestrator нельзя переключать без Rotation Memory Packet, candidate Memory Coverage Check и явного подтверждения человека.
 
 ## Skills и человеческий интерфейс
 
-Внутренние repo-scoped skills:
+Канонические repo-scoped skills:
 
 - `$project-launch`: активировать проект и создать operating brief.
 - `$framework-orchestrator`: восстановить state, координировать, dispatch, supervise и выбрать next-best-action.
@@ -242,7 +246,9 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - `$daily-alignment`: асинхронно согласовать изменения встреч и событий.
 - `$accept-work`: принять task, milestone или epic по актуальному intent и evidence.
 
-Человеку не нужно вручную выбирать skill. В orchestrator достаточно естественных команд:
+Поведение задают `SKILL.md` contracts. Среда может показывать их как `$skills`, commands, rules или automatic routes; optional interface metadata не меняет их смысл.
+
+Человеку не нужно вручную выбирать skill. В orchestrator context достаточно естественных команд:
 
 - `Запусти этот проект.`
 - `Продолжи этот поток.`

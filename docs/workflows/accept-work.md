@@ -61,9 +61,9 @@ Check:
 - `NEEDS_FIXES`: task is close but the promised outcome, loop, checkpoint, or verification is incomplete.
 - `BLOCKED`: a decision, packet, conflict, access, burn exception, or reliable verification is missing.
 
-## 6. Finish In The Task Thread
+## 6. Finish In The Task Context
 
-Keep fixes, smoke, and manual merge in the task thread. After human confirmation:
+Keep fixes, smoke, and manual merge in the task context. After human confirmation:
 
 - update task/PR status and acceptance summary;
 - publish alignment only when another participant's safe action changes;
