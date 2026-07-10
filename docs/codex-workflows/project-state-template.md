@@ -10,6 +10,10 @@ Use one compact issue or equivalent artifact per project or product stream. It i
 Framework: <installed version> | Upstream: <url> | Last doctor: <result/date>
 Agent policy: latest available flagship / xhigh
 Resolved agent: <model id> | Checked: <date/source> | Fallback: <none, pending, or reason>
+Orchestrator rotation: <stable | reconciling | candidate ready | human confirmed>
+Candidate orchestrator: <link/title or none>
+Previous orchestrator: <pinned history/reference link or none>
+Memory coverage: <Rotation Memory Packet link | candidate check link | missing/ambiguous count>
 Compass: <brief/doc/issue link>
 Current DOD: <milestone and rows>
 Active Alignment Window: <link or none>

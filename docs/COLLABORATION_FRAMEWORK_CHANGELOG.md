@@ -8,6 +8,20 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.5.2 - 2026-07-10
+
+Ротация orchestrator стала контролируемой миграцией памяти вместо автоматической замены треда.
+
+- Previous orchestrator перед ротацией публикует Rotation Memory Packet: compass/DOD, decisions, очередь, promises, deferred work, просьбы человека запомнить, working rules, monitors, checkpoints, ownership и ambiguous/stale items.
+- Каждый item сверяется с durable sources и получает статус `ALREADY_DURABLE`, `MISSING_DURABLE`, `AMBIGUOUS` или `STALE/SUPERSEDED`.
+- Новый orchestrator сначала является read-only candidate и независимо проводит Memory Coverage Check по Project State, issues/PR, project docs/instructions, repo state и доступной истории.
+- Active pointer меняется только после human-visible coverage delta и явного подтверждения человека.
+- Missing items не превращаются молча в новые задачи: человек видит их и подтверждает правильный durable destination.
+- Previous thread сохраняется pinned historical/reference link и никогда не архивируется или удаляется автоматически.
+- При недоступном previous thread recovery помечается incomplete, а candidate не заявляет полную память и не меняет shared direction без человека.
+
+Зачем: не терять накопленные просьбы, очередь и правила работы при очистке перегруженного контекста и не удивлять человека появлением нового «главного» orchestrator.
+
 ## 1.5.1 - 2026-07-10
 
 Установка сведена к одному запросу агенту, а выбор модели стал динамической политикой вместо project-specific номера.

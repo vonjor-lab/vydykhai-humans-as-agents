@@ -4,7 +4,7 @@
 
 Vydykhai is a framework for collaborative vibe coding with humans as agents: people carry meaning and judgment, while an AI orchestrator maintains the compass, task flow, alignment, acceptance, and next-best-action.
 
-Current version: `1.5.1`
+Current version: `1.5.2`
 
 ## Give This To Your Agent
 
@@ -38,6 +38,7 @@ The detailed 1.4.8 documents remain available through the `v1.4.8` Git tag. Curr
 - Calls humans only at explicit product, visual, paid-action, smoke, or merge checkpoints.
 - Checks product-loop closure, DOD burn, exact-current-code smoke, and next-best-action.
 - Rotates stale orchestrators, journals, monitors, and task contexts before they become hidden project memory.
+- Preserves queued work, remembered nuances, promises, and working rules through a human-confirmed Memory Coverage Check before orchestrator rotation.
 
 ## Install Into A Project
 

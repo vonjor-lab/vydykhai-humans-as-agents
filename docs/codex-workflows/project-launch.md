@@ -43,6 +43,8 @@ Register each participant with:
 
 Do not store a permanent orchestrator thread id in universal or project-wide framework rules. Project State owns the current pointer and can replace it during rotation.
 
+Rotation does not replace that pointer automatically. Project State records the previous thread, read-only candidate, Rotation Memory Packet, candidate Memory Coverage Check, and explicit human confirmation before the switch.
+
 ## Team Onboarding
 
 Explain:

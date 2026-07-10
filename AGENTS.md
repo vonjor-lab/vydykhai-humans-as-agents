@@ -20,6 +20,7 @@ This repository is the canonical source for the universal Vydykhai collaboration
 - Prefer deleting duplication over adding another rule or skill.
 - The Framework Orchestrator is organization-only. Task threads own implementation, corrective fixes, `$accept-work`, exact-current-code smoke, and manual merge after human confirmation.
 - Preserve source precedence, explicit human checkpoints, asynchronous participant visibility, dashboard freshness, monitor cleanup, and orchestrator rotation.
+- Treat orchestrator rotation as a memory migration: previous packet, independent candidate coverage, visible delta, human-confirmed switch, and retained history thread.
 - Run `node scripts/validate-framework.mjs` and `node --test tests/*.test.mjs` before committing.
 - Run `git diff --check` before committing documentation changes.
 

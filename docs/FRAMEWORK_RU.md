@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.5.1
+Версия: 1.5.2
 Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк для совместного вайбкодинга, где люди работают как агенты смысла и продуктового направления. AI-оркестратор помогает превратить сырую цель в компас, брифы, согласованные task threads, alignment, приемку и понятный next-best-action.
@@ -206,13 +206,16 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 
 ## Ротация оркестратора
 
-Для одного участника и stream авторитетен один активный orchestrator. При ротации:
+Для одного участника и stream авторитетен один активный orchestrator. Ротация является двухфазным handoff, а не автоматической заменой:
 
-1. Записать компактный state snapshot в Project State.
-2. Создать новый orchestrator из актуального repo и framework version.
-3. Зарегистрировать новый thread, старый отметить superseded.
-4. Проверить, что новый thread называет compass, active DOD, tasks, blockers, latest delta и next-best-action.
-5. После успешного handoff архивировать старый thread.
+1. Предыдущий orchestrator остается активным, целым и доступным по ссылке. Он публикует Rotation Memory Packet: compass/DOD, решения, queued/promised/deferred work, просьбы человека запомнить, working rules, monitors/follow-ups, checkpoints, participants, ambiguous и stale items.
+2. Packet сверяется с Project State, issues/PR, project instructions/docs, текущим repo state и доступной историей thread. Каждый item получает статус already durable, missing durable state, ambiguous или stale/superseded.
+3. Candidate orchestrator создается из актуальных repo/framework в read-only режиме. Он независимо проводит Memory Coverage Check и показывает omissions, conflicts и proposed durable destinations.
+4. Актуальные missing items попадают в правильный durable source только после того, как человек увидел coverage delta; нельзя массово создавать задачи или молча возвращать старые идеи.
+5. Человек явно подтверждает active switch. До подтверждения candidate не dispatch новые задачи, а active pointer не меняется.
+6. После подтверждения candidate регистрируется active, а previous thread остается pinned historical/reference link. Его нельзя удалять или архивировать автоматически.
+
+Если previous orchestrator недоступен, recovery отмечается incomplete, сохраняются safe boundaries, а полное memory coverage и смена направления требуют решения человека.
 
 ## Правила
 
@@ -226,6 +229,7 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - Используется `latest available flagship / xhigh`; resolved profile и дата проверки хранятся в Project State, fallback показывается явно. Universal rules не содержат hardcoded model version.
 - Append-only evidence сохраняется, но текущие dashboards остаются короткими и актуальными.
 - Next-best-action важнее status-only ответа.
+- Active orchestrator нельзя переключать без Rotation Memory Packet, candidate Memory Coverage Check и явного подтверждения человека.
 
 ## Skills и человеческий интерфейс
 

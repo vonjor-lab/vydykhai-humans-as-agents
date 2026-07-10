@@ -21,5 +21,5 @@
 - Smoke user-facing or integration work on the exact branch, worktree, commit, frontend, backend, and browser target being accepted.
 - After human smoke, merge manually from the task thread. The orchestrator updates DOD burn, parent closure, alignment, and next-best-action.
 - Use one monitor for one named gate; keep it quiet while unchanged, do not let it expand scope or spend money, and delete it at terminal state.
-- Rotate the orchestrator after a milestone, repeated context compaction, stale durable state, or when recovery depends on chat archaeology.
+- Prepare orchestrator rotation after a milestone, repeated context compaction, stale durable state, or chat archaeology. Do not switch active pointer until the previous thread publishes a Rotation Memory Packet, the read-only candidate passes Memory Coverage Check, and the human confirms. Preserve the previous thread as a pinned reference; never archive it automatically.
 - Keep project-specific rules outside this managed block.

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "upstream": "https://github.com/vonjor-lab/vydykhai-humans-as-agents.git",
   "upstreamManifest": "https://raw.githubusercontent.com/vonjor-lab/vydykhai-humans-as-agents/main/vydykhai.json",
   "bootstrap": "https://raw.githubusercontent.com/vonjor-lab/vydykhai-humans-as-agents/main/BOOTSTRAP.md",
