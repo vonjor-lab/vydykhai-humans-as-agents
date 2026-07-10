@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.5.2
+Version: 1.6.0
 Status: canonical operating core
 
 Vydykhai is a framework for collaborative vibe coding with humans as agents. People hold product meaning, direction, and judgment. The AI orchestrator turns a raw goal into a compass, briefs, coordinated task threads, alignment, acceptance, and the next-best-action.
@@ -226,6 +226,7 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Do not close a parent from an accepted sub-slice unless its promised product loop and DOD are closed or explicitly moved out of scope.
 - Do not accept Lab Mode as product completion without production transfer and real-flow verification.
 - Do not expose secrets, transcripts, private product data, proprietary prompts, or customer information in public framework artifacts.
+- Preserve the framework license, creator metadata, and required notice in installed or redistributed framework copies; they do not claim ownership of project-specific work.
 - Use `latest available flagship / xhigh`, keep the resolved profile and check date in Project State, and make fallback visible. Do not hardcode a model version in universal rules.
 - Preserve append-only evidence, but keep current dashboards short and current.
 - Prefer next-best-action over status-only reporting.

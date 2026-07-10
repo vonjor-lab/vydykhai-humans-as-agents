@@ -32,17 +32,53 @@ if (manifest.defaultAgentProfile?.reasoningEffort !== "xhigh") {
 }
 if (manifest.defaultAgentProfile?.refreshDays !== 7) fail("Default agent profile refreshDays must be 7");
 if (!String(manifest.bootstrap || "").endsWith("/BOOTSTRAP.md")) fail("Manifest bootstrap URL is invalid");
+if (
+  manifest.creator?.name !== "Alexander Rozhnov" ||
+  manifest.creator?.nameRu !== "Александр Рожнов" ||
+  manifest.creator?.github !== "vonjor-lab"
+) {
+  fail("Manifest creator metadata is invalid");
+}
+if (manifest.license !== "PolyForm-Small-Business-1.0.0") fail("Manifest license is invalid");
+if (manifest.canonicalSource !== "https://github.com/vonjor-lab/vydykhai-humans-as-agents") {
+  fail("Manifest canonical source is invalid");
+}
+if (!String(manifest.requiredNotice || "").startsWith("Required Notice:")) {
+  fail("Manifest required notice is invalid");
+}
 
 for (const managedPath of manifest.managedPaths || []) {
   if (!existsSync(path.join(root, managedPath))) fail(`Managed path is missing: ${managedPath}`);
+}
+if (manifest.managedPaths.includes("LICENSE.md") || manifest.managedPaths.includes("NOTICE.md")) {
+  fail("Root legal files must not overwrite a target project's own license or notice");
+}
+if (!manifest.managedPaths.includes("docs/VYDYKHAI_NOTICE.md")) {
+  fail("Managed framework notice is missing from the manifest");
 }
 
 const coreEn = await text("docs/FRAMEWORK.md");
 const coreRu = await text("docs/FRAMEWORK_RU.md");
 const changelog = await text("docs/COLLABORATION_FRAMEWORK_CHANGELOG.md");
+const license = await text("LICENSE.md");
+const notice = await text("NOTICE.md");
+const managedNotice = await text("docs/VYDYKHAI_NOTICE.md");
+const citation = await text("CITATION.cff");
+const provenance = await text("docs/PROVENANCE.md");
 if (!coreEn.includes(`Version: ${manifest.version}`)) fail("English core version differs from manifest");
 if (!coreRu.includes(`Версия: ${manifest.version}`)) fail("Russian core version differs from manifest");
 if (!changelog.includes(`## ${manifest.version} -`)) fail("Changelog is missing current version");
+if (!license.includes(manifest.requiredNotice)) fail("LICENSE.md is missing the required notice");
+if (!notice.includes(manifest.requiredNotice)) fail("NOTICE.md is missing the required notice");
+if (!managedNotice.includes(manifest.requiredNotice)) fail("Managed notice is missing the required notice");
+if (!managedNotice.includes("polyformproject.org/licenses/small-business/1.0.0")) {
+  fail("Managed notice is missing the license URL");
+}
+if (!license.includes("PolyForm Small Business License 1.0.0")) fail("LICENSE.md has the wrong license text");
+if (!citation.includes(`version: ${manifest.version}`)) fail("CITATION.cff version differs from manifest");
+if (!citation.includes("family-names: Rozhnov")) fail("CITATION.cff is missing the creator");
+if (!citation.includes(`license: ${manifest.license}`)) fail("CITATION.cff license differs from manifest");
+if (!provenance.includes("Alexander Rozhnov")) fail("Provenance is missing the creator");
 if (lineCount(coreEn) > 320) fail(`English core exceeds 320 lines (${lineCount(coreEn)})`);
 if (lineCount(coreRu) > 320) fail(`Russian core exceeds 320 lines (${lineCount(coreRu)})`);
 
@@ -75,6 +111,13 @@ const runtimeFiles = [
   "AGENTS.md",
   "BOOTSTRAP.md",
   "README.md",
+  "LICENSE.md",
+  "NOTICE.md",
+  "COMMERCIAL-LICENSING.md",
+  "TRADEMARKS.md",
+  "CONTRIBUTING.md",
+  "docs/PROVENANCE.md",
+  "docs/VYDYKHAI_NOTICE.md",
   "docs/AGENTS_CORE.md",
   "docs/FRAMEWORK.md",
   "docs/FRAMEWORK_RU.md",

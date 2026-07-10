@@ -8,6 +8,19 @@
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
 
+## 1.6.0 - 2026-07-10
+
+Добавлен проверяемый ownership и licensing layer без изменения операционной модели фреймворка.
+
+- Alexander Rozhnov закреплен как creator, originating designer и original publisher Vydykhai в README, NOTICE, manifest и citation metadata.
+- Новые версии распространяются по PolyForm Small Business License 1.0.0; использование вне ее grant требует отдельной письменной commercial license.
+- Namespaced license/attribution notice стал framework-managed file: он приезжает при импорте, а creator, license и Required Notice записываются в lock metadata и проверяются через `doctor`, не затрагивая product license.
+- Граница лицензии зафиксирована явно: framework kit остается covered material, но product code, данные, private instructions, meeting records и outputs проекта не переходят под права фреймворка.
+- Добавлены public provenance timeline, `CITATION.cff` и правила использования project names без неподтвержденных заявлений о registered trademark или worldwide priority.
+- Substantive external contributions не принимаются до отдельного contributor agreement, сохраняющего возможность relicense и commercial licensing.
+
+Зачем: оставить проверяемый след происхождения, сохранить авторство в forks и product mirrors и не потерять право выпускать будущие версии на иных коммерческих условиях.
+
 ## 1.5.2 - 2026-07-10
 
 Ротация orchestrator стала контролируемой миграцией памяти вместо автоматической замены треда.
