@@ -22,6 +22,8 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await mkdir(path.join(target, ".git"));
     await mkdir(path.join(target, ".agents/skills/project-only"), { recursive: true });
     await writeFile(path.join(target, "AGENTS.md"), "# Product Rules\n\n- Keep this rule.\n");
+    await writeFile(path.join(target, "LICENSE.md"), "product license\n");
+    await writeFile(path.join(target, "NOTICE.md"), "product notice\n");
     await writeFile(path.join(target, ".agents/skills/project-only/SKILL.md"), "project-only\n");
 
     const install = run(["install", target]);
@@ -30,15 +32,24 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const agents = await readFile(path.join(target, "AGENTS.md"), "utf8");
     assert.match(agents, /Keep this rule/);
     assert.match(agents, /vydykhai:managed:start/);
+    assert.equal(await readFile(path.join(target, "LICENSE.md"), "utf8"), "product license\n");
+    assert.equal(await readFile(path.join(target, "NOTICE.md"), "utf8"), "product notice\n");
     assert.equal(await readFile(path.join(target, ".agents/skills/project-only/SKILL.md"), "utf8"), "project-only\n");
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.5.2");
+    assert.equal(lock.installedVersion, "1.6.0");
+    assert.equal(lock.creator.name, "Alexander Rozhnov");
+    assert.equal(lock.creator.nameRu, "Александр Рожнов");
+    assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
+    assert.equal(lock.canonicalSource, "https://github.com/vonjor-lab/vydykhai-humans-as-agents");
+    assert.match(await readFile(path.join(target, "docs/VYDYKHAI_NOTICE.md"), "utf8"), /Alexander Rozhnov/);
 
     const doctor = run(["doctor", target, "--offline"]);
     assert.equal(doctor.status, 0, doctor.stderr);
     assert.match(doctor.stdout, /Integrity: OK/);
     assert.match(doctor.stdout, /latest-available-flagship \/ xhigh/);
+    assert.match(doctor.stdout, /Creator: Alexander Rozhnov \(@vonjor-lab\)/);
+    assert.match(doctor.stdout, /License: PolyForm-Small-Business-1\.0\.0/);
 
     const corePath = path.join(target, "docs/FRAMEWORK.md");
     await writeFile(corePath, "local modification\n");
@@ -53,7 +64,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.5\.2/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.6\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }

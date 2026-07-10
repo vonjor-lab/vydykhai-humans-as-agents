@@ -1,7 +1,18 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.5.2",
+  "version": "1.6.0",
+  "creator": {
+    "name": "Alexander Rozhnov",
+    "nameRu": "Александр Рожнов",
+    "github": "vonjor-lab"
+  },
+  "copyright": "Copyright (c) 2026 Alexander Rozhnov",
+  "license": "PolyForm-Small-Business-1.0.0",
+  "canonicalSource": "https://github.com/vonjor-lab/vydykhai-humans-as-agents",
+  "requiredNotice": "Required Notice: Vydykhai was created and originally published by Alexander Rozhnov (vonjor-lab). Canonical source: https://github.com/vonjor-lab/vydykhai-humans-as-agents. Copyright (c) 2026 Alexander Rozhnov.",
+  "commercialLicensing": "https://github.com/vonjor-lab/vydykhai-humans-as-agents/blob/main/COMMERCIAL-LICENSING.md",
+  "provenance": "https://github.com/vonjor-lab/vydykhai-humans-as-agents/blob/main/docs/PROVENANCE.md",
   "upstream": "https://github.com/vonjor-lab/vydykhai-humans-as-agents.git",
   "upstreamManifest": "https://raw.githubusercontent.com/vonjor-lab/vydykhai-humans-as-agents/main/vydykhai.json",
   "bootstrap": "https://raw.githubusercontent.com/vonjor-lab/vydykhai-humans-as-agents/main/BOOTSTRAP.md",
@@ -12,6 +23,7 @@
   },
   "node": ">=18",
   "managedPaths": [
+    "docs/VYDYKHAI_NOTICE.md",
     "vydykhai.json",
     "scripts/vydykhai.mjs",
     "docs/AGENTS_CORE.md",

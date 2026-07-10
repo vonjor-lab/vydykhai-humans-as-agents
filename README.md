@@ -4,7 +4,11 @@
 
 Vydykhai is a framework for collaborative vibe coding with humans as agents: people carry meaning and judgment, while an AI orchestrator maintains the compass, task flow, alignment, acceptance, and next-best-action.
 
-Current version: `1.5.2`
+Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
+
+Current version: `1.6.0`
+
+License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
 ## Give This To Your Agent
 
@@ -23,6 +27,9 @@ The human may still need to grant repository/network access or approve merge. Th
 - Russian operating core: [`docs/FRAMEWORK_RU.md`](docs/FRAMEWORK_RU.md)
 - English operating core: [`docs/FRAMEWORK.md`](docs/FRAMEWORK.md)
 - Changelog: [`docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`](docs/COLLABORATION_FRAMEWORK_CHANGELOG.md)
+- Origin and provenance: [`docs/PROVENANCE.md`](docs/PROVENANCE.md)
+- Ownership notice: [`NOTICE.md`](NOTICE.md)
+- Citation metadata: [`CITATION.cff`](CITATION.cff)
 - Workflow index: [`docs/codex-workflows/README.md`](docs/codex-workflows/README.md)
 - Repo-scoped skills: [`.agents/skills`](.agents/skills)
 - Agent bootstrap contract: [`BOOTSTRAP.md`](BOOTSTRAP.md)
@@ -90,8 +97,12 @@ The reference implementation is Codex-first. Another harness can use the operati
 
 When resumable threads are unavailable, use issue or PR links as task handles and preserve the orchestrator/implementation split as a team convention.
 
-## Privacy And License
+## Privacy And Ownership
 
 The public repository contains only reusable framework mechanics. Do not add meeting transcripts, credentials, customer data, proprietary prompts, private product details, or internal thread links.
 
-No reuse license has been selected yet. The source is publicly visible, but redistribution and reuse terms remain ungranted until a license is added.
+Vydykhai is source-available under the [PolyForm Small Business License 1.0.0](LICENSE.md). Qualifying small businesses may use, change, and redistribute covered framework material under its terms, including the required attribution. For uses not covered by that grant, request a [separate written commercial license](COMMERCIAL-LICENSING.md).
+
+The license follows framework-managed documentation, skills, workflows, scripts, and templates imported into a product repository. It does not claim ownership of that product's code, data, private instructions, meeting records, or outputs.
+
+Preserve the required notice: [`NOTICE.md`](NOTICE.md) in the canonical source or `docs/VYDYKHAI_NOTICE.md` in an installed framework copy. The software license does not grant rights in the project names or identity described in [`TRADEMARKS.md`](TRADEMARKS.md). External contributions follow [`CONTRIBUTING.md`](CONTRIBUTING.md).

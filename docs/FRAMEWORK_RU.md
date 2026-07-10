@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.5.2
+Версия: 1.6.0
 Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк для совместного вайбкодинга, где люди работают как агенты смысла и продуктового направления. AI-оркестратор помогает превратить сырую цель в компас, брифы, согласованные task threads, alignment, приемку и понятный next-best-action.
@@ -226,6 +226,7 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - Принятый sub-slice не закрывает parent, пока обещанные product loop и DOD не закрыты или явно не вынесены out of scope.
 - Lab Mode не принимается как продуктовый результат без production transfer и real-flow verification.
 - Secrets, transcripts, private product data, proprietary prompts и customer information не попадают в public framework artifacts.
+- В установленных или распространяемых копиях фреймворка сохраняются license, creator metadata и required notice; они не распространяют права на project-specific работу.
 - Используется `latest available flagship / xhigh`; resolved profile и дата проверки хранятся в Project State, fallback показывается явно. Universal rules не содержат hardcoded model version.
 - Append-only evidence сохраняется, но текущие dashboards остаются короткими и актуальными.
 - Next-best-action важнее status-only ответа.

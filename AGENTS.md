@@ -15,6 +15,8 @@ This repository is the canonical source for the universal Vydykhai collaboration
 - Keep `BOOTSTRAP.md` as the agent-owned installation contract. Human-facing setup should remain one natural-language request, not a list of shell commands.
 - Default to `latest available flagship / xhigh`. Resolve the actual model in Project State and make fallback visible; never hardcode a model version in universal runtime rules.
 - Product-local copies are execution mirrors. Universal changes land here first, then product repos update through `scripts/vydykhai.mjs`.
+- Treat `LICENSE.md`, `NOTICE.md`, `CITATION.cff`, and `docs/PROVENANCE.md` as ownership records. Do not change the creator, license, required notice, or provenance claims without the creator's explicit approval.
+- Do not merge substantive external contributions until the contributor agreement described in `CONTRIBUTING.md` has been executed.
 - Product-specific rules stay outside framework-managed files in the target repo.
 - Do not add product names, customer data, meeting transcripts, credentials, proprietary prompts, internal thread ids, or implementation details from another repository.
 - Prefer deleting duplication over adding another rule or skill.

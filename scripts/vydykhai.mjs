@@ -25,6 +25,9 @@ const AGENTS_START = "<!-- vydykhai:managed:start -->";
 const AGENTS_END = "<!-- vydykhai:managed:end -->";
 const CANONICAL_UPSTREAM = "https://github.com/vonjor-lab/vydykhai-humans-as-agents.git";
 const CANONICAL_MANIFEST = "https://raw.githubusercontent.com/vonjor-lab/vydykhai-humans-as-agents/main/vydykhai.json";
+const CANONICAL_SOURCE = "https://github.com/vonjor-lab/vydykhai-humans-as-agents";
+const FRAMEWORK_CREATOR = "Alexander Rozhnov";
+const FRAMEWORK_LICENSE = "PolyForm-Small-Business-1.0.0";
 
 function usage() {
   return `Vydykhai framework manager
@@ -79,6 +82,12 @@ async function loadManifest(root) {
     throw new Error(`Invalid framework manifest: ${file}`);
   }
   if (manifest.name !== "vydykhai") throw new Error(`Unexpected framework name in ${file}`);
+  if (manifest.creator?.name !== FRAMEWORK_CREATOR) throw new Error(`Invalid framework creator in ${file}`);
+  if (manifest.license !== FRAMEWORK_LICENSE) throw new Error(`Invalid framework license in ${file}`);
+  if (manifest.canonicalSource !== CANONICAL_SOURCE) throw new Error(`Invalid canonical source in ${file}`);
+  if (!String(manifest.requiredNotice || "").startsWith("Required Notice:")) {
+    throw new Error(`Invalid required notice in ${file}`);
+  }
   if (
     manifest.defaultAgentProfile?.modelPolicy !== "latest-available-flagship" ||
     manifest.defaultAgentProfile?.reasoningEffort !== "xhigh"
@@ -245,6 +254,11 @@ async function installFrom(sourceRoot, targetRoot, { force = false } = {}) {
     schemaVersion: 1,
     framework: manifest.name,
     installedVersion: manifest.version,
+    creator: manifest.creator,
+    copyright: manifest.copyright,
+    license: manifest.license,
+    canonicalSource: manifest.canonicalSource,
+    requiredNotice: manifest.requiredNotice,
     upstream: manifest.upstream,
     sourceRevision: await sourceRevision(sourceRoot),
     managedFiles: newHashes,
@@ -312,6 +326,9 @@ async function doctor(targetRoot, { offline = false } = {}) {
     updateAvailable: Boolean(upstreamVersion && upstreamVersion !== installedVersion),
     sourceRevision: lock?.sourceRevision || (await sourceRevision(targetRoot)),
     agentProfilePolicy: manifest.defaultAgentProfile,
+    creator: manifest.creator,
+    license: manifest.license,
+    canonicalSource: manifest.canonicalSource,
     missing,
     modified,
     warnings,
@@ -328,6 +345,9 @@ function printDoctor(result, asJson) {
   console.log(
     `Agent policy: ${result.agentProfilePolicy.modelPolicy} / ${result.agentProfilePolicy.reasoningEffort}`,
   );
+  console.log(`Creator: ${result.creator.name} (@${result.creator.github})`);
+  console.log(`License: ${result.license}`);
+  console.log(`Canonical source: ${result.canonicalSource}`);
   if (result.upstreamVersion) {
     console.log(`Upstream: ${result.upstreamVersion}${result.updateAvailable ? " (update available)" : " (current)"}`);
   }

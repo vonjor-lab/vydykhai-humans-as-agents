@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use Vydykhai in published work, please cite it using this metadata."
+type: software
+title: "Vydykhai: Collaborative Vibe Coding with Humans as Agents"
+authors:
+  - family-names: Rozhnov
+    given-names: Alexander
+version: 1.6.0
+date-released: "2026-07-10"
+license: PolyForm-Small-Business-1.0.0
+repository-code: "https://github.com/vonjor-lab/vydykhai-humans-as-agents"
+url: "https://github.com/vonjor-lab/vydykhai-humans-as-agents"
+abstract: "A lightweight operating framework for coordinated, AI-assisted product work with humans as agents of the product compass."

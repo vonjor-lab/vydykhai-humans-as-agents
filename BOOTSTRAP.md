@@ -18,8 +18,9 @@ The bootstrap request authorizes creation of a setup branch, framework install/u
 3. Create a setup branch when repository policy allows it.
 4. Run the canonical installer against the target repository, then run `node scripts/vydykhai.mjs doctor` from the target.
 5. Do not use `--force` when managed files were changed locally. Reconcile them explicitly or request approval.
-6. Review the complete diff. Keep project rules outside the managed `AGENTS.md` block and reject secrets, transcripts, customer data, private links, or product internals in universal files.
-7. Commit and open a setup PR when GitHub access exists. Follow the target repository's merge policy; do not merge merely because bootstrap was requested.
+6. Preserve the managed `docs/VYDYKHAI_NOTICE.md`, creator/license metadata, and required notice. They cover the imported framework kit, not the target project's own code, license, or content.
+7. Review the complete diff. Keep project rules outside the managed `AGENTS.md` block and reject secrets, transcripts, customer data, private links, or product internals in universal files.
+8. Commit and open a setup PR when GitHub access exists. Follow the target repository's merge policy; do not merge merely because bootstrap was requested.
 
 ## Resolve The Agent Profile
 
@@ -51,6 +52,7 @@ For Codex, prefer a project-scoped reasoning default of `xhigh` while leaving th
 Report only:
 
 - installed version and `doctor` result;
+- creator, license, and attribution integrity;
 - setup branch/PR or the exact access blocker;
 - Project State and orchestrator link/status;
 - resolved agent profile and last-check date;
