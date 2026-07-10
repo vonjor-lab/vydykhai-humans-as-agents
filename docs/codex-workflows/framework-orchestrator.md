@@ -105,11 +105,22 @@ Run Health Review after milestones, several slices, repeated follow-ups, stalled
 
 If rotation is needed:
 
-1. Write the compact state to Project State.
-2. Re-resolve the flagship profile and create a fresh orchestrator from current repo/framework.
-3. Register it and mark the old thread superseded.
-4. Ask the new thread to restate compass, DOD, tasks, blockers, latest delta, and next action.
-5. Archive the old thread after successful reconstruction.
+1. Freeze new dispatch, but keep the previous orchestrator active and intact.
+2. Publish one Rotation Memory Packet from the previous thread:
+   - compass, DOD, decisions, and explicit corrections;
+   - active, queued, promised, deferred, paused, and conditional work;
+   - human requests to remember and project working rules;
+   - checkpoints, burn/privacy constraints, monitors, follow-ups, and return-sync obligations;
+   - participants, ownership, overlap, backups, and missing packets;
+   - ambiguous, contradictory, stale, or chat-only items.
+3. For every item record evidence, classification (`ALREADY_DURABLE`, `MISSING_DURABLE`, `AMBIGUOUS`, or `STALE/SUPERSEDED`), and correct durable destination.
+4. Re-resolve the flagship profile and create a read-only candidate from current repo/framework. Do not register it active yet.
+5. Candidate independently compares the packet with Project State, issues/PRs, project instructions/docs, repo state, and available history. It returns covered, missing, conflicting, and human-decision items.
+6. Show the coverage delta to the human. Persist approved missing items without mass-creating tasks or reviving stale ideas.
+7. After explicit human confirmation, change the active pointer and verify the new thread can reconstruct compass, DOD, queue, remembered rules, blockers, latest delta, and next action.
+8. Keep the previous thread pinned and linked as history/reference. Archive or delete it only on an explicit human request.
+
+If the previous thread is unavailable, mark `MEMORY_RECOVERY_INCOMPLETE`, let only clearly safe work continue, and request human confirmation before the candidate becomes authoritative.
 
 ## 8. Finish
 

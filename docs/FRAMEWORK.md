@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.5.1
+Version: 1.5.2
 Status: canonical operating core
 
 Vydykhai is a framework for collaborative vibe coding with humans as agents. People hold product meaning, direction, and judgment. The AI orchestrator turns a raw goal into a compass, briefs, coordinated task threads, alignment, acceptance, and the next-best-action.
@@ -206,13 +206,16 @@ Propose Peer Compass Review when tasks, PRs, product surfaces, contracts, or DOD
 
 ## Orchestrator Rotation
 
-One active orchestrator is authoritative for one participant and stream. When rotation is needed:
+One active orchestrator is authoritative for one participant and stream. Rotation is a two-phase handoff, not an automatic replacement:
 
-1. Write a compact state snapshot to Project State.
-2. Create a fresh orchestrator from the current repository and framework version.
-3. Register the new thread and mark the old one superseded.
-4. Verify the new thread can name the compass, active DOD, tasks, blockers, latest delta, and next-best-action.
-5. Archive the old thread after successful handoff.
+1. Keep the previous orchestrator active, intact, and linked. It publishes a Rotation Memory Packet covering compass/DOD, decisions, queued/promised/deferred work, human requests to remember, working rules, monitors/follow-ups, checkpoints, participants, and ambiguous or stale items.
+2. Compare the packet with Project State, issues/PRs, project instructions/docs, current repository state, and available thread history. Classify each item as already durable, missing durable state, ambiguous, or stale/superseded.
+3. Create the candidate orchestrator from the current repo/framework in read-only mode. It independently runs Memory Coverage Check and reports omissions, conflicts, and proposed durable destinations.
+4. Put still-current missing items into their correct durable source only after the human sees the coverage delta; do not mass-create tasks or silently promote old ideas.
+5. Ask the human to confirm the active switch. Until confirmation, the candidate must not dispatch new work and the active pointer does not change.
+6. After confirmation, register the candidate as active and keep the previous thread as a pinned historical/reference link. Never delete or archive it automatically.
+
+If the previous orchestrator is unavailable, mark recovery as incomplete, preserve safe boundaries, and ask the human before claiming full memory coverage or changing shared direction.
 
 ## Rules
 
@@ -226,6 +229,7 @@ One active orchestrator is authoritative for one participant and stream. When ro
 - Use `latest available flagship / xhigh`, keep the resolved profile and check date in Project State, and make fallback visible. Do not hardcode a model version in universal rules.
 - Preserve append-only evidence, but keep current dashboards short and current.
 - Prefer next-best-action over status-only reporting.
+- Do not switch active orchestrators without a Rotation Memory Packet, candidate Memory Coverage Check, and explicit human confirmation.
 
 ## Skills And Human Interface
 

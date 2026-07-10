@@ -19,6 +19,7 @@ Read `docs/codex-workflows/framework-orchestrator.md` when dispatching, supervis
 - Run `node scripts/vydykhai.mjs doctor` on first use, after update, or when version integrity is uncertain.
 - Restore Project State, current compass/DOD, participant registry, active Alignment Window, tasks, PRs, task-thread links, human checkpoints, and latest verified repository state.
 - Verify this thread is the registered active orchestrator for this participant and stream. If another thread is current, reconcile or rotate before changing shared state.
+- If rotation is pending, read the Rotation Memory Packet and Memory Coverage status. A candidate stays read-only until explicit human confirmation changes the active pointer.
 - Compare dashboard state with the latest durable event. Rebuild or rotate a stale Alignment Window before relying on it.
 - Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo; agent plan; inference.
 - Re-resolve the agent profile when missing, older than seven days, after framework update/rotation, or when a model is rejected/deprecated. Default to `latest available flagship / xhigh` and record the actual choice in Project State.
@@ -38,11 +39,11 @@ Read `docs/codex-workflows/framework-orchestrator.md` when dispatching, supervis
 - Keep one monitor on one gate; keep it quiet while unchanged, prevent scope/spend/merge, update it when the gate changes, and delete it at terminal state.
 - After acceptance or merge, update DOD burn, parent closure, participant impact, Project State, and next-best-action instead of stopping at status.
 - Run Health Review after a milestone, several slices, repeated follow-ups, stalled DOD burn, owner dropout, repeated compaction, or chat archaeology.
-- Rotate the orchestrator when context is no longer compact: snapshot durable state, create/register a fresh thread, verify reconstruction, then archive the superseded thread.
+- When context is no longer compact, prepare two-phase rotation: previous thread publishes the full Rotation Memory Packet; candidate independently checks durable coverage; human sees the delta and confirms; only then switch the pointer. Keep the previous thread pinned and never archive/delete it automatically.
 - Never invent another participant's uncommitted state. Missing participants block only overlapping work.
 
 ## Finish
 
-Return one status: `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, `LAUNCH_TASK_THREAD`, `LAUNCH_RESEARCH_THREAD`, `SEND_ACCEPT_WORK`, `ROTATE_ORCHESTRATOR`, `NEEDS_DECISION`, or `BLOCKED`.
+Return one status: `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, `WAIT_FOR_MEMORY_COVERAGE`, `LAUNCH_TASK_THREAD`, `LAUNCH_RESEARCH_THREAD`, `SEND_ACCEPT_WORK`, `PREPARE_ORCHESTRATOR_ROTATION`, `REQUEST_ROTATION_CONFIRMATION`, `NEEDS_DECISION`, or `BLOCKED`.
 
 Always include the exact next action.
