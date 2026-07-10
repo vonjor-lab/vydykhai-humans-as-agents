@@ -6,16 +6,16 @@ Vydykhai is a framework for collaborative vibe coding with humans as agents: peo
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.6.0`
+Current version: `1.7.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
 ## Give This To Your Agent
 
-Open a Codex task in the project you want to build and send one message:
+Open your coding agent in the project you want to build and send one message:
 
 ```text
-Подключи Vydykhai к этому проекту и запусти оркестратор. Все технические шаги сделай сам по BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents
+Подключи Vydykhai к этому проекту и запусти оркестратор. Сам определи возможности своей агентской среды и выполни BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents
 ```
 
 That is the normal installation path. The agent identifies the target repo, installs and validates the framework, prepares the setup change, creates Project State, and starts the dedicated orchestrator. A bare URL is not enough to express intent; the one sentence above is.
@@ -30,7 +30,7 @@ The human may still need to grant repository/network access or approve merge. Th
 - Origin and provenance: [`docs/PROVENANCE.md`](docs/PROVENANCE.md)
 - Ownership notice: [`NOTICE.md`](NOTICE.md)
 - Citation metadata: [`CITATION.cff`](CITATION.cff)
-- Workflow index: [`docs/codex-workflows/README.md`](docs/codex-workflows/README.md)
+- Workflow index: [`docs/workflows/README.md`](docs/workflows/README.md)
 - Repo-scoped skills: [`.agents/skills`](.agents/skills)
 - Agent bootstrap contract: [`BOOTSTRAP.md`](BOOTSTRAP.md)
 
@@ -40,7 +40,7 @@ The detailed 1.4.8 documents remain available through the `v1.4.8` Git tag. Curr
 
 - Helps brainstorm an unclear idea into a product compass and brief.
 - Turns large topics into epics and autonomous task contracts.
-- Keeps implementation in focused task threads and orchestration in one clean control thread.
+- Keeps implementation in focused task contexts and orchestration in one clean control context.
 - Reconciles meetings and asynchronous local work through durable shared state.
 - Calls humans only at explicit product, visual, paid-action, smoke, or merge checkpoints.
 - Checks product-loop closure, DOD burn, exact-current-code smoke, and next-best-action.
@@ -61,15 +61,15 @@ Tell the orchestrator: `Update Vydykhai and verify this project.` It runs `docto
 
 ## Agent Profile
 
-Vydykhai defaults to `latest available flagship / xhigh`: the strongest broadly capable coding and agentic model available to that participant, using Extra High reasoning. It records the resolved model and check date in Project State and rechecks at setup, framework update, orchestrator rotation, model rejection/deprecation, and at least weekly while the project is active.
+Vydykhai defaults to `latest available flagship / deepest bounded reasoning`: the strongest broadly capable coding and agentic model available to that participant, using the environment's deepest stable reasoning mode that does not imply an unbounded cost tier. It records the resolved model and check date in Project State and rechecks at setup, framework update, orchestrator rotation, model rejection/deprecation, and at least weekly while the project is active.
 
 The framework does not pin today's model id, so a future flagship can replace it. If discovery or the preferred model is unavailable, the orchestrator uses the best verified fallback only after making that fallback visible. A human can explicitly choose a cheaper or faster profile for a named scope.
 
-On Codex, bootstrap also prefers a project default of `xhigh` while leaving the model unpinned. This lets the recommended model advance without editing the framework, while Project State still records which model was actually used.
+When an environment exposes Extra High / `xhigh`, use it as the default mapping. A materially more expensive Max, Ultra, or unbounded tier still requires an explicit human scope decision.
 
 ## Human Interface
 
-The normal interface is one personal orchestrator and natural language:
+The normal interface is one personal orchestrator context and natural language:
 
 ```text
 Start this project.
@@ -78,24 +78,27 @@ Process the latest meeting.
 Check the work and continue.
 ```
 
-The orchestrator chooses `$start-work`, `$daily-alignment`, `$accept-work`, Research Thread, Lab Mode, Peer Compass Review, task dispatch, health review, or rotation as needed.
+The orchestrator chooses `$start-work`, `$daily-alignment`, `$accept-work`, Research Context, Lab Mode, Peer Compass Review, task dispatch, health review, or rotation as needed.
 
 ## Canonical Source
 
 This repository is the canonical source for universal Vydykhai rules, workflows, skills, and tooling. Product repositories contain execution mirrors. Universal changes land here first; product-specific rules belong in the product repo outside framework-managed files.
 
-## Other Agent Harnesses
+## Agent Environments
 
-The reference implementation is Codex-first. Another harness can use the operating model when it provides equivalents for:
+Vydykhai is not tied to one agent product. Its canonical behavior lives in `AGENTS.md`, `.agents/skills/*/SKILL.md`, and `docs/workflows`. Bootstrap maps the current environment to:
 
 - project instructions;
-- separate resumable task contexts;
+- native skill/rule invocation or a thin adapter;
+- separate resumable agent contexts;
 - stable context links or ids;
 - shared durable memory;
 - verification and exact-current-code smoke;
 - handoff and acceptance results.
 
-When resumable threads are unavailable, use issue or PR links as task handles and preserve the orchestrator/implementation split as a team convention.
+A context may be implemented as a thread, chat, session, run, workspace, or tracker-linked agent. If native skill discovery or context creation is unavailable, bootstrap creates the smallest native adapter that points to the canonical files and records the mapping in Project State. It must not duplicate the framework logic.
+
+Files such as `agents/openai.yaml` are optional interface adapters. They do not own skill behavior and may be ignored by other environments.
 
 ## Privacy And Ownership
 

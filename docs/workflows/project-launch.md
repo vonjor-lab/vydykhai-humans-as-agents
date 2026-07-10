@@ -4,12 +4,12 @@ Goal: establish the minimum operating system before implementation starts.
 
 ## Preflight
 
-1. Confirm the target product repo and session cwd.
+1. Confirm the target product repo and agent working directory.
 2. Run `node scripts/vydykhai.mjs doctor` when the kit is installed.
 3. If missing and the user supplied the canonical link, execute `BOOTSTRAP.md` yourself before planning tasks. Ask only for missing access or target identity.
 4. Confirm framework-managed files can be committed and pulled by the team.
 5. Keep project rules outside managed files and the managed `AGENTS.md` block.
-6. Resolve `latest available flagship / xhigh`; record actual model, check date/source, and any fallback.
+6. Resolve `latest available flagship / deepest bounded reasoning`; record actual model, environment mapping, check date/source, and any fallback.
 
 ## Project Operating Brief
 
@@ -23,6 +23,7 @@ Capture only:
 - coordination inputs: meetings, recordings, chat, docs, or manual notes;
 - participants, decision owner, owner/backup convention, and availability;
 - agent profile policy, resolved model, check date/source, and visible fallback rule;
+- agent environment adapter and context mapping;
 - first milestone DOD;
 - open decisions and immediate risks.
 
@@ -34,16 +35,16 @@ Create or update one compact Project State using `project-state-template.md`.
 
 Register each participant with:
 
-- active orchestrator link/title;
+- active orchestrator context link/title;
 - installed framework version;
 - resolved agent profile and last check;
 - latest alignment packet;
 - active task;
 - current status.
 
-Do not store a permanent orchestrator thread id in universal or project-wide framework rules. Project State owns the current pointer and can replace it during rotation.
+Do not store a permanent orchestrator context id in universal or project-wide framework rules. Project State owns the current pointer and can replace it during rotation.
 
-Rotation does not replace that pointer automatically. Project State records the previous thread, read-only candidate, Rotation Memory Packet, candidate Memory Coverage Check, and explicit human confirmation before the switch.
+Rotation does not replace that pointer automatically. Project State records the previous context, read-only candidate, Rotation Memory Packet, candidate Memory Coverage Check, and explicit human confirmation before the switch.
 
 ## Team Onboarding
 
@@ -51,10 +52,10 @@ Explain:
 
 - ask the personal orchestrator to start, continue, process a meeting, or check work;
 - keep research, lab, and implementation in separate contexts;
-- finish tasks with `$accept-work` in the task thread;
-- perform manual smoke and merge in the task thread after human confirmation;
-- let GitHub or the chosen tracker carry durable state between people and agents.
-- expect setup, update, `doctor`, skill routing, and thread launch to be agent-owned rather than manual command work.
+- finish tasks with `$accept-work` in the task context;
+- perform manual smoke and merge in the task context after human confirmation;
+- let the chosen shared tracker carry durable state between people and agents;
+- expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.
 
 ## First Route
 
@@ -67,4 +68,4 @@ Do not implement in the launch context.
 
 ## Finish
 
-Report Project State, compass/DOD, participants, active orchestrator registration, framework status, first route, and one exact next action.
+Report Project State, compass/DOD, participants, active orchestrator context registration, framework/adapter status, first route, and one exact next action.

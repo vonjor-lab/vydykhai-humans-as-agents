@@ -27,8 +27,11 @@ if (!existsSync(path.join(root, "BOOTSTRAP.md"))) fail("BOOTSTRAP.md is missing"
 if (manifest.defaultAgentProfile?.modelPolicy !== "latest-available-flagship") {
   fail("Default model policy must be latest-available-flagship");
 }
+if (manifest.defaultAgentProfile?.reasoningPolicy !== "deepest-bounded") {
+  fail("Default reasoning policy must be deepest-bounded");
+}
 if (manifest.defaultAgentProfile?.reasoningEffort !== "xhigh") {
-  fail("Default reasoning effort must be xhigh");
+  fail("Compatibility reasoningEffort must remain xhigh for upgrades from 1.6");
 }
 if (manifest.defaultAgentProfile?.refreshDays !== 7) fail("Default agent profile refreshDays must be 7");
 if (!String(manifest.bootstrap || "").endsWith("/BOOTSTRAP.md")) fail("Manifest bootstrap URL is invalid");
@@ -56,10 +59,16 @@ if (manifest.managedPaths.includes("LICENSE.md") || manifest.managedPaths.includ
 if (!manifest.managedPaths.includes("docs/VYDYKHAI_NOTICE.md")) {
   fail("Managed framework notice is missing from the manifest");
 }
+if (!manifest.managedPaths.includes("docs/workflows") || manifest.managedPaths.includes("docs/codex-workflows")) {
+  fail("Managed workflows must use the environment-neutral docs/workflows path");
+}
 
 const coreEn = await text("docs/FRAMEWORK.md");
 const coreRu = await text("docs/FRAMEWORK_RU.md");
 const changelog = await text("docs/COLLABORATION_FRAMEWORK_CHANGELOG.md");
+const readme = await text("README.md");
+const compatibilityEn = await text("docs/COLLABORATION_FRAMEWORK_2026-06-10.md");
+const compatibilityRu = await text("docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md");
 const license = await text("LICENSE.md");
 const notice = await text("NOTICE.md");
 const managedNotice = await text("docs/VYDYKHAI_NOTICE.md");
@@ -68,6 +77,12 @@ const provenance = await text("docs/PROVENANCE.md");
 if (!coreEn.includes(`Version: ${manifest.version}`)) fail("English core version differs from manifest");
 if (!coreRu.includes(`Версия: ${manifest.version}`)) fail("Russian core version differs from manifest");
 if (!changelog.includes(`## ${manifest.version} -`)) fail("Changelog is missing current version");
+if (changelog.match(/^## (\d+\.\d+\.\d+) -/m)?.[1] !== manifest.version) {
+  fail("Latest changelog entry differs from manifest");
+}
+if (!readme.includes(`Current version: \`${manifest.version}\``)) fail("README version differs from manifest");
+if (!compatibilityEn.includes(`version ${manifest.version}`)) fail("English compatibility pointer differs from manifest");
+if (!compatibilityRu.includes(`версия ${manifest.version}`)) fail("Russian compatibility pointer differs from manifest");
 if (!license.includes(manifest.requiredNotice)) fail("LICENSE.md is missing the required notice");
 if (!notice.includes(manifest.requiredNotice)) fail("NOTICE.md is missing the required notice");
 if (!managedNotice.includes(manifest.requiredNotice)) fail("Managed notice is missing the required notice");
@@ -96,12 +111,12 @@ for (const entry of await readdir(skillsRoot, { withFileTypes: true })) {
   if (!skill.includes(`name: ${entry.name}\n`)) fail(`${skillFile} name does not match directory`);
   if (!/description: .+/.test(skill)) fail(`${skillFile} has no description`);
   if (!skill.includes("docs/FRAMEWORK.md")) fail(`${skillFile} does not load the stable framework core`);
+  if (!skill.includes("docs/workflows/")) fail(`${skillFile} does not load an environment-neutral workflow`);
   if (skill.includes("COLLABORATION_FRAMEWORK_2026-06-10")) fail(`${skillFile} still loads the dated framework path`);
   if (lineCount(skill) > 100) fail(`${skillFile} exceeds 100 lines (${lineCount(skill)})`);
 
   const openaiFile = `${relative}/agents/openai.yaml`;
-  if (!existsSync(path.join(root, openaiFile))) fail(`${openaiFile} is missing`);
-  else {
+  if (existsSync(path.join(root, openaiFile))) {
     const yaml = await text(openaiFile);
     if (!yaml.includes(`$${entry.name}`)) fail(`${openaiFile} default prompt does not mention $${entry.name}`);
   }
@@ -123,18 +138,20 @@ const runtimeFiles = [
   "docs/FRAMEWORK_RU.md",
   "docs/COLLABORATION_FRAMEWORK_2026-06-10.md",
   "docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md",
-  ...(await readdir(path.join(root, "docs/codex-workflows"))).map((name) => `docs/codex-workflows/${name}`),
+  ...(await readdir(path.join(root, "docs/workflows"))).map((name) => `docs/workflows/${name}`),
   ...(await readdir(skillsRoot)).map((name) => `.agents/skills/${name}/SKILL.md`),
 ];
 
 const privatePattern = /Breetho|Brizo|vdhi|Apatov|Апат|Гагарин|Ордж|Саша|Тер-Авакян|codex:\/\/threads|019e|019f/i;
 const hardcodedModelPattern = /gpt-\d+(?:\.\d+)+/i;
+const vendorLockedRuntimePattern = /\bCodex\b|docs\/codex-workflows|\.codex\//i;
 for (const relative of runtimeFiles) {
   if (!existsSync(path.join(root, relative))) continue;
   const value = await text(relative);
   if (privatePattern.test(value)) fail(`Private/project marker found in ${relative}`);
   if (hardcodedModelPattern.test(value)) fail(`Hardcoded model version found in ${relative}`);
-  if (relative.startsWith("docs/codex-workflows/") && lineCount(value) > 150) {
+  if (vendorLockedRuntimePattern.test(value)) fail(`Vendor-locked runtime wording found in ${relative}`);
+  if (relative.startsWith("docs/workflows/") && lineCount(value) > 150) {
     fail(`${relative} exceeds 150 lines (${lineCount(value)})`);
   }
 

@@ -2,11 +2,27 @@
 
 Этот файл фиксирует концептуальные изменения фреймворка совместной работы. Это не commit-by-commit log.
 
+Старые записи используют текущую environment-neutral терминологию там, где менялось только название механизма. Точный текст каждой версии сохраняется в Git tags.
+
 Правило версионирования:
 
 - `MAJOR`: меняется базовая операционная модель.
 - `MINOR`: появляется новый операционный элемент, например skill, orchestrator role, journal или task contract.
 - `PATCH`: уточняются rules, wording, gates или templates без смены модели.
+
+## 1.7.0 - 2026-07-10
+
+Runtime фреймворка отвязан от одной агентской среды.
+
+- Канонической единицей стал `agent context`: в конкретной среде это может быть thread, chat, session, run, workspace или tracker-linked agent.
+- Skills остаются едиными `.agents/skills/*/SKILL.md`; vendor-specific metadata, включая `agents/openai.yaml`, является только optional interface adapter.
+- `docs/codex-workflows` переименован в нейтральный `docs/workflows`, а Task/Research Thread заменены в active runtime на Task/Research Context.
+- Bootstrap теперь сам определяет, как среда читает project instructions и skills, создает contexts, использует shared state и запускает verification. При отсутствии native support он создает один тонкий adapter со ссылками на canonical files без копирования логики.
+- GitHub остается возможным shared tracker, но operating contracts работают с любым общим tracker и repository host.
+- Model policy стала `latest available flagship / deepest bounded reasoning`; Extra High / `xhigh` является environment mapping, а не universal vendor label. Compatibility field сохранено, чтобы updater версии 1.6 мог прочитать новый manifest.
+- Validation проверяет согласованность версии и запрещает vendor-only wording в active runtime.
+
+Зачем: один и тот же легкий framework kit должен запускаться агентом в любой подходящей среде, не требуя от человека переписывать skills или вручную переводить понятие треда.
 
 ## 1.6.0 - 2026-07-10
 
@@ -39,7 +55,7 @@
 
 Установка сведена к одному запросу агенту, а выбор модели стал динамической политикой вместо project-specific номера.
 
-- Добавлен `BOOTSTRAP.md`: пользователь открывает задачу в своем проекте, дает Codex ссылку и просит подключить Vydykhai; clone, install, `doctor`, setup branch/PR, Project State и запуск orchestrator выполняет агент.
+- Добавлен `BOOTSTRAP.md`: пользователь открывает задачу в своем проекте, дает coding agent ссылку и просит подключить Vydykhai; clone, install, `doctor`, setup branch/PR, Project State и запуск orchestrator выполняет агент.
 - Bootstrap-запрос сразу разрешает безопасные setup artifacts, но не merge, destructive overwrite, paid actions или production changes.
 - Основной README больше не требует от человека git-команд; команды установки остаются внутренней механикой агента.
 - Default agent policy теперь `latest available flagship / xhigh`: выбирается сильнейшая доступная универсальная coding/agentic модель, а не максимальный номер версии.
@@ -83,8 +99,8 @@
 Уточнен обязательный порядок активации фреймворка в новом или существующем проекте.
 
 - README больше не описывает импорт как optional/recommended copy: framework kit нужно импортировать в целевой product repo.
-- Repo-scoped skills считаются активными только после того, как `.agents/skills`, `docs/codex-workflows`, framework docs, changelog и core `AGENTS.md` rules лежат в target repo, закоммичены и подтянуты участниками.
-- `$project-launch` теперь должен проверять activation preflight: target repo, local framework kit, target `AGENTS.md`, Codex session from target repo и personal Framework Orchestrator thread.
+- Repo-scoped skills считаются активными только после того, как `.agents/skills`, `docs/workflows`, framework docs, changelog и core `AGENTS.md` rules лежат в target repo, закоммичены и подтянуты участниками.
+- `$project-launch` теперь должен проверять activation preflight: target repo, local framework kit, target `AGENTS.md`, agent context from target repo и personal Framework Orchestrator context.
 - Project launch docs прямо говорят, что standalone repo является canonical source, но не execution context для чужого проекта.
 - Orchestrator thread описан как standing personal thread из target repo, не Git branch и не implementation task thread.
 
@@ -144,7 +160,7 @@
 - Добавлен Compass Calibration Check для product/design/IA/UI shell/entity-model/AI workflow задач, где легко перепутать объект работы или source of truth.
 - Research thread стал явным режимом для вопросов "что является source of truth/foundation?" до implementation.
 - Thread Launch Contract уточнен: orchestrator после creation/readback сам проверяет title и переименовывает thread; startup title в дочернем thread только подсказка.
-- Новые task/research threads должны запускаться на `gpt-5.5` или newest available model и `xhigh` reasoning; fallback должен быть видимым.
+- Новые task/research contexts должны запускаться на newest available flagship и глубоком reasoning; fallback должен быть видимым.
 - Acceptance уточнен: merged PR или accepted sub-slice не закрывает parent issue, пока named DOD/product loop не закрыт.
 - Visible loop rule: route/backend/tests не считаются product capability, если пользовательское действие не видно в UI/surface или нет human-approved exception.
 
@@ -152,14 +168,14 @@
 
 ## 1.4.1 - 2026-06-20
 
-Уточнена переносимость фреймворка на другие agent harnesses.
+Уточнена переносимость фреймворка на другие agent environments.
 
-- Codex закреплен как reference implementation: repo-scoped skills, threads, thread titles, orchestrator/task-thread handoff, GitHub shared memory и local verification.
-- Добавлен adapter capability check для Claude Code, Cursor, Windsurf/Devin Desktop, GitHub Copilot cloud agent, Gemini CLI или других инструментов.
-- Если harness не умеет создавать resumable task threads, task thread мапится на отдельный chat/run/branch/PR/issue, а GitHub issue становится главным coordination handle.
-- README теперь явно говорит, что link-only или наличие этого repo не активирует skills/workflows в чужом harness.
+- Закреплен reference capability set: repo-scoped skills, resumable contexts, stable handles, orchestrator/task handoff, shared memory и local verification.
+- Добавлен adapter capability check для любой agent environment.
+- Если среда не умеет создавать resumable task contexts, task context мапится на отдельный chat/run/workspace или tracker handle.
+- README теперь явно говорит, что link-only или наличие этого repo не активирует skills/workflows без bootstrap текущей agent environment.
 
-Зачем: сохранить универсальность фреймворка без ложного обещания, что Codex-specific automation автоматически работает в других инструментах.
+Зачем: сохранить универсальность фреймворка без ложного обещания, что environment-specific automation автоматически работает в любом инструменте.
 
 ## 1.4.0 - 2026-06-20
 
@@ -174,7 +190,7 @@
 - Добавлен Orchestrator Health Review после milestone/large merge, 3-5 accepted slices, repeated follow-ups, stalled tasks, scope growth или owner dropout.
 - README теперь объясняет, как импортировать framework kit в чужой repo и почему link-only не активирует repo-scoped skills.
 
-Зачем: сделать фреймворк пригодным для старта любого нового проекта с несколькими людьми и Codex-инстансами, сохранив простую модель: orchestrator организует, task threads делают и принимают.
+Зачем: сделать фреймворк пригодным для старта любого нового проекта с несколькими людьми и agent contexts, сохранив простую модель: orchestrator организует, task contexts делают и принимают.
 
 ## 1.3.3 - 2026-06-19
 
@@ -220,13 +236,13 @@
 - В task contract добавлен `DOD Impact`, чтобы новые slices двигали named epic/milestone DoD, а не плодили работу без closure progress.
 - Добавлен lightweight `Burn / Limits` check для задач с material generation/API/retry/verification cost risk.
 
-Зачем: сделать совместную работу проще для людей и продуктивнее для нескольких Codex-инстансов, не заставляя команду вручную помнить названия тредов, запуск acceptance и контроль DOD/burn.
+Зачем: сделать совместную работу проще для людей и продуктивнее для нескольких agent contexts, не заставляя команду вручную помнить названия contexts, запуск acceptance и контроль DOD/burn.
 
 ## 1.2.1 - 2026-06-15
 
 Уточнен контракт task thread acceptance.
 
-- GitHub task issues содержат компактный `Codex Task Contract`.
+- Shared-tracker tasks содержат компактный `Agent Task Contract`.
 - Task threads запускают `$accept-work` до final completion.
 - Framework Orchestrator читает acceptance result и выбирает next best action: fix, wait, merge, align или launch next task.
 
@@ -240,14 +256,14 @@
 - Implementation уходит в отдельные task threads.
 - Orchestrator держит sequence, GitHub shared memory, task threads, merge events, alignment и acceptance gates.
 
-Зачем: координировать нескольких людей и несколько Codex-инстансов без ручного восстановления контекста.
+Зачем: координировать нескольких людей и несколько agent contexts без ручного восстановления контекста.
 
 ## 1.1.1 - 2026-06-11
 
 Добавлено правило current-branch smoke.
 
-- Перед приемкой user-facing или integration-affecting work Codex должен запустить или организовать smoke на точной текущей branch/worktree.
-- Codex должен поднять или перезапустить нужные backend и frontend процессы из этого же worktree.
+- Перед приемкой user-facing или integration-affecting work агент должен запустить или организовать smoke на точной текущей branch/worktree.
+- Агент должен поднять или перезапустить нужные backend и frontend процессы из этого же worktree.
 - Stale servers, stale browser tabs или процессы из других branches не считаются приемочным доказательством.
 
 Зачем: предотвратить ложную приемку на старом local runtime state.
@@ -261,7 +277,7 @@
 - Event-triggered alignment.
 - Brief Patch и re-brief path через `$start-work`.
 
-Зачем: сделать alignment полностью асинхронным, когда участники и их Codex threads возвращаются к работе в разное время.
+Зачем: сделать alignment полностью асинхронным, когда участники и их agent contexts возвращаются к работе в разное время.
 
 ## 1.0.0 - 2026-06-10
 

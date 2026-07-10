@@ -1,10 +1,10 @@
 # Vydykhai Workflows
 
-These workflows are conditional references for the repo-scoped skills under `.agents/skills`. The canonical operating core is `docs/FRAMEWORK.md`.
+These environment-neutral workflows are conditional references for the repo-scoped skills under `.agents/skills`. The canonical operating core is `docs/FRAMEWORK.md`; optional adapter metadata does not change skill behavior.
 
 ## Human Interface
 
-People normally stay in a personal Framework Orchestrator and speak naturally:
+People normally stay in a personal Framework Orchestrator context and speak naturally:
 
 ```text
 Start this project.
@@ -30,7 +30,7 @@ The orchestrator selects the required skill and workflow.
 - `local-alignment-packet.md`: one participant's material local delta.
 - `team-alignment-delta.md`: reconciled shared guidance.
 - `brief-patch-template.md`: small approved compass/brief change.
-- `task-thread-handoff-template.md`: minimum executable task contract.
+- `task-context-handoff-template.md`: minimum executable task contract.
 
 ## Framework Tooling
 

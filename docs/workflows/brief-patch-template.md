@@ -37,4 +37,4 @@ Rules:
 
 - Use a Brief Patch only for small explicit changes.
 - Route to `$start-work` when goal, scope, ownership, sequence, or task map changes materially.
-- Do not apply the patch to durable docs or GitHub issues until the human approves it.
+- Do not apply the patch to durable docs or shared-tracker tasks until the human approves it.

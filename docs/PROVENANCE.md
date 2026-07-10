@@ -27,6 +27,7 @@ The following canonical commits provide a compact, independently inspectable rec
 | 2026-07-10 | [`59dd5d1`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/commit/59dd5d155a17767e47983d1f3f96b9c9b77d557) | Compact 1.5 operating core and reproducible installer |
 | 2026-07-10 | [`ffc60df`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/commit/ffc60df54d5dab654c1be26451f4ccff796641f0) | One-request bootstrap and dynamic flagship model policy |
 | 2026-07-10 | [`2166c69`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/commit/2166c6989cdf8aae4de0be70bc8f2cb8e8566e0a) | Memory-safe orchestrator rotation |
+| 2026-07-10 | [`v1.7.0`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/releases/tag/v1.7.0) | Environment-neutral agent contexts, skills, bootstrap, and workflows |
 
 ## Evidence Policy
 

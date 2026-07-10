@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -18,6 +18,7 @@
   "bootstrap": "https://raw.githubusercontent.com/vonjor-lab/vydykhai-humans-as-agents/main/BOOTSTRAP.md",
   "defaultAgentProfile": {
     "modelPolicy": "latest-available-flagship",
+    "reasoningPolicy": "deepest-bounded",
     "reasoningEffort": "xhigh",
     "refreshDays": 7
   },
@@ -32,7 +33,7 @@
     "docs/COLLABORATION_FRAMEWORK_2026-06-10.md",
     "docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md",
     "docs/COLLABORATION_FRAMEWORK_CHANGELOG.md",
-    "docs/codex-workflows",
+    "docs/workflows",
     ".agents/skills/project-launch",
     ".agents/skills/framework-orchestrator",
     ".agents/skills/start-work",

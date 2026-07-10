@@ -90,6 +90,7 @@ async function loadManifest(root) {
   }
   if (
     manifest.defaultAgentProfile?.modelPolicy !== "latest-available-flagship" ||
+    manifest.defaultAgentProfile?.reasoningPolicy !== "deepest-bounded" ||
     manifest.defaultAgentProfile?.reasoningEffort !== "xhigh"
   ) {
     throw new Error(`Invalid default agent profile in ${file}`);
@@ -343,7 +344,7 @@ function printDoctor(result, asJson) {
   console.log(`Vydykhai ${result.installedVersion} (${result.mode})`);
   console.log(`Integrity: ${result.ok ? "OK" : "FAILED"}`);
   console.log(
-    `Agent policy: ${result.agentProfilePolicy.modelPolicy} / ${result.agentProfilePolicy.reasoningEffort}`,
+    `Agent policy: ${result.agentProfilePolicy.modelPolicy} / ${result.agentProfilePolicy.reasoningPolicy}`,
   );
   console.log(`Creator: ${result.creator.name} (@${result.creator.github})`);
   console.log(`License: ${result.license}`);

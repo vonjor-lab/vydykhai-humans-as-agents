@@ -11,7 +11,7 @@ Run the final self-check in the task context before claiming completion.
 
 1. `AGENTS.md`
 2. `docs/FRAMEWORK.md`
-3. `docs/codex-workflows/accept-work.md`
+3. `docs/workflows/accept-work.md`
 
 Load the task issue, current PR/diff, latest explicit human decision, relevant deltas/patches, verification output, and neighboring contracts.
 
@@ -26,7 +26,7 @@ Load the task issue, current PR/diff, latest explicit human decision, relevant d
 - For runtime work, prove repo/worktree, branch, commit, dirty state, frontend/backend commands and URLs, browser target, and smoke result from the exact code being accepted.
 - Treat missing or inconclusive current-code smoke as `NEEDS_FIXES` or `BLOCKED`.
 - Complete the declared human checkpoint. Do not state that the human is unnecessary when visual review, paid approval, product decision, or manual smoke/merge remains.
-- Keep corrective fixes, smoke, and manual merge in the task thread.
+- Keep corrective fixes, smoke, and manual merge in the task context.
 - After human confirmation, update task/PR status and durable memory; tell the orchestrator the DOD impact, parent state, participant impact, and next-best-action.
 
 ## Finish
