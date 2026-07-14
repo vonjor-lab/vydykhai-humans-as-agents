@@ -17,16 +17,17 @@ Load `$daily-alignment` inputs when this is a re-brief from a meeting or executi
 
 ## Contract
 
-- Restore product intent, latest explicit human decisions, compass, DOD, related epics, issues, PRs, and verified repo state.
+- Restore product intent, latest explicit human decisions, compass, DOD, Idea Memory, related epics, issues, PRs, and verified repo state.
 - Apply source precedence before using an old plan or issue as current intent.
 - Start from actor, problem, desired outcome, non-goals, and product loop; then identify entities, surfaces, contracts, dependencies, risks, and verification.
+- Intersect the proposed brief or sequence with Idea Memory and active work. Classify matches as use-as-guard, shape-separately, keep, or retire; do not add an idea to scope without human approval.
 - Route a narrow unresolved question into Research Context instead of filling the orchestrator with speculation.
 - Propose Lab Mode only when isolation lowers cost or risk; include proof, stop condition, burn cap, production transfer, and real-flow verification.
 - Propose Peer Compass Review when another owner can prevent drift on an overlapping flow, surface, contract, PR, or DOD row.
 - Build autonomous tasks with the minimum contract: goal/DOD impact, scope/out of scope, product loop or linked enabler, human checkpoint, material burn limit, and verification/completion route.
 - Add detailed metadata only when it changes execution safety.
 - Use the current resolved flagship / deepest bounded reasoning profile and expose its environment mapping or fallback.
-- Show parent closure: what is already closed, what remains, and why another slice is needed.
+- Show parent closure: what is already closed, what remains, why another slice is needed, and which optional ideas stay outside the nearest DOD.
 - Recommend sequence, owner, backup/failover, and parallel-safe boundaries.
 - Ask for human approval before creating or changing shared-tracker tasks.
 - Return approved work to the Framework Orchestrator. Do not implement in this workflow.

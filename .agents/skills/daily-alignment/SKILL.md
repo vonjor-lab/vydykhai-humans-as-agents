@@ -20,6 +20,7 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 - Treat meeting recordings, transcripts, chat, and notes as raw inputs.
 - Identify the meeting/event scope, expected participants, affected tasks/contracts, active Alignment Window, and latest delta.
 - Apply source precedence; a current human correction supersedes an old task-context plan.
+- Classify useful meeting or local-work ideas that are not required for the current DOD as Idea Candidates. Do not turn them into tasks or active scope; send confirmed candidates to the orchestrator for deduplicated Idea Memory upsert.
 - Publish this participant's Local Alignment Packet only when meeting or local state materially changes shared work.
 - Never overwrite or invent another participant's packet or uncommitted state.
 - Reconcile the packets that matter and list missing participants explicitly.
@@ -29,7 +30,7 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 - Update the participant registry with orchestrator context link, installed framework version, resolved agent profile/check date, latest packet, active task, and status.
 - Create a Brief Patch for a small approved change; route material goal, scope, sequence, ownership, or task-map changes to `$start-work`.
 - Rotate and archive the Alignment Window after a milestone or when it is no longer quickly scannable.
-- Update the Framework Orchestrator state and next-best-action.
+- Update the Framework Orchestrator state, relevant Idea Memory entries, and next-best-action.
 
 ## Finish
 

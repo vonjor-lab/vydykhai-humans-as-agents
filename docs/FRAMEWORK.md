@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.7.0
+Version: 1.8.0
 Status: canonical operating core
 
 Vydykhai is a framework for collaborative vibe coding with humans as agents. People hold product meaning, direction, and judgment. The AI orchestrator turns a raw goal into a compass, briefs, coordinated task contexts, alignment, acceptance, and the next-best-action.
@@ -19,7 +19,7 @@ Use Vydykhai when several humans and AI agents work asynchronously on one produc
 - lose decisions inside chats, local worktrees, or uncommitted state;
 - spend heavily before discovering that the direction was wrong.
 
-The framework should reduce coordination work for people. Humans should discuss the product and make judgments; the orchestrator should maintain sequence, shared memory, handoffs, and gates.
+The framework should reduce coordination work for people. Humans should discuss the product and make judgments; the orchestrator should maintain sequence, shared memory, handoffs, and gates. People should be able to voice useful ideas without either expanding the current task or becoming responsible for remembering them later.
 
 ## Diagnosis
 
@@ -36,6 +36,7 @@ Vydykhai combines them: design the compass and task contract top-down, let agent
 - Each participant has one active Framework Orchestrator for a product stream. It organizes work and never implements product code.
 - Research, lab, and implementation run in separate focused contexts.
 - GitHub issues and PRs, or an equivalent shared tracker, hold durable state. Chat history is evidence, not the source of truth.
+- Idea Memory keeps confirmed useful ideas outside current scope and recalls them when planning touches the relevant product surface.
 - Task contexts own implementation, corrective fixes, `$accept-work`, exact-current-code smoke, and manual merge after human confirmation.
 - The orchestrator owns sequence, alignment, task dispatch, human requests, health checks, and next-best-action.
 
@@ -101,6 +102,19 @@ Use `$start-work` to turn a raw goal, meeting insight, or large topic into an ep
 
 If the compass changes, publish a visible patch or re-brief. Do not silently mutate active tasks.
 
+### DOD Focus And Idea Memory
+
+New ideas must not delay the nearest DOD, and useful ideas must not disappear. People may say everything they consider important; the orchestrator separates what is required now from what should be remembered.
+
+- A missing requirement for the promised outcome is a DOD gap, not a future idea. Keep it in the task or re-brief.
+- A safety, quality, or product boundary required for correct delivery is a guardrail, not optional scope.
+- A deliberate change to the promised outcome requires a visible human scope decision and updated DOD, burn, and sequence.
+- A useful extension that is not needed for the current DOD should stay out of the task. After human confirmation, upsert it into shared Idea Memory with its value, affected surfaces, source, and recall trigger.
+
+At every brief, re-brief, sequence decision, and milestone plan, compare the touched outcome, entities, surfaces, contracts, and DOD rows with Idea Memory and active work. For each match, recommend one action: use as a guard, shape separately, keep remembered, or retire as absorbed, duplicated, or superseded. Record the compact result in the planning checkpoint; never turn an idea into scope or a task silently.
+
+When a person asks what else could be done, return the relevant current ideas filtered by the named topic, horizon, or compass. Do not make the person search the memory artifact or read its full archive.
+
 ### 2. Route
 
 Choose the smallest useful context:
@@ -152,6 +166,7 @@ Check:
 - blockers, repeated costs, and technical slicing without product progress;
 - research and lab outputs that never entered the real product path;
 - stale tasks, PRs, branches, worktrees, monitors, and alignment windows;
+- Idea Memory entries that are duplicated, absorbed, superseded, or no longer aligned with the compass;
 - decisions trapped outside durable state;
 - whether the active orchestrator context should rotate.
 
@@ -178,10 +193,11 @@ The orchestrator should not say that a human is unnecessary when a named checkpo
 
 ## Asynchronous Collaboration
 
-Keep two compact durable artifacts:
+Keep two required durable artifacts and one optional memory artifact:
 
 - Project State: compass, DOD, participant registry, active orchestrator contexts, current tasks, and latest alignment window.
 - Alignment Window: append-only packets and deltas for one meeting, milestone, or compact work period.
+- Idea Memory: a compact current view of confirmed useful ideas that are not tasks or current scope. Create it when the first idea must be remembered and link it from Project State.
 
 The participant registry includes: participant, orchestrator context link, installed framework version, resolved agent profile and check date, latest packet, active task, and status.
 
@@ -227,6 +243,7 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Keep universal rules in the canonical framework and project rules in the product repo.
 - Keep human conversation product-focused; hide branch and worktree mechanics unless they affect a decision or risk.
 - Do not start implementation without a goal, boundary, DOD impact, human checkpoint, and verification route.
+- Protect the nearest DOD from optional scope growth, and preserve confirmed future ideas in Idea Memory instead of relying on chat or human recall.
 - Do not close a parent from an accepted sub-slice unless its promised product loop and DOD are closed or explicitly moved out of scope.
 - Do not accept Lab Mode as product completion without production transfer and real-flow verification.
 - Do not expose secrets, transcripts, private product data, proprietary prompts, or customer information in public framework artifacts.
@@ -254,5 +271,6 @@ People should not need to select skills manually. In the orchestrator context, n
 - `Continue this stream.`
 - `Process the latest meeting.`
 - `Check the work and continue.`
+- `What else could we do here?`
 
 The orchestrator chooses and applies the required skill.

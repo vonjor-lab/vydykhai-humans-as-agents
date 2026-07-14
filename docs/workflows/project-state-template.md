@@ -19,6 +19,7 @@ Compass: <brief/doc/issue link>
 Current DOD: <milestone and rows>
 Active Alignment Window: <link or none>
 Latest Team Alignment Delta: <id/link or none>
+Idea Memory: <link, section, or none> | Last intersection: <brief/checkpoint/date or none>
 Updated from durable event: <event/link/date>
 
 ## Participants

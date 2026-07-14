@@ -39,7 +39,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.7.0");
+    assert.equal(lock.installedVersion, "1.8.0");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -66,13 +66,13 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.7\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.8\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
 });
 
-test("1.7 manifest preserves the 1.6 updater compatibility fields", async () => {
+test("1.8 manifest preserves the 1.6 updater compatibility fields", async () => {
   const manifest = JSON.parse(await readFile(path.join(root, "vydykhai.json"), "utf8"));
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.defaultAgentProfile.modelPolicy, "latest-available-flagship");
@@ -80,6 +80,7 @@ test("1.7 manifest preserves the 1.6 updater compatibility fields", async () => 
   assert.equal(manifest.defaultAgentProfile.reasoningPolicy, "deepest-bounded");
   assert.ok(manifest.managedPaths.includes("docs/workflows"));
   assert.ok(!manifest.managedPaths.includes("docs/codex-workflows"));
+  assert.match(await readFile(path.join(root, "docs/workflows/idea-memory-template.md"), "utf8"), /protects the nearest DOD/);
 });
 
 test("update from a local canonical source preserves project files", async () => {
