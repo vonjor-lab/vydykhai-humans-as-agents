@@ -20,6 +20,7 @@ Owner / stream:
 Compass / DOD:
 Project State:
 Active Alignment Window:
+Idea Memory / last intersection:
 Framework version / agent policy / resolved model / checked:
 Active tasks: <task | owner | context | PR/artifact | human checkpoint | DOD impact | status | next>
 Pending decisions / participants:
@@ -41,7 +42,20 @@ Rebuild a stale dashboard or rotate an unreadable Alignment Window before relyin
 - `sequence`: choose what happens next.
 - `health`: detect drift, stale context, repeated cost, or rotation need.
 
-## 3. Check Shared Safety
+## 3. Protect DOD Focus And Shared Safety
+
+Before changing active work, classify a new idea or request:
+
+- DOD gap: required for the promised outcome; keep it in the task or re-brief.
+- Guardrail: required for safe or correct delivery; add it visibly without pretending it is optional polish.
+- Scope change: changes the promised outcome; show the DOD, burn, and sequence impact and ask the human.
+- Future idea: useful but not required now; recommend finishing the current DOD first.
+
+For a future idea, tell the human what remains in scope, why adding the idea would delay the DOD, and when it should return. After confirmation, upsert one entry in shared Idea Memory using `idea-memory-template.md`. Task, research, and lab contexts may return an Idea Candidate, but the orchestrator deduplicates and owns the current view.
+
+At every brief, re-brief, sequence decision, and milestone plan, intersect the touched outcome, entities, surfaces, contracts, and DOD rows with Idea Memory and active tasks. Check relevance, duplication, conflict, and whether work already absorbed the idea. Record one compact result: use as guard, shape separately, keep remembered, or retire. No match is a valid explicit result.
+
+On a natural request for more possibilities, return relevant active ideas filtered by the named topic, horizon, or compass. Do not dump the full register or require the human to know its location.
 
 Before work on a shared surface, check:
 
@@ -88,6 +102,7 @@ Use this state machine:
 - Waiting at human checkpoint: give the human exact action, link, output location, safe continuation, and return sync.
 - Research complete: incorporate the Research Packet, update durable state, close or archive the context.
 - Lab proof/cap reached: stop lab polish; route production transfer, tests, and real-flow smoke.
+- Optional extension surfaced: keep the task inside its DOD, return an Idea Candidate, and continue unless the human explicitly changes scope.
 - Cross-owner overlap: request Peer Compass Review before affected work continues.
 - Task claims completion without `$accept-work`: send it to `$accept-work` in the same context.
 - `NEEDS_FIXES`: return exact fixes to the same task context.
@@ -104,6 +119,8 @@ Use one monitor for one named gate. It may inspect or resume the existing task w
 ## 7. Health And Rotation
 
 Run Health Review after milestones, several slices, repeated follow-ups, stalled DOD burn, owner dropout, repeated context compaction, stale dashboards, or chat archaeology.
+
+During Health Review, compare Idea Memory with the current compass, DOD, active tasks, accepted work, and repository state. Merge duplicates, refresh recall triggers, and retire absorbed, superseded, or irrelevant entries without deleting their evidence trail.
 
 If rotation is needed:
 

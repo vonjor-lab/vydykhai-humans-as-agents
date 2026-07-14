@@ -1,12 +1,12 @@
 # Vydykhai: Collaborative Vibe Coding with Humans as Agents
 
-«Выдыхай» - это фреймворк для совместного вайбкодинга, где люди определяют смысл и направление, а AI-оркестратор превращает сырую цель в компас, брифы, согласованные задачи, приемку и следующий лучший шаг.
+«Выдыхай» - это фреймворк для совместного вайбкодинга, где люди определяют смысл и направление, а AI-оркестратор превращает сырую цель в компас, брифы, согласованные задачи, приемку и следующий лучший шаг. Можно свободно высказывать новые идеи: оркестратор удерживает текущую работу на ближайшем DOD, сохраняет важное и возвращает его в планирование в нужный момент.
 
-Vydykhai is a framework for collaborative vibe coding with humans as agents: people carry meaning and judgment, while an AI orchestrator maintains the compass, task flow, alignment, acceptance, and next-best-action.
+Vydykhai is a framework for collaborative vibe coding with humans as agents: people carry meaning and judgment, while an AI orchestrator maintains the compass, task flow, alignment, acceptance, and next-best-action. People can voice new ideas freely: the orchestrator protects the nearest DOD, remembers what matters, and brings it back when planning touches the topic.
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.7.0`
+Current version: `1.8.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -39,6 +39,7 @@ The detailed 1.4.8 documents remain available through the `v1.4.8` Git tag. Curr
 ## What It Does
 
 - Helps brainstorm an unclear idea into a product compass and brief.
+- Protects the nearest DOD from optional scope growth while preserving useful ideas for the right planning moment.
 - Turns large topics into epics and autonomous task contracts.
 - Keeps implementation in focused task contexts and orchestration in one clean control context.
 - Reconciles meetings and asynchronous local work through durable shared state.
@@ -76,6 +77,7 @@ Start this project.
 Continue this stream.
 Process the latest meeting.
 Check the work and continue.
+What else could we do here?
 ```
 
 The orchestrator chooses `$start-work`, `$daily-alignment`, `$accept-work`, Research Context, Lab Mode, Peer Compass Review, task dispatch, health review, or rotation as needed.

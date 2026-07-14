@@ -6,6 +6,7 @@
 - Register active orchestrator context links, installed framework versions, latest packets, and active tasks in Project State.
 - Use `latest available flagship / deepest bounded reasoning`. Map to Extra High / `xhigh` when available. Record the resolved model, reasoning mapping, check date/source, and fallback in Project State; recheck at setup, update, orchestrator rotation, model failure/deprecation, and at least weekly Health Review.
 - Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo state; agent plan; inference.
+- Protect the nearest DOD from optional scope growth. Keep confirmed future ideas in shared Idea Memory with a recall trigger, intersect them at real planning checkpoints, and never promote them into scope or tasks silently.
 - Use `$project-launch` to activate or reconnect a project.
 - Use `$start-work` to shape a large or changed topic into a brief and task map.
 - Use `$daily-alignment` when a meeting or event changes another participant's safe next action.

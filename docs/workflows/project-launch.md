@@ -33,6 +33,8 @@ Treat coordination inputs as raw until distilled and approved.
 
 Create or update one compact Project State using `project-state-template.md`.
 
+Keep an Idea Memory pointer in Project State. Create the shared Idea Memory only when the first confirmed idea must be preserved; it may be a compact Project State section or one linked current-state artifact.
+
 Register each participant with:
 
 - active orchestrator context link/title;
@@ -55,6 +57,7 @@ Explain:
 - finish tasks with `$accept-work` in the task context;
 - perform manual smoke and merge in the task context after human confirmation;
 - let the chosen shared tracker carry durable state between people and agents;
+- say useful ideas freely: the orchestrator protects the nearest DOD, stores confirmed future ideas, and recalls them at relevant planning;
 - expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.
 
 ## First Route

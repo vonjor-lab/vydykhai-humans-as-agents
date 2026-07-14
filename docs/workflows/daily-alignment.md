@@ -27,6 +27,7 @@ Capture only what changes shared work:
 - task/PR and material local delta;
 - shared surfaces or contracts touched;
 - changed assumption or decision;
+- confirmed future idea and its likely recall trigger;
 - overlap, blocker, or human checkpoint;
 - safe continuation boundary.
 
@@ -61,6 +62,8 @@ When shared guidance changes:
 2. Create a Brief Patch or re-brief signal when needed.
 3. Rebuild the Alignment Window body from all current packets/deltas.
 4. Update Project State: latest delta, participant rows, task/sequence impact, and next action.
+
+When an input contains a useful extension that is not required for the current DOD, preserve it as an Idea Candidate rather than expanding a task. The orchestrator checks duplicates and upserts confirmed ideas into Idea Memory.
 
 Do not leave a new delta behind an old dashboard.
 

@@ -20,6 +20,7 @@ Load the task issue, current PR/diff, latest explicit human decision, relevant d
 - Reconstruct the baseline using source precedence. Do not let an old issue or agent plan override a later human correction.
 - Compare delivered behavior with goal/DOD, scope, product loop or linked enabler, human checkpoint, material burn, and verification route.
 - Keep accepted sub-slices distinct from parent closure.
+- Separate required DOD follow-ups from optional future ideas. Required gaps keep the parent open; optional ideas do not expand accepted scope and return to the orchestrator as Idea Candidates.
 - Require the promised visible user/operator loop for product capability closure. Backend state, route, UI shell, test, readiness card, or lab proof alone is insufficient.
 - Require Lab Mode proof, production transfer, tests, and real-flow verification before product acceptance.
 - Incorporate or resolve required Peer Compass Review and material alignment conflicts.
@@ -27,7 +28,7 @@ Load the task issue, current PR/diff, latest explicit human decision, relevant d
 - Treat missing or inconclusive current-code smoke as `NEEDS_FIXES` or `BLOCKED`.
 - Complete the declared human checkpoint. Do not state that the human is unnecessary when visual review, paid approval, product decision, or manual smoke/merge remains.
 - Keep corrective fixes, smoke, and manual merge in the task context.
-- After human confirmation, update task/PR status and durable memory; tell the orchestrator the DOD impact, parent state, participant impact, and next-best-action.
+- After human confirmation, update task/PR status and durable memory; tell the orchestrator the DOD impact, parent state, participant impact, absorbed or new Idea Candidates, and next-best-action.
 
 ## Finish
 

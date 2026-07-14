@@ -8,10 +8,13 @@ Read:
 
 - latest explicit human decision;
 - product compass and DOD;
+- current Idea Memory and its last intersection;
 - relevant meetings, docs, issues, PRs, deltas, and verified repo state;
 - overlapping work and participant ownership.
 
 Apply source precedence. Classify new commentary as current scope change, DOD gap, guardrail, or future option.
+
+If a future option is useful but unnecessary for the nearest DOD, recommend keeping it out of the current work. After human confirmation, upsert it in Idea Memory with its value, touched surfaces, source, and recall trigger.
 
 ## 2. Decide Whether To Research
 
@@ -35,6 +38,8 @@ If it cannot be explained compactly, split the topic before tasking.
 ## 4. Check Coherence
 
 Compare with active epics, shared contracts, deltas, and known lessons. Surface overlap, duplicated work, conflicting assumptions, and unsafe parallel edits.
+
+Run Idea Memory intersection against the proposed outcome, entities, surfaces, contracts, and DOD rows. For each match, recommend use as a guard, shape separately, keep remembered, or retire. Record the compact result in the brief; do not silently create scope or tasks.
 
 Propose:
 
@@ -62,7 +67,7 @@ Before adding another slice, show what already closed, what remains before paren
 
 ## 6. Approve And Publish
 
-Show the brief, task map, sequence, ownership, human checkpoints, open decisions, and risks. Ask for human approval.
+Show the brief, task map, sequence, ownership, human checkpoints, Idea Memory intersection, open decisions, and risks. Ask for human approval.
 
 After approval, create/update tasks in the shared tracker and return the sequence to the Framework Orchestrator. Every implementation task must instruct its task context to run `$accept-work` before completion.
 

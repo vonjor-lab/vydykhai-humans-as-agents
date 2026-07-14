@@ -17,7 +17,7 @@ Read `docs/workflows/framework-orchestrator.md` when dispatching, supervising, r
 ## Preflight
 
 - Run `node scripts/vydykhai.mjs doctor` on first use, after update, or when version integrity is uncertain.
-- Restore Project State, current compass/DOD, participant registry, active Alignment Window, tasks, PRs, task-context links, human checkpoints, and latest verified repository state.
+- Restore Project State, current compass/DOD, participant registry, active Alignment Window, Idea Memory, tasks, PRs, task-context links, human checkpoints, and latest verified repository state.
 - Verify this context is the registered active orchestrator for this participant and stream. If another context is current, reconcile or rotate before changing shared state.
 - If rotation is pending, read the Rotation Memory Packet and Memory Coverage status. A candidate stays read-only until explicit human confirmation changes the active pointer.
 - Compare dashboard state with the latest durable event. Rebuild or rotate a stale Alignment Window before relying on it.
@@ -28,6 +28,8 @@ Read `docs/workflows/framework-orchestrator.md` when dispatching, supervising, r
 
 - Never implement product code, fix defects, deploy, run acceptance smoke, or merge here.
 - Route large or changed intent to `$start-work`, meeting/event impact to `$daily-alignment`, and completion checks to `$accept-work` in the task context.
+- When a new request would expand active work, classify it as a DOD gap, required guardrail, deliberate scope change, or future idea. Recommend keeping optional scope out of the task, state the DOD/time impact, and upsert the idea into shared Idea Memory after human confirmation.
+- Before every brief, re-brief, sequence decision, or milestone plan, intersect touched outcomes, entities, surfaces, contracts, and DOD rows with Idea Memory and active work. Record a compact result and never promote an idea silently.
 - Choose Research Context for bounded uncertainty, Lab Mode for lower-cost isolated proof, and Task Context for approved real-path delivery.
 - Dispatch only from the minimum task contract: goal/DOD, scope boundary, product loop or linked enabler, human checkpoint, material burn limit, and verification route.
 - Pass the resolved flagship model and mapped bounded reasoning profile explicitly to new and resumed contexts when supported. Never silently downgrade; expose fallback and allow only an explicit human scope override.
@@ -38,8 +40,8 @@ Read `docs/workflows/framework-orchestrator.md` when dispatching, supervising, r
 - Never say human participation is unnecessary while a named checkpoint remains.
 - Request Peer Compass Review before overlapping owner work changes a shared flow, surface, contract, PR, or DOD row.
 - Keep one monitor on one gate; keep it quiet while unchanged, prevent scope/spend/merge, update it when the gate changes, and delete it at terminal state.
-- After acceptance or merge, update DOD burn, parent closure, participant impact, Project State, and next-best-action instead of stopping at status.
-- Run Health Review after a milestone, several slices, repeated follow-ups, stalled DOD burn, owner dropout, repeated compaction, or chat archaeology.
+- After acceptance or merge, update DOD burn, parent closure, participant impact, absorbed or newly confirmed Idea Memory entries, Project State, and next-best-action instead of stopping at status.
+- Run Health Review after a milestone, several slices, repeated follow-ups, stalled DOD burn, owner dropout, repeated compaction, or chat archaeology. Deduplicate Idea Memory and retire entries that are absorbed, superseded, or no longer aligned with the compass.
 - When context is no longer compact, prepare two-phase rotation: the previous context publishes the full Rotation Memory Packet; the candidate independently checks durable coverage; the human sees the delta and confirms; only then switch the pointer. Keep the previous context pinned and never archive/delete it automatically.
 - Never invent another participant's uncommitted state. Missing participants block only overlapping work.
 

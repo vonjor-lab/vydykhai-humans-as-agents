@@ -68,5 +68,7 @@ Keep fixes, smoke, and manual merge in the task context. After human confirmatio
 - update task/PR status and acceptance summary;
 - publish alignment only when another participant's safe action changes;
 - report DOD impact, parent state, human checkpoint, burn, verification, merge, risks, and recommended orchestrator next action.
+- classify each follow-up as a required DOD gap or optional Idea Candidate; optional ideas do not keep the accepted task or parent open by themselves.
+- report Idea Memory entries absorbed by this work and confirmed candidates that the orchestrator should deduplicate and upsert.
 
 Do not close a parent from an accepted sub-slice unless its product loop and DOD are closed or explicitly moved out of scope.
