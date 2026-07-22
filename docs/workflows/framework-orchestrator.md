@@ -10,7 +10,7 @@ Run on first use, after update, after restart, or when state looks stale:
 2. Read Project State, latest explicit human decisions, active Alignment Window, tasks, PRs, and verified repo state.
 3. Verify this context is the registered active orchestrator for this participant/stream.
 4. Compare dashboard timestamps and claims with the newest durable event.
-5. Apply source precedence before trusting an old issue or agent plan.
+5. Apply source precedence and run scope freshness before trusting, dispatching, or resuming an old task. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; age is only a re-read signal.
 6. Resolve `latest available flagship / deepest bounded reasoning` and its environment mapping when the recorded check is missing, older than seven days, follows framework update/rotation, or the model was rejected/deprecated.
 
 Compact state:
@@ -22,7 +22,7 @@ Project State:
 Active Alignment Window:
 Idea Memory / last intersection:
 Framework version / agent policy / resolved model / checked:
-Active tasks: <task | owner | context | PR/artifact | human checkpoint | DOD impact | status | next>
+Active tasks: <task | owner | context | Accepted Baseline -> Candidate | freshness | checkpoint | DOD impact | status | next>
 Pending decisions / participants:
 Can continue:
 Next-best-action:
@@ -67,18 +67,21 @@ Before work on a shared surface, check:
 
 Missing participants do not block unrelated work. Never infer their uncommitted state.
 
+When a proposed action conflicts with a framework rule, apply Proactive Guardrails: name the rule and risk, recommend the route and exact next action, and distinguish what can be preserved from what must be rebuilt. Record a human override with limits and a re-entry condition; do not repeat the warning without new risk.
+
 ## 4. Dispatch
 
 Require the minimum task contract:
 
 - goal and DOD impact;
 - scope and out of scope;
+- scope freshness and Accepted Baseline;
 - product loop or linked enabler;
 - human checkpoint;
 - material burn/stop limit;
-- verification and completion route.
+- verification/completion route and Return Sync destination/triggers.
 
-Add research, lab, or peer review details only when relevant. Always pass the current resolved agent profile when context tools support it; any fallback is human-visible and recorded.
+Add research, lab, or peer review details only when relevant. A Lab contract names its decision, one main variable, human-verifiable proof, stop/burn limit, and production exit. Always pass the current resolved agent profile when context tools support it; any fallback is human-visible and recorded.
 
 When tools allow:
 
@@ -86,7 +89,7 @@ When tools allow:
 2. Name it from issue/sequence and short outcome.
 3. Read back and correct the actual title.
 4. Record the link/title in Project State and task issue.
-5. Verify the child starts execution, names a blocker, or requests re-brief.
+5. Verify the child starts execution and continues to a human checkpoint, real blocker, or terminal result; plan-only is not progress.
 
 Without native context creation, prepare the stable shared-tracker handle and startup packet, record both in Project State, and give one exact launch action. Do not implement in the orchestrator context.
 
@@ -98,14 +101,14 @@ Use this state machine:
 
 - No context: create/prepare and record it.
 - Plan only: request execution, blocker, or re-brief.
-- Working inside scope: stay quiet and name the next checkpoint.
+- Working inside scope: stay quiet; the task continues and pushes Return Sync at checkpoint, blocker, or terminal state without human polling.
 - Waiting at human checkpoint: give the human exact action, link, output location, safe continuation, and return sync.
 - Research complete: incorporate the Research Packet, update durable state, close or archive the context.
 - Lab proof/cap reached: stop lab polish; route production transfer, tests, and real-flow smoke.
 - Optional extension surfaced: keep the task inside its DOD, return an Idea Candidate, and continue unless the human explicitly changes scope.
 - Cross-owner overlap: request Peer Compass Review before affected work continues.
 - Task claims completion without `$accept-work`: send it to `$accept-work` in the same context.
-- `NEEDS_FIXES`: return exact fixes to the same task context.
+- Rejected Candidate / `NEEDS_FIXES`: record `Keep`, `Rebuild`, `Drop`, and `Unknown`; build the successor from the Accepted Baseline, not the failed state.
 - `BLOCKED`: record the missing decision/input and tell the human precisely.
 - Accepted but smoke/merge pending: return the human to the task context.
 - Accepted and merged: update DOD burn, parent closure, participant impact, and next-best-action.
@@ -114,11 +117,11 @@ Do not implement, smoke, or merge from the orchestrator.
 
 ## 6. Monitor
 
-Use one monitor for one named gate. It may inspect or resume the existing task within approved scope. It must remain quiet while unchanged, avoid new scope/merge/spend, notify only on decision/drift/checkpoint/terminal state, and delete itself when finished.
+Use one monitor for one named gate only when direct context return and durable tracker events are unavailable. It may inspect or resume the existing task within approved scope. It must remain quiet while unchanged, avoid new scope/merge/spend, notify only on decision/drift/checkpoint/terminal state, and delete itself when finished.
 
 ## 7. Health And Rotation
 
-Run Health Review after milestones, several slices, repeated follow-ups, stalled DOD burn, owner dropout, repeated context compaction, stale dashboards, or chat archaeology.
+Run Health Review after milestones, several slices, repeated same-class corrections, stalled DOD burn, owner dropout, repeated context compaction, stale scope/dashboards, or chat archaeology.
 
 During Health Review, compare Idea Memory with the current compass, DOD, active tasks, accepted work, and repository state. Merge duplicates, refresh recall triggers, and retire absorbed, superseded, or irrelevant entries without deleting their evidence trail.
 

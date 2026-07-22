@@ -19,18 +19,20 @@ Load `$daily-alignment` inputs when this is a re-brief from a meeting or executi
 
 - Restore product intent, latest explicit human decisions, compass, DOD, Idea Memory, related epics, issues, PRs, and verified repo state.
 - Apply source precedence before using an old plan or issue as current intent.
+- Before dispatch or resume, classify scope freshness as `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; a material delta needs human approval.
 - Start from actor, problem, desired outcome, non-goals, and product loop; then identify entities, surfaces, contracts, dependencies, risks, and verification.
 - Intersect the proposed brief or sequence with Idea Memory and active work. Classify matches as use-as-guard, shape-separately, keep, or retire; do not add an idea to scope without human approval.
 - Route a narrow unresolved question into Research Context instead of filling the orchestrator with speculation.
-- Propose Lab Mode only when isolation lowers cost or risk; include proof, stop condition, burn cap, production transfer, and real-flow verification.
+- Propose Lab Mode only when isolation lowers cost or risk; include the decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn limit, production transfer, and risk-based real-flow verification.
 - Propose Peer Compass Review when another owner can prevent drift on an overlapping flow, surface, contract, PR, or DOD row.
-- Build autonomous tasks with the minimum contract: goal/DOD impact, scope/out of scope, product loop or linked enabler, human checkpoint, material burn limit, and verification/completion route.
+- Build autonomous tasks with the minimum contract: goal/DOD impact, scope/out of scope, freshness status, Accepted Baseline, product loop or linked enabler, human checkpoint, material burn limit, verification/completion route, and return destination/triggers.
+- Keep one Success Line per product phase. A new Candidate starts from the Accepted Baseline and may carry forward proven changes and lessons, never a rejected state as its implicit correction base.
 - Add detailed metadata only when it changes execution safety.
 - Use the current resolved flagship / deepest bounded reasoning profile and expose its environment mapping or fallback.
 - Show parent closure: what is already closed, what remains, why another slice is needed, and which optional ideas stay outside the nearest DOD.
 - Recommend sequence, owner, backup/failover, and parallel-safe boundaries.
 - Ask for human approval before creating or changing shared-tracker tasks.
-- Return approved work to the Framework Orchestrator. Do not implement in this workflow.
+- Instruct every launched context to execute through checkpoint/blocker/terminal state, run `$accept-work`, and publish Return Sync automatically. Return approved work to the Framework Orchestrator; do not implement here.
 
 ## Finish
 

@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.8.0
+Версия: 1.9.0
 Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк для совместного вайбкодинга, где люди работают как агенты смысла и продуктового направления. AI-оркестратор помогает превратить сырую цель в компас, брифы, согласованные task contexts, alignment, приемку и понятный next-best-action.
@@ -37,8 +37,9 @@
 - Research, lab и implementation идут в отдельных сфокусированных контекстах.
 - GitHub issues и PR либо аналогичный общий tracker хранят durable state. История чата является свидетельством, но не source of truth.
 - Idea Memory хранит подтвержденные полезные идеи вне текущего scope и возвращает их, когда планирование касается нужной продуктовой поверхности.
-- Task contexts отвечают за implementation, исправления, `$accept-work`, smoke на точном актуальном коде и ручной merge после подтверждения человека.
+- Task contexts отвечают за implementation, исправления, `$accept-work`, smoke на точном актуальном коде, ручной merge после подтверждения человека и автоматический return sync в оркестратор.
 - Оркестратор отвечает за sequence, alignment, dispatch, запросы человеку, health checks и next-best-action.
+- В одной продуктовой фазе действует один active implementation context и один канонический Candidate, если brief явно не разрешает parallel-safe работу.
 
 Agent context - это логическая граница, а не функция конкретного продукта. Он может быть thread, chat, session, run, workspace или tracker-linked agent.
 
@@ -90,6 +91,16 @@ Universal rules не фиксируют сегодняшний model id, поэ�
 
 План агента не может отменить более позднюю человеческую корректировку. Перед продолжением зависимой работы решение нужно записать в durable state. Останавливается только затронутый scope; независимая работа может продолжаться в явно названных границах.
 
+## Проактивные правила
+
+Правила фреймворка являются активными рекомендациями, а не скрытой проверкой. Если человек или агент предлагает путь против правила, оркестратор или task context должен вежливо назвать:
+
+- нужное правило и конкретный риск;
+- рекомендуемый путь и точное следующее действие;
+- что можно сохранить, а что нужно собрать заново.
+
+Человек может явно выбрать исключение. Нужно записать причину, границы и условие возврата к обычному пути. Не повторять рекомендацию без новых данных или риска.
+
 ## Операционный цикл
 
 ### 0. Запуск
@@ -101,6 +112,16 @@ Universal rules не фиксируют сегодняшний model id, поэ�
 Использовать `$start-work`, чтобы превратить сырую цель, вывод встречи или большую тему в epic brief и task map. Начинать с продуктового результата, затем определять сущности, contracts, зависимости, риски, sequence, ownership и acceptance.
 
 Если компас меняется, публиковать видимый patch или re-brief. Не менять активные задачи молча.
+
+### Актуальность scope
+
+Перед dispatch или возобновлением работы сопоставить задачу с последними DOD и решениями, результатами upstream-задач, затронутыми сущностями и contracts, активной работой, Idea Memory и текущим кодом.
+
+- `UNCHANGED`: контракт остается актуальным.
+- `PATCH_REQUIRED`: нужен ограниченный Brief Patch.
+- `REBRIEF_REQUIRED`: нужно заново осмыслить goal, DOD, sequence, ownership или ключевые assumptions.
+
+Возраст задачи требует перечитать ее, но сам по себе не меняет scope. По умолчанию сигналом являются семь дней без freshness check, если проект не выбрал другой интервал. Существенный patch или re-brief подтверждается человеком до продолжения implementation или burn.
 
 ### Фокус на DOD и память идей
 
@@ -120,10 +141,21 @@ Universal rules не фиксируют сегодняшний model id, поэ�
 Выбирать минимальный полезный контекст:
 
 - Research Context: ограниченный продуктовый или технический вопрос еще не готов для brief. Product code не меняется. На выходе короткий Research Packet; после incorporation context закрывается или архивируется.
-- Lab Mode: изолированная реализация или эксперимент сокращают риск, стоимость или время обратной связи. До запуска определить proof, stop condition, burn cap и production-transfer plan.
+- Lab Mode: изолированная реализация или эксперимент сокращают риск, стоимость или время обратной связи. До запуска определить решение, Accepted Baseline, одну главную переменную, проверяемый человеком proof, stop/burn limit и путь promote/reject/re-brief. Выход проходит через production transfer, tests и risk-based real-flow smoke.
 - Task Context: результат и граница приемки достаточно ясны, чтобы реализовывать их в реальном продуктовом пути.
 
 Research уменьшает неопределенность. Lab уменьшает стоимость исполнения. Task доставляет принятый продуктовый или enabling результат.
+
+### Одна линия успеха
+
+Строим от успеха, учимся на неудаче.
+
+- `Accepted Baseline` - последнее доказанное рабочее состояние.
+- `Candidate` - текущая предлагаемая дельта.
+- `Rejected Candidate` - источник evidence, но не неявная база для следующего исправления.
+- Следующий Candidate строится от Accepted Baseline: сохраняет доказанно работающие изменения и заново делает неудачные части с учетом полученных уроков.
+
+Записывать короткий Learning Delta: `Keep`, `Rebuild`, `Drop` и `Unknown`. Повторное исправление одного класса ошибки сначала запускает проверку baseline, scope и подхода, а не еще одну слепую попытку.
 
 ### 3. Dispatch
 
@@ -131,16 +163,20 @@ Research уменьшает неопределенность. Lab уменьша
 
 - Goal и DOD impact;
 - Scope и out of scope;
+- Scope freshness и Accepted Baseline;
 - Product loop либо связанный enabling contract;
 - Human checkpoint;
 - Burn / limits, когда расходы существенны;
-- Verification и completion route.
+- Verification и completion route;
+- Return destination и event triggers.
 
 Lab Mode, Peer Compass Review, model profile и подробные contracts добавляются только когда нужны. Оркестратор создает или готовит task context, проверяет title или stable handle, записывает ссылку и убеждается, что работа началась. Ответ child context только с планом не считается прогрессом.
 
 ### 4. Исполнение
 
-Task context автономно реализует задачу внутри контракта. Он останавливается и возвращается за re-brief, если меняются цель, source of truth, общий contract, burn cap или human checkpoint.
+Task context начинает implementation, а не повторяет уже согласованное планирование, и автономно продолжает до human checkpoint, реального blocker или terminal result. Он возвращается за re-brief, если меняются цель, source of truth, общий contract, burn cap или freshness status.
+
+При checkpoint, blocker или terminal result task context без отдельного запроса человека публикует короткий Return Sync. Если доступен native обмен между contexts, результат отправляется напрямую; иначе он записывается в shared tracker и поднимает доступный event или hook. Monitor используется только как fallback, когда оба пути недоступны.
 
 ### 5. Alignment
 
@@ -148,13 +184,15 @@ Task context автономно реализует задачу внутри к�
 
 Отсутствующий участник не блокирует независимую работу. Работа на его активной поверхности или contract продолжается только в явных cautions либо ждет его packet.
 
+Если событие устарило контракт отложенной или приостановленной задачи, отметить ее `PATCH_REQUIRED` или `REBRIEF_REQUIRED`.
+
 ### 6. Приемка
 
-Перед завершением task context запускает `$accept-work`. Приемка сравнивает результат с последним решением человека, brief, DOD, deltas, product loop, burn, тестами и smoke evidence.
+Перед завершением task context запускает `$accept-work`. Приемка сравнивает Candidate с его Accepted Baseline, последним решением человека, brief, DOD, deltas, product loop, burn, тестами и smoke evidence.
 
-Для runtime-работы smoke проводится на точных branch, worktree, commit, frontend, backend и browser target, которые принимаются. Старый сервер или другая ветка не подходят. Backend state, UI shell или lab proof сами по себе не закрывают product capability.
+Проверяются риски, которые изменил Candidate. Для runtime, integration или state changes smoke проводится на точных branch, worktree, commit, frontend, backend и browser target, которые принимаются; старый сервер или другая ветка не подходят. Не нужно проходить платный подготовительный путь, если тот же измененный риск доказывается контролируемой точкой входа, а сам платный путь не менялся. Backend state, UI shell или lab proof сами по себе не закрывают product capability.
 
-После ручного smoke человек делает manual merge через task context. Затем оркестратор обновляет DOD burn, alignment, parent closure и next-best-action.
+После приемки и обязательного human checkpoint Candidate становится новым Accepted Baseline. Rejected Candidate остается только evidence. Человек делает manual merge через task context, который публикует terminal Return Sync; затем оркестратор обновляет DOD burn, alignment, parent closure и next-best-action.
 
 ### 7. Health Review
 
@@ -164,6 +202,7 @@ Task context автономно реализует задачу внутри к�
 
 - продвижение к compass и DOD;
 - blockers, повторные затраты и technical slicing без продуктового прогресса;
+- устаревший task scope, несколько конкурирующих Candidates и исправления, построенные на rejected work;
 - research и lab outputs, которые не попали в реальный продуктовый путь;
 - stale tasks, PR, branches, worktrees, monitors и alignment windows;
 - записи Idea Memory, которые дублируются, уже поглощены работой, устарели или больше не соответствуют компасу;
@@ -243,13 +282,16 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - Universal rules хранятся в canonical framework, project rules - в product repo.
 - Человеческое общение остается продуктовым; branch и worktree mechanics показываются только когда влияют на решение или риск.
 - Implementation не начинается без goal, boundary, DOD impact, human checkpoint и verification route.
+- Перед dispatch или resume проверяется актуальность scope; существенный устаревший scope не продолжается без подтвержденного patch или re-brief.
 - Ближайший DOD защищается от optional scope growth, а подтвержденные будущие идеи сохраняются в Idea Memory, а не в памяти человека или истории чата.
+- Сохраняется одна линия успеха: новые Candidates строятся от Accepted Baseline и учитывают уроки Rejected Candidates.
 - Принятый sub-slice не закрывает parent, пока обещанные product loop и DOD не закрыты или явно не вынесены out of scope.
 - Lab Mode не принимается как продуктовый результат без production transfer и real-flow verification.
 - Secrets, transcripts, private product data, proprietary prompts и customer information не попадают в public framework artifacts.
 - В установленных или распространяемых копиях фреймворка сохраняются license, creator metadata и required notice; они не распространяют права на project-specific работу.
 - Используется `latest available flagship / deepest bounded reasoning`; resolved profile и дата проверки хранятся в Project State, fallback показывается явно. Universal rules не содержат hardcoded model version или vendor-specific reasoning label.
 - Append-only evidence сохраняется, но текущие dashboards остаются короткими и актуальными.
+- Task events автоматически возвращаются в оркестратор; люди не должны опрашивать завершившиеся contexts.
 - Next-best-action важнее status-only ответа.
 - Active orchestrator нельзя переключать без Rotation Memory Packet, candidate Memory Coverage Check и явного подтверждения человека.
 

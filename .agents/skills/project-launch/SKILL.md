@@ -23,8 +23,9 @@ Load `docs/workflows/start-work.md` only when the initial goal needs decompositi
 - Resolve `latest available flagship / deepest bounded reasoning` from current environment availability or authoritative guidance. Record actual model, reasoning mapping, check date/source, and visible fallback; do not pin a universal model id.
 - Create or update a compact Project Operating Brief: repo, source of truth, coordination inputs, privacy, participants, decision owner, owner/backup convention, agent profile, compass, DOD, and first next action.
 - Create Project State with participant registry, active orchestrator links, installed framework versions, resolved agent profiles, current tasks, active Alignment Window, and an Idea Memory pointer ready for use when the first idea is preserved.
+- Detect and record the task Return Sync route: native cross-context message, shared-tracker event/hook, or one fallback monitor. Also record the scope-freshness interval; default to seven days.
 - Treat meetings, recordings, transcripts, chat, and notes as raw coordination inputs until distilled and approved.
-- Explain the working model plainly: personal orchestrator context for organization; separate research, lab, and task contexts; task-context acceptance and merge; durable shared state; and DOD Focus, so people can voice ideas without expanding current work or remembering them manually.
+- Explain the working model plainly: personal orchestrator context for organization; separate research, lab, and task contexts; automatic task return; task-context acceptance and merge; durable shared state; and DOD Focus, so people can voice ideas without expanding current work or remembering them manually.
 - Keep project-specific rules outside framework-managed files.
 - A bootstrap request authorizes setup branch/PR and initial Project State. Otherwise ask before creating or changing shared-tracker artifacts.
 - Route unclear goals to `$start-work`, recent meeting changes to `$daily-alignment`, and ready work to `$framework-orchestrator`.

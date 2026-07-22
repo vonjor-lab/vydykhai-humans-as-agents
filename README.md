@@ -6,7 +6,7 @@ Vydykhai is a framework for collaborative vibe coding with humans as agents: peo
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.8.0`
+Current version: `1.9.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -34,15 +34,18 @@ The human may still need to grant repository/network access or approve merge. Th
 - Repo-scoped skills: [`.agents/skills`](.agents/skills)
 - Agent bootstrap contract: [`BOOTSTRAP.md`](BOOTSTRAP.md)
 
-The detailed 1.4.8 documents remain available through the `v1.4.8` Git tag. Current skills do not load them.
+Historical snapshots remain available through Git releases and tags. Current skills load only the current operating core.
 
 ## What It Does
 
 - Helps brainstorm an unclear idea into a product compass and brief.
 - Protects the nearest DOD from optional scope growth while preserving useful ideas for the right planning moment.
+- Rechecks task scope before dispatch or resume so old briefs do not continue silently.
 - Turns large topics into epics and autonomous task contracts.
 - Keeps implementation in focused task contexts and orchestration in one clean control context.
+- Builds each new candidate from the last accepted baseline while retaining lessons from rejected attempts.
 - Reconciles meetings and asynchronous local work through durable shared state.
+- Returns checkpoints, blockers, and terminal task results to the orchestrator automatically instead of making people poll.
 - Calls humans only at explicit product, visual, paid-action, smoke, or merge checkpoints.
 - Checks product-loop closure, DOD burn, exact-current-code smoke, and next-best-action.
 - Rotates stale orchestrators, journals, monitors, and task contexts before they become hidden project memory.

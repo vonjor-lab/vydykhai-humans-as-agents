@@ -9,7 +9,7 @@ This repository is the canonical source for the universal Vydykhai collaboration
 - Treat `vydykhai.json` as the machine-readable version and managed-path manifest.
 - Keep `docs/FRAMEWORK.md` and `docs/FRAMEWORK_RU.md` aligned in meaning and version.
 - Record conceptual changes in `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`.
-- Keep the dated framework files as compatibility pointers only. Preserve detailed pre-1.5 material through Git tags instead of duplicating it in the active tree.
+- Keep the dated framework files as compatibility pointers only. Preserve detailed historical material through Git tags instead of duplicating it in the active tree.
 - Keep `.agents/skills` concise and environment-neutral. `SKILL.md` owns behavior; files such as `agents/openai.yaml` are optional interface adapters.
 - Keep `docs/AGENTS_CORE.md`, skill contracts, and workflows behaviorally aligned.
 - Keep `BOOTSTRAP.md` as the agent-owned installation contract. Human-facing setup should remain one natural-language request, not a list of shell commands.

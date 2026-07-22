@@ -29,6 +29,7 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 - Rebuild the Alignment Window body in the same operation as the delta.
 - Update the participant registry with orchestrator context link, installed framework version, resolved agent profile/check date, latest packet, active task, and status.
 - Create a Brief Patch for a small approved change; route material goal, scope, sequence, ownership, or task-map changes to `$start-work`.
+- Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; do not mutate their scope silently or treat age alone as a scope change.
 - Rotate and archive the Alignment Window after a milestone or when it is no longer quickly scannable.
 - Update the Framework Orchestrator state, relevant Idea Memory entries, and next-best-action.
 

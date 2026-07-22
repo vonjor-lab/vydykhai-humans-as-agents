@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -22,6 +22,7 @@
     "reasoningEffort": "xhigh",
     "refreshDays": 7
   },
+  "defaultScopeFreshnessDays": 7,
   "node": ">=18",
   "managedPaths": [
     "docs/VYDYKHAI_NOTICE.md",

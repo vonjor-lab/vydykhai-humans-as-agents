@@ -10,7 +10,7 @@ The bootstrap request authorizes creation of a setup branch, framework install/u
 2. Inspect existing `AGENTS.md`, repository instructions, git state, remotes, and privacy constraints. Preserve unrelated and uncommitted work.
 3. Use available shell, network, repository host, tracker, and context tools yourself. Ask the human only for missing access, trust, or a decision; do not ask them to type setup commands.
 4. Never treat the standalone Vydykhai repository as the target product repository.
-5. Inspect how the current agent environment loads project instructions and skills, creates or resumes contexts, accesses durable shared state, and runs verification.
+5. Inspect how the current agent environment loads project instructions and skills, creates or resumes contexts, accesses durable shared state, returns events between contexts, and runs verification.
 
 ## Install
 
@@ -44,8 +44,9 @@ An explicit human decision may choose a lower-cost or faster profile for a named
 2. Create or update the compact Project Operating Brief and Project State.
 3. Register participants, active orchestrator links, framework versions, resolved agent profiles, current tasks, and safe continuation.
 4. Create the dedicated organization-only Framework Orchestrator context. Verify its actual title or stable handle and that it can reconstruct compass, DOD, tasks, blockers, and next-best-action.
-5. If the environment cannot create resumable contexts, use the closest tracker-linked handle and explain the limitation once.
-6. Tell other participants to pull the accepted setup change. Their orchestrators confirm activation with `doctor` when they next resume.
+5. Configure task Return Sync in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record and test the mapping in Project State; do not make the human poll tasks.
+6. If the environment cannot create resumable contexts, use the closest tracker-linked handle and explain the limitation once.
+7. Tell other participants to pull the accepted setup change. Their orchestrators confirm activation with `doctor` when they next resume.
 
 ## Return
 
@@ -54,6 +55,7 @@ Report only:
 - installed version and `doctor` result;
 - creator, license, and attribution integrity;
 - environment adapter and context mapping;
+- task Return Sync mapping;
 - setup change/PR or the exact access blocker;
 - Project State and orchestrator link/status;
 - resolved agent profile and last-check date;

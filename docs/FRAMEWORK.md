@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.8.0
+Version: 1.9.0
 Status: canonical operating core
 
 Vydykhai is a framework for collaborative vibe coding with humans as agents. People hold product meaning, direction, and judgment. The AI orchestrator turns a raw goal into a compass, briefs, coordinated task contexts, alignment, acceptance, and the next-best-action.
@@ -37,8 +37,9 @@ Vydykhai combines them: design the compass and task contract top-down, let agent
 - Research, lab, and implementation run in separate focused contexts.
 - GitHub issues and PRs, or an equivalent shared tracker, hold durable state. Chat history is evidence, not the source of truth.
 - Idea Memory keeps confirmed useful ideas outside current scope and recalls them when planning touches the relevant product surface.
-- Task contexts own implementation, corrective fixes, `$accept-work`, exact-current-code smoke, and manual merge after human confirmation.
+- Task contexts own implementation, corrective fixes, `$accept-work`, exact-current-code smoke, manual merge after human confirmation, and automatic return sync to the orchestrator.
 - The orchestrator owns sequence, alignment, task dispatch, human requests, health checks, and next-best-action.
+- One product phase has one active implementation context and one canonical candidate unless the brief explicitly defines parallel-safe work.
 
 An agent context is a logical boundary, not a vendor feature. It may be implemented as a thread, chat, session, run, workspace, or tracker-linked agent.
 
@@ -90,6 +91,16 @@ When sources disagree, use this order:
 
 An agent plan never overrides a later human correction. Record the correction in durable state before dependent work continues. Stop only the affected scope; unrelated work may continue within named boundaries.
 
+## Proactive Guardrails
+
+Framework rules are active guidance, not hidden compliance. When a human or agent proposes a route that conflicts with a rule, the orchestrator or task context should politely state:
+
+- the relevant rule and concrete risk;
+- the recommended route and exact next action;
+- what can be preserved and what must be rebuilt.
+
+A human may explicitly override the recommendation. Record the reason, limits, and condition for returning to the normal route. Do not repeat the warning without new evidence or risk.
+
 ## Operating Cycle
 
 ### 0. Launch
@@ -101,6 +112,16 @@ Connect the repo, participants, coordination inputs, source of truth, privacy ru
 Use `$start-work` to turn a raw goal, meeting insight, or large topic into an epic brief and task map. Start from the product outcome, then identify entities, contracts, dependencies, risks, sequence, ownership, and acceptance.
 
 If the compass changes, publish a visible patch or re-brief. Do not silently mutate active tasks.
+
+### Scope Freshness
+
+Before dispatching or resuming work, compare the task with the latest DOD and decisions, upstream results, affected entities and contracts, active work, Idea Memory, and current code.
+
+- `UNCHANGED`: the contract is still current.
+- `PATCH_REQUIRED`: a bounded Brief Patch is required.
+- `REBRIEF_REQUIRED`: goal, DOD, sequence, ownership, or core assumptions must be shaped again.
+
+Age triggers re-reading, not automatic scope change. Seven days without a freshness check is the default signal unless the project sets another interval. Approve a material patch or re-brief before implementation or burn continues.
 
 ### DOD Focus And Idea Memory
 
@@ -120,10 +141,21 @@ When a person asks what else could be done, return the relevant current ideas fi
 Choose the smallest useful context:
 
 - Research Context: a bounded product or technical question is not ready for a brief. No product-code changes. Return a short Research Packet and close or archive the context after incorporation.
-- Lab Mode: isolated implementation or experimentation reduces risk, cost, or time-to-feedback. Define proof, stop condition, burn cap, and production-transfer plan before starting.
+- Lab Mode: isolated implementation or experimentation reduces risk, cost, or time-to-feedback. Define the decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn limit, and promote/reject/re-brief route before starting. Exit through production transfer, tests, and risk-based real-flow smoke.
 - Task Context: the outcome and acceptance boundary are clear enough to implement in the real product path.
 
 Research reduces uncertainty. Lab reduces execution cost. A task delivers accepted product or enabling work.
+
+### One Success Line
+
+Build from success; learn from failure.
+
+- `Accepted Baseline` is the last proven working state.
+- `Candidate` is the current proposed delta.
+- `Rejected Candidate` is evidence, never the implicit base for another correction.
+- A successor starts from the Accepted Baseline, keeps proven changes, and rebuilds failed changes using the rejected candidate's lessons.
+
+Record a compact Learning Delta: `Keep`, `Rebuild`, `Drop`, and `Unknown`. Repeated correction of the same failure class triggers a check of baseline, scope, and approach before another attempt.
 
 ### 3. Dispatch
 
@@ -131,16 +163,20 @@ The minimum task contract contains:
 
 - Goal and DOD impact;
 - Scope and out of scope;
+- Scope freshness and Accepted Baseline;
 - Product loop or linked enabling contract;
 - Human checkpoint;
 - Burn / limits when material;
-- Verification and completion route.
+- Verification and completion route;
+- Return destination and event triggers.
 
 Add Lab Mode, Peer Compass Review, model profile, or detailed contracts only when relevant. The orchestrator creates or prepares the task context, verifies its title or stable handle, records its link, and checks that execution started. A plan-only child response is not progress.
 
 ### 4. Execute
 
-The task context implements autonomously inside its contract. It stops and returns for re-brief when the goal, source of truth, shared contract, burn cap, or human checkpoint changes.
+The task context starts implementation instead of repeating approved planning, then continues autonomously until a human checkpoint, real blocker, or terminal result. It returns for re-brief when the goal, source of truth, shared contract, burn cap, or freshness status changes.
+
+At every checkpoint, blocker, or terminal result, the task context publishes a compact Return Sync without waiting for a human prompt. Use native cross-context messaging when available; otherwise write the result to the shared tracker and trigger the available event or hook. A monitor is only the fallback when neither route can wake the orchestrator.
 
 ### 5. Align
 
@@ -148,13 +184,15 @@ Use `$daily-alignment` after a meaningful meeting or event that changes another 
 
 Missing participants do not block unrelated work. Work touching their active surface or contract continues only within explicit cautions or waits for their packet.
 
+Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED` when the event makes their contracts stale.
+
 ### 6. Accept
 
-The task context runs `$accept-work` before completion. Acceptance compares the result with the latest human decision, brief, DOD, deltas, product loop, burn, tests, and smoke evidence.
+The task context runs `$accept-work` before completion. Acceptance compares the Candidate with its Accepted Baseline, the latest human decision, brief, DOD, deltas, product loop, burn, tests, and smoke evidence.
 
-For runtime work, smoke the exact branch, worktree, commit, frontend, backend, and browser target being accepted. Do not use an old server or another branch. Product capability is not closed by backend state, UI shell, or lab proof alone.
+Verify the risks changed by the Candidate. For runtime, integration, or state changes, smoke the exact branch, worktree, commit, frontend, backend, and browser target being accepted; do not use an old server or another branch. Avoid a paid setup path when an equivalent controlled entry proves the changed risk and that paid path did not change. Product capability is not closed by backend state, UI shell, or lab proof alone.
 
-After human smoke, merge manually through the task context. The orchestrator then updates DOD burn, alignment, parent closure, and next-best-action.
+After acceptance and the required human checkpoint, promote the Candidate to Accepted Baseline. A rejected candidate remains evidence only. Merge manually through the task context, which publishes its terminal Return Sync; the orchestrator then updates DOD burn, alignment, parent closure, and next-best-action.
 
 ### 7. Review Health
 
@@ -164,6 +202,7 @@ Check:
 
 - progress toward compass and DOD;
 - blockers, repeated costs, and technical slicing without product progress;
+- stale task scope, multiple competing candidates, and corrections built on rejected work;
 - research and lab outputs that never entered the real product path;
 - stale tasks, PRs, branches, worktrees, monitors, and alignment windows;
 - Idea Memory entries that are duplicated, absorbed, superseded, or no longer aligned with the compass;
@@ -243,13 +282,16 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Keep universal rules in the canonical framework and project rules in the product repo.
 - Keep human conversation product-focused; hide branch and worktree mechanics unless they affect a decision or risk.
 - Do not start implementation without a goal, boundary, DOD impact, human checkpoint, and verification route.
+- Check scope freshness before dispatch or resume; do not continue material stale scope without an approved patch or re-brief.
 - Protect the nearest DOD from optional scope growth, and preserve confirmed future ideas in Idea Memory instead of relying on chat or human recall.
+- Keep one Success Line: build successor candidates from the Accepted Baseline while carrying forward lessons from rejected candidates.
 - Do not close a parent from an accepted sub-slice unless its promised product loop and DOD are closed or explicitly moved out of scope.
 - Do not accept Lab Mode as product completion without production transfer and real-flow verification.
 - Do not expose secrets, transcripts, private product data, proprietary prompts, or customer information in public framework artifacts.
 - Preserve the framework license, creator metadata, and required notice in installed or redistributed framework copies; they do not claim ownership of project-specific work.
 - Use `latest available flagship / deepest bounded reasoning`, keep the resolved profile and check date in Project State, and make fallback visible. Do not hardcode a model version or vendor-specific reasoning label in universal rules.
 - Preserve append-only evidence, but keep current dashboards short and current.
+- Return task events to the orchestrator automatically; do not make people poll completed contexts.
 - Prefer next-best-action over status-only reporting.
 - Do not switch active orchestrators without a Rotation Memory Packet, candidate Memory Coverage Check, and explicit human confirmation.
 
