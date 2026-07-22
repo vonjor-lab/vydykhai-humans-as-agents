@@ -3,7 +3,7 @@
 Version: 1.9.0
 Status: canonical operating core
 
-Vydykhai is a framework for collaborative vibe coding with humans as agents. People hold product meaning, direction, and judgment. The AI orchestrator turns a raw goal into a compass, briefs, coordinated task contexts, alignment, acceptance, and the next-best-action.
+Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
 ## Sources
 
@@ -11,7 +11,9 @@ The framework comes from product meetings and practical work with several humans
 
 ## Purpose
 
-Use Vydykhai when several humans and AI agents work asynchronously on one product and can otherwise:
+The framework applies when a shared goal can be shaped into durable briefs, bounded tasks, verifiable results, and accepted next steps. Collaborative vibe coding is its primary proven use; broader vibe work follows the same operating cycle.
+
+Use Vydykhai when several humans and AI agents work asynchronously on one product or shared outcome and can otherwise:
 
 - interpret the same goal differently;
 - duplicate or invalidate each other's work;

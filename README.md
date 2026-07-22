@@ -1,8 +1,8 @@
 # Vydykhai: Collaborative Vibe Coding with Humans as Agents
 
-«Выдыхай» - это фреймворк для совместного вайбкодинга, где люди определяют смысл и направление, а AI-оркестратор превращает сырую цель в компас, брифы, согласованные задачи, приемку и следующий лучший шаг. Можно свободно высказывать новые идеи: оркестратор удерживает текущую работу на ближайшем DOD, сохраняет важное и возвращает его в планирование в нужный момент.
+«Выдыхай» - это фреймворк совместной работы людей и AI-агентов. Он вырос из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action.
 
-Vydykhai is a framework for collaborative vibe coding with humans as agents: people carry meaning and judgment, while an AI orchestrator maintains the compass, task flow, alignment, acceptance, and next-best-action. People can voice new ideas freely: the orchestrator protects the nearest DOD, remembers what matters, and brings it back when planning touches the topic.
+Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
