@@ -31,9 +31,10 @@ if (manifest.defaultAgentProfile?.reasoningPolicy !== "deepest-bounded") {
   fail("Default reasoning policy must be deepest-bounded");
 }
 if (manifest.defaultAgentProfile?.reasoningEffort !== "xhigh") {
-  fail("Compatibility reasoningEffort must remain xhigh for upgrades from 1.6");
+  fail("Compatibility reasoningEffort must remain xhigh for older updaters");
 }
 if (manifest.defaultAgentProfile?.refreshDays !== 7) fail("Default agent profile refreshDays must be 7");
+if (manifest.defaultScopeFreshnessDays !== 7) fail("Default scope freshness must be 7 days");
 if (!String(manifest.bootstrap || "").endsWith("/BOOTSTRAP.md")) fail("Manifest bootstrap URL is invalid");
 if (
   manifest.creator?.name !== "Alexander Rozhnov" ||
@@ -71,6 +72,9 @@ const compatibilityEn = await text("docs/COLLABORATION_FRAMEWORK_2026-06-10.md")
 const compatibilityRu = await text("docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md");
 const projectStateTemplate = await text("docs/workflows/project-state-template.md");
 const ideaMemoryTemplate = await text("docs/workflows/idea-memory-template.md");
+const orchestratorWorkflow = await text("docs/workflows/framework-orchestrator.md");
+const taskHandoffTemplate = await text("docs/workflows/task-context-handoff-template.md");
+const acceptWorkflow = await text("docs/workflows/accept-work.md");
 const license = await text("LICENSE.md");
 const notice = await text("NOTICE.md");
 const managedNotice = await text("docs/VYDYKHAI_NOTICE.md");
@@ -80,8 +84,24 @@ if (!coreEn.includes(`Version: ${manifest.version}`)) fail("English core version
 if (!coreRu.includes(`Версия: ${manifest.version}`)) fail("Russian core version differs from manifest");
 if (!coreEn.includes("DOD Focus And Idea Memory")) fail("English core is missing DOD Focus and Idea Memory");
 if (!coreRu.includes("Фокус на DOD и память идей")) fail("Russian core is missing DOD Focus and Idea Memory");
+if (!coreEn.includes("Proactive Guardrails") || !coreRu.includes("Проактивные правила")) {
+  fail("Core is missing Proactive Guardrails");
+}
+if (!coreEn.includes("Scope Freshness") || !coreRu.includes("Актуальность scope")) {
+  fail("Core is missing Scope Freshness");
+}
+if (!coreEn.includes("One Success Line") || !coreRu.includes("Одна линия успеха")) {
+  fail("Core is missing One Success Line");
+}
 if (!projectStateTemplate.includes("Idea Memory:")) fail("Project State is missing the Idea Memory pointer");
+if (!projectStateTemplate.includes("Baseline -> Candidate")) fail("Project State is missing the Success Line pointer");
+if (!projectStateTemplate.includes("Task return mapping:")) fail("Project State is missing the task return mapping");
 if (!ideaMemoryTemplate.includes("Idea Memory is not a backlog")) fail("Idea Memory template is missing its scope guard");
+if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
+if (!taskHandoffTemplate.includes("Return destination:") || !taskHandoffTemplate.includes("Learning Delta:")) {
+  fail("Task handoff is missing return or learning fields");
+}
+if (!acceptWorkflow.includes("Rejected Candidate")) fail("Acceptance is missing rejected-candidate handling");
 if (!changelog.includes(`## ${manifest.version} -`)) fail("Changelog is missing current version");
 if (changelog.match(/^## (\d+\.\d+\.\d+) -/m)?.[1] !== manifest.version) {
   fail("Latest changelog entry differs from manifest");
@@ -147,6 +167,26 @@ const runtimeFiles = [
   ...(await readdir(path.join(root, "docs/workflows"))).map((name) => `docs/workflows/${name}`),
   ...(await readdir(skillsRoot)).map((name) => `.agents/skills/${name}/SKILL.md`),
 ];
+
+const historicalVersionFiles = new Set([
+  "docs/PROVENANCE.md",
+  "docs/COLLABORATION_FRAMEWORK_2026-06-10.md",
+  "docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md",
+]);
+for (const relative of runtimeFiles) {
+  if (historicalVersionFiles.has(relative) || !existsSync(path.join(root, relative))) continue;
+  const lines = (await text(relative)).split("\n");
+  for (const [index, line] of lines.entries()) {
+    const versionLine = line
+      .replace(/PolyForm(?:[- ]Small[- ]Business(?:[- ]License)?)[- ]1\.0\.0/gi, "")
+      .replace(/small-business\/1\.0\.0/gi, "");
+    for (const match of versionLine.matchAll(/\bv?(\d+\.\d+(?:\.\d+)?)\b/g)) {
+      if (match[1] !== manifest.version) {
+        fail(`Unexpected historical version ${match[0]} in active file ${relative}:${index + 1}`);
+      }
+    }
+  }
+}
 
 const privatePattern = /Breetho|Brizo|vdhi|Apatov|Апат|Гагарин|Ордж|Саша|Тер-Авакян|codex:\/\/threads|019e|019f/i;
 const hardcodedModelPattern = /gpt-\d+(?:\.\d+)+/i;

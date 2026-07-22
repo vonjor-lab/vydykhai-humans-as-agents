@@ -32,14 +32,17 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const agents = await readFile(path.join(target, "AGENTS.md"), "utf8");
     assert.match(agents, /Keep this rule/);
     assert.match(agents, /vydykhai:managed:start/);
+    assert.match(agents, /Success Line/);
     assert.equal(await readFile(path.join(target, "LICENSE.md"), "utf8"), "product license\n");
     assert.equal(await readFile(path.join(target, "NOTICE.md"), "utf8"), "product notice\n");
     assert.equal(await readFile(path.join(target, ".agents/skills/project-only/SKILL.md"), "utf8"), "project-only\n");
     assert.match(await readFile(path.join(target, "docs/workflows/README.md"), "utf8"), /environment-neutral workflows/);
+    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Return destination:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/project-state-template.md"), "utf8"), /Task return mapping:/);
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.8.0");
+    assert.equal(lock.installedVersion, "1.9.0");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -66,18 +69,19 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.8\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.9\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
 });
 
-test("1.8 manifest preserves the 1.6 updater compatibility fields", async () => {
+test("current manifest preserves updater compatibility fields", async () => {
   const manifest = JSON.parse(await readFile(path.join(root, "vydykhai.json"), "utf8"));
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.defaultAgentProfile.modelPolicy, "latest-available-flagship");
   assert.equal(manifest.defaultAgentProfile.reasoningEffort, "xhigh");
   assert.equal(manifest.defaultAgentProfile.reasoningPolicy, "deepest-bounded");
+  assert.equal(manifest.defaultScopeFreshnessDays, 7);
   assert.ok(manifest.managedPaths.includes("docs/workflows"));
   assert.ok(!manifest.managedPaths.includes("docs/codex-workflows"));
   assert.match(await readFile(path.join(root, "docs/workflows/idea-memory-template.md"), "utf8"), /protects the nearest DOD/);

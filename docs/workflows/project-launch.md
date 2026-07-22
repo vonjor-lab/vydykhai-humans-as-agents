@@ -10,6 +10,7 @@ Goal: establish the minimum operating system before implementation starts.
 4. Confirm framework-managed files can be committed and pulled by the team.
 5. Keep project rules outside managed files and the managed `AGENTS.md` block.
 6. Resolve `latest available flagship / deepest bounded reasoning`; record actual model, environment mapping, check date/source, and any fallback.
+7. Resolve task return in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record the mapping and test it without asking people to poll.
 
 ## Project Operating Brief
 
@@ -24,6 +25,7 @@ Capture only:
 - participants, decision owner, owner/backup convention, and availability;
 - agent profile policy, resolved model, check date/source, and visible fallback rule;
 - agent environment adapter and context mapping;
+- task Return Sync mapping and scope-freshness interval;
 - first milestone DOD;
 - open decisions and immediate risks.
 
@@ -57,6 +59,7 @@ Explain:
 - finish tasks with `$accept-work` in the task context;
 - perform manual smoke and merge in the task context after human confirmation;
 - let the chosen shared tracker carry durable state between people and agents;
+- let task contexts return checkpoints, blockers, and terminal results automatically; people should not poll them;
 - say useful ideas freely: the orchestrator protects the nearest DOD, stores confirmed future ideas, and recalls them at relevant planning;
 - expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.
 

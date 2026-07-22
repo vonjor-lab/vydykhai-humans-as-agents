@@ -62,6 +62,7 @@ When shared guidance changes:
 2. Create a Brief Patch or re-brief signal when needed.
 3. Rebuild the Alignment Window body from all current packets/deltas.
 4. Update Project State: latest delta, participant rows, task/sequence impact, and next action.
+5. Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; age alone is only a re-read signal.
 
 When an input contains a useful extension that is not required for the current DOD, preserve it as an Idea Candidate rather than expanding a task. The orchestrator checks duplicates and upserts confirmed ideas into Idea Memory.
 

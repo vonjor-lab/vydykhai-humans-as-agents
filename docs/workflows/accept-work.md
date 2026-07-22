@@ -12,10 +12,11 @@ Use source precedence:
 4. agent plan or handoff;
 5. inference.
 
-Summarize:
+Identify the `Accepted Baseline`, the current `Candidate`, and any `Rejected Candidate` used as evidence. Summarize:
 
 - goal and DOD impact;
 - scope/out of scope;
+- scope freshness and baseline/candidate references;
 - product loop or linked enabler;
 - parent closure expectation;
 - human checkpoint;
@@ -29,7 +30,7 @@ Review changed behavior, files/artifacts, docs, tests, smoke, unresolved comment
 
 ## 3. Verify Exact Current Code
 
-For user-facing or integration work, record:
+Verify only the risks changed by the Candidate. For runtime, integration, or state work, record:
 
 - repo/worktree, branch, commit, and dirty state;
 - backend command, cwd, URL, or not needed;
@@ -37,7 +38,7 @@ For user-facing or integration work, record:
 - browser/app target and scenario;
 - smoke result and skipped steps.
 
-Start or restart runtime from the exact code being accepted. Old servers, old tabs, or another branch are not evidence.
+Start or restart runtime from the exact code being accepted. Old servers, old tabs, or another branch are not evidence. Avoid a paid setup path when an equivalent controlled entry proves the changed risk and that path did not change.
 
 ## 4. Compare
 
@@ -49,6 +50,7 @@ Check:
 - visible product/operator loop or explicitly linked enabler;
 - backing data/backend/permissions/recovery for UI work;
 - Lab proof followed by production transfer and real-flow verification;
+- Candidate ancestry and experiment decision; a Rejected Candidate is evidence, not the implicit correction base;
 - required Peer Compass Review and alignment;
 - material burn and stop limits;
 - declared human checkpoint;
@@ -65,10 +67,14 @@ Check:
 
 Keep fixes, smoke, and manual merge in the task context. After human confirmation:
 
+- promote the accepted Candidate to the new Accepted Baseline;
 - update task/PR status and acceptance summary;
 - publish alignment only when another participant's safe action changes;
 - report DOD impact, parent state, human checkpoint, burn, verification, merge, risks, and recommended orchestrator next action.
 - classify each follow-up as a required DOD gap or optional Idea Candidate; optional ideas do not keep the accepted task or parent open by themselves.
 - report Idea Memory entries absorbed by this work and confirmed candidates that the orchestrator should deduplicate and upsert.
+- publish terminal Return Sync to the orchestrator through native context messaging or a durable tracker event without waiting for a human prompt.
+
+For a rejected Candidate, record a Learning Delta with `Keep`, `Rebuild`, `Drop`, and `Unknown`. Any successor starts from the Accepted Baseline, preserves proven changes, and rebuilds failed parts using those lessons.
 
 Do not close a parent from an accepted sub-slice unless its product loop and DOD are closed or explicitly moved out of scope.

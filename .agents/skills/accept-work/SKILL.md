@@ -17,18 +17,19 @@ Load the task issue, current PR/diff, latest explicit human decision, relevant d
 
 ## Contract
 
-- Reconstruct the baseline using source precedence. Do not let an old issue or agent plan override a later human correction.
+- Reconstruct the Accepted Baseline and Candidate using source precedence. Do not let an old issue, plan, or Rejected Candidate override a later proven state or human correction.
 - Compare delivered behavior with goal/DOD, scope, product loop or linked enabler, human checkpoint, material burn, and verification route.
 - Keep accepted sub-slices distinct from parent closure.
 - Separate required DOD follow-ups from optional future ideas. Required gaps keep the parent open; optional ideas do not expand accepted scope and return to the orchestrator as Idea Candidates.
 - Require the promised visible user/operator loop for product capability closure. Backend state, route, UI shell, test, readiness card, or lab proof alone is insufficient.
-- Require Lab Mode proof, production transfer, tests, and real-flow verification before product acceptance.
+- For Lab Mode, verify its decision, one-variable contract, proof, Learning Delta, production transfer, tests, and risk-based real-flow verification before product acceptance.
 - Incorporate or resolve required Peer Compass Review and material alignment conflicts.
-- For runtime work, prove repo/worktree, branch, commit, dirty state, frontend/backend commands and URLs, browser target, and smoke result from the exact code being accepted.
+- Verify the risks changed by the Candidate. For runtime/integration/state work, prove repo/worktree, branch, commit, dirty state, frontend/backend commands and URLs, browser target, and smoke result from the exact code being accepted; avoid a paid setup path when an equivalent controlled entry is valid and that path did not change.
 - Treat missing or inconclusive current-code smoke as `NEEDS_FIXES` or `BLOCKED`.
 - Complete the declared human checkpoint. Do not state that the human is unnecessary when visual review, paid approval, product decision, or manual smoke/merge remains.
-- Keep corrective fixes, smoke, and manual merge in the task context.
-- After human confirmation, update task/PR status and durable memory; tell the orchestrator the DOD impact, parent state, participant impact, absorbed or new Idea Candidates, and next-best-action.
+- If the Candidate is rejected, record `Keep`, `Rebuild`, `Drop`, and `Unknown`; build any successor from the Accepted Baseline while carrying forward proven changes and lessons.
+- Keep corrective fixes, smoke, and manual merge in the task context. Promote the Candidate to Accepted Baseline only after acceptance and the required human checkpoint.
+- At every human checkpoint, real blocker, or terminal result, publish Return Sync to the orchestrator through native context messaging or a durable tracker event without waiting for a human prompt.
 
 ## Finish
 

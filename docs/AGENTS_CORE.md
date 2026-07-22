@@ -6,20 +6,24 @@
 - Register active orchestrator context links, installed framework versions, latest packets, and active tasks in Project State.
 - Use `latest available flagship / deepest bounded reasoning`. Map to Extra High / `xhigh` when available. Record the resolved model, reasoning mapping, check date/source, and fallback in Project State; recheck at setup, update, orchestrator rotation, model failure/deprecation, and at least weekly Health Review.
 - Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo state; agent plan; inference.
+- Apply Proactive Guardrails: when a proposed action conflicts with a framework rule, politely name the rule, concrete risk, recommended route, what can be preserved/rebuilt, and the exact next action. A human may explicitly override with recorded limits and a re-entry condition.
 - Protect the nearest DOD from optional scope growth. Keep confirmed future ideas in shared Idea Memory with a recall trigger, intersect them at real planning checkpoints, and never promote them into scope or tasks silently.
 - Use `$project-launch` to activate or reconnect a project.
 - Use `$start-work` to shape a large or changed topic into a brief and task map.
 - Use `$daily-alignment` when a meeting or event changes another participant's safe next action.
 - Use `$accept-work` inside the task context before claiming completion.
-- Implementation tasks require goal and DOD impact, scope/out of scope, product loop or linked enabler, human checkpoint, material burn limit, and verification route.
+- Before dispatch or resume, classify scope freshness as `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; seven days is the default re-read signal, not an automatic scope change.
+- Implementation tasks require goal and DOD impact, scope/out of scope, scope freshness, Accepted Baseline, product loop or linked enabler, human checkpoint, material burn limit, verification route, and return destination/triggers.
 - Use Research Context for bounded uncertainty without product-code changes.
-- Use Lab Mode only when isolation reduces cost or risk; require proof, stop condition, production transfer, and real-flow verification.
+- Use Lab Mode only when isolation reduces cost or risk; require a decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn limit, production transfer, and risk-based real-flow verification.
 - Use Peer Compass Review when owners overlap on a flow, surface, contract, PR, or DOD row.
 - Do not invent another participant's uncommitted state. Missing participants block only overlapping work.
 - Rebuild the alignment dashboard whenever publishing a Team Alignment Delta; rotate stale alignment windows.
 - A task launch must start execution, name a blocker, or request re-brief. A plan-only launch is not progress.
+- After launch, continue within the approved contract until a human checkpoint, real blocker, or terminal result; publish Return Sync automatically through native context messaging or the shared tracker. Monitoring is only a fallback.
+- Keep one Success Line per product phase: one active implementation context and canonical Candidate. Build successors from the Accepted Baseline, carrying forward proven changes and Learning Delta from Rejected Candidates.
 - Product capability acceptance requires the promised user/operator loop, not only backend state, UI shell, route, test, or lab proof.
-- Smoke user-facing or integration work on the exact branch, worktree, commit, frontend, backend, and browser target being accepted.
+- Verify the risks changed by the Candidate. Smoke runtime/integration/state work on the exact branch, worktree, commit, frontend, backend, and browser target being accepted; avoid a paid setup path when an equivalent controlled entry is valid and that path did not change.
 - After human smoke, merge manually through the task context. The orchestrator updates DOD burn, parent closure, alignment, and next-best-action.
 - Use one monitor for one named gate; keep it quiet while unchanged, do not let it expand scope or spend money, and delete it at terminal state.
 - Prepare orchestrator rotation after a milestone, repeated context compaction, stale durable state, or chat archaeology. Do not switch active pointer until the previous context publishes a Rotation Memory Packet, the read-only candidate passes Memory Coverage Check, and the human confirms. Preserve the previous context as a pinned reference; never archive it automatically.
