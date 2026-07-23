@@ -25,7 +25,9 @@ Load `$daily-alignment` inputs when this is a re-brief from a meeting or executi
 - Route a narrow unresolved question into Research Context instead of filling the orchestrator with speculation.
 - Propose Lab Mode only when isolation lowers cost or risk; include the decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn limit, production transfer, and risk-based real-flow verification.
 - Propose Peer Compass Review when another owner can prevent drift on an overlapping flow, surface, contract, PR, or DOD row.
-- Build autonomous tasks with the minimum contract: goal/DOD impact, scope/out of scope, freshness status, Accepted Baseline, product loop or linked enabler, human checkpoint, material burn limit, verification/completion route, and return destination/triggers.
+- When expansion risk is material, name the expected touched surface, first human-verifiable evidence, and task-specific appetite. Do not use universal file/line/time thresholds as a verdict.
+- Route recurring cross-task architecture/data/tooling friction into bounded maintenance only when it blocks efficient delivery; require proof that the original representative flow becomes smaller/faster and an explicit return to that task.
+- Build autonomous tasks with the minimum contract: goal/DOD impact, scope/out of scope, freshness status, Accepted Baseline, product loop or linked enabler, human checkpoint, material burn/expansion limit, verification/completion route, and return destination/triggers.
 - Keep one Success Line per product phase. A new Candidate starts from the Accepted Baseline and may carry forward proven changes and lessons, never a rejected state as its implicit correction base.
 - Add detailed metadata only when it changes execution safety.
 - Use the current resolved flagship / deepest bounded reasoning profile and expose its environment mapping or fallback.

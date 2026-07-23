@@ -53,6 +53,7 @@ Check:
 - Candidate ancestry and experiment decision; a Rejected Candidate is evidence, not the implicit correction base;
 - required Peer Compass Review and alignment;
 - material burn and stop limits;
+- Expansion Check route and, for maintenance, proof that the representative original flow became materially smaller/faster and recurrence is covered; backup, cleanup, migration, or a cap alone is containment;
 - declared human checkpoint;
 - tests, exact-current-code smoke, docs, and durable handoff.
 

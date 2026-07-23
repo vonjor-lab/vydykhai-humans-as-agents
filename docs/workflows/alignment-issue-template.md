@@ -9,6 +9,7 @@ Use one issue for one meeting, milestone, or compact work period. Comments are a
 
 Status: <READY | READY_WITH_CAUTIONS | WAITING | BLOCKED>
 Scope/source: <meeting, event, links>
+Source access: <covered participants/orchestrators and gaps>
 Project State: <link>
 Expected participants: <names>
 Latest delta: <id/link>

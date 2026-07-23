@@ -7,10 +7,11 @@ Goal: establish the minimum operating system before implementation starts.
 1. Confirm the target product repo and agent working directory.
 2. Run `node scripts/vydykhai.mjs doctor` when the kit is installed.
 3. If missing and the user supplied the canonical link, execute `BOOTSTRAP.md` yourself before planning tasks. Ask only for missing access or target identity.
-4. Confirm framework-managed files can be committed and pulled by the team.
-5. Keep project rules outside managed files and the managed `AGENTS.md` block.
-6. Resolve `latest available flagship / deepest bounded reasoning`; record actual model, environment mapping, check date/source, and any fallback.
-7. Resolve task return in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record the mapping and test it without asking people to poll.
+4. Confirm a shared Git-backed project repo and durable tracker exist; recommend GitHub with Issues and PRs, including for non-code work.
+5. Confirm framework-managed files can be committed and pulled by the team.
+6. Keep project rules outside managed files and the managed `AGENTS.md` block.
+7. Resolve `latest available flagship / deepest bounded reasoning`; record actual model, environment mapping, check date/source, and any fallback.
+8. Resolve task return in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record the mapping and test it without asking people to poll.
 
 ## Project Operating Brief
 
@@ -20,8 +21,9 @@ Capture only:
 - product goal and first useful outcome;
 - users or actors;
 - non-goals and constraints;
-- source of truth and privacy boundary;
-- coordination inputs: meetings, recordings, chat, docs, or manual notes;
+- shared Git-backed repo, durable tracker, source of truth, and privacy boundary;
+- coordination inputs and access route: meetings, recordings, transcripts, chat, docs, or manual notes;
+- Shared Sync readiness and missing human/agent access;
 - participants, decision owner, owner/backup convention, and availability;
 - agent profile policy, resolved model, check date/source, and visible fallback rule;
 - agent environment adapter and context mapping;
@@ -30,6 +32,8 @@ Capture only:
 - open decisions and immediate risks.
 
 Treat coordination inputs as raw until distilled and approved.
+
+Use Fathom as the recommended meeting recorder when available. Read AI, tl;dv, another recorder, team chat, or manual notes are valid when every relevant orchestrator can read the source. Treat Obsidian or another local notebook as an input/view unless it is shared, versioned, and agent-accessible.
 
 ## Project State
 
@@ -44,7 +48,8 @@ Register each participant with:
 - resolved agent profile and last check;
 - latest alignment packet;
 - active task;
-- current status.
+- current status;
+- repo/tracker/input access status.
 
 Do not store a permanent orchestrator context id in universal or project-wide framework rules. Project State owns the current pointer and can replace it during rotation.
 
@@ -55,10 +60,12 @@ Rotation does not replace that pointer automatically. Project State records the 
 Explain:
 
 - ask the personal orchestrator to start, continue, process a meeting, or check work;
+- after a meaningful meeting, each relevant participant processes it asynchronously when they next resume; no fixed order is required;
 - keep research, lab, and implementation in separate contexts;
 - finish tasks with `$accept-work` in the task context;
 - perform manual smoke and merge in the task context after human confirmation;
 - let the chosen shared tracker carry durable state between people and agents;
+- confirm that both the person and their orchestrator can reach the shared repo/tracker and relevant meeting inputs; otherwise expect `SYNC_LIMITED` rather than full alignment;
 - let task contexts return checkpoints, blockers, and terminal results automatically; people should not poll them;
 - say useful ideas freely: the orchestrator protects the nearest DOD, stores confirmed future ideas, and recalls them at relevant planning;
 - expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.
@@ -74,4 +81,4 @@ Do not implement in the launch context.
 
 ## Finish
 
-Report Project State, compass/DOD, participants, active orchestrator context registration, framework/adapter status, first route, and one exact next action.
+Report Project State, compass/DOD, Shared Sync readiness, participants, active orchestrator context registration, framework/adapter status, first route, and one exact next action.

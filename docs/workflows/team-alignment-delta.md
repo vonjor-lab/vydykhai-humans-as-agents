@@ -15,6 +15,7 @@ created_at: <ISO timestamp>
 
 Status: <READY | READY_WITH_CAUTIONS | WAITING | BLOCKED>
 Scope:
+Shared Sync / source coverage: <READY | SYNC_LIMITED, with gaps>
 Covered packets:
 Pending participants/packets:
 

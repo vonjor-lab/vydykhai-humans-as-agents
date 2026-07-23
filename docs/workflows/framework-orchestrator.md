@@ -7,7 +7,7 @@ Goal: preserve compass, sequence, shared state, and next-best-action without imp
 Run on first use, after update, after restart, or when state looks stale:
 
 1. Run `node scripts/vydykhai.mjs doctor` when available.
-2. Read Project State, latest explicit human decisions, active Alignment Window, tasks, PRs, and verified repo state.
+2. Read Project State, Shared Sync readiness, latest explicit human decisions, active Alignment Window, tasks, PRs, and verified repo state.
 3. Verify this context is the registered active orchestrator for this participant/stream.
 4. Compare dashboard timestamps and claims with the newest durable event.
 5. Apply source precedence and run scope freshness before trusting, dispatching, or resuming an old task. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; age is only a re-read signal.
@@ -18,7 +18,7 @@ Compact state:
 ```md
 Owner / stream:
 Compass / DOD:
-Project State:
+Project State / Shared Sync: <link | READY or SYNC_LIMITED with gaps>
 Active Alignment Window:
 Idea Memory / last intersection:
 Framework version / agent policy / resolved model / checked:
@@ -27,7 +27,6 @@ Pending decisions / participants:
 Can continue:
 Next-best-action:
 ```
-
 Rebuild a stale dashboard or rotate an unreadable Alignment Window before relying on it.
 
 ## 2. Classify The Request
@@ -41,6 +40,7 @@ Rebuild a stale dashboard or rotate an unreadable Alignment Window before relyin
 - `accept`: completion requires `$accept-work` in the task context.
 - `sequence`: choose what happens next.
 - `health`: detect drift, stale context, repeated cost, or rotation need.
+- `expansion`: unexpected surface/cost growth before evidence -> Expansion Check.
 
 ## 3. Protect DOD Focus And Shared Safety
 
@@ -59,6 +59,7 @@ On a natural request for more possibilities, return relevant active ideas filter
 
 Before work on a shared surface, check:
 
+- Shared Sync and relevant source access;
 - latest relevant human decision and delta;
 - participant packets and active tasks;
 - overlapping flows, contracts, PRs, or DOD rows;
@@ -68,7 +69,6 @@ Before work on a shared surface, check:
 Missing participants do not block unrelated work. Never infer their uncommitted state.
 
 When a proposed action conflicts with a framework rule, apply Proactive Guardrails: name the rule and risk, recommend the route and exact next action, and distinguish what can be preserved from what must be rebuilt. Record a human override with limits and a re-entry condition; do not repeat the warning without new risk.
-
 ## 4. Dispatch
 
 Require the minimum task contract:
@@ -81,7 +81,7 @@ Require the minimum task contract:
 - material burn/stop limit;
 - verification/completion route and Return Sync destination/triggers.
 
-Add research, lab, or peer review details only when relevant. A Lab contract names its decision, one main variable, human-verifiable proof, stop/burn limit, and production exit. Always pass the current resolved agent profile when context tools support it; any fallback is human-visible and recorded.
+Add research, lab, peer review, or expansion appetite only when relevant. A Lab contract names its decision, one main variable, human-verifiable proof, stop/burn limit, and production exit. Always pass the current resolved agent profile when context tools support it; any fallback is human-visible and recorded.
 
 When tools allow:
 
@@ -102,9 +102,11 @@ Use this state machine:
 - No context: create/prepare and record it.
 - Plan only: request execution, blocker, or re-brief.
 - Working inside scope: stay quiet; the task continues and pushes Return Sync at checkpoint, blocker, or terminal state without human polling.
+- Unexpected expansion: pause only affected growth; state `Expected`, `Expanded into`, `Likely cause`, then route `CONTINUE`, `REBRIEF`, `LAB`, or `MAINTENANCE`.
 - Waiting at human checkpoint: give the human exact action, link, output location, safe continuation, and return sync.
 - Research complete: incorporate the Research Packet, update durable state, close or archive the context.
 - Lab proof/cap reached: stop lab polish; route production transfer, tests, and real-flow smoke.
+- Maintenance proof reached: verify the original representative flow is materially smaller/faster and recurrence is covered, then return to the original task; containment alone is not closure.
 - Optional extension surfaced: keep the task inside its DOD, return an Idea Candidate, and continue unless the human explicitly changes scope.
 - Cross-owner overlap: request Peer Compass Review before affected work continues.
 - Task claims completion without `$accept-work`: send it to `$accept-work` in the same context.
@@ -112,7 +114,6 @@ Use this state machine:
 - `BLOCKED`: record the missing decision/input and tell the human precisely.
 - Accepted but smoke/merge pending: return the human to the task context.
 - Accepted and merged: update DOD burn, parent closure, participant impact, and next-best-action.
-
 Do not implement, smoke, or merge from the orchestrator.
 
 ## 6. Monitor
@@ -121,7 +122,7 @@ Use one monitor for one named gate only when direct context return and durable t
 
 ## 7. Health And Rotation
 
-Run Health Review after milestones, several slices, repeated same-class corrections, stalled DOD burn, owner dropout, repeated context compaction, stale scope/dashboards, or chat archaeology.
+Run Health Review after milestones, several slices, repeated same-class corrections, stalled DOD burn, unexpected expansion, recurring architecture/data/tooling tax, owner dropout, repeated context compaction, stale scope/dashboards, or chat archaeology.
 
 During Health Review, compare Idea Memory with the current compass, DOD, active tasks, accepted work, and repository state. Merge duplicates, refresh recall triggers, and retire absorbed, superseded, or irrelevant entries without deleting their evidence trail.
 

@@ -42,7 +42,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.9.0");
+    assert.equal(lock.installedVersion, "1.10.0");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -69,7 +69,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.9\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.10\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -85,6 +85,9 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.ok(manifest.managedPaths.includes("docs/workflows"));
   assert.ok(!manifest.managedPaths.includes("docs/codex-workflows"));
   assert.match(await readFile(path.join(root, "docs/workflows/idea-memory-template.md"), "utf8"), /protects the nearest DOD/);
+  assert.match(await readFile(path.join(root, "docs/FRAMEWORK.md"), "utf8"), /Shared Sync Contract/);
+  assert.match(await readFile(path.join(root, "docs/FRAMEWORK.md"), "utf8"), /Expansion Check/);
+  assert.match(await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8"), /Shared Sync:/);
 });
 
 test("update from a local canonical source preserves project files", async () => {

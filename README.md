@@ -6,7 +6,7 @@ Vydykhai is a framework for collaborative work between people and AI agents. It 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.9.0`
+Current version: `1.10.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -19,6 +19,8 @@ Open your coding agent in the project you want to build and send one message:
 ```
 
 That is the normal installation path. The agent identifies the target repo, installs and validates the framework, prepares the setup change, creates Project State, and starts the dedicated orchestrator. A bare URL is not enough to express intent; the one sentence above is.
+
+If the project is still only an idea and has no repository, send the same request. The agent asks only for unresolved host, owner, or visibility and prepares a private Git-backed operating repo when its tools allow.
 
 The human may still need to grant repository/network access or approve merge. They should not need to clone repositories, run installer commands, choose skills, or copy prompts.
 
@@ -41,10 +43,11 @@ Historical snapshots remain available through Git releases and tags. Current ski
 - Helps brainstorm an unclear idea into a product compass and brief.
 - Protects the nearest DOD from optional scope growth while preserving useful ideas for the right planning moment.
 - Rechecks task scope before dispatch or resume so old briefs do not continue silently.
+- Detects when a local goal starts pulling unrelated platform layers and routes it to continue, re-brief, Lab, or bounded maintenance instead of normalizing architectural drag.
 - Turns large topics into epics and autonomous task contracts.
 - Keeps implementation in focused task contexts and orchestration in one clean control context.
 - Builds each new candidate from the last accepted baseline while retaining lessons from rejected attempts.
-- Reconciles meetings and asynchronous local work through durable shared state.
+- Reconciles meetings and asynchronous local work through a shared Git-backed repo and durable tracker that every participant and orchestrator can access.
 - Returns checkpoints, blockers, and terminal task results to the orchestrator automatically instead of making people poll.
 - Calls humans only at explicit product, visual, paid-action, smoke, or merge checkpoints.
 - Checks product-loop closure, DOD burn, exact-current-code smoke, and next-best-action.
@@ -58,6 +61,16 @@ Give the agent the request above from a task attached to the target project. [`B
 The installer writes only framework-managed files and one marked block in the target `AGENTS.md`. Project-specific rules stay outside that block. The agent reviews and validates the diff, prepares the setup branch or PR, and leaves merge under the project's normal policy.
 
 The orchestrator applies `$project-launch`, registers the project and participants, creates the first compass and DOD, and chooses the next route. People do not need to select skills manually afterward.
+
+## Shared Sync
+
+Distributed Vydykhai needs one shared Git-backed project repo and durable tracker, even when the work is research, writing, design, or another non-code form of vibe work. GitHub with Issues and PRs is the recommended and best-supported default. Another host or tracker is valid if it gives stable links, history, access control, participant-owned updates, and read/write access to each participant's orchestrator.
+
+At launch, the agent records and tests this sync space plus the meeting-input route. Fathom is the recommended recorder when available; Read AI, tl;dv, another transcript service, team chat, or an approved manual summary can provide the same input. A local notebook such as Obsidian remains an input or view unless it is shared, versioned, and agent-accessible.
+
+After a meaningful meeting, each relevant participant can say `Process the latest meeting.` whenever they next resume. Their orchestrator reads the configured source, publishes only the material local delta, reconciles available packets in the tracker, and states what can continue; no fixed order or simultaneous attendance is required.
+
+Give every person and agent only the access they need; never share credentials or use public-by-link access for private meeting material. If someone cannot reach the repo, tracker, or relevant meeting source, the orchestrator marks `SYNC_LIMITED`, names the missing visibility, and does not claim complete alignment for overlapping work.
 
 ## Update And Diagnose
 

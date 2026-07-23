@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.9.0
+Версия: 1.10.0
 Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк совместной работы людей и AI-агентов. Он вырос из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action.
@@ -37,7 +37,7 @@
 - Продуктовый компас хранит цель, пользователей, желаемый результат, DOD, non-goals, ограничения и текущие решения. Он может меняться, но не незаметно.
 - У каждого участника есть один активный Framework Orchestrator на product stream. Он организует работу и не пишет продуктовый код.
 - Research, lab и implementation идут в отдельных сфокусированных контекстах.
-- GitHub issues и PR либо аналогичный общий tracker хранят durable state. История чата является свидетельством, но не source of truth.
+- Общий Git-репозиторий хранит framework и project files. GitHub Issues и PR являются рекомендуемым sync space; аналогичный tracker подходит, только если все участники и их оркестраторы видят одно связанное состояние. Локальные копии и история чата являются evidence, но не source of truth.
 - Idea Memory хранит подтвержденные полезные идеи вне текущего scope и возвращает их, когда планирование касается нужной продуктовой поверхности.
 - Task contexts отвечают за implementation, исправления, `$accept-work`, smoke на точном актуальном коде, ручной merge после подтверждения человека и автоматический return sync в оркестратор.
 - Оркестратор отвечает за sequence, alignment, dispatch, запросы человеку, health checks и next-best-action.
@@ -60,12 +60,17 @@ Agent context - это логическая граница, а не функци
 1. Bootstrap-агент определяет target repo, сохраняет существующую работу, устанавливает или обновляет kit и запускает `doctor`.
 2. Он проверяет diff, готовит setup commit или PR и оставляет project rules вне managed files.
 3. Он создает Project State и запускает личный Framework Orchestrator context из target repo.
-4. `$project-launch` создает Project Operating Brief, компас, первый DOD, registry участников, общую память и первый маршрут.
-5. После принятия setup change каждый участник делает обычный pull и подтверждает активацию через своего orchestrator.
+4. `$project-launch` создает Project Operating Brief, компас, первый DOD, registry участников, Shared Sync Contract и первый маршрут.
+5. После принятия setup change каждый участник делает обычный pull и через своего orchestrator подтверждает framework и sync access.
 
 Bootstrap-запрос разрешает setup branch/PR и общие operating artifacts. Он не разрешает merge, destructive overwrite, платные действия, production changes или раскрытие private data. Если не хватает tool или доступа, агент просит только эту возможность и не перекладывает команды установки на человека.
 
 Bootstrap сопоставляет текущую агентскую среду с project instructions, вызовом skills/rules, отдельными resumable contexts, durable shared state и execution/verification. Если среда не умеет native skill discovery или context creation, создается один тонкий native adapter со ссылками на канонические файлы, а mapping записывается в Project State. Операционная логика не копируется в environment-specific rules.
+
+### Контракт общей синхронизации
+Для распределенной работы Vydykhai нужны общий Git-репозиторий проекта и durable tracker. Рекомендуемый и лучше всего отлаженный вариант, в том числе для не-программных проектов, - GitHub с Issues и PR. Аналог должен давать стабильные ссылки, историю, независимые обновления участников, access control и read/write доступ агентам.
+При запуске нужно записать и проверить repo/tracker, необходимый доступ каждого участника и оркестратора и маршрут coordination inputs из встреч, записей, transcripts, чатов, docs или ручных заметок. Для записи встреч при наличии рекомендуется Fathom; подходят также Read AI, tl;dv и любой другой доступный источник.
+Локальный notebook вроде Obsidian является input или view, пока он не стал общим, версионируемым и доступным агентам. Неполное покрытие получает статус `SYNC_LIMITED`: явно назвать, что невидимо, не заявлять полный alignment и продолжать пересекающуюся работу только с cautions либо ждать.
 
 ## Профиль агента
 
@@ -125,6 +130,15 @@ Universal rules не фиксируют сегодняшний model id, поэ�
 
 Возраст задачи требует перечитать ее, но сам по себе не меняет scope. По умолчанию сигналом являются семь дней без freshness check, если проект не выбрал другой интервал. Существенный patch или re-brief подтверждается человеком до продолжения implementation или burn.
 
+### Проверка разрастания
+Размер задачи является сигналом, а не приговором. Expansion Check проводится с паузой только затронутого роста, если первое проверяемое человеком evidence не уложилось в согласованный appetite, локальная цель потянула незапланированные слои или contracts, одна побочная platform problem повторяется в разных задачах, возникло второе исправление одного класса либо data/operating cost растет без движения DOD.
+Нужно назвать `Ожидалось`, `Разрослось до`, `Вероятная причина` и один маршрут:
+- `CONTINUE`: широкий scope действительно нужен; подтвердить новую границу и appetite.
+- `REBRIEF`: смешано несколько результатов; вернуть один product outcome, остальное поставить в sequence.
+- `LAB`: гипотезу дешевле доказать вне полного product path с заранее заданным выходом на бой.
+- `MAINTENANCE`: повторяющийся architecture, data или tooling friction нужно устранить до продолжения затронутой работы.
+Maintenance называет источник friction, сохраняет Accepted Baseline, меняет минимальную общую причину, доказывает, что исходный показательный flow стал существенно меньше или быстрее, проверяет отсутствие повторного роста и явно возвращается в исходную задачу. Backup, cleanup, migration или cap сдерживают последствия, но не закрывают долг, пока источник повторения не устранен либо осознанно не отложен. Appetite задается по задаче и repo; число файлов, строк или минут является предупреждением, а не универсальным вердиктом.
+
 ### Фокус на DOD и память идей
 
 Новые идеи не должны откладывать ближайший DOD, а полезные идеи не должны теряться. Человек может говорить все, что считает важным; оркестратор отделяет необходимое сейчас от того, что нужно запомнить.
@@ -168,7 +182,7 @@ Research уменьшает неопределенность. Lab уменьша
 - Scope freshness и Accepted Baseline;
 - Product loop либо связанный enabling contract;
 - Human checkpoint;
-- Burn / limits, когда расходы существенны;
+- Burn / stop и expansion appetite, когда они существенны;
 - Verification и completion route;
 - Return destination и event triggers.
 
@@ -198,37 +212,15 @@ Task context начинает implementation, а не повторяет уже 
 
 ### 7. Health Review
 
-Короткий Health Review проводится после milestone, нескольких принятых слайсов, повторяющихся follow-ups, остановки DOD burn, выпадения owner, повторных context compaction или когда работа начинает зависеть от археологии по чатам.
+Короткий Health Review проводится после milestone, нескольких принятых слайсов, повторяющихся follow-ups, неожиданного разрастания, остановки DOD burn, выпадения owner, повторных context compaction или когда работа начинает зависеть от археологии по чатам.
 
-Проверяется:
-
-- продвижение к compass и DOD;
-- blockers, повторные затраты и technical slicing без продуктового прогресса;
-- устаревший task scope, несколько конкурирующих Candidates и исправления, построенные на rejected work;
-- research и lab outputs, которые не попали в реальный продуктовый путь;
-- stale tasks, PR, branches, worktrees, monitors и alignment windows;
-- записи Idea Memory, которые дублируются, уже поглощены работой, устарели или больше не соответствуют компасу;
-- решения, оставшиеся вне durable state;
-- необходимость сменить active orchestrator context.
+Проверяются продвижение к compass и DOD; blockers, повторные затраты и technical slicing без продуктового прогресса; неожиданное разрастание или повторяющийся architecture/data/tooling tax; stale scope, конкурирующие Candidates и исправления на rejected work; research или lab outputs вне real path; stale operational artifacts и решения вне durable state; гигиена Idea Memory; необходимость сменить active orchestrator.
 
 ## Люди как агенты
 
-Люди являются событийными участниками системы, а не ее скрытыми диспетчерами. Когда нужен человек, оркестратор должен сообщить:
+Люди являются событийными участниками системы, а не ее скрытыми диспетчерами. Когда нужен человек, оркестратор сообщает, кто действует, что проверить или решить, точную ссылку/task/prompt, куда попадет результат, что можно продолжать и какой Return Sync возобновит поток.
 
-- кто должен действовать;
-- что проверить или решить;
-- точную ссылку, задачу или prompt;
-- куда попадет результат;
-- что тем временем можно безопасно продолжать;
-- какой return sync возобновит поток.
-
-У каждой задачи есть один `Human checkpoint`:
-
-- `none`;
-- `product decision`;
-- `visual review`;
-- `paid or external action approval`;
-- `manual smoke and merge`.
+У каждой задачи есть один `Human checkpoint`: `none`, `product decision`, `visual review`, `paid or external action approval` либо `manual smoke and merge`.
 
 Оркестратор не должен говорить, что участие человека не требуется, если впереди есть названный checkpoint.
 
@@ -248,7 +240,7 @@ Registry участников содержит: participant, orchestrator contex
 
 ## Встречи
 
-Meetings, записи, transcripts, командные чаты и заметки являются одним слоем coordination inputs. Они остаются raw input, пока orchestrator не дистиллирует их, а человек не подтвердит изменения compass, scope, sequence, ownership или DOD.
+Meetings, записи, transcripts, командные чаты и заметки являются одним слоем coordination inputs. Они остаются raw input, пока orchestrator не дистиллирует их в shared tracker, а человек не подтвердит изменения compass, scope, sequence, ownership или DOD.
 
 После встречи достаточно короткой команды `сделай daily alignment`. Оркестратор читает доступный источник, обновляет durable state, просит недостающие packets только там, где они важны, и возвращает continue, continue with cautions, wait или blocked.
 
@@ -284,7 +276,9 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - Universal rules хранятся в canonical framework, project rules - в product repo.
 - Человеческое общение остается продуктовым; branch и worktree mechanics показываются только когда влияют на решение или риск.
 - Implementation не начинается без goal, boundary, DOD impact, human checkpoint и verification route.
+- Нельзя заявлять team alignment, пока доступ к shared repo/tracker или важному input имеет статус `SYNC_LIMITED`.
 - Перед dispatch или resume проверяется актуальность scope; существенный устаревший scope не продолжается без подтвержденного patch или re-brief.
+- Неожиданное разрастание задачи является diagnostic trigger; повторяющийся architecture tax нельзя считать нормой, а containment - устранением причины.
 - Ближайший DOD защищается от optional scope growth, а подтвержденные будущие идеи сохраняются в Idea Memory, а не в памяти человека или истории чата.
 - Сохраняется одна линия успеха: новые Candidates строятся от Accepted Baseline и учитывают уроки Rejected Candidates.
 - Принятый sub-slice не закрывает parent, пока обещанные product loop и DOD не закрыты или явно не вынесены out of scope.

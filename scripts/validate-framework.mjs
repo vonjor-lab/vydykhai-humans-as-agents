@@ -93,7 +93,14 @@ if (!coreEn.includes("Scope Freshness") || !coreRu.includes("Актуально�
 if (!coreEn.includes("One Success Line") || !coreRu.includes("Одна линия успеха")) {
   fail("Core is missing One Success Line");
 }
+if (!coreEn.includes("Shared Sync Contract") || !coreRu.includes("Контракт общей синхронизации")) {
+  fail("Core is missing Shared Sync Contract");
+}
+if (!coreEn.includes("Expansion Check") || !coreRu.includes("Проверка разрастания")) {
+  fail("Core is missing Expansion Check");
+}
 if (!projectStateTemplate.includes("Idea Memory:")) fail("Project State is missing the Idea Memory pointer");
+if (!projectStateTemplate.includes("Shared Sync:")) fail("Project State is missing Shared Sync readiness");
 if (!projectStateTemplate.includes("Baseline -> Candidate")) fail("Project State is missing the Success Line pointer");
 if (!projectStateTemplate.includes("Task return mapping:")) fail("Project State is missing the task return mapping");
 if (!ideaMemoryTemplate.includes("Idea Memory is not a backlog")) fail("Idea Memory template is missing its scope guard");

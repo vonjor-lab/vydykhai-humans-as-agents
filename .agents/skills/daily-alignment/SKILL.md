@@ -17,7 +17,8 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 
 ## Contract
 
-- Treat meeting recordings, transcripts, chat, and notes as raw inputs.
+- Verify the Shared Sync Contract and relevant source access before claiming coverage. If the repo/tracker or meeting input is unavailable to an expected participant's orchestrator, mark `SYNC_LIMITED` and name the affected boundary.
+- Treat meeting recordings, transcripts, chat, and notes as raw inputs; Fathom, Read AI, tl;dv, another recorder, or an approved manual source are equivalent once accessible.
 - Identify the meeting/event scope, expected participants, affected tasks/contracts, active Alignment Window, and latest delta.
 - Apply source precedence; a current human correction supersedes an old task-context plan.
 - Classify useful meeting or local-work ideas that are not required for the current DOD as Idea Candidates. Do not turn them into tasks or active scope; send confirmed candidates to the orchestrator for deduplicated Idea Memory upsert.
@@ -35,4 +36,4 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 
 ## Finish
 
-Return `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, or `BLOCKED`, with links to the active window, packet/delta, missing inputs, and exact next action.
+Return `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, or `BLOCKED`, with sync readiness, links to the active window, packet/delta, missing inputs, and exact next action.
