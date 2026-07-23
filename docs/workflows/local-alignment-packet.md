@@ -11,6 +11,7 @@ orchestrator: <link/title>
 framework_version: <version>
 agent_profile: <model / reasoning / checked date>
 scope: <meeting/event/task>
+source_access: <covered | limited, with gap>
 created_at: <ISO timestamp>
 -->
 

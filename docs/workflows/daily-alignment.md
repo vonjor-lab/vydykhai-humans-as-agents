@@ -4,7 +4,7 @@ Goal: reconcile material meeting, event, and local-work changes asynchronously.
 
 ## Durable State
 
-- Project State holds current compass, DOD, participant registry, tasks, and active Alignment Window.
+- Project State holds the Shared Sync Contract, current compass, DOD, participant registry, tasks, and active Alignment Window.
 - Alignment Window comments hold append-only packets and deltas for one meeting, milestone, or compact period.
 - Alignment Window body is a current dashboard rebuilt with every Team Alignment Delta.
 
@@ -15,6 +15,7 @@ Comments remain evidence; a stale body must be rebuilt before use.
 Determine:
 
 - meeting or event key and source link;
+- Shared Sync readiness and source access for expected participants/orchestrators;
 - expected participants and affected tasks/contracts;
 - current participant and active task;
 - active Alignment Window and latest delta;
@@ -54,6 +55,8 @@ Use:
 
 Missing participants do not block unrelated work.
 
+Source or tracker gaps are `SYNC_LIMITED`, not implicit coverage. Do not publish `READY` for overlapping work until the required source and packet coverage exist; state what remains safe meanwhile.
+
 ## 5. Publish Delta And Dashboard Together
 
 When shared guidance changes:
@@ -78,4 +81,4 @@ After a milestone or when the window is no longer quickly scannable:
 
 ## 7. Tell The Human
 
-Return continue, continue with cautions, wait, or blocked. Include durable links, missing inputs, safe boundary, and one exact next action.
+Return continue, continue with cautions, wait, or blocked. Include sync readiness, durable links, missing inputs, safe boundary, and one exact next action.

@@ -7,12 +7,14 @@
 - Use `latest available flagship / deepest bounded reasoning`. Map to Extra High / `xhigh` when available. Record the resolved model, reasoning mapping, check date/source, and fallback in Project State; recheck at setup, update, orchestrator rotation, model failure/deprecation, and at least weekly Health Review.
 - Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo state; agent plan; inference.
 - Apply Proactive Guardrails: when a proposed action conflicts with a framework rule, politely name the rule, concrete risk, recommended route, what can be preserved/rebuilt, and the exact next action. A human may explicitly override with recorded limits and a re-entry condition.
+- Require one shared Git-backed repo and durable tracker; GitHub Issues/PRs are the recommended default. Record human/agent access and meeting-input routes in the Shared Sync Contract. Mark gaps `SYNC_LIMITED` and never claim complete alignment for affected work.
 - Protect the nearest DOD from optional scope growth. Keep confirmed future ideas in shared Idea Memory with a recall trigger, intersect them at real planning checkpoints, and never promote them into scope or tasks silently.
 - Use `$project-launch` to activate or reconnect a project.
 - Use `$start-work` to shape a large or changed topic into a brief and task map.
 - Use `$daily-alignment` when a meeting or event changes another participant's safe next action.
 - Use `$accept-work` inside the task context before claiming completion.
 - Before dispatch or resume, classify scope freshness as `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; seven days is the default re-read signal, not an automatic scope change.
+- Before unexpected task growth, run Expansion Check and route `CONTINUE`, `REBRIEF`, `LAB`, or bounded `MAINTENANCE`. Treat counts as signals, not verdicts; containment does not close recurring debt without source removal or explicit deferral and representative-flow proof.
 - Implementation tasks require goal and DOD impact, scope/out of scope, scope freshness, Accepted Baseline, product loop or linked enabler, human checkpoint, material burn limit, verification route, and return destination/triggers.
 - Use Research Context for bounded uncertainty without product-code changes.
 - Use Lab Mode only when isolation reduces cost or risk; require a decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn limit, production transfer, and risk-based real-flow verification.

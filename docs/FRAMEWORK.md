@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.9.0
+Version: 1.10.0
 Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
@@ -37,7 +37,7 @@ Vydykhai combines them: design the compass and task contract top-down, let agent
 - The product compass holds the goal, users, desired outcome, DOD, non-goals, constraints, and current decisions. It may evolve, but never silently.
 - Each participant has one active Framework Orchestrator for a product stream. It organizes work and never implements product code.
 - Research, lab, and implementation run in separate focused contexts.
-- GitHub issues and PRs, or an equivalent shared tracker, hold durable state. Chat history is evidence, not the source of truth.
+- A shared Git-backed project repo carries the framework and project files. GitHub Issues and PRs are the recommended durable sync space; an equivalent tracker is valid only when every participant and orchestrator can reach the same linked state. Local copies and chat history are evidence, not the source of truth.
 - Idea Memory keeps confirmed useful ideas outside current scope and recalls them when planning touches the relevant product surface.
 - Task contexts own implementation, corrective fixes, `$accept-work`, exact-current-code smoke, manual merge after human confirmation, and automatic return sync to the orchestrator.
 - The orchestrator owns sequence, alignment, task dispatch, human requests, health checks, and next-best-action.
@@ -60,12 +60,17 @@ Required launch path:
 1. The bootstrap agent identifies the target repo, preserves existing work, installs or updates the kit, and runs `doctor`.
 2. It reviews the diff, prepares the setup commit or PR, and keeps project rules outside managed files.
 3. It creates Project State and starts a personal Framework Orchestrator context from the target repo.
-4. `$project-launch` creates the Project Operating Brief, compass, first DOD, participant registry, shared state location, and first route.
-5. After the setup change is accepted, every participant pulls it and confirms activation through their orchestrator.
+4. `$project-launch` creates the Project Operating Brief, compass, first DOD, participant registry, Shared Sync Contract, and first route.
+5. After the setup change is accepted, every participant pulls it and confirms framework and sync access through their orchestrator.
 
 The bootstrap request authorizes setup branch/PR and shared operating artifacts. It does not authorize merge, destructive overwrite, paid actions, production changes, or disclosure of private data. If tools or access are missing, the agent asks only for that capability instead of delegating setup commands to the human.
 
 Bootstrap maps the current agent environment to project instructions, skill/rule invocation, separate resumable contexts, durable shared state, and execution/verification. If native skill discovery or context creation is unavailable, it creates one thin native adapter that points to the canonical files and records the mapping in Project State. It never copies the operating logic into environment-specific rules.
+
+### Shared Sync Contract
+Distributed Vydykhai requires one shared Git-backed project repo and one durable tracker. GitHub with Issues and PRs is the recommended and best-supported default, including for non-code work. An equivalent must provide stable links, history, participant-owned updates, access control, and agent read/write access.
+At launch, record and test the repo/tracker, each participant and orchestrator's required access, and the coordination-input route from meetings, recordings, transcripts, chat, docs, or manual notes. Fathom is the recommended meeting recorder when available; Read AI, tl;dv, or another accessible source is valid.
+A local notebook such as Obsidian is an input or view unless it is shared, versioned, and agent-accessible. Missing coverage is `SYNC_LIMITED`: name what is invisible, never claim full alignment, and keep overlapping work inside explicit cautions or wait.
 
 ## Agent Profile
 
@@ -125,6 +130,15 @@ Before dispatching or resuming work, compare the task with the latest DOD and de
 
 Age triggers re-reading, not automatic scope change. Seven days without a freshness check is the default signal unless the project sets another interval. Approve a material patch or re-brief before implementation or burn continues.
 
+### Expansion Check
+Task size is a signal, not a verdict. Run an Expansion Check and pause only affected growth when first human-verifiable evidence misses the agreed appetite, a local goal crosses unplanned layers or contracts, the same incidental platform problem recurs across tasks, a second same-class correction appears, or data/operating cost grows without DOD movement.
+State `Expected`, `Expanded into`, `Likely cause`, and one route:
+- `CONTINUE`: the cross-cut is necessary; approve the updated boundary and appetite.
+- `REBRIEF`: several outcomes were mixed; restore one product result and sequence the rest.
+- `LAB`: the hypothesis can be proved more cheaply outside the full product path, with a defined production exit.
+- `MAINTENANCE`: recurring architecture, data, or tooling friction should be removed before affected delivery continues.
+Maintenance must name the friction source, preserve the Accepted Baseline, change the smallest shared cause, prove the original representative flow became materially smaller or faster, test against recurrence, and return explicitly to the original task. Backup, cleanup, migration, or a cap contains impact but does not close the debt unless the recurrence source is removed or deliberately deferred. Set appetite from the task and repository; file, line, or time counts are warnings, never universal verdicts.
+
 ### DOD Focus And Idea Memory
 
 New ideas must not delay the nearest DOD, and useful ideas must not disappear. People may say everything they consider important; the orchestrator separates what is required now from what should be remembered.
@@ -168,7 +182,7 @@ The minimum task contract contains:
 - Scope freshness and Accepted Baseline;
 - Product loop or linked enabling contract;
 - Human checkpoint;
-- Burn / limits when material;
+- Burn / stop and expansion appetite when material;
 - Verification and completion route;
 - Return destination and event triggers.
 
@@ -198,37 +212,15 @@ After acceptance and the required human checkpoint, promote the Candidate to Acc
 
 ### 7. Review Health
 
-Run a short Health Review after a milestone, several accepted slices, repeated follow-ups, stalled DOD burn, owner dropout, repeated context compaction, or when work starts relying on chat archaeology.
+Run a short Health Review after a milestone, several accepted slices, repeated follow-ups, unexpected expansion, stalled DOD burn, owner dropout, repeated context compaction, or when work starts relying on chat archaeology.
 
-Check:
-
-- progress toward compass and DOD;
-- blockers, repeated costs, and technical slicing without product progress;
-- stale task scope, multiple competing candidates, and corrections built on rejected work;
-- research and lab outputs that never entered the real product path;
-- stale tasks, PRs, branches, worktrees, monitors, and alignment windows;
-- Idea Memory entries that are duplicated, absorbed, superseded, or no longer aligned with the compass;
-- decisions trapped outside durable state;
-- whether the active orchestrator context should rotate.
+Check progress toward compass and DOD; blockers, repeated costs, and technical slicing without product progress; unexpected expansion or recurring architecture/data/tooling tax; stale scope, competing candidates, and corrections built on rejected work; research or lab outputs missing from the real path; stale operational artifacts or trapped decisions; Idea Memory hygiene; and whether the active orchestrator should rotate.
 
 ## Humans As Agents
 
-Humans are event-driven participants in the system, not its hidden schedulers. When human action is required, the orchestrator must state:
+Humans are event-driven participants in the system, not its hidden schedulers. When human action is required, the orchestrator states who acts, what to inspect or decide, the exact link/task/prompt, where the result will be written, what may continue, and what Return Sync resumes the flow.
 
-- who should act;
-- what to inspect or decide;
-- the exact link, task, or prompt;
-- where the result will be written;
-- what may continue safely meanwhile;
-- what return sync will resume the flow.
-
-Every task declares one `Human checkpoint`:
-
-- `none`;
-- `product decision`;
-- `visual review`;
-- `paid or external action approval`;
-- `manual smoke and merge`.
+Every task declares one `Human checkpoint`: `none`, `product decision`, `visual review`, `paid or external action approval`, or `manual smoke and merge`.
 
 The orchestrator should not say that a human is unnecessary when a named checkpoint is still ahead.
 
@@ -248,7 +240,7 @@ When publishing a Team Alignment Delta, rebuild the issue body in the same opera
 
 ## Meetings
 
-Meetings, recordings, transcripts, team chats, and notes are one coordination input layer. They are raw inputs until the orchestrator distills them and a human approves changes to compass, scope, sequence, ownership, or DOD.
+Meetings, recordings, transcripts, team chats, and notes are one coordination input layer. They are raw inputs until the orchestrator distills them into the shared tracker and a human approves changes to compass, scope, sequence, ownership, or DOD.
 
 After a meeting, one short request such as `run daily alignment` should be enough. The orchestrator reads the available source, updates durable state, asks for missing packets only where they matter, and returns continue, continue with cautions, wait, or blocked.
 
@@ -284,7 +276,9 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Keep universal rules in the canonical framework and project rules in the product repo.
 - Keep human conversation product-focused; hide branch and worktree mechanics unless they affect a decision or risk.
 - Do not start implementation without a goal, boundary, DOD impact, human checkpoint, and verification route.
+- Do not claim team alignment while shared repo/tracker or relevant input access is `SYNC_LIMITED`.
 - Check scope freshness before dispatch or resume; do not continue material stale scope without an approved patch or re-brief.
+- Treat unexpected task expansion as a diagnostic trigger; do not normalize recurring architecture tax or close containment as root-cause repair.
 - Protect the nearest DOD from optional scope growth, and preserve confirmed future ideas in Idea Memory instead of relying on chat or human recall.
 - Keep one Success Line: build successor candidates from the Accepted Baseline while carrying forward lessons from rejected candidates.
 - Do not close a parent from an accepted sub-slice unless its promised product loop and DOD are closed or explicitly moved out of scope.

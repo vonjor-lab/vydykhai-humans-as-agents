@@ -8,6 +8,8 @@ Use one compact issue or equivalent artifact per project or product stream. It i
 # Project State: <project or stream>
 
 Framework: <installed version> | Upstream: <url> | Last doctor: <result/date>
+Shared Sync: Repo: <url> | Tracker: <url> | Readiness: <READY | SYNC_LIMITED, with gaps>
+Coordination inputs: <meeting recorder/transcript/chat/docs/manual route> | Access checked: <date/result>
 Agent policy: latest available flagship / deepest bounded reasoning
 Resolved agent: <model id / reasoning mapping> | Checked: <date/source> | Fallback: <none, pending, or reason>
 Environment adapter: <native | adapter path> | Context mapping: <thread/chat/session/run/workspace/tracker handle>
@@ -26,9 +28,9 @@ Updated from durable event: <event/link/date>
 
 ## Participants
 
-| Participant | Active orchestrator | Framework | Agent profile | Latest packet | Active task | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| <name> | <context link/title> | <version> | <model / reasoning / checked> | <packet/link> | <task/link> | <active / away / waiting / superseded> |
+| Participant | Active orchestrator | Framework | Agent profile | Sync access | Latest packet | Active task | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| <name> | <context link/title> | <version> | <model / reasoning / checked> | <repo/tracker/input status> | <packet/link> | <task/link> | <active / away / waiting / superseded> |
 
 ## Active Work
 

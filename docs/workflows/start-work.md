@@ -48,6 +48,8 @@ Propose:
 - Lab Mode when isolation reduces cost/risk, including decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn, production transfer, and risk-based real-flow smoke;
 - Peer Compass Review when another owner can prevent drift.
 
+When a local outcome is likely to pull unrelated layers, name the expected surface, first human-verifiable evidence, and a task-specific expansion appetite. File, line, and time counts may trigger review but are never universal verdicts. If recurring friction already affects several tasks, shape the smallest maintenance task that removes the shared cause, proves the representative original flow became smaller/faster, tests recurrence, and returns to delivery; containment alone does not close it.
+
 ## 5. Build The Task Map
 
 For each task, write only:
@@ -60,6 +62,7 @@ Scope freshness / Accepted Baseline:
 Product loop or linked enabler:
 Human checkpoint:
 Burn / stop limit:
+Expected surface / first evidence: <only when expansion risk is material>
 Verification / completion route:
 Return destination / triggers:
 Dependencies / parallel boundary:

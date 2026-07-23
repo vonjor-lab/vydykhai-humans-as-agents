@@ -30,6 +30,7 @@ The following canonical commits provide a compact, independently inspectable rec
 | 2026-07-10 | [`v1.7.0`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/releases/tag/v1.7.0) | Environment-neutral agent contexts, skills, bootstrap, and workflows |
 | 2026-07-14 | [`v1.8.0`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/releases/tag/v1.8.0) | DOD Focus and durable Idea Memory |
 | 2026-07-22 | [`v1.9.0`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/releases/tag/v1.9.0) | Closed-loop task return, Scope Freshness, One Success Line, and Proactive Guardrails |
+| 2026-07-23 | [`v1.10.0`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/releases/tag/v1.10.0) | Shared Sync Contract and Expansion Check |
 
 ## Evidence Policy
 

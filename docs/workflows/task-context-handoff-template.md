@@ -44,6 +44,8 @@ Safe continuation before checkpoint:
 
 <not material or concrete cap and stop condition>
 
+Expected touched surface / first human-verifiable evidence: <only when expansion risk is material>
+
 ## Verification And Completion
 
 - <tests/checks>
@@ -65,6 +67,7 @@ Learning Delta: <Keep | Rebuild | Drop | Unknown, when a candidate is rejected>
 DOD and parent result:
 Human checkpoint result:
 Burn result:
+Expansion result / route: <when triggered>
 Exact-current-code smoke / merge:
 Participant impact / alignment needed:
 Risks / follow-ups:

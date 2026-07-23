@@ -2,15 +2,16 @@
 
 This file is for the coding agent, not the human. When a user asks to connect Vydykhai to the current project, own the technical setup end to end.
 
-The bootstrap request authorizes creation of a setup branch, framework install/update, validation, a setup commit or PR, Project State, and a dedicated Framework Orchestrator. It does not authorize merge, destructive overwrite, paid actions, production changes, or disclosure of private data.
+The bootstrap request authorizes creation of a setup branch, framework install/update, validation, a setup commit or PR, Project State, and a dedicated Framework Orchestrator. When the user explicitly starts a project with no repository, it also authorizes preparation of a private Git-backed operating repo after owner/host confirmation. It does not authorize merge, public visibility, destructive overwrite, paid actions, production changes, or disclosure of private data.
 
 ## Preconditions
 
-1. Confirm the current task is attached to the target product repository. If the target is ambiguous, ask one short question and nothing else.
+1. Confirm the target project repository. If none exists, ask only for unresolved host, owner, or visibility, then create or prepare a private Git-backed operating repo when tools allow. If the target is otherwise ambiguous, ask one short question and nothing else.
 2. Inspect existing `AGENTS.md`, repository instructions, git state, remotes, and privacy constraints. Preserve unrelated and uncommitted work.
 3. Use available shell, network, repository host, tracker, and context tools yourself. Ask the human only for missing access, trust, or a decision; do not ask them to type setup commands.
 4. Never treat the standalone Vydykhai repository as the target product repository.
 5. Inspect how the current agent environment loads project instructions and skills, creates or resumes contexts, accesses durable shared state, returns events between contexts, and runs verification.
+6. Identify the durable tracker and coordination-input sources. GitHub with Issues and PRs is the default; meeting inputs may come from Fathom, Read AI, tl;dv, another recorder, team chat, docs, or manual notes.
 
 ## Install
 
@@ -41,12 +42,13 @@ An explicit human decision may choose a lower-cost or faster profile for a named
 ## Activate
 
 1. Apply `$project-launch` from the installed target repository.
-2. Create or update the compact Project Operating Brief and Project State.
-3. Register participants, active orchestrator links, framework versions, resolved agent profiles, current tasks, and safe continuation.
-4. Create the dedicated organization-only Framework Orchestrator context. Verify its actual title or stable handle and that it can reconstruct compass, DOD, tasks, blockers, and next-best-action.
-5. Configure task Return Sync in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record and test the mapping in Project State; do not make the human poll tasks.
-6. If the environment cannot create resumable contexts, use the closest tracker-linked handle and explain the limitation once.
-7. Tell other participants to pull the accepted setup change. Their orchestrators confirm activation with `doctor` when they next resume.
+2. Create or update the compact Project Operating Brief, Project State, and Shared Sync Contract: Git-backed repo, durable tracker, coordination-input route, privacy boundary, and access coverage.
+3. Register participants, active orchestrator links, framework versions, resolved agent profiles, current tasks, sync readiness, and safe continuation.
+4. Test each active participant's human access and their orchestrator's required read/write access to the repo/tracker plus read access to relevant meeting inputs. Use individual least-privilege authentication, never shared credentials. Record missing coverage as `SYNC_LIMITED` and do not claim complete alignment for affected work.
+5. Create the dedicated organization-only Framework Orchestrator context. Verify its actual title or stable handle and that it can reconstruct compass, DOD, tasks, blockers, and next-best-action.
+6. Configure task Return Sync in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record and test the mapping in Project State; do not make the human poll tasks.
+7. If the environment cannot create resumable contexts, use the closest tracker-linked handle and explain the limitation once.
+8. Tell other participants to pull the accepted setup change. Their orchestrators confirm `doctor` and Shared Sync access when they next resume.
 
 ## Return
 
@@ -55,6 +57,7 @@ Report only:
 - installed version and `doctor` result;
 - creator, license, and attribution integrity;
 - environment adapter and context mapping;
+- Shared Sync Contract, coordination-input route, and access status;
 - task Return Sync mapping;
 - setup change/PR or the exact access blocker;
 - Project State and orchestrator link/status;
