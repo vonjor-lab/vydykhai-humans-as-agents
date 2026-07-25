@@ -14,9 +14,10 @@ Agent policy: latest available flagship / deepest bounded reasoning
 Resolved agent: <model id / reasoning mapping> | Checked: <date/source> | Fallback: <none, pending, or reason>
 Environment adapter: <native | adapter path> | Context mapping: <thread/chat/session/run/workspace/tracker handle>
 Task return mapping: <native context message | tracker event/hook | fallback monitor>
-Orchestrator rotation: <stable | reconciling | candidate ready | human confirmed>
+Orchestrator rotation: <stable | announced | reconciling | candidate ready | awaiting confirmation | cutover incomplete | complete>
 Candidate orchestrator context: <link/title or none>
-Previous orchestrator context: <pinned history/reference link or none>
+Previous orchestrator context: <retired unpinned history/reference link or none>
+Context visibility: <active pinned/foreground | previous unpinned + final notice | exact manual action pending>
 Memory coverage: <Rotation Memory Packet link | candidate check link | missing/ambiguous count>
 Compass: <brief/doc/issue link>
 Current DOD: <milestone and rows>

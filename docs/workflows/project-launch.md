@@ -53,7 +53,7 @@ Register each participant with:
 
 Do not store a permanent orchestrator context id in universal or project-wide framework rules. Project State owns the current pointer and can replace it during rotation.
 
-Rotation does not replace that pointer automatically. Project State records the previous context, read-only candidate, Rotation Memory Packet, candidate Memory Coverage Check, and explicit human confirmation before the switch.
+Rotation does not replace that pointer automatically. Project State records the previous context, read-only candidate, Rotation Memory Packet, candidate Memory Coverage Check, explicit human confirmation, and visible cutover status. After the switch, the new context is foregrounded/pinned when supported; the old context is renamed, unpinned, and left with a final retirement notice and active link.
 
 ## Team Onboarding
 
@@ -69,6 +69,7 @@ Explain:
 - let task contexts return checkpoints, blockers, and terminal results automatically; people should not poll them;
 - say useful ideas freely: the orchestrator protects the nearest DOD, stores confirmed future ideas, and recalls them at relevant planning;
 - expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.
+- expect an orchestrator rotation to be announced before it starts and made visually obvious after confirmation; new coordination moves to the pinned replacement while the old context stays only as unpinned history.
 
 ## First Route
 

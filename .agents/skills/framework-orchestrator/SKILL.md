@@ -48,11 +48,11 @@ Read `docs/workflows/framework-orchestrator.md` when dispatching, supervising, r
 - Keep one fallback monitor on one gate only when event-driven return is unavailable; keep it quiet while unchanged, prevent scope/spend/merge, update it when the gate changes, and delete it at terminal state.
 - After acceptance or merge, update DOD burn, parent closure, participant impact, absorbed or newly confirmed Idea Memory entries, Project State, and next-best-action instead of stopping at status.
 - Run Health Review after a milestone, several slices, repeated follow-ups, stalled DOD burn, unexpected task expansion, recurring architecture/data/tooling tax, owner dropout, repeated compaction, or chat archaeology. Deduplicate Idea Memory and retire entries that are absorbed, superseded, or no longer aligned with the compass.
-- When context is no longer compact, prepare two-phase rotation: the previous context publishes the full Rotation Memory Packet; the candidate independently checks durable coverage; the human sees the delta and confirms; only then switch the pointer. Keep the previous context pinned and never archive/delete it automatically.
+- When context is no longer compact, announce and explain the proposed rotation before starting. The previous context publishes the full Rotation Memory Packet; the candidate independently checks durable coverage; the human sees the delta and confirms; only then switch the pointer. Move return routes, foreground and pin the new context when supported, rename and unpin the previous context, and make its final message a prominent localized retirement notice linking to the active orchestrator. Keep the old context accessible as history and never archive/delete it automatically. If UI controls are unavailable, give one exact human action and report the cutover visibility gap.
 - Never invent another participant's uncommitted state. Missing participants block only overlapping work.
 
 ## Finish
 
-Return one status: `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, `WAIT_FOR_MEMORY_COVERAGE`, `LAUNCH_TASK_CONTEXT`, `LAUNCH_RESEARCH_CONTEXT`, `SEND_ACCEPT_WORK`, `PREPARE_ORCHESTRATOR_ROTATION`, `REQUEST_ROTATION_CONFIRMATION`, `NEEDS_DECISION`, or `BLOCKED`.
+Return one status: `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, `WAIT_FOR_MEMORY_COVERAGE`, `LAUNCH_TASK_CONTEXT`, `LAUNCH_RESEARCH_CONTEXT`, `SEND_ACCEPT_WORK`, `PREPARE_ORCHESTRATOR_ROTATION`, `REQUEST_ROTATION_CONFIRMATION`, `ROTATION_COMPLETE`, `ROTATION_CUTOVER_INCOMPLETE`, `NEEDS_DECISION`, or `BLOCKED`.
 
 Always include the exact next action.
