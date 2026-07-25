@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.10.0
+Version: 1.11.0
 Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
@@ -259,14 +259,17 @@ Propose Peer Compass Review when tasks, PRs, product surfaces, contracts, or DOD
 
 ## Orchestrator Rotation
 
-One active orchestrator is authoritative for one participant and stream. Rotation is a two-phase handoff, not an automatic replacement:
+One active orchestrator is authoritative for one participant and stream. Rotation is a two-phase handoff with a visible cutover, not an automatic replacement:
 
-1. Keep the previous orchestrator context active, intact, and linked. It publishes a Rotation Memory Packet covering compass/DOD, decisions, queued/promised/deferred work, human requests to remember, working rules, monitors/follow-ups, checkpoints, participants, and ambiguous or stale items.
-2. Compare the packet with Project State, issues/PRs, project instructions/docs, current repository state, and available context history. Classify each item as already durable, missing durable state, ambiguous, or stale/superseded.
-3. Create the candidate orchestrator from the current repo/framework in read-only mode. It independently runs Memory Coverage Check and reports omissions, conflicts, and proposed durable destinations.
-4. Put still-current missing items into their correct durable source only after the human sees the coverage delta; do not mass-create tasks or silently promote old ideas.
-5. Ask the human to confirm the active switch. Until confirmation, the candidate must not dispatch new work and the active pointer does not change.
-6. After confirmation, register the candidate as active and keep the previous context as a pinned historical/reference link. Never delete or archive it automatically.
+1. Before starting, tell the human why rotation is recommended, what will move, what will remain unchanged, how memory will be checked, and that one explicit confirmation will activate the replacement.
+2. Keep the previous orchestrator context active, intact, and linked. It publishes a Rotation Memory Packet covering compass/DOD, decisions, queued/promised/deferred work, human requests to remember, working rules, monitors/follow-ups, checkpoints, participants, and ambiguous or stale items.
+3. Compare the packet with Project State, issues/PRs, project instructions/docs, current repository state, and available context history. Classify each item as already durable, missing durable state, ambiguous, or stale/superseded.
+4. Create the candidate orchestrator from the current repo/framework in read-only mode. It independently runs Memory Coverage Check and reports omissions, conflicts, and proposed durable destinations.
+5. Put still-current missing items into their correct durable source only after the human sees the coverage delta; do not mass-create tasks or silently promote old ideas.
+6. Ask the human to confirm the active switch. Until confirmation, the candidate must not dispatch new work and the active pointer does not change.
+7. After confirmation, register the candidate as active, move return routes and monitors away from the previous context, bring the new context forward, pin it when supported, and publish one clear activation message with its link and next-best-action.
+8. Rename the previous context as retired/superseded, unpin it, and make its final message a prominent localized notice that it must not receive new work and links to the active orchestrator. Keep it accessible as unpinned history; never delete or archive it automatically.
+9. Report rotation complete only after Project State, context links, pin state, titles, return routes, and the previous context's final notice agree. When the environment cannot control these surfaces, give the human one exact action and mark cutover visibility incomplete rather than hiding the limitation.
 
 If the previous orchestrator is unavailable, mark recovery as incomplete, preserve safe boundaries, and ask the human before claiming full memory coverage or changing shared direction.
 

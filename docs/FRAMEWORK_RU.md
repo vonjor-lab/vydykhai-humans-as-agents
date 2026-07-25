@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.10.0
+Версия: 1.11.0
 Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк совместной работы людей и AI-агентов. Он вырос из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action.
@@ -259,14 +259,17 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 
 ## Ротация оркестратора
 
-Для одного участника и stream авторитетен один активный orchestrator. Ротация является двухфазным handoff, а не автоматической заменой:
+Для одного участника и stream авторитетен один активный orchestrator. Ротация является двухфазным handoff с явной пересменкой, а не автоматической заменой:
 
-1. Предыдущий orchestrator context остается активным, целым и доступным по ссылке. Он публикует Rotation Memory Packet: compass/DOD, решения, queued/promised/deferred work, просьбы человека запомнить, working rules, monitors/follow-ups, checkpoints, participants, ambiguous и stale items.
-2. Packet сверяется с Project State, issues/PR, project instructions/docs, текущим repo state и доступной историей context. Каждый item получает статус already durable, missing durable state, ambiguous или stale/superseded.
-3. Candidate orchestrator создается из актуальных repo/framework в read-only режиме. Он независимо проводит Memory Coverage Check и показывает omissions, conflicts и proposed durable destinations.
-4. Актуальные missing items попадают в правильный durable source только после того, как человек увидел coverage delta; нельзя массово создавать задачи или молча возвращать старые идеи.
-5. Человек явно подтверждает active switch. До подтверждения candidate не dispatch новые задачи, а active pointer не меняется.
-6. После подтверждения candidate регистрируется active, а previous context остается pinned historical/reference link. Его нельзя удалять или архивировать автоматически.
+1. До начала оркестратор объясняет человеку, почему нужна ротация, что перейдет в новый context, что не изменится, как будет проверена память и что одно явное подтверждение активирует замену.
+2. Предыдущий orchestrator context остается активным, целым и доступным по ссылке. Он публикует Rotation Memory Packet: compass/DOD, решения, queued/promised/deferred work, просьбы человека запомнить, working rules, monitors/follow-ups, checkpoints, participants, ambiguous и stale items.
+3. Packet сверяется с Project State, issues/PR, project instructions/docs, текущим repo state и доступной историей context. Каждый item получает статус already durable, missing durable state, ambiguous или stale/superseded.
+4. Candidate orchestrator создается из актуальных repo/framework в read-only режиме. Он независимо проводит Memory Coverage Check и показывает omissions, conflicts и proposed durable destinations.
+5. Актуальные missing items попадают в правильный durable source только после того, как человек увидел coverage delta; нельзя массово создавать задачи или молча возвращать старые идеи.
+6. Человек явно подтверждает active switch. До подтверждения candidate не dispatch новые задачи, а active pointer не меняется.
+7. После подтверждения candidate регистрируется active, return routes и monitors переводятся со старого context, новый context поднимается на виду, закрепляется при поддержке среды и публикует ясное сообщение об активации со ссылкой и next-best-action.
+8. Previous context переименовывается как retired/superseded, открепляется и последним сообщением крупно сообщает на языке человека, что новую работу сюда больше не направляют, со ссылкой на активный orchestrator. Он остается доступной, но незакрепленной историей; автоматически удалять или архивировать его нельзя.
+9. Ротация считается завершенной только когда Project State, ссылки, pin state, названия, return routes и последнее сообщение старого context согласованы. Если среда не умеет управлять этими поверхностями, оркестратор дает человеку одно точное действие и отмечает неполную видимость пересменки, а не скрывает ограничение.
 
 Если previous orchestrator недоступен, recovery отмечается incomplete, сохраняются safe boundaries, а полное memory coverage и смена направления требуют решения человека.
 

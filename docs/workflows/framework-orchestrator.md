@@ -128,23 +128,23 @@ During Health Review, compare Idea Memory with the current compass, DOD, active 
 
 If rotation is needed:
 
-1. Freeze new dispatch, but keep the previous orchestrator active and intact.
-2. Publish one Rotation Memory Packet from the previous context:
-   - compass, DOD, decisions, and explicit corrections;
-   - active, queued, promised, deferred, paused, and conditional work;
-   - human requests to remember and project working rules;
-   - checkpoints, burn/privacy constraints, monitors, follow-ups, and return-sync obligations;
-   - participants, ownership, overlap, backups, and missing packets;
-   - ambiguous, contradictory, stale, or chat-only items.
+1. Freeze new dispatch, but keep the previous orchestrator active and intact. Before creating the candidate, tell the human why rotation is needed, what will move, what will not change, how memory will be verified, and what confirmation activates the replacement.
+2. Publish one Rotation Memory Packet from the previous context: compass/DOD, decisions/corrections, active/queued/promised/deferred work, remembered requests, working rules, checkpoints, constraints, monitors/returns, participants/ownership, and ambiguous, stale, or chat-only items.
 3. For every item record evidence, classification (`ALREADY_DURABLE`, `MISSING_DURABLE`, `AMBIGUOUS`, or `STALE/SUPERSEDED`), and correct durable destination.
 4. Re-resolve the flagship profile and create a read-only candidate from current repo/framework. Do not register it active yet.
 5. Candidate independently compares the packet with Project State, issues/PRs, project instructions/docs, repo state, and available history. It returns covered, missing, conflicting, and human-decision items.
 6. Show the coverage delta to the human. Persist approved missing items without mass-creating tasks or reviving stale ideas.
 7. After explicit human confirmation, change the active pointer and verify the new context can reconstruct compass, DOD, queue, remembered rules, blockers, latest delta, and next action.
-8. Keep the previous context pinned and linked as history/reference. Archive or delete it only on an explicit human request.
-
+8. Retarget native returns, tracker hooks, and monitors so no new event can land in the previous context. Remove obsolete rotation monitors.
+9. Bring the new context forward, pin it when the environment supports pinning, verify its title, and publish one activation message with the old-history link, current state, and next-best-action.
+10. Rename the previous context with a localized retired/superseded prefix, unpin it, and send its final message only after all routing has moved. The message must be visually prominent and equivalent to:
+```md
+# THIS ORCHESTRATOR IS RETIRED - DO NOT CONTINUE HERE
+Active orchestrator: <title and link>
+Continue all new coordination there. This context remains available only as read-only project history.
+```
+11. Verify Project State, links, titles, pin state, routing, and the previous context's latest message. Report `ROTATION_COMPLETE` only when they agree. Otherwise give one exact human action and report `ROTATION_CUTOVER_INCOMPLETE`. Keep the previous context as unpinned history; archive or delete it only on explicit request.
 If the previous context is unavailable, mark `MEMORY_RECOVERY_INCOMPLETE`, let only clearly safe work continue, and request human confirmation before the candidate becomes authoritative.
 
 ## 8. Finish
-
 Do not stop at status. Return current state, durable links, safe continuation, one explicit next-best-action, and any named missing decision.

@@ -6,7 +6,7 @@ Vydykhai is a framework for collaborative work between people and AI agents. It 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.10.0`
+Current version: `1.11.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -53,6 +53,7 @@ Historical snapshots remain available through Git releases and tags. Current ski
 - Checks product-loop closure, DOD burn, exact-current-code smoke, and next-best-action.
 - Rotates stale orchestrators, journals, monitors, and task contexts before they become hidden project memory.
 - Preserves queued work, remembered nuances, promises, and working rules through a human-confirmed Memory Coverage Check before orchestrator rotation.
+- Makes the switch visible: the new orchestrator is brought forward and pinned, while the old context is clearly retired, unpinned, and kept only as linked history.
 
 ## Install Into A Project
 
