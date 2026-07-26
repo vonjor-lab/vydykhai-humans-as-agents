@@ -7,7 +7,7 @@ Goal: preserve compass, sequence, shared state, and next-best-action without imp
 Run on first use, after update, after restart, or when state looks stale:
 
 1. Run `node scripts/vydykhai.mjs doctor` when available.
-2. Read Project State, Shared Sync readiness, latest explicit human decisions, active Alignment Window, tasks, PRs, and verified repo state.
+2. Read Project State, Shared Sync readiness, latest explicit human decisions, active Alignment Window, Idea Memory, Intent Trail, tasks/PRs/contexts, and verified repo state.
 3. Verify this context is the registered active orchestrator for this participant/stream.
 4. Compare dashboard timestamps and claims with the newest durable event.
 5. Apply source precedence and run scope freshness before trusting, dispatching, or resuming an old task. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; age is only a re-read signal.
@@ -20,7 +20,7 @@ Owner / stream:
 Compass / DOD:
 Project State / Shared Sync: <link | READY or SYNC_LIMITED with gaps>
 Active Alignment Window:
-Idea Memory / last intersection:
+Idea Memory / Intent Trail / last reconciliation:
 Framework version / agent policy / resolved model / checked:
 Active tasks: <task | owner | context | Accepted Baseline -> Candidate | freshness | checkpoint | DOD impact | status | next>
 Pending decisions / participants:
@@ -53,7 +53,7 @@ Before changing active work, classify a new idea or request:
 
 For a future idea, tell the human what remains in scope, why adding the idea would delay the DOD, and when it should return. After confirmation, upsert one entry in shared Idea Memory using `idea-memory-template.md`. Task, research, and lab contexts may return an Idea Candidate, but the orchestrator deduplicates and owns the current view.
 
-At every brief, re-brief, sequence decision, and milestone plan, intersect the touched outcome, entities, surfaces, contracts, and DOD rows with Idea Memory and active tasks. Check relevance, duplication, conflict, and whether work already absorbed the idea. Record one compact result: use as guard, shape separately, keep remembered, or retire. No match is a valid explicit result.
+At every brief, re-brief, resume, sequence decision, acceptance, and milestone, intersect touched work with Idea Memory, Intent Trail, and active tasks. Recall ideas without silently changing scope; apply confirmed intent/rules and reconstruct applicable `APPROACH_PIVOT` lineage. Keep task-local pivots in the task and promote only wider intent.
 
 On a natural request for more possibilities, return relevant active ideas filtered by the named topic, horizon, or compass. Do not dump the full register or require the human to know its location.
 
@@ -68,7 +68,7 @@ Before work on a shared surface, check:
 
 Missing participants do not block unrelated work. Never infer their uncommitted state.
 
-When a proposed action conflicts with a framework rule, apply Proactive Guardrails: name the rule and risk, recommend the route and exact next action, and distinguish what can be preserved from what must be rebuilt. Record a human override with limits and a re-entry condition; do not repeat the warning without new risk.
+When a human says remember/important/always/never/do it differently, or meaningfully changes the method, layer, baseline, sequence, boundary, or verification, record an Intent/Approach Delta with Before/Now/Why/Keep/Drop/scope/source. Explicit pivots are confirmed; echo inferred wider intent once as `PROVISIONAL`. Apply Proactive Guardrails to conflicts and record bounded overrides without repeated warnings absent new risk.
 ## 4. Dispatch
 
 Require the minimum task contract:
@@ -79,7 +79,7 @@ Require the minimum task contract:
 - product loop or linked enabler;
 - human checkpoint;
 - material burn/stop limit;
-- verification/completion route and Return Sync destination/triggers.
+- applicable intent/pivot lineage, verification/completion route, and Return Sync destination/triggers including Intent/Approach Delta.
 
 Add research, lab, peer review, or expansion appetite only when relevant. A Lab contract names its decision, one main variable, human-verifiable proof, stop/burn limit, and production exit. Always pass the current resolved agent profile when context tools support it; any fallback is human-visible and recorded.
 
@@ -110,7 +110,7 @@ Use this state machine:
 - Optional extension surfaced: keep the task inside its DOD, return an Idea Candidate, and continue unless the human explicitly changes scope.
 - Cross-owner overlap: request Peer Compass Review before affected work continues.
 - Task claims completion without `$accept-work`: send it to `$accept-work` in the same context.
-- Rejected Candidate / `NEEDS_FIXES`: record `Keep`, `Rebuild`, `Drop`, and `Unknown`; build the successor from the Accepted Baseline, not the failed state.
+- Rejected Candidate, `NEEDS_FIXES`, or human «do it differently»: record the `APPROACH_PIVOT` and `Keep/Rebuild/Drop/Unknown`; build the successor from the Accepted Baseline, not the failed state.
 - `BLOCKED`: record the missing decision/input and tell the human precisely.
 - Accepted but smoke/merge pending: return the human to the task context.
 - Accepted and merged: update DOD burn, parent closure, participant impact, and next-best-action.
@@ -124,17 +124,17 @@ Use one monitor for one named gate only when direct context return and durable t
 
 Run Health Review after milestones, several slices, repeated same-class corrections, stalled DOD burn, unexpected expansion, recurring architecture/data/tooling tax, owner dropout, repeated context compaction, stale scope/dashboards, or chat archaeology.
 
-During Health Review, compare Idea Memory with the current compass, DOD, active tasks, accepted work, and repository state. Merge duplicates, refresh recall triggers, and retire absorbed, superseded, or irrelevant entries without deleting their evidence trail.
+During Health Review, compare Idea Memory and Intent Trail with compass, DOD, active tasks, accepted work, and repository state. Merge duplicates, refresh triggers, compact accepted lineage, and retire absorbed or superseded entries without deleting evidence.
 
 If rotation is needed:
 
 1. Freeze new dispatch, but keep the previous orchestrator active and intact. Before creating the candidate, tell the human why rotation is needed, what will move, what will not change, how memory will be verified, and what confirmation activates the replacement.
-2. Publish one Rotation Memory Packet from the previous context: compass/DOD, decisions/corrections, active/queued/promised/deferred work, remembered requests, working rules, checkpoints, constraints, monitors/returns, participants/ownership, and ambiguous, stale, or chat-only items.
+2. Publish one Rotation Memory Packet from the previous context: compass/DOD, decisions, Intent Trail and material task-local pivots, active/queued/promised/deferred work, remembered requests, working rules, checkpoints, constraints, monitors/returns, participants/ownership, and ambiguous, stale, or chat-only items.
 3. For every item record evidence, classification (`ALREADY_DURABLE`, `MISSING_DURABLE`, `AMBIGUOUS`, or `STALE/SUPERSEDED`), and correct durable destination.
 4. Re-resolve the flagship profile and create a read-only candidate from current repo/framework. Do not register it active yet.
-5. Candidate independently compares the packet with Project State, issues/PRs, project instructions/docs, repo state, and available history. It returns covered, missing, conflicting, and human-decision items.
+5. Candidate independently checks Project State, tasks, high-signal human sources and Return Syncs, reconstructing current approaches and why material pivots replaced earlier ones. It returns covered, missing, conflicting, and human-decision items; packet/dashboard consistency alone is insufficient.
 6. Show the coverage delta to the human. Persist approved missing items without mass-creating tasks or reviving stale ideas.
-7. After explicit human confirmation, change the active pointer and verify the new context can reconstruct compass, DOD, queue, remembered rules, blockers, latest delta, and next action.
+7. After explicit human confirmation, change the active pointer and verify the new context can reconstruct compass, DOD, queue, remembered intent/rules, active-task approach lineage, blockers, latest delta, and next action.
 8. Retarget native returns, tracker hooks, and monitors so no new event can land in the previous context. Remove obsolete rotation monitors.
 9. Bring the new context forward, pin it when the environment supports pinning, verify its title, and publish one activation message with the old-history link, current state, and next-best-action.
 10. Rename the previous context with a localized retired/superseded prefix, unpin it, and send its final message only after all routing has moved. The message must be visually prominent and equivalent to:

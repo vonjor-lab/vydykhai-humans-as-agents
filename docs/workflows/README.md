@@ -27,6 +27,7 @@ The orchestrator selects the required skill and workflow.
 
 - `project-state-template.md`: compact current project/stream dashboard.
 - `idea-memory-template.md`: optional shared memory that protects DOD focus without losing confirmed future ideas.
+- `intent-trail-template.md`: compact current intent, working rules, and meaningful approach-pivot lineage.
 - `alignment-issue-template.md`: one meeting, milestone, or compact work window.
 - `local-alignment-packet.md`: one participant's material local delta.
 - `team-alignment-delta.md`: reconciled shared guidance.

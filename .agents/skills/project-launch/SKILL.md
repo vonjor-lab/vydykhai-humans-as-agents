@@ -22,12 +22,12 @@ Load `docs/workflows/start-work.md` only when the initial goal needs decompositi
 - Confirm the session runs from the target product repo.
 - Resolve `latest available flagship / deepest bounded reasoning` from current environment availability or authoritative guidance. Record actual model, reasoning mapping, check date/source, and visible fallback; do not pin a universal model id.
 - Create or update a compact Project Operating Brief: Git-backed repo, durable tracker, source of truth, coordination inputs, privacy, access coverage, participants, decision owner, owner/backup convention, agent profile, compass, DOD, and first next action.
-- Create Project State with the Shared Sync Contract, participant registry, active orchestrator links, installed framework versions, resolved agent profiles, current tasks, active Alignment Window, and an Idea Memory pointer ready for use when the first idea is preserved.
+- Create Project State with Shared Sync, participants, orchestrator links, framework/model state, tasks, active Alignment Window, and pointers for Idea Memory and Intent Trail ready for their first confirmed idea or meaningful cross-context intent/pivot.
 - Recommend GitHub with Issues and PRs as the default sync space. Accept an equivalent only when every participant and orchestrator can reach stable linked history and write their own updates.
 - Test human and orchestrator access to the repo/tracker and relevant meeting inputs with least privilege. Record gaps as `SYNC_LIMITED`; never claim complete alignment for affected work.
 - Detect and record the task Return Sync route: native cross-context message, shared-tracker event/hook, or one fallback monitor. Also record the scope-freshness interval; default to seven days.
 - Treat meetings, recordings, transcripts, chat, and notes as raw coordination inputs until distilled and approved.
-- Explain the working model plainly: personal orchestrator context for organization; separate research, lab, and task contexts; automatic task return; task-context acceptance and merge; durable shared state; and DOD Focus, so people can voice ideas without expanding current work or remembering them manually.
+- Explain the working model plainly: personal orchestrator for organization; separate research/lab/task contexts; automatic task return; task-context acceptance and merge; DOD Focus; Idea Memory; and Intent Trail, so people may voice ideas or say «do it differently» without manually preserving the reasoning path.
 - Keep project-specific rules outside framework-managed files.
 - A bootstrap request authorizes setup branch/PR and initial Project State. Otherwise ask before creating or changing shared-tracker artifacts.
 - Route unclear goals to `$start-work`, recent meeting changes to `$daily-alignment`, and ready work to `$framework-orchestrator`.

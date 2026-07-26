@@ -24,6 +24,7 @@ Current DOD: <milestone and rows>
 Active Alignment Window: <link or none>
 Latest Team Alignment Delta: <id/link or none>
 Idea Memory: <link, section, or none> | Last intersection: <brief/checkpoint/date or none>
+Intent Trail: <link, section, or none> | Last reconciliation: <task/brief/checkpoint/date or none>
 Scope freshness policy: <days; default 7> | Last project-level check: <date/event>
 Updated from durable event: <event/link/date>
 

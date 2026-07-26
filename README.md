@@ -42,6 +42,7 @@ Historical snapshots remain available through Git releases and tags. Current ski
 
 - Helps brainstorm an unclear idea into a product compass and brief.
 - Protects the nearest DOD from optional scope growth while preserving useful ideas for the right planning moment.
+- Preserves meaningful human intent and why an approach changed, including a task-level "do it differently", without turning every message into permanent memory.
 - Rechecks task scope before dispatch or resume so old briefs do not continue silently.
 - Detects when a local goal starts pulling unrelated platform layers and routes it to continue, re-brief, Lab, or bounded maintenance instead of normalizing architectural drag.
 - Turns large topics into epics and autonomous task contracts.

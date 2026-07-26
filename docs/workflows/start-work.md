@@ -8,13 +8,13 @@ Read:
 
 - latest explicit human decision;
 - product compass and DOD;
-- current Idea Memory and its last intersection;
+- current Idea Memory, Intent Trail, and their last reconciliation;
 - relevant meetings, docs, issues, PRs, deltas, and verified repo state;
 - overlapping work and participant ownership.
 
-Apply source precedence. Classify new commentary as current scope change, DOD gap, guardrail, or future option.
+Apply source precedence. Classify new commentary as scope change, DOD gap, guardrail, future option, or Intent/Approach Delta. A meaningful method change may be an `APPROACH_PIVOT` even when DOD is unchanged.
 
-Before dispatching or resuming a task, compare it with current DOD/decisions, upstream results, affected entities/contracts, active work, Idea Memory, and code. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`. Seven days is the default re-read signal, not an automatic change; approve material updates before implementation continues.
+Before dispatching or resuming a task, compare it with current DOD/decisions, upstream results, affected entities/contracts, active work, Idea Memory, applicable Intent Trail and task-local pivots, and code. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`. Seven days is a re-read signal, not an automatic change.
 
 If a future option is useful but unnecessary for the nearest DOD, recommend keeping it out of the current work. After human confirmation, upsert it in Idea Memory with its value, touched surfaces, source, and recall trigger.
 
@@ -41,7 +41,7 @@ If it cannot be explained compactly, split the topic before tasking.
 
 Compare with active epics, shared contracts, deltas, and known lessons. Surface overlap, duplicated work, conflicting assumptions, and unsafe parallel edits.
 
-Run Idea Memory intersection against the proposed outcome, entities, surfaces, contracts, and DOD rows. For each match, recommend use as a guard, shape separately, keep remembered, or retire. Record the compact result in the brief; do not silently create scope or tasks.
+Run Idea Memory and Intent Trail intersection against the proposed outcome, entities, surfaces, contracts, and DOD rows. For each match, recall an idea without silent scope growth or apply confirmed intent/rules and relevant pivot lessons. Record the compact result in the brief.
 
 Propose:
 
@@ -59,6 +59,7 @@ Title / owner / backup:
 Goal and DOD impact:
 Scope / out of scope:
 Scope freshness / Accepted Baseline:
+Applicable intent / current approach / pivots:
 Product loop or linked enabler:
 Human checkpoint:
 Burn / stop limit:
@@ -74,7 +75,7 @@ Keep one active implementation context and canonical Candidate per product phase
 
 ## 6. Approve And Publish
 
-Show the brief, task map, sequence, ownership, human checkpoints, Idea Memory intersection, open decisions, and risks. Ask for human approval.
+Show the brief, task map, sequence, ownership, checkpoints, Idea Memory intersection, applicable Intent Trail/current approach, open decisions, and risks. Ask for human approval.
 
 After approval, create/update tasks in the shared tracker and return the sequence to the Framework Orchestrator. Every implementation task must start execution, continue to a human checkpoint/real blocker/terminal result, run `$accept-work`, and publish Return Sync automatically.
 

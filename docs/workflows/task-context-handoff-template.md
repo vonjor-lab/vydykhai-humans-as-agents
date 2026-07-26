@@ -9,6 +9,7 @@ Title:
 Task / owner / backup:
 Orchestrator / Project State:
 Latest relevant delta:
+Applicable Intent Trail / task-local approach lineage:
 Agent profile: <resolved model / reasoning mapping / checked date / fallback>
 Return destination: <orchestrator context or stable shared-tracker event>
 Return triggers: <human checkpoint | real blocker | terminal result>
@@ -64,6 +65,7 @@ Status: <EXECUTION_STARTED | BLOCKED_BEFORE_START | NEEDS_REBRIEF | ACCEPT | ACC
 PR / commit / artifact:
 Accepted Baseline / Candidate result:
 Learning Delta: <Keep | Rebuild | Drop | Unknown, when a candidate is rejected>
+Intent / Approach Delta: <none | INTENT / WORKING_RULE / APPROACH_PIVOT; Before / Now / Why / Keep / Drop / applies to / source>
 DOD and parent result:
 Human checkpoint result:
 Burn result:

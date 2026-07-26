@@ -8,7 +8,7 @@
 - Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo state; agent plan; inference.
 - Apply Proactive Guardrails: when a proposed action conflicts with a framework rule, politely name the rule, concrete risk, recommended route, what can be preserved/rebuilt, and the exact next action. A human may explicitly override with recorded limits and a re-entry condition.
 - Require one shared Git-backed repo and durable tracker; GitHub Issues/PRs are the recommended default. Record human/agent access and meeting-input routes in the Shared Sync Contract. Mark gaps `SYNC_LIMITED` and never claim complete alignment for affected work.
-- Protect the nearest DOD from optional scope growth. Keep confirmed future ideas in shared Idea Memory with a recall trigger, intersect them at real planning checkpoints, and never promote them into scope or tasks silently.
+- Protect the nearest DOD from optional scope growth. Keep future ideas in Idea Memory and meaningful human intent, working rules, and `APPROACH_PIVOT` lineage in Intent Trail. Capture task-local pivots in Return Sync, promote only wider intent, and intersect both memories at real planning checkpoints.
 - Use `$project-launch` to activate or reconnect a project.
 - Use `$start-work` to shape a large or changed topic into a brief and task map.
 - Use `$daily-alignment` when a meeting or event changes another participant's safe next action.
@@ -22,12 +22,12 @@
 - Do not invent another participant's uncommitted state. Missing participants block only overlapping work.
 - Rebuild the alignment dashboard whenever publishing a Team Alignment Delta; rotate stale alignment windows.
 - A task launch must start execution, name a blocker, or request re-brief. A plan-only launch is not progress.
-- After launch, continue within the approved contract until a human checkpoint, real blocker, or terminal result; publish Return Sync automatically through native context messaging or the shared tracker. Monitoring is only a fallback.
+- After launch, continue within the approved contract until a human checkpoint, real blocker, or terminal result; publish Return Sync automatically with any Intent/Approach Delta through native context messaging or the shared tracker. Monitoring is only a fallback.
 - Keep one Success Line per product phase: one active implementation context and canonical Candidate. Build successors from the Accepted Baseline, carrying forward proven changes and Learning Delta from Rejected Candidates.
 - Product capability acceptance requires the promised user/operator loop, not only backend state, UI shell, route, test, or lab proof.
 - Verify the risks changed by the Candidate. Smoke runtime/integration/state work on the exact branch, worktree, commit, frontend, backend, and browser target being accepted; avoid a paid setup path when an equivalent controlled entry is valid and that path did not change.
 - After human smoke, merge manually through the task context. The orchestrator updates DOD burn, parent closure, alignment, and next-best-action.
 - Use one monitor for one named gate; keep it quiet while unchanged, do not let it expand scope or spend money, and delete it at terminal state.
-- Prepare orchestrator rotation after a milestone, repeated context compaction, stale durable state, or chat archaeology. Explain the proposed switch before starting. Do not change the active pointer until the previous context publishes a Rotation Memory Packet, the read-only candidate passes Memory Coverage Check, and the human confirms. Then pin/foreground the new context, move return routes, rename and unpin the previous context, and leave a prominent final notice there linking to the active orchestrator. Keep the previous context accessible as history; never archive it automatically.
+- Prepare orchestrator rotation after a milestone, repeated context compaction, stale durable state, or chat archaeology. Explain the switch first. Rotation Memory and candidate coverage must include Intent Trail, material task-local pivots, high-signal human sources, and why the current approach replaced rejected paths; dashboard consistency alone is insufficient. After human confirmation, pin/foreground the new context, move returns, rename/unpin the previous context, and leave its final active-link notice. Keep it accessible; never archive it automatically.
 - Preserve `docs/VYDYKHAI_NOTICE.md`, creator/license metadata, and the required notice in framework-managed copies. They cover the framework kit, not project-specific work.
 - Keep project-specific rules outside this managed block.

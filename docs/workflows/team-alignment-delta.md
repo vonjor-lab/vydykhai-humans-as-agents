@@ -22,6 +22,7 @@ Pending participants/packets:
 ### What Changed
 
 - <decision or material event>
+- Intent / Approach Delta: <none | confirmed/provisional pivot or rule and durable destination>
 
 ### Cross-Work Impact
 
