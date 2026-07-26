@@ -17,11 +17,11 @@ Load `$daily-alignment` inputs when this is a re-brief from a meeting or executi
 
 ## Contract
 
-- Restore product intent, latest explicit human decisions, compass, DOD, Idea Memory, related epics, issues, PRs, and verified repo state.
+- Restore product intent, latest explicit human decisions, compass, DOD, Idea Memory, Intent Trail, related epics/issues/PRs, and verified repo state.
 - Apply source precedence before using an old plan or issue as current intent.
 - Before dispatch or resume, classify scope freshness as `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; a material delta needs human approval.
 - Start from actor, problem, desired outcome, non-goals, and product loop; then identify entities, surfaces, contracts, dependencies, risks, and verification.
-- Intersect the proposed brief or sequence with Idea Memory and active work. Classify matches as use-as-guard, shape-separately, keep, or retire; do not add an idea to scope without human approval.
+- Intersect the proposed brief or sequence with Idea Memory, Intent Trail, and active work. Recall future options without silently expanding scope; apply confirmed intent/rules and reconstruct applicable `APPROACH_PIVOT` lineage before choosing the method.
 - Route a narrow unresolved question into Research Context instead of filling the orchestrator with speculation.
 - Propose Lab Mode only when isolation lowers cost or risk; include the decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn limit, production transfer, and risk-based real-flow verification.
 - Propose Peer Compass Review when another owner can prevent drift on an overlapping flow, surface, contract, PR, or DOD row.

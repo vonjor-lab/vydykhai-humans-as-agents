@@ -42,7 +42,7 @@ An explicit human decision may choose a lower-cost or faster profile for a named
 ## Activate
 
 1. Apply `$project-launch` from the installed target repository.
-2. Create or update the compact Project Operating Brief, Project State, and Shared Sync Contract: Git-backed repo, durable tracker, coordination-input route, privacy boundary, and access coverage.
+2. Create or update the compact Project Operating Brief, Project State, Shared Sync Contract, and pointers for Idea Memory and Intent Trail: Git-backed repo, durable tracker, coordination-input route, privacy boundary, and access coverage.
 3. Register participants, active orchestrator links, framework versions, resolved agent profiles, current tasks, sync readiness, and safe continuation.
 4. Test each active participant's human access and their orchestrator's required read/write access to the repo/tracker plus read access to relevant meeting inputs. Use individual least-privilege authentication, never shared credentials. Record missing coverage as `SYNC_LIMITED` and do not claim complete alignment for affected work.
 5. Create the dedicated organization-only Framework Orchestrator context. Verify its actual title or stable handle, pin/foreground it when the environment supports that control, and confirm it can reconstruct compass, DOD, tasks, blockers, and next-best-action.

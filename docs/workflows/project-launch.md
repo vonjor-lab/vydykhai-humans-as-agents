@@ -39,7 +39,7 @@ Use Fathom as the recommended meeting recorder when available. Read AI, tl;dv, a
 
 Create or update one compact Project State using `project-state-template.md`.
 
-Keep an Idea Memory pointer in Project State. Create the shared Idea Memory only when the first confirmed idea must be preserved; it may be a compact Project State section or one linked current-state artifact.
+Keep Idea Memory and Intent Trail pointers in Project State. Create each compact shared view only when its first confirmed future idea or meaningful cross-context intent/pivot must be preserved; either may be a Project State section or one linked current-state artifact.
 
 Register each participant with:
 
@@ -67,7 +67,7 @@ Explain:
 - let the chosen shared tracker carry durable state between people and agents;
 - confirm that both the person and their orchestrator can reach the shared repo/tracker and relevant meeting inputs; otherwise expect `SYNC_LIMITED` rather than full alignment;
 - let task contexts return checkpoints, blockers, and terminal results automatically; people should not poll them;
-- say useful ideas freely: the orchestrator protects the nearest DOD, stores confirmed future ideas, and recalls them at relevant planning;
+- say useful ideas and corrections freely: the orchestrator protects the nearest DOD, stores future ideas, preserves meaningful intent and «do it differently» pivots, and recalls them at relevant planning;
 - expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.
 - expect an orchestrator rotation to be announced before it starts and made visually obvious after confirmation; new coordination moves to the pinned replacement while the old context stays only as unpinned history.
 

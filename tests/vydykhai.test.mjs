@@ -38,6 +38,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.equal(await readFile(path.join(target, ".agents/skills/project-only/SKILL.md"), "utf8"), "project-only\n");
     assert.match(await readFile(path.join(target, "docs/workflows/README.md"), "utf8"), /environment-neutral workflows/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Return destination:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/intent-trail-template.md"), "utf8"), /APPROACH_PIVOT/);
     assert.match(await readFile(path.join(target, "docs/workflows/project-state-template.md"), "utf8"), /Task return mapping:/);
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
@@ -85,10 +86,16 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.ok(manifest.managedPaths.includes("docs/workflows"));
   assert.ok(!manifest.managedPaths.includes("docs/codex-workflows"));
   assert.match(await readFile(path.join(root, "docs/workflows/idea-memory-template.md"), "utf8"), /protects the nearest DOD/);
-  assert.match(await readFile(path.join(root, "docs/FRAMEWORK.md"), "utf8"), /Shared Sync Contract/);
-  assert.match(await readFile(path.join(root, "docs/FRAMEWORK.md"), "utf8"), /Expansion Check/);
-  assert.match(await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8"), /Shared Sync:/);
-  assert.match(await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8"), /Context visibility:/);
+  const core = await readFile(path.join(root, "docs/FRAMEWORK.md"), "utf8");
+  assert.match(core, /Shared Sync Contract/);
+  assert.match(core, /Expansion Check/);
+  assert.match(core, /Intent Trail/);
+  assert.match(core, /APPROACH_PIVOT/);
+  const projectState = await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8");
+  assert.match(projectState, /Shared Sync:/);
+  assert.match(projectState, /Context visibility:/);
+  assert.match(projectState, /Intent Trail:/);
+  assert.match(await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Intent \/ Approach Delta:/);
   const orchestratorWorkflow = await readFile(path.join(root, "docs/workflows/framework-orchestrator.md"), "utf8");
   assert.match(orchestratorWorkflow, /THIS ORCHESTRATOR IS RETIRED - DO NOT CONTINUE HERE/);
   assert.match(orchestratorWorkflow, /ROTATION_CUTOVER_INCOMPLETE/);

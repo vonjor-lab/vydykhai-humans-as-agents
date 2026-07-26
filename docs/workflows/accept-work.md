@@ -12,7 +12,7 @@ Use source precedence:
 4. agent plan or handoff;
 5. inference.
 
-Identify the `Accepted Baseline`, the current `Candidate`, and any `Rejected Candidate` used as evidence. Summarize:
+Identify the `Accepted Baseline`, current `Candidate`, applicable Intent Trail, material task-local pivots, and any `Rejected Candidate` used as evidence. Summarize:
 
 - goal and DOD impact;
 - scope/out of scope;
@@ -21,6 +21,7 @@ Identify the `Accepted Baseline`, the current `Candidate`, and any `Rejected Can
 - parent closure expectation;
 - human checkpoint;
 - Lab/Peer Review contract when used;
+- current approach and why material pivots replaced earlier paths;
 - material burn limit;
 - verification route.
 
@@ -51,6 +52,7 @@ Check:
 - backing data/backend/permissions/recovery for UI work;
 - Lab proof followed by production transfer and real-flow verification;
 - Candidate ancestry and experiment decision; a Rejected Candidate is evidence, not the implicit correction base;
+- applicable intent/working rules and unresolved Intent/Approach Delta;
 - required Peer Compass Review and alignment;
 - material burn and stop limits;
 - Expansion Check route and, for maintenance, proof that the representative original flow became materially smaller/faster and recurrence is covered; backup, cleanup, migration, or a cap alone is containment;
@@ -74,8 +76,9 @@ Keep fixes, smoke, and manual merge in the task context. After human confirmatio
 - report DOD impact, parent state, human checkpoint, burn, verification, merge, risks, and recommended orchestrator next action.
 - classify each follow-up as a required DOD gap or optional Idea Candidate; optional ideas do not keep the accepted task or parent open by themselves.
 - report Idea Memory entries absorbed by this work and confirmed candidates that the orchestrator should deduplicate and upsert.
-- publish terminal Return Sync to the orchestrator through native context messaging or a durable tracker event without waiting for a human prompt.
+- report Intent Trail entries applied, superseded, or proposed, and compact accepted lineage to current rule/reasons/source links.
+- publish terminal Return Sync with `Intent/Approach Delta: none` or compact Before/Now/Why/Keep/Drop/scope/source lineage without waiting for a human prompt.
 
-For a rejected Candidate, record a Learning Delta with `Keep`, `Rebuild`, `Drop`, and `Unknown`. Any successor starts from the Accepted Baseline, preserves proven changes, and rebuilds failed parts using those lessons.
+For a rejected Candidate or human «do it differently», record Learning Delta plus `APPROACH_PIVOT`. Any successor starts from the Accepted Baseline, preserves proven parts, and rebuilds failed parts using those lessons.
 
 Do not close a parent from an accepted sub-slice unless its product loop and DOD are closed or explicitly moved out of scope.

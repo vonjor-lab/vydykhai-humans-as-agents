@@ -72,6 +72,7 @@ const compatibilityEn = await text("docs/COLLABORATION_FRAMEWORK_2026-06-10.md")
 const compatibilityRu = await text("docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md");
 const projectStateTemplate = await text("docs/workflows/project-state-template.md");
 const ideaMemoryTemplate = await text("docs/workflows/idea-memory-template.md");
+const intentTrailTemplate = await text("docs/workflows/intent-trail-template.md");
 const orchestratorWorkflow = await text("docs/workflows/framework-orchestrator.md");
 const taskHandoffTemplate = await text("docs/workflows/task-context-handoff-template.md");
 const acceptWorkflow = await text("docs/workflows/accept-work.md");
@@ -82,8 +83,12 @@ const citation = await text("CITATION.cff");
 const provenance = await text("docs/PROVENANCE.md");
 if (!coreEn.includes(`Version: ${manifest.version}`)) fail("English core version differs from manifest");
 if (!coreRu.includes(`Версия: ${manifest.version}`)) fail("Russian core version differs from manifest");
-if (!coreEn.includes("DOD Focus And Idea Memory")) fail("English core is missing DOD Focus and Idea Memory");
-if (!coreRu.includes("Фокус на DOD и память идей")) fail("Russian core is missing DOD Focus and Idea Memory");
+if (!coreEn.includes("DOD Focus, Idea Memory, And Intent Trail")) {
+  fail("English core is missing DOD Focus, Idea Memory, and Intent Trail");
+}
+if (!coreRu.includes("Фокус на DOD, память идей и путь замысла")) {
+  fail("Russian core is missing DOD Focus, Idea Memory, and Intent Trail");
+}
 if (!coreEn.includes("Proactive Guardrails") || !coreRu.includes("Проактивные правила")) {
   fail("Core is missing Proactive Guardrails");
 }
@@ -100,13 +105,19 @@ if (!coreEn.includes("Expansion Check") || !coreRu.includes("Проверка р
   fail("Core is missing Expansion Check");
 }
 if (!projectStateTemplate.includes("Idea Memory:")) fail("Project State is missing the Idea Memory pointer");
+if (!projectStateTemplate.includes("Intent Trail:")) fail("Project State is missing the Intent Trail pointer");
 if (!projectStateTemplate.includes("Shared Sync:")) fail("Project State is missing Shared Sync readiness");
 if (!projectStateTemplate.includes("Baseline -> Candidate")) fail("Project State is missing the Success Line pointer");
 if (!projectStateTemplate.includes("Task return mapping:")) fail("Project State is missing the task return mapping");
 if (!ideaMemoryTemplate.includes("Idea Memory is not a backlog")) fail("Idea Memory template is missing its scope guard");
+if (!intentTrailTemplate.includes("APPROACH_PIVOT")) fail("Intent Trail is missing approach-pivot lineage");
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
-if (!taskHandoffTemplate.includes("Return destination:") || !taskHandoffTemplate.includes("Learning Delta:")) {
-  fail("Task handoff is missing return or learning fields");
+if (
+  !taskHandoffTemplate.includes("Return destination:") ||
+  !taskHandoffTemplate.includes("Learning Delta:") ||
+  !taskHandoffTemplate.includes("Intent / Approach Delta:")
+) {
+  fail("Task handoff is missing return, learning, or intent fields");
 }
 if (!acceptWorkflow.includes("Rejected Candidate")) fail("Acceptance is missing rejected-candidate handling");
 if (!changelog.includes(`## ${manifest.version} -`)) fail("Changelog is missing current version");

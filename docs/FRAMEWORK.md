@@ -139,18 +139,18 @@ State `Expected`, `Expanded into`, `Likely cause`, and one route:
 - `MAINTENANCE`: recurring architecture, data, or tooling friction should be removed before affected delivery continues.
 Maintenance must name the friction source, preserve the Accepted Baseline, change the smallest shared cause, prove the original representative flow became materially smaller or faster, test against recurrence, and return explicitly to the original task. Backup, cleanup, migration, or a cap contains impact but does not close the debt unless the recurrence source is removed or deliberately deferred. Set appetite from the task and repository; file, line, or time counts are warnings, never universal verdicts.
 
-### DOD Focus And Idea Memory
+### DOD Focus, Idea Memory, And Intent Trail
 
-New ideas must not delay the nearest DOD, and useful ideas must not disappear. People may say everything they consider important; the orchestrator separates what is required now from what should be remembered.
+New ideas must not delay the nearest DOD, useful ideas must not disappear, and meaningful human intent must survive task and orchestrator changes. Idea Memory holds future options; Intent Trail holds active intent, working rules, and the reasoning lineage of significant decisions.
 
-- A missing requirement for the promised outcome is a DOD gap, not a future idea. Keep it in the task or re-brief.
-- A safety, quality, or product boundary required for correct delivery is a guardrail, not optional scope.
+- A missing requirement is a DOD gap; a required safety, quality, or product boundary is a guardrail. Keep both in the task or re-brief.
 - A deliberate change to the promised outcome requires a visible human scope decision and updated DOD, burn, and sequence.
 - A useful extension that is not needed for the current DOD should stay out of the task. After human confirmation, upsert it into shared Idea Memory with its value, affected surfaces, source, and recall trigger.
+- Record `INTENT`, `WORKING_RULE`, or `APPROACH_PIVOT` when a human meaningfully changes the goal, quality bar, method, layer, baseline, sequence, boundary, or verification route, even if DOD is unchanged and the pivot is local to one task. Capture `Before`, `Now`, `Why`, `Keep`, `Drop`, affected scope, and source.
 
-At every brief, re-brief, sequence decision, and milestone plan, compare the touched outcome, entities, surfaces, contracts, and DOD rows with Idea Memory and active work. For each match, recommend one action: use as a guard, shape separately, keep remembered, or retire as absorbed, duplicated, or superseded. Record the compact result in the planning checkpoint; never turn an idea into scope or a task silently.
+Message length is not a trigger. Explicit remember/important/always/never/do-it-differently language and accepted pivots are confirmed deltas; inferred wider intent is `PROVISIONAL` and echoed once for correction. Keep task-local lineage in the task and send its Intent Delta on every Return Sync; promote only wider intent to the shared trail. Link the source instead of copying full messages unless exact text is requested or the source is not durable.
 
-When a person asks what else could be done, return the relevant current ideas filtered by the named topic, horizon, or compass. Do not make the person search the memory artifact or read its full archive.
+At each brief, re-brief, resume, sequence decision, acceptance, milestone, and rotation, intersect relevant work with Idea Memory and Intent Trail. Recall ideas without silently changing scope; reconstruct current approach and material pivots without making the person search archives. Compact accepted lineage to the current rule plus reasons and source links; never erase superseded evidence.
 
 ### 2. Route
 
@@ -262,9 +262,9 @@ Propose Peer Compass Review when tasks, PRs, product surfaces, contracts, or DOD
 One active orchestrator is authoritative for one participant and stream. Rotation is a two-phase handoff with a visible cutover, not an automatic replacement:
 
 1. Before starting, tell the human why rotation is recommended, what will move, what will remain unchanged, how memory will be checked, and that one explicit confirmation will activate the replacement.
-2. Keep the previous orchestrator context active, intact, and linked. It publishes a Rotation Memory Packet covering compass/DOD, decisions, queued/promised/deferred work, human requests to remember, working rules, monitors/follow-ups, checkpoints, participants, and ambiguous or stale items.
+2. Keep the previous orchestrator context active, intact, and linked. It publishes a Rotation Memory Packet covering compass/DOD, decisions, Intent Trail and material task-local pivots, queued/promised/deferred work, remembered requests, working rules, monitors/follow-ups, checkpoints, participants, and ambiguous or stale items.
 3. Compare the packet with Project State, issues/PRs, project instructions/docs, current repository state, and available context history. Classify each item as already durable, missing durable state, ambiguous, or stale/superseded.
-4. Create the candidate orchestrator from the current repo/framework in read-only mode. It independently runs Memory Coverage Check and reports omissions, conflicts, and proposed durable destinations.
+4. Create the candidate orchestrator from the current repo/framework in read-only mode. It independently checks durable state plus high-signal human sources and task Return Syncs, reconstructs current approaches and why material pivots replaced earlier ones, and reports omissions, conflicts, and proposed destinations. Packet-to-dashboard consistency alone is not memory coverage.
 5. Put still-current missing items into their correct durable source only after the human sees the coverage delta; do not mass-create tasks or silently promote old ideas.
 6. Ask the human to confirm the active switch. Until confirmation, the candidate must not dispatch new work and the active pointer does not change.
 7. After confirmation, register the candidate as active, move return routes and monitors away from the previous context, bring the new context forward, pin it when supported, and publish one clear activation message with its link and next-best-action.
@@ -282,7 +282,7 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Do not claim team alignment while shared repo/tracker or relevant input access is `SYNC_LIMITED`.
 - Check scope freshness before dispatch or resume; do not continue material stale scope without an approved patch or re-brief.
 - Treat unexpected task expansion as a diagnostic trigger; do not normalize recurring architecture tax or close containment as root-cause repair.
-- Protect the nearest DOD from optional scope growth, and preserve confirmed future ideas in Idea Memory instead of relying on chat or human recall.
+- Protect the nearest DOD from optional scope growth, preserve future ideas in Idea Memory, and preserve current human intent and meaningful approach pivots in Intent Trail instead of relying on chat or human recall.
 - Keep one Success Line: build successor candidates from the Accepted Baseline while carrying forward lessons from rejected candidates.
 - Do not close a parent from an accepted sub-slice unless its promised product loop and DOD are closed or explicitly moved out of scope.
 - Do not accept Lab Mode as product completion without production transfer and real-flow verification.
