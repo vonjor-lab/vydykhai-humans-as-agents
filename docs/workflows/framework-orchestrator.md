@@ -4,20 +4,18 @@ Goal: preserve compass, sequence, shared state, and next-best-action without imp
 
 ## 1. Preflight
 
-Run on first use, after update, after restart, or when state looks stale:
+Run during normal orchestrator activity; do not create a background model wake-up only to check the framework:
 
-1. Run `node scripts/vydykhai.mjs doctor` when available.
-2. Read Project State, Shared Sync readiness, latest explicit human decisions, active Alignment Window, Idea Memory, Intent Trail, tasks/PRs/contexts, and verified repo state.
+1. Read Project State, including this participant's framework version/check, Shared Sync readiness, latest explicit human decisions, active Alignment Window, Idea Memory, Intent Trail, tasks/PRs/contexts, and verified repo state.
+2. Run `node scripts/vydykhai.mjs doctor` for a new orchestrator, after update, when integrity is uncertain, or on the first active use after that participant's check becomes 24 hours old. Record installed/latest version and check time; remain silent when current, and keep an unavailable check pending without blocking otherwise safe work.
 3. Verify this context is the registered active orchestrator for this participant/stream.
 4. Compare dashboard timestamps and claims with the newest durable event.
 5. Apply source precedence and run scope freshness before trusting, dispatching, or resuming an old task. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; age is only a re-read signal.
 6. Resolve `latest available flagship / deepest bounded reasoning` and its environment mapping when the recorded check is missing, older than seven days, follows framework update/rotation, or the model was rejected/deprecated.
 
 Compact state:
-
 ```md
-Owner / stream:
-Compass / DOD:
+Owner / stream / Compass / DOD:
 Project State / Shared Sync: <link | READY or SYNC_LIMITED with gaps>
 Active Alignment Window:
 Idea Memory / Intent Trail / last reconciliation:
@@ -28,6 +26,8 @@ Can continue:
 Next-best-action:
 ```
 Rebuild a stale dashboard or rotate an unreadable Alignment Window before relying on it.
+
+When upstream is newer, read every changelog release where `installed < release <= latest` oldest first. Report the range, release count, one concise delta per release, and the combined project impact; never omit a skipped release. Put one shared plan in Project State and next-best-action: update now before next dispatch when no active work depends on old rules or the change addresses a current coordination/safety risk; otherwise update after a named task/checkpoint. At that window prepare or reuse one update branch, run `update` and `doctor`, open or refresh its PR, and report the short delta. Never duplicate update work, overwrite conflicts, merge silently, or change active-task rules mid-flight. Re-read the updated core; rotate only when migration or context health requires it.
 
 ## 2. Classify The Request
 

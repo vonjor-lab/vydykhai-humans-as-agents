@@ -1,7 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.12.0
-Status: canonical operating core
+Version: 1.12.1 | Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
@@ -278,6 +277,7 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 
 ## Rules
 
+- On the first active orchestrator use after that participant's framework check becomes 24 hours old, compare the installed version with canonical upstream. Stay silent when current; when newer, read every release where `installed < release <= latest` from oldest to newest, report the range and one short delta per release, then record the combined impact, one shared update plan, and the safest window in next-best-action. Prepare or reuse one normal update change at that window; never omit an intermediate release, duplicate the update, overwrite conflicts, merge silently, or change active-task rules mid-flight. An unavailable check remains pending without blocking otherwise safe work.
 - Keep the orchestrator organization-only.
 - Keep universal rules in the canonical framework and project rules in the product repo.
 - Keep human conversation product-focused; hide branch and worktree mechanics unless they affect a decision or risk.

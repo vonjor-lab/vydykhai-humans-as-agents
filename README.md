@@ -6,7 +6,7 @@ Vydykhai is a framework for collaborative work between people and AI agents. It 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.12.0`
+Current version: `1.12.1`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -69,7 +69,9 @@ Give every person and agent only the access they need; never share credentials o
 
 ## Update And Diagnose
 
-Tell the orchestrator: `Update Vydykhai and verify this project.` It runs `doctor` and `update` itself. `doctor` checks installed version, managed-file integrity, the `AGENTS.md` block, upstream version, and the default agent policy. `update` preserves project-specific files and stops before overwriting locally modified managed files unless explicitly approved.
+During normal activity, each participant's orchestrator checks for a new Vydykhai version at most once every 24 hours. This is one small manifest request inside an already active session, not a background model run. When the version is current it stays silent. When a newer version exists, it reads every changelog entry after the installed version through the latest, oldest to newest. It reports `installed -> latest` and the number of releases, gives one concise product-impact line for every skipped release, then explains the combined effect here and puts the safest update window into next-best-action: now before the next dispatch or after a named task/checkpoint.
+
+The orchestrator records the plan in Project State so the team prepares one update rather than duplicate work. At the chosen window it prepares or reuses one update branch, runs `update` and `doctor`, opens or refreshes its PR, and reports the short delta. It never overwrites locally modified managed files, changes rules silently in the middle of active work, or merges outside the project's normal policy. A major migration or an update that affects current safety is raised explicitly; ordinary compatible updates do not force orchestrator rotation. If upstream cannot be reached, the check remains visibly pending without blocking otherwise safe work.
 
 ## Agent Profile
 

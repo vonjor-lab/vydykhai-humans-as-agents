@@ -44,7 +44,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.12.0");
+    assert.equal(lock.installedVersion, "1.12.1");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -71,7 +71,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.12\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.12\.1/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -93,10 +93,13 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /Intent Trail/);
   assert.match(core, /APPROACH_PIVOT/);
   assert.match(core, /CONSULT/);
+  assert.match(core, /24 hours old/);
   const projectState = await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8");
   assert.match(projectState, /Shared Sync:/);
   assert.match(projectState, /Context visibility:/);
   assert.match(projectState, /Intent Trail:/);
+  assert.match(projectState, /Latest seen:/);
+  assert.match(projectState, /Update:/);
   const taskHandoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
   assert.match(taskHandoff, /Continue from \/ applicable invariants:/);
   assert.match(taskHandoff, /Consult when \/ Return to:/);
@@ -105,6 +108,10 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /THIS ORCHESTRATOR IS RETIRED - DO NOT CONTINUE HERE/);
   assert.match(orchestratorWorkflow, /ROTATION_CUTOVER_INCOMPLETE/);
   assert.match(orchestratorWorkflow, /Boundary consultation \(`CONSULT`\)/);
+  assert.match(orchestratorWorkflow, /first active use/);
+  assert.match(orchestratorWorkflow, /installed < release <= latest/);
+  assert.match(orchestratorWorkflow, /one concise delta per release/);
+  assert.match(orchestratorWorkflow, /never omit a skipped release/);
   assert.match(await readFile(path.join(root, "docs/workflows/accept-work.md"), "utf8"), /Unexpectedly changed/);
 });
 
