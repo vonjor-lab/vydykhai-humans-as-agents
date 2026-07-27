@@ -6,7 +6,7 @@ Vydykhai is a framework for collaborative work between people and AI agents. It 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.11.0`
+Current version: `1.12.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -38,23 +38,16 @@ The human may still need to grant repository/network access or approve merge. Th
 
 Historical snapshots remain available through Git releases and tags. Current skills load only the current operating core.
 
-## What It Does
+## How It Works
 
-- Helps brainstorm an unclear idea into a product compass and brief.
-- Protects the nearest DOD from optional scope growth while preserving useful ideas for the right planning moment.
-- Preserves meaningful human intent and why an approach changed, including a task-level "do it differently", without turning every message into permanent memory.
-- Rechecks task scope before dispatch or resume so old briefs do not continue silently.
-- Detects when a local goal starts pulling unrelated platform layers and routes it to continue, re-brief, Lab, or bounded maintenance instead of normalizing architectural drag.
-- Turns large topics into epics and autonomous task contracts.
-- Keeps implementation in focused task contexts and orchestration in one clean control context.
-- Builds each new candidate from the last accepted baseline while retaining lessons from rejected attempts.
-- Reconciles meetings and asynchronous local work through a shared Git-backed repo and durable tracker that every participant and orchestrator can access.
-- Returns checkpoints, blockers, and terminal task results to the orchestrator automatically instead of making people poll.
-- Calls humans only at explicit product, visual, paid-action, smoke, or merge checkpoints.
-- Checks product-loop closure, DOD burn, exact-current-code smoke, and next-best-action.
-- Rotates stale orchestrators, journals, monitors, and task contexts before they become hidden project memory.
-- Preserves queued work, remembered nuances, promises, and working rules through a human-confirmed Memory Coverage Check before orchestrator rotation.
-- Makes the switch visible: the new orchestrator is brought forward and pinned, while the old context is clearly retired, unpinned, and kept only as linked history.
+- Start with a rough goal. The orchestrator helps brainstorm it into a shared compass, brief, and nearest DOD.
+- The orchestrator turns approved direction into focused tasks while keeping implementation out of the coordination context.
+- A task continues the accepted product mechanism. It consults the orchestrator only at an undeclared boundary; Research or Lab is used only when uncertainty, cost, or risk justifies it.
+- Meetings and asynchronous local work converge through shared Git-backed state. An absent participant blocks only overlapping work.
+- Each result is verified and accepted against the current artifact or exact code, then returned to the orchestrator.
+- The orchestrator updates DOD progress and next-best-action, preserves useful future ideas and meaningful human intent, and runs health review or rotation only when needed.
+
+People normally speak only to their orchestrator in natural language. Vydykhai uses native context creation, messaging, and UI controls when the harness supports them; otherwise it uses the shared tracker and gives one exact human action. It never treats a missing harness capability as completed automation.
 
 ## Install Into A Project
 

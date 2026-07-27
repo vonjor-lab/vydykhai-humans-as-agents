@@ -27,14 +27,14 @@ Load `$daily-alignment` inputs when this is a re-brief from a meeting or executi
 - Propose Peer Compass Review when another owner can prevent drift on an overlapping flow, surface, contract, PR, or DOD row.
 - When expansion risk is material, name the expected touched surface, first human-verifiable evidence, and task-specific appetite. Do not use universal file/line/time thresholds as a verdict.
 - Route recurring cross-task architecture/data/tooling friction into bounded maintenance only when it blocks efficient delivery; require proof that the original representative flow becomes smaller/faster and an explicit return to that task.
-- Build autonomous tasks with the minimum contract: goal/DOD impact, scope/out of scope, freshness status, Accepted Baseline, product loop or linked enabler, human checkpoint, material burn/expansion limit, verification/completion route, and return destination/triggers.
+- Build autonomous tasks with the minimum contract: goal/DOD, scope, freshness/Baseline, accepted mechanism plus 1-3 applicable invariants, product loop, checkpoint, burn/expansion, verification, and `Consult when / Return to` plus terminal return triggers.
 - Keep one Success Line per product phase. A new Candidate starts from the Accepted Baseline and may carry forward proven changes and lessons, never a rejected state as its implicit correction base.
 - Add detailed metadata only when it changes execution safety.
 - Use the current resolved flagship / deepest bounded reasoning profile and expose its environment mapping or fallback.
 - Show parent closure: what is already closed, what remains, why another slice is needed, and which optional ideas stay outside the nearest DOD.
 - Recommend sequence, owner, backup/failover, and parallel-safe boundaries.
 - Ask for human approval before creating or changing shared-tracker tasks.
-- Instruct every launched context to execute through checkpoint/blocker/terminal state, run `$accept-work`, and publish Return Sync automatically. Return approved work to the Framework Orchestrator; do not implement here.
+- Instruct every launched context to continue the accepted mechanism, send compact `CONSULT` at an undeclared semantic boundary, execute through checkpoint/blocker/terminal state, run `$accept-work`, and publish Return Sync automatically. Return approved work to the Framework Orchestrator; do not implement here.
 
 ## Finish
 

@@ -18,12 +18,12 @@ Load the task issue, current PR/diff, latest explicit human decision, relevant d
 ## Contract
 
 - Reconstruct the Accepted Baseline, Candidate, applicable Intent Trail, and task-local approach lineage using source precedence. Do not let an old issue, plan, or Rejected Candidate override a later proven state or human correction.
-- Compare delivered behavior with goal/DOD, scope, product loop or linked enabler, human checkpoint, material burn, and verification route.
+- Compare delivered behavior with goal/DOD, scope, declared continuation basis/invariants, product loop or linked enabler, human checkpoint, material burn, and verification route. Classify material deltas as `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; unexplained unexpected change is `NEEDS_FIXES`.
 - Keep accepted sub-slices distinct from parent closure.
 - Separate required DOD follow-ups from optional future ideas. Required gaps keep the parent open; optional ideas do not expand accepted scope and return to the orchestrator as Idea Candidates.
 - Require the promised visible user/operator loop for product capability closure. Backend state, route, UI shell, test, readiness card, or lab proof alone is insufficient.
 - For Lab Mode, verify its decision, one-variable contract, proof, Learning Delta, production transfer, tests, and risk-based real-flow verification before product acceptance.
-- Incorporate or resolve required Peer Compass Review and material alignment conflicts.
+- Incorporate or resolve boundary consultations, required Peer Compass Review, and material alignment conflicts; a task cannot silently turn an undeclared boundary into a new shared mechanism.
 - If this is maintenance triggered by expansion, verify the named recurring cause was removed or explicitly deferred, the original representative flow became materially smaller/faster, recurrence is covered, and the return to delivery is explicit. Containment alone is not acceptance of root-cause repair.
 - Verify the risks changed by the Candidate. For runtime/integration/state work, prove repo/worktree, branch, commit, dirty state, frontend/backend commands and URLs, browser target, and smoke result from the exact code being accepted; avoid a paid setup path when an equivalent controlled entry is valid and that path did not change.
 - Treat missing or inconclusive current-code smoke as `NEEDS_FIXES` or `BLOCKED`.
