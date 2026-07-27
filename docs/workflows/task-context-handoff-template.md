@@ -10,8 +10,9 @@ Task / owner / backup:
 Orchestrator / Project State:
 Latest relevant delta:
 Applicable Intent Trail / task-local approach lineage:
+Continue from / applicable invariants: <accepted mechanism/reference and 1-3 rules>
 Agent profile: <resolved model / reasoning mapping / checked date / fallback>
-Return destination: <orchestrator context or stable shared-tracker event>
+Consult when / Return to: <semantic boundary signals / orchestrator context or stable shared-tracker event>
 Return triggers: <human checkpoint | real blocker | terminal result>
 
 ## Goal And DOD
@@ -66,6 +67,7 @@ PR / commit / artifact:
 Accepted Baseline / Candidate result:
 Learning Delta: <Keep | Rebuild | Drop | Unknown, when a candidate is rejected>
 Intent / Approach Delta: <none | INTENT / WORKING_RULE / APPROACH_PIVOT; Before / Now / Why / Keep / Drop / applies to / source>
+Boundary consultation result: <none | resolved existing route; evidence/link>
 DOD and parent result:
 Human checkpoint result:
 Burn result:

@@ -75,11 +75,11 @@ Require the minimum task contract:
 
 - goal and DOD impact;
 - scope and out of scope;
-- scope freshness and Accepted Baseline;
+- scope freshness, Accepted Baseline, accepted mechanism, and 1-3 applicable invariants;
 - product loop or linked enabler;
 - human checkpoint;
 - material burn/stop limit;
-- applicable intent/pivot lineage, verification/completion route, and Return Sync destination/triggers including Intent/Approach Delta.
+- applicable intent/pivot lineage, verification/completion route, and `Consult when / Return to` plus terminal Return Sync triggers including Intent/Approach Delta.
 
 Add research, lab, peer review, or expansion appetite only when relevant. A Lab contract names its decision, one main variable, human-verifiable proof, stop/burn limit, and production exit. Always pass the current resolved agent profile when context tools support it; any fallback is human-visible and recorded.
 
@@ -101,14 +101,14 @@ Use this state machine:
 
 - No context: create/prepare and record it.
 - Plan only: request execution, blocker, or re-brief.
-- Working inside scope: stay quiet; the task continues and pushes Return Sync at checkpoint, blocker, or terminal state without human polling.
+- Working inside scope: stay quiet; the task continues the accepted mechanism and pushes Return Sync at checkpoint, blocker, or terminal state without human polling.
 - Unexpected expansion: pause only affected growth; state `Expected`, `Expanded into`, `Likely cause`, then route `CONTINUE`, `REBRIEF`, `LAB`, or `MAINTENANCE`.
 - Waiting at human checkpoint: give the human exact action, link, output location, safe continuation, and return sync.
 - Research complete: incorporate the Research Packet, update durable state, close or archive the context.
 - Lab proof/cap reached: stop lab polish; route production transfer, tests, and real-flow smoke.
 - Maintenance proof reached: verify the original representative flow is materially smaller/faster and recurrence is covered, then return to the original task; containment alone is not closure.
 - Optional extension surfaced: keep the task inside its DOD, return an Idea Candidate, and continue unless the human explicitly changes scope.
-- Cross-owner overlap: request Peer Compass Review before affected work continues.
+- Boundary consultation (`CONSULT`): from `Boundary/Evidence/Proposed move/Safe continuation`, use existing `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, Peer Compass Review, or `NEEDS_DECISION` routes; pause only the affected boundary.
 - Task claims completion without `$accept-work`: send it to `$accept-work` in the same context.
 - Rejected Candidate, `NEEDS_FIXES`, or human «do it differently»: record the `APPROACH_PIVOT` and `Keep/Rebuild/Drop/Unknown`; build the successor from the Accepted Baseline, not the failed state.
 - `BLOCKED`: record the missing decision/input and tell the human precisely.

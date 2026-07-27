@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.11.0
+Version: 1.12.0
 Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
@@ -180,17 +180,20 @@ The minimum task contract contains:
 - Goal and DOD impact;
 - Scope and out of scope;
 - Scope freshness and Accepted Baseline;
+- Continue from the accepted mechanism and one to three applicable invariants;
 - Product loop or linked enabling contract;
 - Human checkpoint;
 - Burn / stop and expansion appetite when material;
 - Verification and completion route;
-- Return destination and event triggers.
+- Consult when / Return to, plus checkpoint, blocker, and terminal event triggers.
 
-Add Lab Mode, Peer Compass Review, model profile, or detailed contracts only when relevant. The orchestrator creates or prepares the task context, verifies its title or stable handle, records its link, and checks that execution started. A plan-only child response is not progress.
+The task continues the accepted mechanism by default. A new shared mechanism or system change must be explicit in the contract or resolved through consultation; local implementation freedom never implies permission to create one. Add Lab Mode, Peer Compass Review, model profile, or detailed contracts only when relevant. The orchestrator creates or prepares the task context, verifies its title or stable handle, records its link, and checks that execution started. A plan-only child response is not progress.
 
 ### 4. Execute
 
 The task context starts implementation instead of repeating approved planning, then continues autonomously until a human checkpoint, real blocker, or terminal result. It returns for re-brief when the goal, source of truth, shared contract, burn cap, or freshness status changes.
+
+At an undeclared entity, shared mechanism or contract, authority conflict, ownership overlap, or possible system change, pause only the affected boundary and send `CONSULT`: `Boundary`, `Evidence`, `Proposed move`, and `Safe continuation`. The orchestrator retrieves only the needed durable truth and uses existing routes: `CONTINUE`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; owner overlap triggers Peer Compass Review, and only a real human choice returns `NEEDS_DECISION`.
 
 At every checkpoint, blocker, or terminal result, the task context publishes a compact Return Sync without waiting for a human prompt. Use native cross-context messaging when available; otherwise write the result to the shared tracker and trigger the available event or hook. A monitor is only the fallback when neither route can wake the orchestrator.
 
@@ -204,7 +207,7 @@ Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED` when
 
 ### 6. Accept
 
-The task context runs `$accept-work` before completion. Acceptance compares the Candidate with its Accepted Baseline, the latest human decision, brief, DOD, deltas, product loop, burn, tests, and smoke evidence.
+The task context runs `$accept-work` before completion. Acceptance compares the Candidate with its Accepted Baseline, the latest human decision, brief, DOD, deltas, product loop, burn, tests, and smoke evidence. Material deltas are classified `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; an unexplained unexpected change is `NEEDS_FIXES`.
 
 Verify the risks changed by the Candidate. For runtime, integration, or state changes, smoke the exact branch, worktree, commit, frontend, backend, and browser target being accepted; do not use an old server or another branch. Avoid a paid setup path when an equivalent controlled entry proves the changed risk and that paid path did not change. Product capability is not closed by backend state, UI shell, or lab proof alone.
 
@@ -226,11 +229,11 @@ The orchestrator should not say that a human is unnecessary when a named checkpo
 
 ## Asynchronous Collaboration
 
-Keep two required durable artifacts and one optional memory artifact:
+Keep one required current dashboard and create linked artifacts only when their trigger exists:
 
-- Project State: compass, DOD, participant registry, active orchestrator contexts, current tasks, and latest alignment window.
-- Alignment Window: append-only packets and deltas for one meeting, milestone, or compact work period.
-- Idea Memory: a compact current view of confirmed useful ideas that are not tasks or current scope. Create it when the first idea must be remembered and link it from Project State.
+- Project State: the required compass, DOD, participant registry, active orchestrator contexts, current tasks, and latest alignment state.
+- Alignment Window: use when meeting, milestone, or local-work packets need reconciliation.
+- Idea Memory and Intent Trail: create each only when a future idea or meaningful intent/pivot must survive beyond its current context; keep it as a Project State section or linked compact view.
 
 The participant registry includes: participant, orchestrator context link, installed framework version, resolved agent profile and check date, latest packet, active task, and status.
 

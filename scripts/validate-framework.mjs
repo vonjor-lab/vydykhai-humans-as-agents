@@ -104,6 +104,9 @@ if (!coreEn.includes("Shared Sync Contract") || !coreRu.includes("Контрак
 if (!coreEn.includes("Expansion Check") || !coreRu.includes("Проверка разрастания")) {
   fail("Core is missing Expansion Check");
 }
+if (!coreEn.includes("CONSULT") || !coreRu.includes("CONSULT")) {
+  fail("Core is missing boundary consultation");
+}
 if (!projectStateTemplate.includes("Idea Memory:")) fail("Project State is missing the Idea Memory pointer");
 if (!projectStateTemplate.includes("Intent Trail:")) fail("Project State is missing the Intent Trail pointer");
 if (!projectStateTemplate.includes("Shared Sync:")) fail("Project State is missing Shared Sync readiness");
@@ -113,13 +116,19 @@ if (!ideaMemoryTemplate.includes("Idea Memory is not a backlog")) fail("Idea Mem
 if (!intentTrailTemplate.includes("APPROACH_PIVOT")) fail("Intent Trail is missing approach-pivot lineage");
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
 if (
-  !taskHandoffTemplate.includes("Return destination:") ||
+  !taskHandoffTemplate.includes("Continue from / applicable invariants:") ||
+  !taskHandoffTemplate.includes("Consult when / Return to:") ||
   !taskHandoffTemplate.includes("Learning Delta:") ||
-  !taskHandoffTemplate.includes("Intent / Approach Delta:")
+  !taskHandoffTemplate.includes("Intent / Approach Delta:") ||
+  !taskHandoffTemplate.includes("Boundary consultation result:")
 ) {
-  fail("Task handoff is missing return, learning, or intent fields");
+  fail("Task handoff is missing continuation, consultation, learning, or intent fields");
+}
+if (!orchestratorWorkflow.includes("Boundary consultation (`CONSULT`)")) {
+  fail("Orchestrator workflow is missing boundary consultation");
 }
 if (!acceptWorkflow.includes("Rejected Candidate")) fail("Acceptance is missing rejected-candidate handling");
+if (!acceptWorkflow.includes("Unexpectedly changed")) fail("Acceptance is missing inheritance classification");
 if (!changelog.includes(`## ${manifest.version} -`)) fail("Changelog is missing current version");
 if (changelog.match(/^## (\d+\.\d+\.\d+) -/m)?.[1] !== manifest.version) {
   fail("Latest changelog entry differs from manifest");

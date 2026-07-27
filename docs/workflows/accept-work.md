@@ -52,7 +52,9 @@ Check:
 - backing data/backend/permissions/recovery for UI work;
 - Lab proof followed by production transfer and real-flow verification;
 - Candidate ancestry and experiment decision; a Rejected Candidate is evidence, not the implicit correction base;
+- continuation basis and material delta classification: `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; unexplained unexpected change is not acceptable;
 - applicable intent/working rules and unresolved Intent/Approach Delta;
+- boundary consultations and whether an undeclared entity, shared mechanism, authority conflict, or ownership overlap was resolved before expansion;
 - required Peer Compass Review and alignment;
 - material burn and stop limits;
 - Expansion Check route and, for maintenance, proof that the representative original flow became materially smaller/faster and recurrence is covered; backup, cleanup, migration, or a cap alone is containment;
@@ -63,7 +65,7 @@ Check:
 
 - `ACCEPT`: promised scope and checkpoint are complete.
 - `ACCEPT_WITH_FOLLOWUPS`: useful scope is accepted, named follow-ups remain, and parent stays open when needed.
-- `NEEDS_FIXES`: task is close but the promised outcome, loop, checkpoint, or verification is incomplete.
+- `NEEDS_FIXES`: task is close but the promised outcome, loop, checkpoint, verification, or inheritance proof is incomplete.
 - `BLOCKED`: a decision, packet, conflict, access, burn exception, or reliable verification is missing.
 
 ## 6. Finish In The Task Context
@@ -77,6 +79,7 @@ Keep fixes, smoke, and manual merge in the task context. After human confirmatio
 - classify each follow-up as a required DOD gap or optional Idea Candidate; optional ideas do not keep the accepted task or parent open by themselves.
 - report Idea Memory entries absorbed by this work and confirmed candidates that the orchestrator should deduplicate and upsert.
 - report Intent Trail entries applied, superseded, or proposed, and compact accepted lineage to current rule/reasons/source links.
+- report boundary consultations and any deliberately changed or unexpected surfaces.
 - publish terminal Return Sync with `Intent/Approach Delta: none` or compact Before/Now/Why/Keep/Drop/scope/source lineage without waiting for a human prompt.
 
 For a rejected Candidate or human «do it differently», record Learning Delta plus `APPROACH_PIVOT`. Any successor starts from the Accepted Baseline, preserves proven parts, and rebuilds failed parts using those lessons.

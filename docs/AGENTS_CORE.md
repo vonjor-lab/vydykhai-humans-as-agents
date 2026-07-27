@@ -15,16 +15,16 @@
 - Use `$accept-work` inside the task context before claiming completion.
 - Before dispatch or resume, classify scope freshness as `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; seven days is the default re-read signal, not an automatic scope change.
 - Before unexpected task growth, run Expansion Check and route `CONTINUE`, `REBRIEF`, `LAB`, or bounded `MAINTENANCE`. Treat counts as signals, not verdicts; containment does not close recurring debt without source removal or explicit deferral and representative-flow proof.
-- Implementation tasks require goal and DOD impact, scope/out of scope, scope freshness, Accepted Baseline, product loop or linked enabler, human checkpoint, material burn limit, verification route, and return destination/triggers.
+- Implementation tasks require goal/DOD, scope, freshness/Baseline, accepted mechanism with 1-3 applicable invariants, product loop, checkpoint, burn, verification, and `Consult when / Return to` plus terminal return triggers.
 - Use Research Context for bounded uncertainty without product-code changes.
 - Use Lab Mode only when isolation reduces cost or risk; require a decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn limit, production transfer, and risk-based real-flow verification.
 - Use Peer Compass Review when owners overlap on a flow, surface, contract, PR, or DOD row.
 - Do not invent another participant's uncommitted state. Missing participants block only overlapping work.
 - Rebuild the alignment dashboard whenever publishing a Team Alignment Delta; rotate stale alignment windows.
 - A task launch must start execution, name a blocker, or request re-brief. A plan-only launch is not progress.
-- After launch, continue within the approved contract until a human checkpoint, real blocker, or terminal result; publish Return Sync automatically with any Intent/Approach Delta through native context messaging or the shared tracker. Monitoring is only a fallback.
+- After launch, continue the accepted mechanism within scope. At an undeclared entity, shared mechanism/contract, authority conflict, ownership overlap, or possible system change, pause only that boundary and send `CONSULT`; the orchestrator uses existing `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, Peer Compass Review, or `NEEDS_DECISION` routes. Publish Return Sync automatically; monitoring is only a fallback.
 - Keep one Success Line per product phase: one active implementation context and canonical Candidate. Build successors from the Accepted Baseline, carrying forward proven changes and Learning Delta from Rejected Candidates.
-- Product capability acceptance requires the promised user/operator loop, not only backend state, UI shell, route, test, or lab proof.
+- Product capability acceptance requires the promised user/operator loop, not only backend state, UI shell, route, test, or lab proof. Classify material deltas as `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; unexplained unexpected change is `NEEDS_FIXES`.
 - Verify the risks changed by the Candidate. Smoke runtime/integration/state work on the exact branch, worktree, commit, frontend, backend, and browser target being accepted; avoid a paid setup path when an equivalent controlled entry is valid and that path did not change.
 - After human smoke, merge manually through the task context. The orchestrator updates DOD burn, parent closure, alignment, and next-best-action.
 - Use one monitor for one named gate; keep it quiet while unchanged, do not let it expand scope or spend money, and delete it at terminal state.

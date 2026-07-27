@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.11.0
+Версия: 1.12.0
 Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк совместной работы людей и AI-агентов. Он вырос из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action.
@@ -180,17 +180,20 @@ Research уменьшает неопределенность. Lab уменьша
 - Goal и DOD impact;
 - Scope и out of scope;
 - Scope freshness и Accepted Baseline;
+- Continue from: принятый механизм и от одного до трех применимых invariants;
 - Product loop либо связанный enabling contract;
 - Human checkpoint;
 - Burn / stop и expansion appetite, когда они существенны;
 - Verification и completion route;
-- Return destination и event triggers.
+- Consult when / Return to, а также event triggers для checkpoint, blocker и terminal result.
 
-Lab Mode, Peer Compass Review, model profile и подробные contracts добавляются только когда нужны. Оркестратор создает или готовит task context, проверяет title или stable handle, записывает ссылку и убеждается, что работа началась. Ответ child context только с планом не считается прогрессом.
+По умолчанию task продолжает принятый механизм. Новый общий механизм или изменение системы должно быть явно записано в contract либо разрешено через consultation; локальная свобода implementation не дает права создавать его молча. Lab Mode, Peer Compass Review, model profile и подробные contracts добавляются только когда нужны. Оркестратор создает или готовит task context, проверяет title или stable handle, записывает ссылку и убеждается, что работа началась. Ответ child context только с планом не считается прогрессом.
 
 ### 4. Исполнение
 
 Task context начинает implementation, а не повторяет уже согласованное планирование, и автономно продолжает до human checkpoint, реального blocker или terminal result. Он возвращается за re-brief, если меняются цель, source of truth, общий contract, burn cap или freshness status.
+
+При встрече с незаявленной сущностью, общим механизмом или contract, конфликтом authority, пересечением ownership либо возможным изменением системы task останавливает только затронутую границу и отправляет `CONSULT`: `Boundary`, `Evidence`, `Proposed move` и `Safe continuation`. Оркестратор подтягивает только нужную durable truth и использует существующие маршруты: `CONTINUE`, `PATCH_REQUIRED` или `REBRIEF_REQUIRED`; пересечение owners запускает Peer Compass Review, а только реальный выбор человека получает `NEEDS_DECISION`.
 
 При checkpoint, blocker или terminal result task context без отдельного запроса человека публикует короткий Return Sync. Если доступен native обмен между contexts, результат отправляется напрямую; иначе он записывается в shared tracker и поднимает доступный event или hook. Monitor используется только как fallback, когда оба пути недоступны.
 
@@ -204,7 +207,7 @@ Task context начинает implementation, а не повторяет уже 
 
 ### 6. Приемка
 
-Перед завершением task context запускает `$accept-work`. Приемка сравнивает Candidate с его Accepted Baseline, последним решением человека, brief, DOD, deltas, product loop, burn, тестами и smoke evidence.
+Перед завершением task context запускает `$accept-work`. Приемка сравнивает Candidate с его Accepted Baseline, последним решением человека, brief, DOD, deltas, product loop, burn, тестами и smoke evidence. Существенные изменения получают статус `Inherited`, `Deliberately changed` или `Unexpectedly changed`; необъясненное неожиданное изменение означает `NEEDS_FIXES`.
 
 Проверяются риски, которые изменил Candidate. Для runtime, integration или state changes smoke проводится на точных branch, worktree, commit, frontend, backend и browser target, которые принимаются; старый сервер или другая ветка не подходят. Не нужно проходить платный подготовительный путь, если тот же измененный риск доказывается контролируемой точкой входа, а сам платный путь не менялся. Backend state, UI shell или lab proof сами по себе не закрывают product capability.
 
@@ -226,11 +229,11 @@ Task context начинает implementation, а не повторяет уже 
 
 ## Асинхронная совместная работа
 
-Нужны два обязательных durable artifacts и один опциональный артефакт памяти:
+Нужен один обязательный текущий dashboard; связанные artifacts создаются только при появлении их trigger:
 
-- Project State: compass, DOD, registry участников, active orchestrator contexts, текущие задачи и последнее alignment window.
-- Alignment Window: append-only packets и deltas одной встречи, milestone или компактного рабочего периода.
-- Idea Memory: компактное текущее представление подтвержденных полезных идей, которые не являются задачами или текущим scope. Она создается при первой идее, которую нужно запомнить, и связывается из Project State.
+- Project State: обязательные compass, DOD, registry участников, active orchestrator contexts, текущие задачи и последнее состояние alignment.
+- Alignment Window: используется, когда нужно согласовать packets встречи, milestone или локальной работы.
+- Idea Memory и Intent Trail: каждый создается только тогда, когда будущая идея либо значимый intent/pivot должны пережить текущий context; это может быть section в Project State или связанное компактное представление.
 
 Registry участников содержит: participant, orchestrator context link, установленную версию фреймворка, resolved agent profile и дату проверки, latest packet, active task и status.
 

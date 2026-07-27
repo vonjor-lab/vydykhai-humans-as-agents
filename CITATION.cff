@@ -5,8 +5,8 @@ title: "Vydykhai: Collaborative Vibe Coding with Humans as Agents"
 authors:
   - family-names: Rozhnov
     given-names: Alexander
-version: 1.11.0
-date-released: "2026-07-25"
+version: 1.12.0
+date-released: "2026-07-27"
 license: PolyForm-Small-Business-1.0.0
 repository-code: "https://github.com/vonjor-lab/vydykhai-humans-as-agents"
 url: "https://github.com/vonjor-lab/vydykhai-humans-as-agents"
