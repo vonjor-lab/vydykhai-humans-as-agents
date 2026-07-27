@@ -112,6 +112,9 @@ if (!projectStateTemplate.includes("Intent Trail:")) fail("Project State is miss
 if (!projectStateTemplate.includes("Shared Sync:")) fail("Project State is missing Shared Sync readiness");
 if (!projectStateTemplate.includes("Baseline -> Candidate")) fail("Project State is missing the Success Line pointer");
 if (!projectStateTemplate.includes("Task return mapping:")) fail("Project State is missing the task return mapping");
+if (!projectStateTemplate.includes("Latest seen:") || !projectStateTemplate.includes("Update:")) {
+  fail("Project State is missing framework update discovery state");
+}
 if (!ideaMemoryTemplate.includes("Idea Memory is not a backlog")) fail("Idea Memory template is missing its scope guard");
 if (!intentTrailTemplate.includes("APPROACH_PIVOT")) fail("Intent Trail is missing approach-pivot lineage");
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
@@ -126,6 +129,12 @@ if (
 }
 if (!orchestratorWorkflow.includes("Boundary consultation (`CONSULT`)")) {
   fail("Orchestrator workflow is missing boundary consultation");
+}
+if (!orchestratorWorkflow.includes("first active use") || !orchestratorWorkflow.includes("installed < release <= latest")) {
+  fail("Orchestrator workflow is missing active framework update discovery");
+}
+if (!orchestratorWorkflow.includes("one concise delta per release") || !orchestratorWorkflow.includes("never omit a skipped release")) {
+  fail("Orchestrator workflow may lose skipped framework releases");
 }
 if (!acceptWorkflow.includes("Rejected Candidate")) fail("Acceptance is missing rejected-candidate handling");
 if (!acceptWorkflow.includes("Unexpectedly changed")) fail("Acceptance is missing inheritance classification");

@@ -1,6 +1,6 @@
 # Compatibility Pointer
 
-The current canonical framework is [`FRAMEWORK.md`](FRAMEWORK.md), version 1.12.0.
+The current canonical framework is [`FRAMEWORK.md`](FRAMEWORK.md), version 1.12.1.
 
 This dated path remains only so existing product repositories and old task contracts do not break during migration. New integrations must use the stable path `docs/FRAMEWORK.md`.
 

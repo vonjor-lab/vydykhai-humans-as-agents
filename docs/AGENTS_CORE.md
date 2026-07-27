@@ -1,7 +1,7 @@
 ## Vydykhai Managed Rules
 
 - Read `docs/FRAMEWORK.md` for the current operating core.
-- Run `node scripts/vydykhai.mjs doctor` when starting a new orchestrator, after a framework update, or when framework state may be stale.
+- Read Project State before checking the framework. Run `node scripts/vydykhai.mjs doctor` for a new orchestrator, after an update, when integrity is uncertain, or on the first active use after that participant's check becomes 24 hours old. Record installed/latest version and check time; stay silent when current. When newer, read every changelog release where `installed < release <= latest` oldest first; report the range, release count, one short delta per release, combined impact, and one safe update window without omitting intermediate versions, duplicating an existing update, or changing rules mid-task. Keep an unavailable check pending without blocking otherwise safe work.
 - Keep one active Framework Orchestrator context per participant and product stream. It organizes work and does not implement, fix product code, deploy, run acceptance smoke, or merge.
 - Register active orchestrator context links, installed framework versions, latest packets, and active tasks in Project State.
 - Use `latest available flagship / deepest bounded reasoning`. Map to Extra High / `xhigh` when available. Record the resolved model, reasoning mapping, check date/source, and fallback in Project State; recheck at setup, update, orchestrator rotation, model failure/deprecation, and at least weekly Health Review.

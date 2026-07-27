@@ -16,8 +16,8 @@ Read `docs/workflows/framework-orchestrator.md` when dispatching, supervising, r
 
 ## Preflight
 
-- Run `node scripts/vydykhai.mjs doctor` on first use, after update, or when version integrity is uncertain.
-- Restore Project State, Shared Sync readiness, compass/DOD, participants, active Alignment Window, Idea Memory, Intent Trail, tasks/PRs/contexts, human checkpoints, and latest verified repository state.
+- Restore Project State, including this participant's framework version/check, Shared Sync readiness, compass/DOD, participants, active Alignment Window, Idea Memory, Intent Trail, tasks/PRs/contexts, human checkpoints, and latest verified repository state.
+- Run `node scripts/vydykhai.mjs doctor` on first use, after update, when integrity is uncertain, or on the first active use after that participant's check becomes 24 hours old. Record installed/latest version and check time; stay silent when current, and keep an unavailable check pending without blocking otherwise safe work.
 - Verify this context is the registered active orchestrator for this participant and stream. If another context is current, reconcile or rotate before changing shared state.
 - If rotation is pending, read the Rotation Memory Packet and Memory Coverage status. A candidate stays read-only until explicit human confirmation changes the active pointer.
 - Compare dashboard state with the latest durable event. Rebuild or rotate a stale Alignment Window before relying on it.
@@ -47,6 +47,7 @@ Read `docs/workflows/framework-orchestrator.md` when dispatching, supervising, r
 - Request Peer Compass Review before overlapping owner work changes a shared flow, surface, contract, PR, or DOD row.
 - Keep one fallback monitor on one gate only when event-driven return is unavailable; keep it quiet while unchanged, prevent scope/spend/merge, update it when the gate changes, and delete it at terminal state.
 - After acceptance or merge, update DOD burn, parent closure, participant impact, absorbed or newly confirmed Idea Memory entries, Project State, and next-best-action instead of stopping at status.
+- When upstream is newer, read every changelog release where `installed < release <= latest` oldest first. Report `installed -> latest`, release count, one concise delta per release, and the combined project impact; never omit a skipped release. Record one update plan in Project State: now before next dispatch when idle or currently relevant, otherwise after a named task/checkpoint. At that window prepare or reuse one update branch, run `update` and `doctor`, open or refresh its PR, and report what changed. Never duplicate the update, overwrite conflicts, merge silently, or change active-task rules mid-flight; rotate only when migration or context health requires it.
 - Run Health Review after a milestone, several slices, repeated follow-ups, stalled DOD burn, unexpected task expansion, recurring architecture/data/tooling tax, owner dropout, repeated compaction, or chat archaeology. Deduplicate Idea Memory and retire entries that are absorbed, superseded, or no longer aligned with the compass.
 - When context is no longer compact, announce and explain rotation first. The previous context publishes state plus Intent Trail and material task-local pivots; the candidate independently checks high-signal human sources/Return Syncs and reconstructs current approaches and reasons, not merely packet/dashboard consistency. The human sees the delta and confirms; only then switch, move returns, pin the new context, rename/unpin the old one, and leave its prominent active-link notice. Keep history accessible; report unsupported UI controls visibly.
 - Never invent another participant's uncommitted state. Missing participants block only overlapping work.

@@ -7,7 +7,7 @@ Use one compact issue or equivalent artifact per project or product stream. It i
 
 # Project State: <project or stream>
 
-Framework: <installed version> | Upstream: <url> | Last doctor: <result/date>
+Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current | check pending | now | after task/checkpoint | PR/link | blocked>
 Shared Sync: Repo: <url> | Tracker: <url> | Readiness: <READY | SYNC_LIMITED, with gaps>
 Coordination inputs: <meeting recorder/transcript/chat/docs/manual route> | Access checked: <date/result>
 Agent policy: latest available flagship / deepest bounded reasoning
@@ -30,9 +30,9 @@ Updated from durable event: <event/link/date>
 
 ## Participants
 
-| Participant | Active orchestrator | Framework | Agent profile | Sync access | Latest packet | Active task | Status |
+| Participant | Active orchestrator | Framework / checked | Agent profile | Sync access | Latest packet | Active task | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| <name> | <context link/title> | <version> | <model / reasoning / checked> | <repo/tracker/input status> | <packet/link> | <task/link> | <active / away / waiting / superseded> |
+| <name> | <context link/title> | <version / checked> | <model / reasoning / checked> | <repo/tracker/input status> | <packet/link> | <task/link> | <active / away / waiting / superseded> |
 
 ## Active Work
 
