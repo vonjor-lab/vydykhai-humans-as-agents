@@ -6,7 +6,7 @@ Vydykhai is a framework for collaborative work between people and AI agents. It 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.12.1`
+Current version: `1.13.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 

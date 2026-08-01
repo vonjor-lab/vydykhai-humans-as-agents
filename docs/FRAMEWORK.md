@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.12.1 | Status: canonical operating core
+Version: 1.13.0 | Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
@@ -127,7 +127,7 @@ Before dispatching or resuming work, compare the task with the latest DOD and de
 - `PATCH_REQUIRED`: a bounded Brief Patch is required.
 - `REBRIEF_REQUIRED`: goal, DOD, sequence, ownership, or core assumptions must be shaped again.
 
-Age triggers re-reading, not automatic scope change. Seven days without a freshness check is the default signal unless the project sets another interval. Approve a material patch or re-brief before implementation or burn continues.
+Age triggers re-reading, not automatic scope change. Seven days without a freshness check is the default signal unless the project sets another interval. Approve a material patch or re-brief before implementation or burn continues. A re-brief or split maps prior progress as `Preserved`, `Replaced`, `Added`, and `Remaining`; it never silently resets demonstrated progress.
 
 ### Expansion Check
 Task size is a signal, not a verdict. Run an Expansion Check and pause only affected growth when first human-verifiable evidence misses the agreed appetite, a local goal crosses unplanned layers or contracts, the same incidental platform problem recurs across tasks, a second same-class correction appears, or data/operating cost grows without DOD movement.
@@ -177,24 +177,24 @@ Record a compact Learning Delta: `Keep`, `Rebuild`, `Drop`, and `Unknown`. Repea
 The minimum task contract contains:
 
 - Goal and DOD impact;
-- Scope and out of scope;
+- Scope, out of scope, outcome owner, and dependency/recipient boundary;
 - Scope freshness and Accepted Baseline;
 - Continue from the accepted mechanism and one to three applicable invariants;
-- Product loop or linked enabling contract;
+- Product loop or linked enabling contract; an enabler states `Unlocks`, `Still missing`, and the next product slice;
 - Human checkpoint;
 - Burn / stop and expansion appetite when material;
 - Verification and completion route;
 - Consult when / Return to, plus checkpoint, blocker, and terminal event triggers.
 
-The task continues the accepted mechanism by default. A new shared mechanism or system change must be explicit in the contract or resolved through consultation; local implementation freedom never implies permission to create one. Add Lab Mode, Peer Compass Review, model profile, or detailed contracts only when relevant. The orchestrator creates or prepares the task context, verifies its title or stable handle, records its link, and checks that execution started. A plan-only child response is not progress.
+The task continues the accepted mechanism by default. A new shared mechanism or system change must be explicit in the contract or resolved through consultation; local implementation freedom never implies permission to create one. Add Lab Mode, Peer Compass Review, model profile, or detailed contracts only when relevant. Before patching a running task, the orchestrator reads task events newer than its last Return Sync and reconciles any newer human direction. It creates or prepares the context, verifies its title or stable handle, records its link, and checks that execution started. A plan-only child response is not progress.
 
 ### 4. Execute
 
 The task context starts implementation instead of repeating approved planning, then continues autonomously until a human checkpoint, real blocker, or terminal result. It returns for re-brief when the goal, source of truth, shared contract, burn cap, or freshness status changes.
 
-At an undeclared entity, shared mechanism or contract, authority conflict, ownership overlap, or possible system change, pause only the affected boundary and send `CONSULT`: `Boundary`, `Evidence`, `Proposed move`, and `Safe continuation`. The orchestrator retrieves only the needed durable truth and uses existing routes: `CONTINUE`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; owner overlap triggers Peer Compass Review, and only a real human choice returns `NEEDS_DECISION`.
+At an undeclared entity, shared mechanism or contract, authority conflict, ownership overlap in code or outcome, or possible system change, pause only the affected boundary and send `CONSULT`: `Boundary`, `Evidence`, `Proposed move`, and `Safe continuation`. A support, demo, review, or transport task never acquires the product task's DOD or burn merely because its files are isolated. The orchestrator retrieves only the needed durable truth and uses existing routes: `CONTINUE`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; owner overlap triggers Peer Compass Review, and only a real human choice returns `NEEDS_DECISION`.
 
-At every checkpoint, blocker, or terminal result, the task context publishes a compact Return Sync without waiting for a human prompt. Use native cross-context messaging when available; otherwise write the result to the shared tracker and trigger the available event or hook. A monitor is only the fallback when neither route can wake the orchestrator.
+At every checkpoint, blocker, or terminal result, the task context publishes a compact Return Sync without waiting for a human prompt. Use native cross-context messaging when available; otherwise write the result to the shared tracker and trigger the available event or hook. Cross-person delivery is complete only when the recipient confirms access to the exact shared artifact or revision and performs the agreed receipt check; runnable work includes a representative scenario in the recipient's environment. A monitor is only the fallback when neither route can wake the orchestrator.
 
 ### 5. Align
 
@@ -208,7 +208,7 @@ Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED` when
 
 The task context runs `$accept-work` before completion. Acceptance compares the Candidate with its Accepted Baseline, the latest human decision, brief, DOD, deltas, product loop, burn, tests, and smoke evidence. Material deltas are classified `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; an unexplained unexpected change is `NEEDS_FIXES`.
 
-Verify the risks changed by the Candidate. For runtime, integration, or state changes, smoke the exact branch, worktree, commit, frontend, backend, and browser target being accepted; do not use an old server or another branch. Avoid a paid setup path when an equivalent controlled entry proves the changed risk and that paid path did not change. Product capability is not closed by backend state, UI shell, or lab proof alone.
+Verify the risks changed by the Candidate. For runtime, integration, or state changes, smoke the exact branch, worktree, commit, frontend, backend, and browser target being accepted; do not use an old server or another branch. Avoid a paid setup path when an equivalent controlled entry proves the changed risk and that paid path did not change. For zero-spend or no-mutation work, disable the dangerous capability when practical and prove before/after counters; any breach remains disclosed and cannot be reported as zero. Product capability is not closed by backend state, UI shell, lab proof, or an enabler without its named product continuation.
 
 After acceptance and the required human checkpoint, promote the Candidate to Accepted Baseline. A rejected candidate remains evidence only. Merge manually through the task context, which publishes its terminal Return Sync; the orchestrator then updates DOD burn, alignment, parent closure, and next-best-action.
 
@@ -220,7 +220,7 @@ Check progress toward compass and DOD; blockers, repeated costs, and technical s
 
 ## Humans As Agents
 
-Humans are event-driven participants in the system, not its hidden schedulers. When human action is required, the orchestrator states who acts, what to inspect or decide, the exact link/task/prompt, where the result will be written, what may continue, and what Return Sync resumes the flow.
+Humans are event-driven participants in the system, not its hidden schedulers. When human action is required, the orchestrator states who acts, what judgment that person owns, what to inspect or decide, the exact link/task/prompt, where the result will be written, what may continue, and what Return Sync resumes the flow. Agents own technical verification; humans receive observable product, visual, spend, external-action, smoke, or merge questions that fit their role.
 
 Every task declares one `Human checkpoint`: `none`, `product decision`, `visual review`, `paid or external action approval`, or `manual smoke and merge`.
 
@@ -228,7 +228,7 @@ The orchestrator should not say that a human is unnecessary when a named checkpo
 
 ## Asynchronous Collaboration
 
-Keep one required current dashboard and create linked artifacts only when their trigger exists:
+Keep one authoritative current dashboard snapshot and create linked artifacts only when their trigger exists:
 
 - Project State: the required compass, DOD, participant registry, active orchestrator contexts, current tasks, and latest alignment state.
 - Alignment Window: use when meeting, milestone, or local-work packets need reconciliation.
@@ -238,7 +238,7 @@ The participant registry includes: participant, orchestrator context link, insta
 
 Before starting or resuming work on a shared surface, each participant's orchestrator checks its registry row and publishes a new packet when local or meeting state materially changed. Never invent another participant's uncommitted state.
 
-When publishing a Team Alignment Delta, rebuild the issue body in the same operation. Rotate the Alignment Window after a milestone or when it stops being quickly scannable; link the archived window from Project State.
+When publishing a Team Alignment Delta or Project State change, rebuild the current body in the same operation. Keep exactly one current DOD, active-work view, framework/agent policy, and next-best-action; link history instead of retaining conflicting current sections. Rotate an Alignment Window when it stops being quickly scannable.
 
 ## Meetings
 
@@ -253,7 +253,7 @@ Propose Peer Compass Review when tasks, PRs, product surfaces, contracts, or DOD
 ## Monitor Contract
 
 - One monitor follows one named gate or active stream.
-- Stay quiet while state is unchanged and work remains inside scope.
+- While state is unchanged and work remains inside scope, create no context message, no-op trace, or model wake-up.
 - Notify only on a blocker, decision, drift, human checkpoint, or terminal result.
 - Do not create new scope, merge, spend money, or reinterpret the compass from a monitor.
 - Update a monitor when its gate changes; do not stack duplicate monitors.
@@ -292,7 +292,7 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Do not expose secrets, transcripts, private product data, proprietary prompts, or customer information in public framework artifacts.
 - Preserve the framework license, creator metadata, and required notice in installed or redistributed framework copies; they do not claim ownership of project-specific work.
 - Use `latest available flagship / deepest bounded reasoning`, keep the resolved profile and check date in Project State, and make fallback visible. Do not hardcode a model version or vendor-specific reasoning label in universal rules.
-- Preserve append-only evidence, but keep current dashboards short and current.
+- Preserve append-only evidence, but atomically rebuild current dashboards and reject duplicate or contradictory current sections.
 - Return task events to the orchestrator automatically; do not make people poll completed contexts.
 - Prefer next-best-action over status-only reporting.
 - Do not switch active orchestrators without a Rotation Memory Packet, candidate Memory Coverage Check, and explicit human confirmation.

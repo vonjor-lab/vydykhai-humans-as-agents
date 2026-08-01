@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.12.1 | Статус: каноническое операционное ядро
+Версия: 1.13.0 | Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк совместной работы людей и AI-агентов. Он вырос из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action.
 
@@ -127,7 +127,7 @@ Universal rules не фиксируют сегодняшний model id, поэ�
 - `PATCH_REQUIRED`: нужен ограниченный Brief Patch.
 - `REBRIEF_REQUIRED`: нужно заново осмыслить goal, DOD, sequence, ownership или ключевые assumptions.
 
-Возраст задачи требует перечитать ее, но сам по себе не меняет scope. По умолчанию сигналом являются семь дней без freshness check, если проект не выбрал другой интервал. Существенный patch или re-brief подтверждается человеком до продолжения implementation или burn.
+Возраст задачи требует перечитать ее, но сам по себе не меняет scope. По умолчанию сигналом являются семь дней без freshness check, если проект не выбрал другой интервал. Существенный patch или re-brief подтверждается человеком до продолжения implementation или burn. При re-brief или разделении прежний прогресс отмечается как `Сохранено`, `Заменено`, `Добавлено` и `Осталось`; доказанное продвижение нельзя молча обнулять.
 
 ### Проверка разрастания
 Размер задачи является сигналом, а не приговором. Expansion Check проводится с паузой только затронутого роста, если первое проверяемое человеком evidence не уложилось в согласованный appetite, локальная цель потянула незапланированные слои или contracts, одна побочная platform problem повторяется в разных задачах, возникло второе исправление одного класса либо data/operating cost растет без движения DOD.
@@ -177,24 +177,24 @@ Research уменьшает неопределенность. Lab уменьша
 Минимальный task contract содержит:
 
 - Goal и DOD impact;
-- Scope и out of scope;
+- Scope, out of scope, владелец результата и граница зависимости/получателя;
 - Scope freshness и Accepted Baseline;
 - Continue from: принятый механизм и от одного до трех применимых invariants;
-- Product loop либо связанный enabling contract;
+- Product loop либо связанный enabling contract; enabler называет `Разблокировано`, `Еще не сделано` и следующий продуктовый slice;
 - Human checkpoint;
 - Burn / stop и expansion appetite, когда они существенны;
 - Verification и completion route;
 - Consult when / Return to, а также event triggers для checkpoint, blocker и terminal result.
 
-По умолчанию task продолжает принятый механизм. Новый общий механизм или изменение системы должно быть явно записано в contract либо разрешено через consultation; локальная свобода implementation не дает права создавать его молча. Lab Mode, Peer Compass Review, model profile и подробные contracts добавляются только когда нужны. Оркестратор создает или готовит task context, проверяет title или stable handle, записывает ссылку и убеждается, что работа началась. Ответ child context только с планом не считается прогрессом.
+По умолчанию task продолжает принятый механизм. Новый общий механизм или изменение системы должно быть явно записано в contract либо разрешено через consultation; локальная свобода implementation не дает права создавать его молча. Lab Mode, Peer Compass Review, model profile и подробные contracts добавляются только когда нужны. Перед patch работающей задачи оркестратор читает события task context новее последнего Return Sync и совмещает их с более свежими указаниями человека. Затем он создает или готовит context, проверяет title или stable handle, записывает ссылку и убеждается, что работа началась. Ответ только с планом не считается прогрессом.
 
 ### 4. Исполнение
 
 Task context начинает implementation, а не повторяет уже согласованное планирование, и автономно продолжает до human checkpoint, реального blocker или terminal result. Он возвращается за re-brief, если меняются цель, source of truth, общий contract, burn cap или freshness status.
 
-При встрече с незаявленной сущностью, общим механизмом или contract, конфликтом authority, пересечением ownership либо возможным изменением системы task останавливает только затронутую границу и отправляет `CONSULT`: `Boundary`, `Evidence`, `Proposed move` и `Safe continuation`. Оркестратор подтягивает только нужную durable truth и использует существующие маршруты: `CONTINUE`, `PATCH_REQUIRED` или `REBRIEF_REQUIRED`; пересечение owners запускает Peer Compass Review, а только реальный выбор человека получает `NEEDS_DECISION`.
+При встрече с незаявленной сущностью, общим механизмом или contract, конфликтом authority, пересечением ownership в коде или результате либо возможным изменением системы task останавливает только затронутую границу и отправляет `CONSULT`: `Boundary`, `Evidence`, `Proposed move` и `Safe continuation`. Вспомогательная, демонстрационная, review или transport-задача не получает DOD и burn продуктовой задачи только потому, что их файлы изолированы. Оркестратор подтягивает нужную durable truth и использует существующие маршруты: `CONTINUE`, `PATCH_REQUIRED` или `REBRIEF_REQUIRED`; пересечение owners запускает Peer Compass Review, а только реальный выбор человека получает `NEEDS_DECISION`.
 
-При checkpoint, blocker или terminal result task context без отдельного запроса человека публикует короткий Return Sync. Если доступен native обмен между contexts, результат отправляется напрямую; иначе он записывается в shared tracker и поднимает доступный event или hook. Monitor используется только как fallback, когда оба пути недоступны.
+При checkpoint, blocker или terminal result task context без отдельного запроса человека публикует короткий Return Sync. Если доступен native обмен между contexts, результат отправляется напрямую; иначе он записывается в shared tracker и поднимает доступный event или hook. Передача между людьми завершена только после подтверждения доступа к точному shared artifact или revision и согласованной проверки получения; для запускаемого результата она включает показательный сценарий в среде получателя. Monitor используется только как fallback, когда оба пути недоступны.
 
 ### 5. Alignment
 
@@ -208,7 +208,7 @@ Task context начинает implementation, а не повторяет уже 
 
 Перед завершением task context запускает `$accept-work`. Приемка сравнивает Candidate с его Accepted Baseline, последним решением человека, brief, DOD, deltas, product loop, burn, тестами и smoke evidence. Существенные изменения получают статус `Inherited`, `Deliberately changed` или `Unexpectedly changed`; необъясненное неожиданное изменение означает `NEEDS_FIXES`.
 
-Проверяются риски, которые изменил Candidate. Для runtime, integration или state changes smoke проводится на точных branch, worktree, commit, frontend, backend и browser target, которые принимаются; старый сервер или другая ветка не подходят. Не нужно проходить платный подготовительный путь, если тот же измененный риск доказывается контролируемой точкой входа, а сам платный путь не менялся. Backend state, UI shell или lab proof сами по себе не закрывают product capability.
+Проверяются риски, которые изменил Candidate. Для runtime, integration или state changes smoke проводится на точных branch, worktree, commit, frontend, backend и browser target, которые принимаются; старый сервер или другая ветка не подходят. Не нужно проходить платный подготовительный путь, если тот же риск доказывается контролируемой точкой входа, а сам путь не менялся. Для zero-spend или no-mutation работы опасная возможность по возможности отключается технически, а counters проверяются до и после; нарушение остается раскрытым и не может называться нулевым. Backend state, UI shell, lab proof или enabler без названного продуктового продолжения сами по себе не закрывают capability.
 
 После приемки и обязательного human checkpoint Candidate становится новым Accepted Baseline. Rejected Candidate остается только evidence. Человек делает manual merge через task context, который публикует terminal Return Sync; затем оркестратор обновляет DOD burn, alignment, parent closure и next-best-action.
 
@@ -220,7 +220,7 @@ Task context начинает implementation, а не повторяет уже 
 
 ## Люди как агенты
 
-Люди являются событийными участниками системы, а не ее скрытыми диспетчерами. Когда нужен человек, оркестратор сообщает, кто действует, что проверить или решить, точную ссылку/task/prompt, куда попадет результат, что можно продолжать и какой Return Sync возобновит поток.
+Люди являются событийными участниками системы, а не ее скрытыми диспетчерами. Когда нужен человек, оркестратор сообщает, кто действует, какое суждение принадлежит этому человеку, что проверить или решить, точную ссылку/task/prompt, куда попадет результат, что можно продолжать и какой Return Sync возобновит поток. Техническую проверку проводят агенты; человеку задаются понятные продуктовые, визуальные, расходные, внешние, smoke или merge-вопросы по его роли.
 
 У каждой задачи есть один `Human checkpoint`: `none`, `product decision`, `visual review`, `paid or external action approval` либо `manual smoke and merge`.
 
@@ -228,7 +228,7 @@ Task context начинает implementation, а не повторяет уже 
 
 ## Асинхронная совместная работа
 
-Нужен один обязательный текущий dashboard; связанные artifacts создаются только при появлении их trigger:
+Нужен один авторитетный снимок текущего dashboard; связанные artifacts создаются только при появлении их trigger:
 
 - Project State: обязательные compass, DOD, registry участников, active orchestrator contexts, текущие задачи и последнее состояние alignment.
 - Alignment Window: используется, когда нужно согласовать packets встречи, milestone или локальной работы.
@@ -238,7 +238,7 @@ Registry участников содержит: participant, orchestrator contex
 
 Перед стартом или продолжением работы на общей поверхности orchestrator каждого участника проверяет свою строку и публикует новый packet, если локальное состояние или результаты встречи существенно изменились. Нельзя придумывать незакоммиченное состояние другого участника.
 
-При публикации Team Alignment Delta issue body перестраивается в той же операции. Alignment Window ротируется после milestone или когда перестает быстро читаться; архивное окно связывается из Project State.
+При публикации Team Alignment Delta или изменении Project State текущее body перестраивается в той же операции. В нем остаются ровно один текущий DOD, active-work view, framework/agent policy и next-best-action; история связывается ссылками, а не сохраняется конфликтующими текущими секциями. Alignment Window ротируется, когда перестает быстро читаться.
 
 ## Встречи
 
@@ -253,7 +253,7 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 ## Контракт монитора
 
 - Один monitor следит за одним named gate или active stream.
-- При неизменном состоянии и работе внутри scope он молчит.
+- При неизменном состоянии и работе внутри scope он не создает context message, no-op trace или model wake-up.
 - Уведомляет только о blocker, decision, drift, human checkpoint или terminal result.
 - Не создает новый scope, не делает merge, не тратит деньги и не переосмысливает compass.
 - При изменении gate обновляется существующий monitor, а не создается дубль.
@@ -292,7 +292,7 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - Secrets, transcripts, private product data, proprietary prompts и customer information не попадают в public framework artifacts.
 - В установленных или распространяемых копиях фреймворка сохраняются license, creator metadata и required notice; они не распространяют права на project-specific работу.
 - Используется `latest available flagship / deepest bounded reasoning`; resolved profile и дата проверки хранятся в Project State, fallback показывается явно. Universal rules не содержат hardcoded model version или vendor-specific reasoning label.
-- Append-only evidence сохраняется, но текущие dashboards остаются короткими и актуальными.
+- Append-only evidence сохраняется, но текущие dashboards атомарно перестраиваются и не содержат дублирующих или противоречащих текущих секций.
 - Task events автоматически возвращаются в оркестратор; люди не должны опрашивать завершившиеся contexts.
 - Next-best-action важнее status-only ответа.
 - Active orchestrator нельзя переключать без Rotation Memory Packet, candidate Memory Coverage Check и явного подтверждения человека.

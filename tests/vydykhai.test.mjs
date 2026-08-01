@@ -39,12 +39,13 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.equal(await readFile(path.join(target, ".agents/skills/project-only/SKILL.md"), "utf8"), "project-only\n");
     assert.match(await readFile(path.join(target, "docs/workflows/README.md"), "utf8"), /environment-neutral workflows/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Consult when \/ Return to:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Recipient proof:/);
     assert.match(await readFile(path.join(target, "docs/workflows/intent-trail-template.md"), "utf8"), /APPROACH_PIVOT/);
     assert.match(await readFile(path.join(target, "docs/workflows/project-state-template.md"), "utf8"), /Task return mapping:/);
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.12.1");
+    assert.equal(lock.installedVersion, "1.13.0");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -71,7 +72,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.12\.1/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.13\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -100,10 +101,14 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectState, /Intent Trail:/);
   assert.match(projectState, /Latest seen:/);
   assert.match(projectState, /Update:/);
+  assert.match(projectState, /Snapshot as of:/);
+  assert.equal((projectState.match(/^## Next-Best-Action$/gm) || []).length, 1);
   const taskHandoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
   assert.match(taskHandoff, /Continue from \/ applicable invariants:/);
   assert.match(taskHandoff, /Consult when \/ Return to:/);
   assert.match(taskHandoff, /Boundary consultation result:/);
+  assert.match(taskHandoff, /Progress continuity:/);
+  assert.match(taskHandoff, /Recipient proof:/);
   const orchestratorWorkflow = await readFile(path.join(root, "docs/workflows/framework-orchestrator.md"), "utf8");
   assert.match(orchestratorWorkflow, /THIS ORCHESTRATOR IS RETIRED - DO NOT CONTINUE HERE/);
   assert.match(orchestratorWorkflow, /ROTATION_CUTOVER_INCOMPLETE/);
@@ -112,7 +117,12 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /installed < release <= latest/);
   assert.match(orchestratorWorkflow, /one concise delta per release/);
   assert.match(orchestratorWorkflow, /never omit a skipped release/);
-  assert.match(await readFile(path.join(root, "docs/workflows/accept-work.md"), "utf8"), /Unexpectedly changed/);
+  assert.match(orchestratorWorkflow, /newer than the last Return Sync/);
+  assert.match(orchestratorWorkflow, /no context message, no-op trace, or model wake-up/);
+  const acceptWork = await readFile(path.join(root, "docs/workflows/accept-work.md"), "utf8");
+  assert.match(acceptWork, /Unexpectedly changed/);
+  assert.match(acceptWork, /recipient-side exact-artifact\/revision proof/);
+  assert.match(acceptWork, /zero-spend or no-mutation contract/);
 });
 
 test("update from a local canonical source preserves project files", async () => {

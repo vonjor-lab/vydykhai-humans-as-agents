@@ -14,7 +14,7 @@ Read:
 
 Apply source precedence. Classify new commentary as scope change, DOD gap, guardrail, future option, or Intent/Approach Delta. A meaningful method change may be an `APPROACH_PIVOT` even when DOD is unchanged.
 
-Before dispatching or resuming a task, compare it with current DOD/decisions, upstream results, affected entities/contracts, active work, Idea Memory, applicable Intent Trail and task-local pivots, and code. Identify the accepted existing mechanism the task continues; do not infer permission to create a parallel one. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`. Seven days is a re-read signal, not an automatic change.
+Before dispatching or resuming a task, compare it with current DOD/decisions, upstream results, affected entities/contracts, active work, Idea Memory, applicable Intent Trail and task-local pivots, and code. Identify the accepted existing mechanism the task continues; do not infer permission to create a parallel one. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`. Seven days is a re-read signal, not an automatic change. A patch, split, or re-brief maps earlier progress as `Preserved`, `Replaced`, `Added`, and `Remaining`.
 
 If a future option is useful but unnecessary for the nearest DOD, recommend keeping it out of the current work. After human confirmation, upsert it in Idea Memory with its value, touched surfaces, source, and recall trigger.
 
@@ -39,7 +39,7 @@ If it cannot be explained compactly, split the topic before tasking.
 
 ## 4. Check Coherence
 
-Compare with active epics, shared contracts, deltas, and known lessons. Surface overlap, duplicated work, conflicting assumptions, and unsafe parallel edits.
+Compare with active epics, shared contracts, deltas, and known lessons. Surface overlap in code or intended outcome, duplicated work, conflicting assumptions, and unsafe parallel edits. A support, demo, review, or transport task stays separate from the product task's DOD and burn even when its files are isolated.
 
 Run Idea Memory and Intent Trail intersection against the proposed outcome, entities, surfaces, contracts, and DOD rows. For each match, recall an idea without silent scope growth or apply confirmed intent/rules and relevant pivot lessons. Record the compact result in the brief.
 
@@ -55,13 +55,14 @@ When a local outcome is likely to pull unrelated layers, name the expected surfa
 For each task, write only:
 
 ```md
-Title / owner / backup:
+Title / outcome owner / backup / recipient:
 Goal and DOD impact:
 Scope / out of scope:
 Scope freshness / Accepted Baseline:
 Continue from / applicable invariants: <accepted mechanism and 1-3 rules>
 Applicable intent / current approach / pivots:
 Product loop or linked enabler:
+For enabler: Unlocks / Still missing / next product slice:
 Human checkpoint:
 Burn / stop limit:
 Expected surface / first evidence: <only when expansion risk is material>
@@ -69,9 +70,10 @@ Verification / completion route:
 Consult when / Return to: <semantic boundaries / orchestrator or tracker>
 Checkpoint / blocker / terminal return triggers:
 Dependencies / parallel boundary:
+Progress continuity: <Preserved / Replaced / Added / Remaining when patched, split, or re-briefed>
 ```
 
-Classify task as product capability, technical enabler, maintenance, research, or future option. Use the current resolved flagship / deepest bounded reasoning profile and make its environment mapping or fallback visible only in dispatch metadata.
+Classify task as product capability, technical enabler, maintenance, research, or future option. A technical enabler does not close its parent product loop; name the product continuation and owner. Use the current resolved flagship / deepest bounded reasoning profile and make its environment mapping or fallback visible only in dispatch metadata.
 
 Keep one active implementation context and canonical Candidate per product phase. Before adding another slice, show what already closed, what remains before parent acceptance, and why this is a DOD gap rather than polish.
 
