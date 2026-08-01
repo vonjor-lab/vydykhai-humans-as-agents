@@ -6,7 +6,7 @@ Use the minimum contract. Add optional fields only when they alter execution saf
 # Task Context Startup
 
 Title:
-Task / owner / backup:
+Task / outcome owner / backup / recipient:
 Orchestrator / Project State:
 Latest relevant delta:
 Applicable Intent Trail / task-local approach lineage:
@@ -24,6 +24,7 @@ Return triggers: <human checkpoint | real blocker | terminal result>
 Freshness: <UNCHANGED | PATCH_REQUIRED | REBRIEF_REQUIRED> | Checked: <date/evidence>
 Accepted Baseline: <commit, artifact, or proven behavior>
 Candidate: <one active candidate reference>
+Progress continuity: <UNCHANGED | Preserved / Replaced / Added / Remaining>
 
 In scope:
 - <work>
@@ -34,10 +35,12 @@ Out of scope:
 ## Product Loop Or Enabler
 
 <actor, entry/action, result/recovery, or linked capability/contract>
+For an enabler: Unlocks / Still missing / next product slice and owner:
 
 ## Human Checkpoint
 
 <none | product decision | visual review | paid/external approval | manual smoke and merge>
+Judgment owner / why this person:
 
 Trigger and exact requested evidence:
 Safe continuation before checkpoint:
@@ -52,6 +55,7 @@ Expected touched surface / first human-verifiable evidence: <only when expansion
 
 - <tests/checks>
 - exact-current-code runtime smoke when user-facing or integration-affecting
+- for zero-spend/no-mutation work: capability guard plus before/after counters
 - run `$accept-work` in this task context before completion
 - keep corrective fixes, human smoke, and manual merge in this task context
 
@@ -74,8 +78,9 @@ Burn result:
 Expansion result / route: <when triggered>
 Exact-current-code smoke / merge:
 Participant impact / alignment needed:
+Recipient proof: <not applicable | exact shared artifact or revision / agreed check / recipient environment and representative scenario when runnable>
 Risks / follow-ups:
 Recommended orchestrator next action:
 ```
 
-A launch is incomplete when the child only writes a plan. It must start execution, name a blocker, or request re-brief. At every return trigger, publish this handoff automatically through native context messaging or the durable tracker; do not wait for a human to poll the task.
+A launch is incomplete when the child only writes a plan. It must start execution, name a blocker, or request re-brief. At every return trigger, publish this handoff automatically through native context messaging or the durable tracker; do not wait for a human to poll the task. A cross-person handoff remains incomplete until recipient proof is returned.

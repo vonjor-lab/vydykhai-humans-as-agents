@@ -18,10 +18,12 @@ Identify the `Accepted Baseline`, current `Candidate`, applicable Intent Trail, 
 - scope/out of scope;
 - scope freshness and baseline/candidate references;
 - product loop or linked enabler;
+- progress continuity and, for an enabler, `Unlocks / Still missing / next product slice`;
 - parent closure expectation;
 - human checkpoint;
 - Lab/Peer Review contract when used;
 - current approach and why material pivots replaced earlier paths;
+- outcome owner, recipient/dependency boundary, and any required recipient proof;
 - material burn limit;
 - verification route.
 
@@ -41,6 +43,8 @@ Verify only the risks changed by the Candidate. For runtime, integration, or sta
 
 Start or restart runtime from the exact code being accepted. Old servers, old tabs, or another branch are not evidence. Avoid a paid setup path when an equivalent controlled entry proves the changed risk and that path did not change.
 
+For a zero-spend or no-mutation contract, disable the dangerous capability when practical and record relevant counters before and after. Any accidental call, spend, or mutation remains evidence, changes the classification, and cannot later be described as zero.
+
 ## 4. Compare
 
 Check:
@@ -48,6 +52,7 @@ Check:
 - goal, scope, and acceptance criteria;
 - promised DOD movement;
 - parent closure versus accepted sub-slice;
+- preserved/replaced/added/remaining progress after any patch, split, or re-brief;
 - visible product/operator loop or explicitly linked enabler;
 - backing data/backend/permissions/recovery for UI work;
 - Lab proof followed by production transfer and real-flow verification;
@@ -59,6 +64,8 @@ Check:
 - material burn and stop limits;
 - Expansion Check route and, for maintenance, proof that the representative original flow became materially smaller/faster and recurrence is covered; backup, cleanup, migration, or a cap alone is containment;
 - declared human checkpoint;
+- whether its observable questions match the judgment that person owns rather than delegating technical verification;
+- recipient-side exact-artifact/revision proof and agreed receipt check; for runnable work, a representative scenario in the recipient's environment;
 - tests, exact-current-code smoke, docs, and durable handoff.
 
 ## 5. Classify
@@ -76,6 +83,7 @@ Keep fixes, smoke, and manual merge in the task context. After human confirmatio
 - update task/PR status and acceptance summary;
 - publish alignment only when another participant's safe action changes;
 - report DOD impact, parent state, human checkpoint, burn, verification, merge, risks, and recommended orchestrator next action.
+- for an enabler, report `Unlocks`, `Still missing`, and the next product slice/owner; do not close the parent from technical completion alone.
 - classify each follow-up as a required DOD gap or optional Idea Candidate; optional ideas do not keep the accepted task or parent open by themselves.
 - report Idea Memory entries absorbed by this work and confirmed candidates that the orchestrator should deduplicate and upsert.
 - report Intent Trail entries applied, superseded, or proposed, and compact accepted lineage to current rule/reasons/source links.

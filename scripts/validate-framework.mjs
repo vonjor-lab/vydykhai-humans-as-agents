@@ -112,6 +112,12 @@ if (!projectStateTemplate.includes("Intent Trail:")) fail("Project State is miss
 if (!projectStateTemplate.includes("Shared Sync:")) fail("Project State is missing Shared Sync readiness");
 if (!projectStateTemplate.includes("Baseline -> Candidate")) fail("Project State is missing the Success Line pointer");
 if (!projectStateTemplate.includes("Task return mapping:")) fail("Project State is missing the task return mapping");
+if (!projectStateTemplate.includes("Snapshot as of:") || !projectStateTemplate.includes("Rebuild its body atomically")) {
+  fail("Project State is missing atomic current-snapshot hygiene");
+}
+if ((projectStateTemplate.match(/^## Next-Best-Action$/gm) || []).length !== 1) {
+  fail("Project State must contain exactly one Next-Best-Action section");
+}
 if (!projectStateTemplate.includes("Latest seen:") || !projectStateTemplate.includes("Update:")) {
   fail("Project State is missing framework update discovery state");
 }
@@ -123,9 +129,11 @@ if (
   !taskHandoffTemplate.includes("Consult when / Return to:") ||
   !taskHandoffTemplate.includes("Learning Delta:") ||
   !taskHandoffTemplate.includes("Intent / Approach Delta:") ||
-  !taskHandoffTemplate.includes("Boundary consultation result:")
+  !taskHandoffTemplate.includes("Boundary consultation result:") ||
+  !taskHandoffTemplate.includes("Progress continuity:") ||
+  !taskHandoffTemplate.includes("Recipient proof:")
 ) {
-  fail("Task handoff is missing continuation, consultation, learning, or intent fields");
+  fail("Task handoff is missing continuation, consultation, learning, intent, progress, or receipt fields");
 }
 if (!orchestratorWorkflow.includes("Boundary consultation (`CONSULT`)")) {
   fail("Orchestrator workflow is missing boundary consultation");
@@ -136,8 +144,20 @@ if (!orchestratorWorkflow.includes("first active use") || !orchestratorWorkflow.
 if (!orchestratorWorkflow.includes("one concise delta per release") || !orchestratorWorkflow.includes("never omit a skipped release")) {
   fail("Orchestrator workflow may lose skipped framework releases");
 }
+if (!orchestratorWorkflow.includes("newer than the last Return Sync")) {
+  fail("Orchestrator workflow may overwrite newer task-local human direction");
+}
+if (!orchestratorWorkflow.includes("no context message, no-op trace, or model wake-up")) {
+  fail("Orchestrator monitor is not truly silent while unchanged");
+}
 if (!acceptWorkflow.includes("Rejected Candidate")) fail("Acceptance is missing rejected-candidate handling");
 if (!acceptWorkflow.includes("Unexpectedly changed")) fail("Acceptance is missing inheritance classification");
+if (!acceptWorkflow.includes("recipient-side exact-artifact/revision proof")) {
+  fail("Acceptance is missing recipient-side handoff proof");
+}
+if (!acceptWorkflow.includes("zero-spend or no-mutation contract")) {
+  fail("Acceptance is missing runtime capability protection");
+}
 if (!changelog.includes(`## ${manifest.version} -`)) fail("Changelog is missing current version");
 if (changelog.match(/^## (\d+\.\d+\.\d+) -/m)?.[1] !== manifest.version) {
   fail("Latest changelog entry differs from manifest");

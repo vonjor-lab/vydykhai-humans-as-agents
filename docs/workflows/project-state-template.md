@@ -1,11 +1,13 @@
 # Project State Template
 
-Use one compact issue or equivalent artifact per project or product stream. It is the current dashboard, not an append-only event archive.
+Use one compact issue or equivalent artifact per project or product stream. It is the current dashboard, not an append-only event archive. Rebuild its body atomically after each material update and keep exactly one current DOD, Active Work view, framework/agent policy, and Next-Best-Action. Put history in linked comments or archived windows; reject duplicate or contradictory current sections.
 
 ```md
 <!-- vydykhai:project-state v1 -->
 
 # Project State: <project or stream>
+
+Snapshot as of: <date / latest durable event>
 
 Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current | check pending | now | after task/checkpoint | PR/link | blocked>
 Shared Sync: Repo: <url> | Tracker: <url> | Readiness: <READY | SYNC_LIMITED, with gaps>
@@ -36,9 +38,9 @@ Updated from durable event: <event/link/date>
 
 ## Active Work
 
-| Task | Owner | Task context | Baseline -> Candidate | PR/artifact | Human checkpoint | DOD impact | Status | Next |
+| Task | Outcome owner / recipient | Task context | Baseline -> Candidate | PR/artifact | Human checkpoint | DOD impact | Status | Next |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| <task> | <owner> | <link> | <accepted -> active> | <link> | <checkpoint> | <row> | <state> | <action> |
+| <task> | <owner / recipient or none> | <link> | <accepted -> active> | <link> | <checkpoint> | <row> | <state> | <action> |
 
 ## Decisions And Blockers
 
