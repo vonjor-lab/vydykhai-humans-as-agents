@@ -11,7 +11,7 @@ The bootstrap request authorizes creation of a setup branch, framework install/u
 3. Use available shell, network, repository host, tracker, and context tools yourself. Ask the human only for missing access, trust, or a decision; do not ask them to type setup commands.
 4. Never treat the standalone Vydykhai repository as the target product repository.
 5. Inspect how the current agent environment loads project instructions and skills, creates or resumes contexts, accesses durable shared state, returns events between contexts, and runs verification.
-6. Identify the durable tracker and coordination-input sources. GitHub with Issues and PRs is the default; meeting inputs may come from Fathom, Read AI, tl;dv, another recorder, team chat, docs, or manual notes.
+6. Identify the durable tracker, coordination-input sources, and protected operational sources. GitHub with Issues and PRs is the default; meeting inputs may come from Fathom, Read AI, tl;dv, another recorder, team chat, docs, or manual notes. Keep secret values in the project's secret system and record only least-privilege references to environments, owners, private runbooks, and backup/restore routes.
 
 ## Install
 
@@ -42,9 +42,9 @@ An explicit human decision may choose a lower-cost or faster profile for a named
 ## Activate
 
 1. Apply `$project-launch` from the installed target repository.
-2. Create or update the compact Project Operating Brief, Project State, Shared Sync Contract, and pointers for Idea Memory and Intent Trail: Git-backed repo, durable tracker, coordination-input route, privacy boundary, and access coverage.
+2. Create or update the compact Project Operating Brief, Project State, Shared Sync Contract, and pointers for Idea Memory, the Intent Trail decision map, and safe operational sources: Git-backed repo, durable tracker, coordination-input route, privacy boundary, and access coverage.
 3. Register participants, active orchestrator links, framework versions, resolved agent profiles, current tasks, sync readiness, and safe continuation.
-4. Test each active participant's human access and their orchestrator's required read/write access to the repo/tracker plus read access to relevant meeting inputs. Use individual least-privilege authentication, never shared credentials. Record missing coverage as `SYNC_LIMITED` and do not claim complete alignment for affected work.
+4. Test each active participant's human access and their orchestrator's required read/write access to the repo/tracker plus read access to relevant meeting and operational instructions. Use individual least-privilege authentication, never shared credentials or copied secret values. Record missing coverage as `SYNC_LIMITED` and do not claim complete alignment for affected work.
 5. Create the dedicated organization-only Framework Orchestrator context. Verify its actual title or stable handle, pin/foreground it when the environment supports that control, and confirm it can reconstruct compass, DOD, tasks, blockers, and next-best-action.
 6. Configure task Return Sync in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record and test the mapping in Project State; do not make the human poll tasks.
 7. If the environment cannot create resumable contexts, use the closest tracker-linked handle and explain the limitation once.
@@ -57,7 +57,7 @@ Report only:
 - installed version and `doctor` result;
 - creator, license, and attribution integrity;
 - environment adapter and context mapping;
-- Shared Sync Contract, coordination-input route, and access status;
+- Shared Sync Contract, coordination-input route, safe operational source pointers, and access status;
 - task Return Sync mapping;
 - setup change/PR or the exact access blocker;
 - Project State and orchestrator link/status;

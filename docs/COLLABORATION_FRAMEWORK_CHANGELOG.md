@@ -10,6 +10,23 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 1.14.0 - 2026-08-05
+
+Память стала частью исполнения задачи, а не архивом, который надо вспоминать вручную.
+
+- Перед brief, resume, consultation, acceptance, milestone и rotation оркестратор сам формирует `Touch Set`: outcomes, entities, actors/surfaces, contracts/authorities и data/operational realms задачи.
+- `Touch Set` сопоставляется с текущей картой решений `Intent Trail`, Idea Memory, accepted/rejected task lineage и безопасными операционными sources. В задачу попадает только короткий `Memory Brief`: применимые решения, прошлые rejected paths, уместные идеи без расширения scope, безопасные ссылки и gaps/conflicts.
+- Каждая задача возвращает `Memory Delta: none` или классифицированный урок. Task-local история остается в задаче; переиспользуемая delta объединяется с существующим семейством решений, а не создает еще одну похожую запись.
+- One Success Line теперь явно строит следующий Candidate от `Accepted Baseline + applicable Memory Brief`, сохраняя сработавшие части и перестраивая неудачные с учетом Learning Delta.
+- Idea Memory и Intent Trail перестраивают current body атомарно при изменении. Комментарии остаются evidence, но не могут образовать более новую скрытую версию памяти рядом с устаревшим body.
+- Операционная память охватывает environments, services, owners, private runbooks, backup/restore и secret-manager references. Значения credentials, tokens, private payloads и recovery material в shared memory не попадают.
+- Для auth/data/storage/migration/deploy задач обязательны точное environment, least-privilege access, актуальный runbook, backup/recovery route и non-destructive preflight до mutation.
+- Rotation не ограничивается переносом packet: она группирует decision families и проверяет Memory Intersection на показательных текущих или следующих задачах. Candidate должен найти решения, rejected paths, идеи и безопасные operational sources без подсказки человека.
+
+Переход: совместимый update in place. Существующие задачи и artifacts остаются действительными. Перед следующим dispatch оркестратор добавляет Touch Set и Memory Brief; при ближайшем Health Review или rotation один раз перестраивает stale Idea Memory/Intent Trail bodies из связанного evidence без удаления истории.
+
+Зачем: сделать накопленный опыт полезным в точке следующего решения, уменьшить повторное объяснение человеком и не терять безопасные способы работы с окружениями, хранилищами и восстановлением при смене задач или оркестратора.
+
 ## 1.13.0 - 2026-08-01
 
 Непрерывность исполнения, передача результата и текущий dashboard стали проверяемыми без новых skills, реестров или state machine.

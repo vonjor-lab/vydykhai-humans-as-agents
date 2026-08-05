@@ -24,5 +24,5 @@ Rules:
 - Recall triggers should name product contact points such as a brief, surface, contract, milestone, or next work touching a topic; a date alone is weak.
 - At a planning intersection, recommend: use as guard, shape separately, keep remembered, or retire as absorbed, duplicated, or superseded.
 - Human approval is required before an idea changes current scope, DOD, sequence, or becomes a task.
-- When retiring an entry, preserve its id, reason, and destination in tracker history, then remove it from the compact active view.
+- Rebuild the current body atomically whenever an entry changes. Newer comments are evidence, not a second current list; merge duplicates and remove retired entries from the active view while preserving their id, reason, and destination in history.
 - If no remembered idea intersects, record `Idea Memory Intersection: none`.

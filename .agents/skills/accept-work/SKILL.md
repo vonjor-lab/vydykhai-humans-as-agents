@@ -17,7 +17,7 @@ Load the task issue, current PR/diff, latest explicit human decision, relevant d
 
 ## Contract
 
-- Reconstruct the Accepted Baseline, Candidate, applicable Intent Trail, and task-local approach lineage using source precedence. Do not let an old issue, plan, or Rejected Candidate override a later proven state or human correction.
+- Reconstruct the Accepted Baseline, Candidate, Touch Set, Memory Brief, and task-local approach lineage using source precedence. Do not let an old issue, plan, or Rejected Candidate override a later proven state or human correction.
 - Compare delivered behavior with goal/DOD, scope, declared continuation basis/invariants, product loop or linked enabler, progress continuity, human checkpoint, material burn, and verification route. An enabler must state `Unlocks`, `Still missing`, and the next product slice. Classify material deltas as `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; unexplained unexpected change is `NEEDS_FIXES`.
 - Keep accepted sub-slices distinct from parent closure.
 - Separate required DOD follow-ups from optional future ideas. Required gaps keep the parent open; optional ideas do not expand accepted scope and return to the orchestrator as Idea Candidates.
@@ -25,12 +25,12 @@ Load the task issue, current PR/diff, latest explicit human decision, relevant d
 - For Lab Mode, verify its decision, one-variable contract, proof, Learning Delta, production transfer, tests, and risk-based real-flow verification before product acceptance.
 - Incorporate or resolve boundary consultations, required Peer Compass Review, and material alignment conflicts; a task cannot silently turn an undeclared boundary into a new shared mechanism.
 - If this is maintenance triggered by expansion, verify the named recurring cause was removed or explicitly deferred, the original representative flow became materially smaller/faster, recurrence is covered, and the return to delivery is explicit. Containment alone is not acceptance of root-cause repair.
-- Verify the risks changed by the Candidate. For runtime/integration/state work, prove repo/worktree, branch, commit, dirty state, frontend/backend commands and URLs, browser target, and smoke result from the exact code being accepted; avoid a paid setup path when an equivalent controlled entry is valid and that path did not change. For zero-spend/no-mutation work, disable the dangerous capability when practical, record counters before/after, and never erase or relabel a breach as zero.
+- Verify the risks changed by the Candidate. For runtime/integration/state work, prove repo/worktree, branch, commit, dirty state, frontend/backend commands and URLs, browser target, and smoke result from the exact code being accepted. For auth/data/storage/migration/deploy work, verify exact environment, least-privilege access, safe runbook, backup/recovery route, and a non-destructive preflight without exposing secret values. For zero-spend/no-mutation work, disable the dangerous capability when practical, record counters before/after, and never erase or relabel a breach as zero.
 - Treat missing or inconclusive current-code smoke as `NEEDS_FIXES` or `BLOCKED`.
 - Complete the declared human checkpoint with observable questions that match the judgment that person owns; agents retain technical verification. Do not state that the human is unnecessary when visual review, paid approval, product decision, or manual smoke/merge remains.
-- If the Candidate is rejected or the human says «do it differently», record the `APPROACH_PIVOT`: Before/Now/Why/Keep/Drop/scope/source. Build any successor from the Accepted Baseline while carrying forward proven changes and lessons.
+- If the Candidate is rejected or the human says «do it differently», record the `APPROACH_PIVOT`: Before/Now/Why/Keep/Drop/touch keys/source. Build any successor from the Accepted Baseline plus applicable Memory Brief while carrying forward proven changes and lessons.
 - Keep corrective fixes, smoke, and manual merge in the task context. Promote the Candidate to Accepted Baseline only after acceptance and the required human checkpoint.
-- At every human checkpoint, real blocker, or terminal result, publish Return Sync with `Intent/Approach Delta: none` or the compact lineage through native context messaging or a durable tracker event without waiting for a human prompt. Cross-person delivery remains incomplete until the recipient confirms access to the exact shared artifact/revision and performs the agreed receipt check; runnable work includes a representative scenario in the recipient's environment.
+- At every human checkpoint, real blocker, or terminal result, publish Return Sync with Intent/Approach evidence plus Memory Delta routing: `none`, `task-local only`, or a compact reusable candidate. The orchestrator promotes only reusable lessons. Cross-person delivery remains incomplete until recipient proof.
 
 ## Finish
 

@@ -32,7 +32,7 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 - Create a Brief Patch for a small approved change; route material goal, scope, sequence, ownership, or task-map changes to `$start-work`.
 - Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; do not mutate their scope silently or treat age alone as a scope change.
 - Rotate and archive the Alignment Window after a milestone or when it is no longer quickly scannable.
-- Update the Framework Orchestrator state, relevant Idea Memory and Intent Trail entries, and next-best-action. Keep task-local pivots in their task; promote only wider intent.
+- Update the Framework Orchestrator state, relevant Idea Memory and Intent Trail decision families, safe operational pointers, and next-best-action. Keep task-local pivots in their task; return reusable changes as Memory Delta and rebuild affected current views atomically without secret values.
 
 ## Finish
 

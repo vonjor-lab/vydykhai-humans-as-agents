@@ -9,8 +9,9 @@ Title:
 Task / outcome owner / backup / recipient:
 Orchestrator / Project State:
 Latest relevant delta:
-Applicable Intent Trail / task-local approach lineage:
-Continue from / applicable invariants: <accepted mechanism/reference and 1-3 rules>
+Touch Set: <outcomes | entities | actors/surfaces | contracts/authorities | data/operational realms>
+Memory Brief: <1-3 current decisions/invariants | rejected-path lessons | relevant ideas without scope growth | safe operational sources | conflicts/gaps or none>
+Continue from / applicable invariants: <accepted mechanism/reference plus Memory Brief>
 Agent profile: <resolved model / reasoning mapping / checked date / fallback>
 Consult when / Return to: <semantic boundary signals / orchestrator context or stable shared-tracker event>
 Return triggers: <human checkpoint | real blocker | terminal result>
@@ -54,6 +55,7 @@ Expected touched surface / first human-verifiable evidence: <only when expansion
 ## Verification And Completion
 
 - <tests/checks>
+- for auth/data/storage/migration/deploy work: verify exact environment, least-privilege access, safe runbook, backup/recovery route, and a non-destructive preflight; never copy secret values into evidence
 - exact-current-code runtime smoke when user-facing or integration-affecting
 - for zero-spend/no-mutation work: capability guard plus before/after counters
 - run `$accept-work` in this task context before completion
@@ -71,6 +73,7 @@ PR / commit / artifact:
 Accepted Baseline / Candidate result:
 Learning Delta: <Keep | Rebuild | Drop | Unknown, when a candidate is rejected>
 Intent / Approach Delta: <none | INTENT / WORKING_RULE / APPROACH_PIVOT; Before / Now / Why / Keep / Drop / applies to / source>
+Memory Delta: <none | task-local only | reusable: confirmed / refined / superseded / new decision family; referenced Learning / Intent / Operational evidence; touch keys; safe source link>
 Boundary consultation result: <none | resolved existing route; evidence/link>
 DOD and parent result:
 Human checkpoint result:
