@@ -20,8 +20,9 @@ created_at: <ISO timestamp>
 Active task / PR:
 Meeting or event decisions affecting my work:
 Intent / Approach Delta: <none | type/status; Before / Now / Why / Keep / Drop / applies to / source>
+Memory Delta: <none | task-local only | reusable: confirmed / refined / superseded / new decision family; evidence/touch keys/safe source>
 Material local delta:
-Shared surfaces or contracts touched:
+Touch Set / shared surfaces or contracts:
 Conflicts, overlaps, or needs:
 Human checkpoint:
 Safe continuation: <continue | cautions | wait | blocked, with boundary>

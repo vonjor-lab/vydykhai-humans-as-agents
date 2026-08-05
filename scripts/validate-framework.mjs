@@ -107,8 +107,19 @@ if (!coreEn.includes("Expansion Check") || !coreRu.includes("Проверка р
 if (!coreEn.includes("CONSULT") || !coreRu.includes("CONSULT")) {
   fail("Core is missing boundary consultation");
 }
+if (
+  !coreEn.includes("Touch Set") ||
+  !coreRu.includes("Touch Set") ||
+  !coreEn.includes("Memory Brief") ||
+  !coreRu.includes("Memory Brief") ||
+  !coreEn.includes("MEMORY_COVERAGE_GAP") ||
+  !coreRu.includes("MEMORY_COVERAGE_GAP")
+) {
+  fail("Core is missing active decision-memory retrieval");
+}
 if (!projectStateTemplate.includes("Idea Memory:")) fail("Project State is missing the Idea Memory pointer");
 if (!projectStateTemplate.includes("Intent Trail:")) fail("Project State is missing the Intent Trail pointer");
+if (!projectStateTemplate.includes("Operational sources:")) fail("Project State is missing safe operational-source pointers");
 if (!projectStateTemplate.includes("Shared Sync:")) fail("Project State is missing Shared Sync readiness");
 if (!projectStateTemplate.includes("Baseline -> Candidate")) fail("Project State is missing the Success Line pointer");
 if (!projectStateTemplate.includes("Task return mapping:")) fail("Project State is missing the task return mapping");
@@ -122,21 +133,40 @@ if (!projectStateTemplate.includes("Latest seen:") || !projectStateTemplate.incl
   fail("Project State is missing framework update discovery state");
 }
 if (!ideaMemoryTemplate.includes("Idea Memory is not a backlog")) fail("Idea Memory template is missing its scope guard");
-if (!intentTrailTemplate.includes("APPROACH_PIVOT")) fail("Intent Trail is missing approach-pivot lineage");
+if (!ideaMemoryTemplate.includes("Rebuild the current body atomically")) fail("Idea Memory may leave a stale current body");
+if (
+  !intentTrailTemplate.includes("current decision map") ||
+  !intentTrailTemplate.includes("Touch keys") ||
+  !intentTrailTemplate.includes("Memory Delta") ||
+  !intentTrailTemplate.includes("Never store credentials")
+) {
+  fail("Intent Trail is missing decision-map, retrieval, delta, or secret-safety rules");
+}
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
 if (
   !taskHandoffTemplate.includes("Continue from / applicable invariants:") ||
+  !taskHandoffTemplate.includes("Touch Set:") ||
+  !taskHandoffTemplate.includes("Memory Brief:") ||
   !taskHandoffTemplate.includes("Consult when / Return to:") ||
   !taskHandoffTemplate.includes("Learning Delta:") ||
   !taskHandoffTemplate.includes("Intent / Approach Delta:") ||
+  !taskHandoffTemplate.includes("Memory Delta:") ||
   !taskHandoffTemplate.includes("Boundary consultation result:") ||
   !taskHandoffTemplate.includes("Progress continuity:") ||
   !taskHandoffTemplate.includes("Recipient proof:")
 ) {
-  fail("Task handoff is missing continuation, consultation, learning, intent, progress, or receipt fields");
+  fail("Task handoff is missing continuation, memory, consultation, learning, intent, progress, or receipt fields");
 }
 if (!orchestratorWorkflow.includes("Boundary consultation (`CONSULT`)")) {
   fail("Orchestrator workflow is missing boundary consultation");
+}
+if (
+  !orchestratorWorkflow.includes("derive a Touch Set") ||
+  !orchestratorWorkflow.includes("Memory Brief") ||
+  !orchestratorWorkflow.includes("representative current/upcoming Touch Sets") ||
+  !orchestratorWorkflow.includes("non-destructive access check")
+) {
+  fail("Orchestrator workflow is missing memory retrieval or rotation proof");
 }
 if (!orchestratorWorkflow.includes("first active use") || !orchestratorWorkflow.includes("installed < release <= latest")) {
   fail("Orchestrator workflow is missing active framework update discovery");
@@ -157,6 +187,13 @@ if (!acceptWorkflow.includes("recipient-side exact-artifact/revision proof")) {
 }
 if (!acceptWorkflow.includes("zero-spend or no-mutation contract")) {
   fail("Acceptance is missing runtime capability protection");
+}
+if (
+  !acceptWorkflow.includes("Memory Delta") ||
+  !acceptWorkflow.includes("least-privilege access") ||
+  !acceptWorkflow.includes("never a credential")
+) {
+  fail("Acceptance is missing memory return or safe operational verification");
 }
 if (!changelog.includes(`## ${manifest.version} -`)) fail("Changelog is missing current version");
 if (changelog.match(/^## (\d+\.\d+\.\d+) -/m)?.[1] !== manifest.version) {

@@ -12,7 +12,7 @@ Use source precedence:
 4. agent plan or handoff;
 5. inference.
 
-Identify the `Accepted Baseline`, current `Candidate`, applicable Intent Trail, material task-local pivots, and any `Rejected Candidate` used as evidence. Summarize:
+Identify the `Accepted Baseline`, current `Candidate`, task Touch Set and Memory Brief, material task-local pivots, and any `Rejected Candidate` used as evidence. Summarize:
 
 - goal and DOD impact;
 - scope/out of scope;
@@ -23,6 +23,7 @@ Identify the `Accepted Baseline`, current `Candidate`, applicable Intent Trail, 
 - human checkpoint;
 - Lab/Peer Review contract when used;
 - current approach and why material pivots replaced earlier paths;
+- memory decisions and rejected-path lessons applied, missed, or contradicted;
 - outcome owner, recipient/dependency boundary, and any required recipient proof;
 - material burn limit;
 - verification route.
@@ -45,6 +46,8 @@ Start or restart runtime from the exact code being accepted. Old servers, old ta
 
 For a zero-spend or no-mutation contract, disable the dangerous capability when practical and record relevant counters before and after. Any accidental call, spend, or mutation remains evidence, changes the classification, and cannot later be described as zero.
 
+For authentication, data, storage, migration, deployment, or recovery work, verify the exact environment, least-privilege access, current safe runbook, backup/restore route, and a non-destructive preflight before mutation. Evidence may name a secret-manager reference and last safe check, never a credential, token, private payload, or recovery value. Missing operational memory or access is `BLOCKED`.
+
 ## 4. Compare
 
 Check:
@@ -59,6 +62,7 @@ Check:
 - Candidate ancestry and experiment decision; a Rejected Candidate is evidence, not the implicit correction base;
 - continuation basis and material delta classification: `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; unexplained unexpected change is not acceptable;
 - applicable intent/working rules and unresolved Intent/Approach Delta;
+- Touch Set coverage, Memory Brief use, and any new or corrected reusable lesson;
 - boundary consultations and whether an undeclared entity, shared mechanism, authority conflict, or ownership overlap was resolved before expansion;
 - required Peer Compass Review and alignment;
 - material burn and stop limits;
@@ -86,10 +90,10 @@ Keep fixes, smoke, and manual merge in the task context. After human confirmatio
 - for an enabler, report `Unlocks`, `Still missing`, and the next product slice/owner; do not close the parent from technical completion alone.
 - classify each follow-up as a required DOD gap or optional Idea Candidate; optional ideas do not keep the accepted task or parent open by themselves.
 - report Idea Memory entries absorbed by this work and confirmed candidates that the orchestrator should deduplicate and upsert.
-- report Intent Trail entries applied, superseded, or proposed, and compact accepted lineage to current rule/reasons/source links.
+- report Intent Trail decision families applied, confirmed, refined, superseded, or proposed; keep local-only lineage in the task.
 - report boundary consultations and any deliberately changed or unexpected surfaces.
-- publish terminal Return Sync with `Intent/Approach Delta: none` or compact Before/Now/Why/Keep/Drop/scope/source lineage without waiting for a human prompt.
+- publish terminal Return Sync with `Intent/Approach Delta` plus Memory Delta routing: `none`, `task-local only`, or a compact reusable candidate referencing the Learning/Intent/Operational evidence, touch keys, and safe source. The orchestrator deduplicates reusable deltas and atomically rebuilds the current decision map; it does not promote every task note.
 
-For a rejected Candidate or human «do it differently», record Learning Delta plus `APPROACH_PIVOT`. Any successor starts from the Accepted Baseline, preserves proven parts, and rebuilds failed parts using those lessons.
+For a rejected Candidate or human «do it differently», record Learning Delta plus `APPROACH_PIVOT`. Any successor starts from the Accepted Baseline plus applicable Memory Brief, preserves proven parts, and rebuilds failed parts using those lessons.
 
 Do not close a parent from an accepted sub-slice unless its product loop and DOD are closed or explicitly moved out of scope.

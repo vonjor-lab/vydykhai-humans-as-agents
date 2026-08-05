@@ -68,7 +68,7 @@ When shared guidance changes:
 4. Update Project State: latest delta, participant rows, task/sequence impact, and next action.
 5. Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; age alone is only a re-read signal.
 
-Preserve an optional extension as an Idea Candidate. Separately keep task-local pivots in their task and promote confirmed cross-task intent/rules to Intent Trail. Inferred wider applicability is `PROVISIONAL` and echoed once; do not copy full messages when a durable source link is available.
+Preserve an optional extension as an Idea Candidate. Separately keep task-local pivots in their task and return reusable decision or safe operational changes as Memory Delta candidates. The orchestrator merges confirmed cross-task intent/rules into the current Intent Trail decision family, rebuilds its body atomically, and never copies secret values. Inferred wider applicability is `PROVISIONAL` and echoed once; do not copy full messages when a durable source link is available.
 
 Do not leave a new delta behind an old dashboard.
 

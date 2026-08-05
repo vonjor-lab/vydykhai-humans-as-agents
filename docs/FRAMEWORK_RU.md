@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.13.0 | Статус: каноническое операционное ядро
+Версия: 1.14.0 | Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк совместной работы людей и AI-агентов. Он вырос из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action.
 
@@ -140,16 +140,16 @@ Maintenance называет источник friction, сохраняет Accep
 
 ### Фокус на DOD, память идей и путь замысла
 
-Новые идеи не должны откладывать ближайший DOD, полезные идеи не должны теряться, а значимый человеческий замысел должен переживать смену задач и оркестраторов. Idea Memory хранит будущие возможности; Intent Trail хранит действующий замысел, working rules и причины существенных решений.
+Новые идеи не должны откладывать ближайший DOD, полезные идеи не должны теряться, а значимый человеческий замысел и операционные знания должны переживать смену задач и оркестраторов. Idea Memory хранит будущие возможности; Intent Trail является текущей картой решений для действующего замысла, working rules и переиспользуемых уроков. Чувствительные значения остаются в защищенных системах; карта хранит только безопасные операционные ссылки.
 
 - Отсутствующее требование является DOD gap, а обязательная граница безопасности, качества или продукта - guardrail. Оба остаются в задаче или re-brief.
 - Осознанное изменение обещанного результата требует видимого решения человека и обновления DOD, burn и sequence.
 - Полезное расширение, которое не нужно для текущего DOD, не добавляется в задачу. После подтверждения человека оркестратор обновляет общую Idea Memory: ценность идеи, затрагиваемые поверхности, источник и trigger, при котором ее нужно вспомнить.
-- `INTENT`, `WORKING_RULE` или `APPROACH_PIVOT` записывается, когда человек существенно меняет цель, планку качества, метод, слой, baseline, sequence, границу или способ проверки, даже если DOD не изменился и поворот относится только к одной задаче. Записываются `Было`, `Стало`, `Почему`, `Сохраняем`, `Отбрасываем`, scope и source.
+- `INTENT`, `WORKING_RULE` или `APPROACH_PIVOT` записывается, когда человек существенно меняет цель, планку качества, метод, слой, baseline, sequence, границу или способ проверки, даже если DOD не изменился и поворот относится только к одной задаче. Записываются `Было`, `Стало`, `Почему`, `Сохраняем`, `Отбрасываем`, touch keys, связи и source.
 
-Длина сообщения не является trigger. Явные «запомни», «важно», «всегда», «никогда», «давай по-другому» и принятые pivots создают confirmed delta; предполагаемый более широкий смысл получает статус `PROVISIONAL` и один раз показывается человеку для поправки. Task-local lineage остается в задаче и возвращается как Intent Delta; в общий trail поднимается только более широкий intent. Полные сообщения не копируются без запроса или ненадежного source, вместо этого сохраняется ссылка.
+Длина сообщения не является trigger. Явные «запомни», «важно», «всегда», «никогда», «давай по-другому» и принятые pivots создают confirmed delta; предполагаемый более широкий смысл получает статус `PROVISIONAL` и один раз показывается человеку для поправки. Каждая задача маршрутизирует Memory Delta как `none`, `task-local only` или reusable candidate; оркестратор объединяет только переиспользуемую delta с существующим семейством решений вместо нового дубля. Полные сообщения не копируются, вместо этого сохраняется ссылка.
 
-При каждом brief, re-brief, resume, решении о sequence, acceptance, milestone и rotation работа сопоставляется с Idea Memory и Intent Trail. Идеи не меняют scope молча; текущий подход и значимые pivots восстанавливаются без поиска по архивам. После acceptance lineage сжимается до действующего правила, причин и source links; superseded evidence не стирается.
+При каждом brief, re-brief, resume, consultation, решении о sequence, acceptance, milestone и rotation из outcomes, entities, actors/surfaces, contracts/authorities и data/operational realms формируется Touch Set. Он сопоставляется с текущей картой решений, Idea Memory, accepted/rejected task lineage и безопасными операционными sources. Задача получает короткий Memory Brief: применимые правила, уроки rejected paths, уместные идеи без расширения scope, безопасные ссылки и conflicts либо `MEMORY_COVERAGE_GAP`. Текущие memory bodies перестраиваются атомарно; superseded evidence сохраняется по ссылкам.
 
 ### 2. Выбор режима
 
@@ -168,9 +168,9 @@ Research уменьшает неопределенность. Lab уменьша
 - `Accepted Baseline` - последнее доказанное рабочее состояние.
 - `Candidate` - текущая предлагаемая дельта.
 - `Rejected Candidate` - источник evidence, но не неявная база для следующего исправления.
-- Следующий Candidate строится от Accepted Baseline: сохраняет доказанно работающие изменения и заново делает неудачные части с учетом полученных уроков.
+- Следующий Candidate строится от Accepted Baseline и применимого Memory Brief: сохраняет доказанно работающие изменения и заново делает неудачные части с учетом полученных уроков.
 
-Записывать короткий Learning Delta: `Keep`, `Rebuild`, `Drop` и `Unknown`. Повторное исправление одного класса ошибки сначала запускает проверку baseline, scope и подхода, а не еще одну слепую попытку.
+Записывать короткий Learning Delta: `Keep`, `Rebuild`, `Drop` и `Unknown`, затем возвращать переиспользуемый урок как Memory Delta. Повторное исправление одного класса ошибки сначала запускает проверку baseline, scope, прошлой памяти и подхода, а не еще одну слепую попытку.
 
 ### 3. Dispatch
 
@@ -178,8 +178,8 @@ Research уменьшает неопределенность. Lab уменьша
 
 - Goal и DOD impact;
 - Scope, out of scope, владелец результата и граница зависимости/получателя;
-- Scope freshness и Accepted Baseline;
-- Continue from: принятый механизм и от одного до трех применимых invariants;
+- Scope freshness, Accepted Baseline и Touch Set;
+- Memory Brief и продолжение принятого механизма с одним-тремя применимыми invariants;
 - Product loop либо связанный enabling contract; enabler называет `Разблокировано`, `Еще не сделано` и следующий продуктовый slice;
 - Human checkpoint;
 - Burn / stop и expansion appetite, когда они существенны;
@@ -194,7 +194,7 @@ Task context начинает implementation, а не повторяет уже 
 
 При встрече с незаявленной сущностью, общим механизмом или contract, конфликтом authority, пересечением ownership в коде или результате либо возможным изменением системы task останавливает только затронутую границу и отправляет `CONSULT`: `Boundary`, `Evidence`, `Proposed move` и `Safe continuation`. Вспомогательная, демонстрационная, review или transport-задача не получает DOD и burn продуктовой задачи только потому, что их файлы изолированы. Оркестратор подтягивает нужную durable truth и использует существующие маршруты: `CONTINUE`, `PATCH_REQUIRED` или `REBRIEF_REQUIRED`; пересечение owners запускает Peer Compass Review, а только реальный выбор человека получает `NEEDS_DECISION`.
 
-При checkpoint, blocker или terminal result task context без отдельного запроса человека публикует короткий Return Sync. Если доступен native обмен между contexts, результат отправляется напрямую; иначе он записывается в shared tracker и поднимает доступный event или hook. Передача между людьми завершена только после подтверждения доступа к точному shared artifact или revision и согласованной проверки получения; для запускаемого результата она включает показательный сценарий в среде получателя. Monitor используется только как fallback, когда оба пути недоступны.
+При checkpoint, blocker или terminal result task context без отдельного запроса человека публикует короткий Return Sync с маршрутом Memory Delta: `none`, `task-local only` или reusable candidate. Если доступен native обмен между contexts, результат отправляется напрямую; иначе он записывается в shared tracker и поднимает доступный event или hook. Передача между людьми завершена только после подтверждения доступа к точному shared artifact или revision и согласованной проверки получения; для запускаемого результата она включает показательный сценарий в среде получателя. Monitor используется только как fallback, когда оба пути недоступны.
 
 ### 5. Alignment
 
@@ -210,13 +210,13 @@ Task context начинает implementation, а не повторяет уже 
 
 Проверяются риски, которые изменил Candidate. Для runtime, integration или state changes smoke проводится на точных branch, worktree, commit, frontend, backend и browser target, которые принимаются; старый сервер или другая ветка не подходят. Не нужно проходить платный подготовительный путь, если тот же риск доказывается контролируемой точкой входа, а сам путь не менялся. Для zero-spend или no-mutation работы опасная возможность по возможности отключается технически, а counters проверяются до и после; нарушение остается раскрытым и не может называться нулевым. Backend state, UI shell, lab proof или enabler без названного продуктового продолжения сами по себе не закрывают capability.
 
-После приемки и обязательного human checkpoint Candidate становится новым Accepted Baseline. Rejected Candidate остается только evidence. Человек делает manual merge через task context, который публикует terminal Return Sync; затем оркестратор обновляет DOD burn, alignment, parent closure и next-best-action.
+После приемки и обязательного human checkpoint Candidate становится новым Accepted Baseline. Rejected Candidate остается только evidence. Человек делает manual merge через task context, который публикует terminal Return Sync; затем оркестратор объединяет переиспользуемую Memory Delta с текущим семейством решений, перестраивает затронутую память и обновляет DOD burn, alignment, parent closure и next-best-action.
 
 ### 7. Health Review
 
 Короткий Health Review проводится после milestone, нескольких принятых слайсов, повторяющихся follow-ups, неожиданного разрастания, остановки DOD burn, выпадения owner, повторных context compaction или когда работа начинает зависеть от археологии по чатам.
 
-Проверяются продвижение к compass и DOD; blockers, повторные затраты и technical slicing без продуктового прогресса; неожиданное разрастание или повторяющийся architecture/data/tooling tax; stale scope, конкурирующие Candidates и исправления на rejected work; research или lab outputs вне real path; stale operational artifacts и решения вне durable state; гигиена Idea Memory; необходимость сменить active orchestrator.
+Проверяются продвижение к compass и DOD; blockers, повторные затраты и technical slicing без продуктового прогресса; неожиданное разрастание или повторяющийся architecture/data/tooling tax; stale scope, конкурирующие Candidates и исправления на rejected work; research или lab outputs вне real path; stale operational artifacts или потерянные решения; свежесть memory bodies и показательное извлечение; необходимость сменить active orchestrator.
 
 ## Люди как агенты
 
@@ -232,13 +232,13 @@ Task context начинает implementation, а не повторяет уже 
 
 - Project State: обязательные compass, DOD, registry участников, active orchestrator contexts, текущие задачи и последнее состояние alignment.
 - Alignment Window: используется, когда нужно согласовать packets встречи, milestone или локальной работы.
-- Idea Memory и Intent Trail: каждый создается только тогда, когда будущая идея либо значимый intent/pivot должны пережить текущий context; это может быть section в Project State или связанное компактное представление.
+- Idea Memory и Intent Trail decision map: каждый создается только тогда, когда будущая идея либо значимый intent/pivot должны пережить текущий context; это может быть section в Project State или связанное компактное представление. Безопасные операционные sources добавляются ссылками без значений секретов.
 
 Registry участников содержит: participant, orchestrator context link, установленную версию фреймворка, resolved agent profile и дату проверки, latest packet, active task и status.
 
 Перед стартом или продолжением работы на общей поверхности orchestrator каждого участника проверяет свою строку и публикует новый packet, если локальное состояние или результаты встречи существенно изменились. Нельзя придумывать незакоммиченное состояние другого участника.
 
-При публикации Team Alignment Delta или изменении Project State текущее body перестраивается в той же операции. В нем остаются ровно один текущий DOD, active-work view, framework/agent policy и next-best-action; история связывается ссылками, а не сохраняется конфликтующими текущими секциями. Alignment Window ротируется, когда перестает быстро читаться.
+При публикации Team Alignment Delta либо изменении Project State, Idea Memory или Intent Trail затронутый current body перестраивается в той же операции. Сохраняется один current view; история остается по ссылкам, а не в stale или конфликтующих sections. Alignment Window ротируется, когда перестает быстро читаться.
 
 ## Встречи
 
@@ -264,9 +264,9 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 Для одного участника и stream авторитетен один активный orchestrator. Ротация является двухфазным handoff с явной пересменкой, а не автоматической заменой:
 
 1. До начала оркестратор объясняет человеку, почему нужна ротация, что перейдет в новый context, что не изменится, как будет проверена память и что одно явное подтверждение активирует замену.
-2. Предыдущий orchestrator context остается активным, целым и доступным по ссылке. Он публикует Rotation Memory Packet: compass/DOD, решения, Intent Trail и существенные task-local pivots, queued/promised/deferred work, просьбы запомнить, working rules, monitors/follow-ups, checkpoints, participants, ambiguous и stale items.
-3. Packet сверяется с Project State, issues/PR, project instructions/docs, текущим repo state и доступной историей context. Каждый item получает статус already durable, missing durable state, ambiguous или stale/superseded.
-4. Candidate orchestrator создается из актуальных repo/framework в read-only режиме. Он независимо проверяет durable state, high-signal human sources и task Return Syncs, восстанавливает текущие подходы и причины замены существенных pivots и показывает omissions, conflicts и proposed destinations. Согласованность Packet с dashboard сама по себе не является memory coverage.
+2. Предыдущий orchestrator context остается активным, целым и доступным по ссылке. Он публикует Rotation Memory Packet: compass/DOD, семейства решений и существенные task-local pivots, queued/promised/deferred work, просьбы запомнить, безопасные операционные pointers, monitors/follow-ups, checkpoints, participants, ambiguous и stale items.
+3. Stale memory bodies перестраиваются из evidence, связанные решения группируются, а packet сверяется с Project State, issues/PR, project instructions/docs, repo state и доступной историей context. Каждый item получает статус already durable, missing durable state, ambiguous или stale/superseded.
+4. Candidate orchestrator создается из актуальных repo/framework в read-only режиме. Он независимо проверяет durable state, high-signal human sources и task Return Syncs, затем тестирует Memory Intersection на показательных текущих или следующих Touch Sets. Он должен найти применимые решения, rejected paths, идеи и безопасные операционные sources; согласованность Packet с dashboard сама по себе не является memory coverage.
 5. Актуальные missing items попадают в правильный durable source только после того, как человек увидел coverage delta; нельзя массово создавать задачи или молча возвращать старые идеи.
 6. Человек явно подтверждает active switch. До подтверждения candidate не dispatch новые задачи, а active pointer не меняется.
 7. После подтверждения candidate регистрируется active, return routes и monitors переводятся со старого context, новый context поднимается на виду, закрепляется при поддержке среды и публикует ясное сообщение об активации со ссылкой и next-best-action.
@@ -285,11 +285,11 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - Нельзя заявлять team alignment, пока доступ к shared repo/tracker или важному input имеет статус `SYNC_LIMITED`.
 - Перед dispatch или resume проверяется актуальность scope; существенный устаревший scope не продолжается без подтвержденного patch или re-brief.
 - Неожиданное разрастание задачи является diagnostic trigger; повторяющийся architecture tax нельзя считать нормой, а containment - устранением причины.
-- Ближайший DOD защищается от optional scope growth, будущие идеи сохраняются в Idea Memory, а действующий человеческий замысел и значимые pivots - в Intent Trail, а не только в памяти человека или истории чата.
-- Сохраняется одна линия успеха: новые Candidates строятся от Accepted Baseline и учитывают уроки Rejected Candidates.
+- Ближайший DOD защищается от optional scope growth, будущие идеи сохраняются в Idea Memory, а переиспользуемые человеческий замысел, pivots и безопасные операционные знания - в текущей карте решений, а не только в памяти человека или истории чата.
+- Сохраняется одна линия успеха: новые Candidates строятся от Accepted Baseline и применимого Memory Brief с учетом уроков Rejected Candidates.
 - Принятый sub-slice не закрывает parent, пока обещанные product loop и DOD не закрыты или явно не вынесены out of scope.
 - Lab Mode не принимается как продуктовый результат без production transfer и real-flow verification.
-- Secrets, transcripts, private product data, proprietary prompts и customer information не попадают в public framework artifacts.
+- Значения secrets, transcripts, private product data, proprietary prompts и customer information не попадают в public framework artifacts или общую память. Хранятся только least-privilege pointers на защищенные secret systems и private operational runbooks.
 - В установленных или распространяемых копиях фреймворка сохраняются license, creator metadata и required notice; они не распространяют права на project-specific работу.
 - Используется `latest available flagship / deepest bounded reasoning`; resolved profile и дата проверки хранятся в Project State, fallback показывается явно. Universal rules не содержат hardcoded model version или vendor-specific reasoning label.
 - Append-only evidence сохраняется, но текущие dashboards атомарно перестраиваются и не содержат дублирующих или противоречащих текущих секций.

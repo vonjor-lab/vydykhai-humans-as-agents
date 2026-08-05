@@ -12,6 +12,7 @@ Snapshot as of: <date / latest durable event>
 Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current | check pending | now | after task/checkpoint | PR/link | blocked>
 Shared Sync: Repo: <url> | Tracker: <url> | Readiness: <READY | SYNC_LIMITED, with gaps>
 Coordination inputs: <meeting recorder/transcript/chat/docs/manual route> | Access checked: <date/result>
+Operational sources: <private runbooks / environment and secret-manager references / backup-restore docs or none> | Access checked: <date/result; never secret values>
 Agent policy: latest available flagship / deepest bounded reasoning
 Resolved agent: <model id / reasoning mapping> | Checked: <date/source> | Fallback: <none, pending, or reason>
 Environment adapter: <native | adapter path> | Context mapping: <thread/chat/session/run/workspace/tracker handle>
@@ -26,7 +27,7 @@ Current DOD: <milestone and rows>
 Active Alignment Window: <link or none>
 Latest Team Alignment Delta: <id/link or none>
 Idea Memory: <link, section, or none> | Last intersection: <brief/checkpoint/date or none>
-Intent Trail: <link, section, or none> | Last reconciliation: <task/brief/checkpoint/date or none>
+Intent Trail: <link, section, or none> | Current view: decision map | Last reconciliation/retrieval test: <task/brief/checkpoint/date or none>
 Scope freshness policy: <days; default 7> | Last project-level check: <date/event>
 Updated from durable event: <event/link/date>
 

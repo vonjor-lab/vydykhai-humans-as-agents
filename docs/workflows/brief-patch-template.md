@@ -19,6 +19,7 @@ Status: <proposed | approved | applied>
 - <meeting decision, new evidence, conflict resolution, or clarification>
 
 Intent / Approach Delta: <none | Before / Now / Why / Keep / Drop / applies to / source>
+Memory Brief change: <none | added / refined / conflicted / coverage gap; source>
 
 ### Impact
 

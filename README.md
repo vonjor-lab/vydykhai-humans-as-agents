@@ -6,7 +6,7 @@ Vydykhai is a framework for collaborative work between people and AI agents. It 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.13.0`
+Current version: `1.14.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -44,8 +44,8 @@ Historical snapshots remain available through Git releases and tags. Current ski
 - The orchestrator turns approved direction into focused tasks while keeping implementation out of the coordination context.
 - A task continues the accepted product mechanism. It consults the orchestrator only at an undeclared boundary; Research or Lab is used only when uncertainty, cost, or risk justifies it.
 - Meetings and asynchronous local work converge through shared Git-backed state. An absent participant blocks only overlapping work.
-- Each result is verified and accepted against the current artifact or exact code, then returned to the orchestrator.
-- The orchestrator updates DOD progress and next-best-action, preserves useful future ideas and meaningful human intent, and runs health review or rotation only when needed.
+- Before work starts, the orchestrator matches its Touch Set with prior decisions, rejected paths, ideas, and safe operational sources, then gives the task only the relevant Memory Brief.
+- Each result is verified against the current artifact or exact code and returns a compact Memory Delta; the orchestrator merges only reusable lessons, updates DOD progress and next-best-action, and runs deeper memory synthesis only when needed.
 
 People normally speak only to their orchestrator in natural language. Vydykhai uses native context creation, messaging, and UI controls when the harness supports them; otherwise it uses the shared tracker and gives one exact human action. It never treats a missing harness capability as completed automation.
 
@@ -117,7 +117,7 @@ Files such as `agents/openai.yaml` are optional interface adapters. They do not 
 
 ## Privacy And Ownership
 
-The public repository contains only reusable framework mechanics. Do not add meeting transcripts, credentials, customer data, proprietary prompts, private product details, or internal thread links.
+The public repository contains only reusable framework mechanics. Do not add meeting transcripts, credential or secret values, customer data, proprietary prompts, private product details, or internal context links. Project memory may retain only safe references to protected secret systems and private operational runbooks.
 
 Vydykhai is source-available under the [PolyForm Small Business License 1.0.0](LICENSE.md). Qualifying small businesses may use, change, and redistribute covered framework material under its terms, including the required attribution. For uses not covered by that grant, request a [separate written commercial license](COMMERCIAL-LICENSING.md).
 

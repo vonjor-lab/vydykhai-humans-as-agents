@@ -23,6 +23,7 @@ Capture only:
 - non-goals and constraints;
 - shared Git-backed repo, durable tracker, source of truth, and privacy boundary;
 - coordination inputs and access route: meetings, recordings, transcripts, chat, docs, or manual notes;
+- safe operational sources: environments/services, owner, secret-manager references, runbooks, backup/restore routes, and last access check, never secret values;
 - Shared Sync readiness and missing human/agent access;
 - participants, decision owner, owner/backup convention, and availability;
 - agent profile policy, resolved model, check date/source, and visible fallback rule;
@@ -39,7 +40,7 @@ Use Fathom as the recommended meeting recorder when available. Read AI, tl;dv, a
 
 Create or update one compact Project State using `project-state-template.md`.
 
-Keep Idea Memory and Intent Trail pointers in Project State. Create each compact shared view only when its first confirmed future idea or meaningful cross-context intent/pivot must be preserved; either may be a Project State section or one linked current-state artifact.
+Keep Idea Memory and the Intent Trail decision-map pointer in Project State. Create each compact shared view only when its first confirmed future idea or meaningful cross-context intent/pivot must be preserved; either may be a Project State section or one linked current-state artifact. Link operational knowledge to private durable runbooks or secret-management systems instead of copying sensitive values into the tracker.
 
 Register each participant with:
 
@@ -68,6 +69,7 @@ Explain:
 - confirm that both the person and their orchestrator can reach the shared repo/tracker and relevant meeting inputs; otherwise expect `SYNC_LIMITED` rather than full alignment;
 - let task contexts return checkpoints, blockers, and terminal results automatically; people should not poll them;
 - say useful ideas and corrections freely: the orchestrator protects the nearest DOD, stores future ideas, preserves meaningful intent and «do it differently» pivots, and recalls them at relevant planning;
+- expect every task to start with relevant prior decisions and finish with a compact memory delta; people do not tag or curate this manually;
 - expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.
 - expect an orchestrator rotation to be announced before it starts and made visually obvious after confirmation; new coordination moves to the pinned replacement while the old context stays only as unpinned history.
 
