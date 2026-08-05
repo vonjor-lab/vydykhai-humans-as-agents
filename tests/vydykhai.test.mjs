@@ -119,6 +119,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(taskHandoff, /Boundary consultation result:/);
   assert.match(taskHandoff, /Progress continuity:/);
   assert.match(taskHandoff, /Recipient proof:/);
+  assert.match(taskHandoff, /schema\/migration revision/);
   const orchestratorWorkflow = await readFile(path.join(root, "docs/workflows/framework-orchestrator.md"), "utf8");
   assert.match(orchestratorWorkflow, /THIS ORCHESTRATOR IS RETIRED - DO NOT CONTINUE HERE/);
   assert.match(orchestratorWorkflow, /ROTATION_CUTOVER_INCOMPLETE/);
@@ -134,6 +135,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   const acceptWork = await readFile(path.join(root, "docs/workflows/accept-work.md"), "utf8");
   assert.match(acceptWork, /Unexpectedly changed/);
   assert.match(acceptWork, /recipient-side exact-artifact\/revision proof/);
+  assert.match(acceptWork, /reproducible safe data source/);
   assert.match(acceptWork, /zero-spend or no-mutation contract/);
   assert.match(acceptWork, /Memory Delta/);
   assert.match(acceptWork, /least-privilege access/);

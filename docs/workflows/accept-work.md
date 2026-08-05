@@ -48,6 +48,8 @@ For a zero-spend or no-mutation contract, disable the dangerous capability when 
 
 For authentication, data, storage, migration, deployment, or recovery work, verify the exact environment, least-privilege access, current safe runbook, backup/restore route, and a non-destructive preflight before mutation. Evidence may name a secret-manager reference and last safe check, never a credential, token, private payload, or recovery value. Missing operational memory or access is `BLOCKED`.
 
+For runnable data-backed handoffs, verify the exact schema/migration revision, a reproducible safe data source such as a fixture, seed, snapshot, or shared test environment, and the recipient's access before interpreting the recipient-side scenario. Missing or inaccessible required data makes the evidence inconclusive and the handoff `BLOCKED`, not a product failure. Never move production data, private payloads, or secret values through framework memory.
+
 ## 4. Compare
 
 Check:
@@ -69,7 +71,7 @@ Check:
 - Expansion Check route and, for maintenance, proof that the representative original flow became materially smaller/faster and recurrence is covered; backup, cleanup, migration, or a cap alone is containment;
 - declared human checkpoint;
 - whether its observable questions match the judgment that person owns rather than delegating technical verification;
-- recipient-side exact-artifact/revision proof and agreed receipt check; for runnable work, a representative scenario in the recipient's environment;
+- recipient-side exact-artifact/revision proof and agreed receipt check; for runnable data-backed work, exact environment, schema/migration revision, reproducible safe data source, recipient access, and a representative scenario;
 - tests, exact-current-code smoke, docs, and durable handoff.
 
 ## 5. Classify

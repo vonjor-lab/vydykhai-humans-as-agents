@@ -56,6 +56,7 @@ Expected touched surface / first human-verifiable evidence: <only when expansion
 
 - <tests/checks>
 - for auth/data/storage/migration/deploy work: verify exact environment, least-privilege access, safe runbook, backup/recovery route, and a non-destructive preflight; never copy secret values into evidence
+- for runnable data-backed handoff: verify schema/migration revision, reproducible safe fixture/seed/snapshot/shared test environment, and recipient access; missing required data is `BLOCKED`, not product-failure evidence
 - exact-current-code runtime smoke when user-facing or integration-affecting
 - for zero-spend/no-mutation work: capability guard plus before/after counters
 - run `$accept-work` in this task context before completion
@@ -81,7 +82,7 @@ Burn result:
 Expansion result / route: <when triggered>
 Exact-current-code smoke / merge:
 Participant impact / alignment needed:
-Recipient proof: <not applicable | exact shared artifact or revision / agreed check / recipient environment and representative scenario when runnable>
+Recipient proof: <not applicable | exact shared artifact or revision / agreed check / recipient environment / schema-migration revision and reproducible safe data source when data-backed / recipient access / representative scenario>
 Risks / follow-ups:
 Recommended orchestrator next action:
 ```

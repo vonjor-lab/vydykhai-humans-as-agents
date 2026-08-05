@@ -21,6 +21,7 @@
 - Idea Memory и Intent Trail перестраивают current body атомарно при изменении. Комментарии остаются evidence, но не могут образовать более новую скрытую версию памяти рядом с устаревшим body.
 - Операционная память охватывает environments, services, owners, private runbooks, backup/restore и secret-manager references. Значения credentials, tokens, private payloads и recovery material в shared memory не попадают.
 - Для auth/data/storage/migration/deploy задач обязательны точное environment, least-privilege access, актуальный runbook, backup/recovery route и non-destructive preflight до mutation.
+- Передача запускаемого результата с данными требует совпадения exact revision, environment, schema/migrations и воспроизводимого безопасного data state с доступом получателя. Отсутствующие данные дают `BLOCKED`, а не ложный вывод о качестве продукта; production data и secret values в память не копируются.
 - Rotation не ограничивается переносом packet: она группирует decision families и проверяет Memory Intersection на показательных текущих или следующих задачах. Candidate должен найти решения, rejected paths, идеи и безопасные operational sources без подсказки человека.
 
 Переход: совместимый update in place. Существующие задачи и artifacts остаются действительными. Перед следующим dispatch оркестратор добавляет Touch Set и Memory Brief; при ближайшем Health Review или rotation один раз перестраивает stale Idea Memory/Intent Trail bodies из связанного evidence без удаления истории.
