@@ -185,6 +185,9 @@ if (!acceptWorkflow.includes("Unexpectedly changed")) fail("Acceptance is missin
 if (!acceptWorkflow.includes("recipient-side exact-artifact/revision proof")) {
   fail("Acceptance is missing recipient-side handoff proof");
 }
+if (!acceptWorkflow.includes("schema/migration revision") || !acceptWorkflow.includes("reproducible safe data source")) {
+  fail("Acceptance is missing reproducible recipient-side data proof");
+}
 if (!acceptWorkflow.includes("zero-spend or no-mutation contract")) {
   fail("Acceptance is missing runtime capability protection");
 }
