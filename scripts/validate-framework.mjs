@@ -284,13 +284,28 @@ for (const relative of runtimeFiles) {
   }
 }
 
-const privatePattern = /Breetho|Brizo|vdhi|Apatov|Апат|Гагарин|Ордж|Саша|Тер-Авакян|codex:\/\/threads|019e|019f/i;
+const agentContextUriPattern = /\b[a-z][a-z0-9+.-]*:\/\/(?:threads?|tasks?|sessions?|contexts?)\//i;
+const agentContextIdPattern = /\b01[0-9a-f]{6}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i;
+const localWorkspacePathPattern = /(?:^|[\s`("'=])(?:\/Users\/|\/home\/[^/\s]+\/|\/private\/(?:tmp|var\/folders)\/|\/var\/folders\/|[A-Za-z]:\\Users\\)/m;
+const issueCommentIdPattern = /\bissuecomment-\d{5,}\b/i;
+const canonicalRepoSlug = new URL(manifest.canonicalSource).pathname.replace(/^\/|\/$/g, "").toLowerCase();
 const hardcodedModelPattern = /gpt-\d+(?:\.\d+)+/i;
 const vendorLockedRuntimePattern = /\bCodex\b|docs\/codex-workflows|\.codex\//i;
 for (const relative of runtimeFiles) {
   if (!existsSync(path.join(root, relative))) continue;
   const value = await text(relative);
-  if (privatePattern.test(value)) fail(`Private/project marker found in ${relative}`);
+  if (agentContextUriPattern.test(value)) fail(`Agent-context URI found in public artifact ${relative}`);
+  if (agentContextIdPattern.test(value)) fail(`Agent-context identifier found in public artifact ${relative}`);
+  if (localWorkspacePathPattern.test(value)) fail(`Local workspace path found in public artifact ${relative}`);
+  if (issueCommentIdPattern.test(value)) fail(`Project issue-comment identifier found in public artifact ${relative}`);
+  for (const match of value.matchAll(/https?:\/\/(?:www\.)?github\.com\/([^/\s)>"'`]+)\/([^/\s)#>"'`]+)/gi)) {
+    const slug = `${match[1]}/${match[2].replace(/[.,;:]+$/, "").replace(/\.git$/i, "")}`.toLowerCase();
+    if (slug !== canonicalRepoSlug) fail(`Non-canonical GitHub repository link found in public artifact ${relative}`);
+  }
+  for (const match of value.matchAll(/https?:\/\/raw\.githubusercontent\.com\/([^/\s]+)\/([^/\s]+)\//gi)) {
+    const slug = `${match[1]}/${match[2].replace(/\.git$/i, "")}`.toLowerCase();
+    if (slug !== canonicalRepoSlug) fail(`Non-canonical raw GitHub repository link found in public artifact ${relative}`);
+  }
   if (hardcodedModelPattern.test(value)) fail(`Hardcoded model version found in ${relative}`);
   if (vendorLockedRuntimePattern.test(value)) fail(`Vendor-locked runtime wording found in ${relative}`);
   if (relative.startsWith("docs/workflows/") && lineCount(value) > 150) {
