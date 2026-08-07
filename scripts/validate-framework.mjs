@@ -34,6 +34,29 @@ if (manifest.defaultAgentProfile?.reasoningEffort !== "xhigh") {
   fail("Compatibility reasoningEffort must remain xhigh for older updaters");
 }
 if (manifest.defaultAgentProfile?.refreshDays !== 7) fail("Default agent profile refreshDays must be 7");
+if (manifest.agentRoutingPolicy?.policy !== "role-routed") fail("Agent routing policy must be role-routed");
+if (manifest.agentRoutingPolicy?.modelPolicy !== "latest-available-flagship") {
+  fail("Agent routing model policy must be latest-available-flagship");
+}
+if (manifest.agentRoutingPolicy?.profiles?.orchestrator?.reasoningPolicy !== "maximum-available") {
+  fail("Orchestrator reasoning policy must be maximum-available");
+}
+if (manifest.agentRoutingPolicy?.profiles?.orchestrator?.preferredEffortWhenAvailable !== "ultra") {
+  fail("Orchestrator preferred effort mapping must be ultra");
+}
+if (manifest.agentRoutingPolicy?.profiles?.discovery?.reasoningPolicy !== "deep-bounded") {
+  fail("Discovery reasoning policy must be deep-bounded");
+}
+if (manifest.agentRoutingPolicy?.profiles?.discovery?.preferredEffortWhenAvailable !== "xhigh") {
+  fail("Discovery preferred effort mapping must be xhigh");
+}
+if (manifest.agentRoutingPolicy?.profiles?.execution?.reasoningPolicy !== "efficient-bounded") {
+  fail("Execution reasoning policy must be efficient-bounded");
+}
+if (manifest.agentRoutingPolicy?.profiles?.execution?.preferredEffortWhenAvailable !== "low") {
+  fail("Execution preferred effort mapping must be low");
+}
+if (manifest.agentRoutingPolicy?.refreshDays !== 7) fail("Agent routing refreshDays must be 7");
 if (manifest.defaultScopeFreshnessDays !== 7) fail("Default scope freshness must be 7 days");
 if (!String(manifest.bootstrap || "").endsWith("/BOOTSTRAP.md")) fail("Manifest bootstrap URL is invalid");
 if (
@@ -115,6 +138,14 @@ if (!coreEn.includes("One Success Line") || !coreRu.includes("Одна лини�
 if (!coreEn.includes("Shared Sync Contract") || !coreRu.includes("Контракт общей синхронизации")) {
   fail("Core is missing Shared Sync Contract");
 }
+if (
+  !coreEn.includes("Role-Routed Agent Profiles") ||
+  !coreRu.includes("Профили по роли") ||
+  !coreEn.includes("Low-ready") ||
+  !coreRu.includes("Low-ready")
+) {
+  fail("Core is missing role-routed reasoning or the Low-ready gate");
+}
 if (!coreEn.includes("Expansion Check") || !coreRu.includes("Проверка разрастания")) {
   fail("Core is missing Expansion Check");
 }
@@ -159,6 +190,7 @@ if (
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
 if (
   !taskHandoffTemplate.includes("Role: EXECUTION") ||
+  !taskHandoffTemplate.includes("Agent profile: EXECUTION") ||
   !taskHandoffTemplate.includes("Continue from:") ||
   !taskHandoffTemplate.includes("Applicable Memory Brief:") ||
   !taskHandoffTemplate.includes("Authority / safety envelope:") ||

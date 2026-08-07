@@ -10,7 +10,7 @@ Goal: establish the minimum operating system before implementation starts.
 4. Confirm a shared Git-backed project repo and durable tracker exist; recommend GitHub with Issues and PRs, including for non-code work.
 5. Confirm framework-managed files can be committed and pulled by the team.
 6. Keep project rules outside managed files and the managed `AGENTS.md` block.
-7. Resolve `latest available flagship / deepest bounded reasoning`; record actual model, environment mapping, check date/source, and any fallback.
+7. Resolve role-routed profiles on the latest available flagship: maximum available for `ORCHESTRATOR`, deep bounded for `DISCOVERY`, and efficient bounded for `EXECUTION`; record actual model, environment mappings, check date/source, and any fallback.
 8. Resolve task return in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record the mapping and test it without asking people to poll.
 
 ## Project Operating Brief
@@ -26,7 +26,7 @@ Capture only:
 - safe operational sources: environments/services, owner, secret-manager references, runbooks, backup/restore routes, and last access check, never secret values;
 - Shared Sync readiness and missing human/agent access;
 - participants, decision owner, owner/backup convention, and availability;
-- agent profile policy, resolved model, check date/source, and visible fallback rule;
+- agent routing policy, resolved model and three role mappings, check date/source, and visible fallback rule;
 - agent environment adapter and context mapping;
 - task Return Sync mapping and scope-freshness interval;
 - first milestone DOD;
@@ -46,7 +46,7 @@ Register each participant with:
 
 - active orchestrator context link/title;
 - installed framework version;
-- resolved agent profile and last check;
+- resolved agent routing and last check;
 - latest alignment packet;
 - active task;
 - current status;

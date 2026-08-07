@@ -13,8 +13,8 @@ Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Chec
 Shared Sync: Repo: <url> | Tracker: <url> | Readiness: <READY | SYNC_LIMITED, with gaps>
 Coordination inputs: <meeting recorder/transcript/chat/docs/manual route> | Access checked: <date/result>
 Operational sources: <private runbooks / environment and secret-manager references / backup-restore docs or none> | Access checked: <date/result; never secret values>
-Agent policy: latest available flagship / deepest bounded reasoning
-Resolved agent: <model id / reasoning mapping> | Checked: <date/source> | Fallback: <none, pending, or reason>
+Agent routing: latest available flagship | ORCHESTRATOR: maximum available | DISCOVERY: deep bounded | EXECUTION: efficient bounded
+Resolved profiles: <model id / orchestrator mapping / discovery mapping / execution mapping> | Checked: <date/source> | Fallback: <none, pending, or reason>
 Environment adapter: <native | adapter path> | Context mapping: <thread/chat/session/run/workspace/tracker handle>
 Task return mapping: <native context message | tracker event/hook | fallback monitor>
 Orchestrator rotation: <stable | announced | reconciling | candidate ready | awaiting confirmation | cutover incomplete | complete>
@@ -33,15 +33,15 @@ Updated from durable event: <event/link/date>
 
 ## Participants
 
-| Participant | Active orchestrator | Framework / checked | Agent profile | Sync access | Latest packet | Active task | Status |
+| Participant | Active orchestrator | Framework / checked | Orchestrator profile | Sync access | Latest packet | Active task | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | <name> | <context link/title> | <version / checked> | <model / reasoning / checked> | <repo/tracker/input status> | <packet/link> | <task/link> | <active / away / waiting / superseded> |
 
 ## Active Work
 
-| Task | Outcome owner / recipient | Task context | Baseline -> Candidate | PR/artifact | Human checkpoint | DOD impact | Status | Next |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| <task> | <owner / recipient or none> | <link> | <accepted -> active> | <link> | <checkpoint> | <row> | <state> | <action> |
+| Task | Role / profile | Outcome owner / recipient | Task context | Baseline -> Candidate | PR/artifact | Human checkpoint | DOD impact | Status | Next |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| <task> | <DISCOVERY or EXECUTION / mapping> | <owner / recipient or none> | <link> | <accepted -> active> | <link> | <checkpoint> | <row> | <state> | <action> |
 
 ## Decisions And Blockers
 

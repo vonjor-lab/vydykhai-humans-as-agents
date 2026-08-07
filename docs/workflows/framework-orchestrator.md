@@ -1,5 +1,4 @@
 # Framework Orchestrator Workflow
-
 Goal: preserve compass, sequence, shared state, and next-best-action without implementing product work.
 ## 1. Choose Hot Or Cold Path
 Do not create a background model wake-up only to check the framework.
@@ -10,14 +9,14 @@ Do not create a background model wake-up only to check the framework.
 2. Run `node scripts/vydykhai.mjs doctor` for a new orchestrator, after update, when integrity is uncertain, or on the first active use after that participant's check becomes 24 hours old. Record installed/latest version and check time; remain silent when current, and keep an unavailable check pending without blocking otherwise safe work.
 3. Verify this is the registered active orchestrator and reconcile the current dashboard with the newest durable event.
 4. Apply source precedence and, for dispatch/re-brief/material resume, classify scope `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; age is only a re-read signal.
-5. Re-resolve `latest available flagship / deepest bounded reasoning` only when its recorded check is missing/stale, follows update/rotation, or the model was rejected/deprecated.
+5. Re-resolve role-routed profiles on the latest available flagship only when their recorded check is missing/stale, follows update/rotation, or the model was rejected/deprecated: maximum available for `ORCHESTRATOR`, deep bounded for `DISCOVERY`, efficient bounded for `EXECUTION`.
 Compact state:
 ```md
 Owner / stream / Compass / DOD:
 Project State / Shared Sync: <link | READY or SYNC_LIMITED with gaps>
 Active Alignment Window:
 Idea Memory / Intent Trail decision map / operational sources / last reconciliation:
-Framework version / agent policy / resolved model / checked:
+Framework version / agent routing / resolved model and role mappings / checked:
 Active tasks: <task | owner | context | Accepted Baseline -> Candidate | freshness | checkpoint | DOD impact | status | next>
 Pending decisions / participants:
 Can continue:
@@ -38,6 +37,8 @@ When upstream is newer, read every changelog release where `installed < release 
 - `health`: detect drift, stale context, repeated cost, or rotation need.
 - `expansion`: unexpected surface/cost growth before evidence -> Expansion Check.
 - `continue`: current task remains inside its contract -> hot path, no alignment ritual.
+
+Before creating a context, classify it as `ORCHESTRATOR_WORK` for project-wide synthesis/priority/sequence/owner decisions; `DISCOVERY` when the solution needs deep research, product/architecture/UX/visual work, or experiment design; `EXECUTION` when solution and acceptance are Low-ready; or `STALE_OR_REBRIEF` when the card is outdated, mixed, too broad, contradictory, or missing inputs.
 
 ## 3. Protect DOD Focus And Shared Safety
 Before changing active work, classify a new idea or request:
@@ -66,9 +67,9 @@ Missing participants do not block unrelated work. Never infer their uncommitted 
 
 When a human says remember/important/always/never/do it differently, or meaningfully changes the method, layer, baseline, sequence, boundary, or verification, record an Intent/Approach Delta with Before/Now/Why/Keep/Drop/touch keys/source. Explicit pivots are confirmed; echo inferred wider intent once as `PROVISIONAL`. Merge reusable changes into an existing decision family, keep local-only lineage in its task, and apply Proactive Guardrails to conflicts without repeated warnings absent new risk.
 ## 4. Dispatch
-
+Launch `EXECUTION` only when all Low-ready checks pass: one outcome and first action; no unresolved product/architecture choice; explicit scope/touch boundaries/non-goals; objective DOD and acceptance oracle; current baseline/data/access/environment; and compact material consult triggers. Otherwise resolve the gap, re-brief or split, or launch `DISCOVERY`.
+Discovery returns a compact Decision Packet with the chosen approach, rejected options and lessons, affected entities/interfaces, acceptance or visual evidence, risks, and unresolved owner decisions. Integrate it with compass and memory before writing execution tasks; it does not produce production implementation by default.
 Require one role-`EXECUTION` contract:
-
 - goal and DOD impact;
 - scope/out of scope, outcome owner, and dependency/recipient boundary;
 - scope freshness, Accepted Baseline, accepted mechanism, and 1-3 distilled Memory Brief items;
@@ -77,7 +78,7 @@ Require one role-`EXECUTION` contract:
 - material burn/stop limit;
 - verification/completion route, narrow `Consult when`, and `Return to` at a named human checkpoint, irreducible blocker, or terminal result.
 
-Keep Project State, raw Touch Set, transcripts, full memory views, task map, and orchestration deliberation out of the task. Add research, lab, peer review, or expansion appetite only when relevant. A patch, split, or re-brief maps `Preserved / Replaced / Added / Remaining`. Pass the resolved agent profile when supported; any fallback is visible.
+Keep Project State, raw Touch Set, transcripts, full memory views, task map, and orchestration deliberation out of the task. Add research, lab, peer review, or expansion appetite only when relevant. A patch, split, or re-brief maps `Preserved / Replaced / Added / Remaining`. Pass the resolved `EXECUTION` profile when supported; any fallback is visible.
 When tools allow:
 
 1. Create the separate task/research context from current approved base.
@@ -100,11 +101,11 @@ Use this state machine:
 - Ordinary local failure: task resolves it inside scope/burn without Daily Alignment or orchestrator ceremony.
 - Unexpected expansion: pause only affected growth; state `Expected`, `Expanded into`, `Likely cause`, then route `CONTINUE`, `REBRIEF`, `LAB`, or `MAINTENANCE`.
 - Waiting at human checkpoint: name the judgment that person owns and give an observable action, link, output location, safe continuation, and return sync; keep technical verification with agents.
-- Research complete: incorporate the Research Packet, update durable state, close or archive the context.
+- Discovery complete: incorporate the Decision Packet, update durable state, close or archive the context.
 - Lab proof/cap reached: stop lab polish; route production transfer, tests, and real-flow smoke.
 - Maintenance proof reached: verify the original representative flow is materially smaller/faster and recurrence is covered, then return to the original task; containment alone is not closure.
 - Optional extension surfaced: keep the task inside its DOD, return an Idea Candidate, and continue unless the human explicitly changes scope.
-- Boundary consultation (`CONSULT`): from `Boundary/Evidence/Proposed move/Safe continuation`, use existing `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, Peer Compass Review, or `NEEDS_DECISION` routes; pause only the affected boundary.
+- Boundary consultation (`CONSULT`): from `Boundary/Evidence/Proposed move/Safe continuation`, choose `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, `DISCOVERY`, or `NEEDS_DECISION`; Peer Compass Review may support that route. Pause only the affected boundary.
 - Material external delta: intersect it with active, queued, and paused tasks. Do not wake unaffected work. Send an affected active task only `what changed / applies to / preserved / action`; compatible work continues, while invalidated work pauses only the affected boundary for patch/re-brief.
 - Task claims completion without `$accept-work`: send it to `$accept-work` in the same context.
 - Rejected Candidate, `NEEDS_FIXES`, or human «do it differently»: record the `APPROACH_PIVOT` and `Keep/Rebuild/Drop/Unknown`, merge any reusable Memory Delta into its decision family, then build the successor from the Accepted Baseline plus refreshed Memory Brief, not the failed state.
@@ -113,7 +114,7 @@ Use this state machine:
 - Cross-person handoff: keep delivery open until the recipient confirms the exact shared artifact/revision and performs the agreed receipt check; runnable work includes a representative scenario in their environment.
 - Accepted enabler: report what it unlocks, what product behavior is still missing, and its next product slice; keep the parent open.
 - Accepted and merged: deduplicate reusable Memory Delta into the current decision family, atomically rebuild affected memory bodies, then update DOD burn, parent closure, participant impact, and next-best-action.
-- Repeated no-progress: perform one diagnosis and route `CONTINUE`, `REBRIEF`, `LAB`, or bounded `MAINTENANCE`; do not restart alignment or repeat status rituals.
+- Repeated no-progress: distinguish implementation defect, weak acceptance oracle, and missing solution work. Rebuild from the Accepted Baseline with learned evidence, re-brief/split, or launch bounded Discovery; do not restart alignment, repeat status rituals, or climb reasoning levels mechanically.
 Do not implement, debug, smoke, or merge from the orchestrator. Task detects execution boundaries; orchestrator decides project response.
 
 ## 6. Monitor
@@ -130,7 +131,7 @@ If rotation is needed:
 1. Freeze new dispatch, but keep the previous orchestrator active and intact. Before creating the candidate, tell the human why rotation is needed, what will move, what will not change, how memory will be verified, and what confirmation activates the replacement.
 2. Publish one Rotation Memory Packet from the previous context: compass/DOD, current decision families and material task-local pivots, active/queued/promised/deferred work, remembered requests, safe operational source pointers, checkpoints, constraints, monitors/returns, participants/ownership, and ambiguous, stale, or chat-only items.
 3. Rebuild stale Idea Memory and Intent Trail bodies from their evidence, grouping related decisions instead of copying chronology. For every item record evidence, classification (`ALREADY_DURABLE`, `MISSING_DURABLE`, `AMBIGUOUS`, or `STALE/SUPERSEDED`), relations, and correct durable destination.
-4. Re-resolve the flagship profile and create a read-only candidate from current repo/framework. Do not register it active yet.
+4. Re-resolve the `ORCHESTRATOR` profile and create a read-only candidate from current repo/framework. Do not register it active yet.
 5. Candidate independently checks Project State, tasks, high-signal human sources and Return Syncs, then runs Memory Intersection on representative current/upcoming Touch Sets. It must recover applicable decisions, rejected paths, ideas, and safe operational sources; for relevant operations it locates the runbook/secret reference and performs only a non-destructive access check. It returns covered, missing, conflicting, and human-decision items; packet/dashboard consistency alone is insufficient.
 6. Show the coverage delta to the human. Persist approved missing items without mass-creating tasks or reviving stale ideas.
 7. After explicit human confirmation, change the active pointer and verify the new context can reconstruct compass, DOD, queue, remembered intent/rules, active-task approach lineage, blockers, latest delta, and next action.

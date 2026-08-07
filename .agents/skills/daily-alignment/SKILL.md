@@ -28,7 +28,7 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 - Let unrelated work continue. Use cautions or wait only for overlapping surfaces, contracts, decisions, or sequence.
 - Publish a Team Alignment Delta when several packets need reconciliation or shared guidance changes.
 - Rebuild the Alignment Window body in the same operation as the delta.
-- Update the participant registry with orchestrator context link, installed framework version, resolved agent profile/check date, latest packet, active task, and status.
+- Update the participant registry with orchestrator context link, installed framework version, resolved orchestrator profile/check date, latest packet, active task, and status.
 - Create a Brief Patch for a small approved change; route material goal, scope, sequence, ownership, or task-map changes to `$start-work`.
 - Intersect the delta with active, queued, and paused tasks. Do not wake an unaffected task. Send an affected active task only `what changed / applies to / preserved / action`: a compatible patch lets it continue, while an invalidating change pauses only the affected boundary for `PATCH_REQUIRED` or `REBRIEF_REQUIRED`. Tasks never process raw meeting or alignment inputs.
 - Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; do not mutate scope silently or treat age alone as a scope change.

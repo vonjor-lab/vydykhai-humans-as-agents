@@ -6,7 +6,7 @@ Vydykhai is a framework for collaborative work between people and AI agents. It 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.15.0`
+Current version: `1.16.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -43,6 +43,7 @@ Historical snapshots remain available through Git releases and tags. Current ski
 - Start with a rough goal. The orchestrator helps brainstorm it into a shared compass, brief, and nearest DOD.
 - The orchestrator turns approved direction into focused tasks while keeping implementation out of the coordination context.
 - The orchestrator decides what/why/when/who and what changed; a focused task decides how to implement and prove one accepted increment.
+- Reasoning follows the work: the orchestrator uses the strongest available profile, unresolved solution work uses a deep discovery profile, and a ready execution task uses the fast profile.
 - A task continues the accepted product mechanism, resolves ordinary failures itself, and consults only at an undeclared boundary. Research or Lab is used only when uncertainty, cost, or risk justifies it.
 - Meetings and asynchronous local work converge through shared Git-backed state. An absent participant blocks only overlapping work.
 - Before work starts, the orchestrator matches its Touch Set with prior decisions, rejected paths, ideas, and safe operational sources, then gives the task only the relevant Memory Brief.
@@ -74,13 +75,15 @@ During normal activity, each participant's orchestrator checks for a new Vydykha
 
 The orchestrator records the plan in Project State so the team prepares one update rather than duplicate work. At the chosen window it prepares or reuses one update branch, runs `update` and `doctor`, opens or refreshes its PR, and reports the short delta. It never overwrites locally modified managed files, changes rules silently in the middle of active work, or merges outside the project's normal policy. A major migration or an update that affects current safety is raised explicitly; ordinary compatible updates do not force orchestrator rotation. If upstream cannot be reached, the check remains visibly pending without blocking otherwise safe work.
 
-## Agent Profile
+## Agent Profiles
 
-Vydykhai defaults to `latest available flagship / deepest bounded reasoning`: the strongest broadly capable coding and agentic model available to that participant, using the environment's deepest stable reasoning mode that does not imply an unbounded cost tier. It records the resolved model and check date in Project State and rechecks at setup, framework update, orchestrator rotation, model rejection/deprecation, and at least weekly while the project is active.
+Vydykhai uses one current flagship model with reasoning routed by role:
 
-The framework does not pin today's model id, so a future flagship can replace it. If discovery or the preferred model is unavailable, the orchestrator uses the best verified fallback only after making that fallback visible. A human can explicitly choose a cheaper or faster profile for a named scope.
+- **Orchestrator:** maximum available reasoning, mapped to `Ultra` where that label exists.
+- **Discovery:** deep bounded reasoning for research, product/architecture decisions, and unresolved UX or visual direction, mapped to `XHigh` where available.
+- **Execution:** efficient bounded reasoning for a fully briefed task, mapped to `Low` where available.
 
-When an environment exposes Extra High / `xhigh`, use it as the default mapping. A materially more expensive Max, Ultra, or unbounded tier still requires an explicit human scope decision.
+The labels are environment mappings, not vendor requirements. Bootstrap records the actual model, three mappings, check date, and fallback in Project State and rechecks them at setup, framework update, orchestrator rotation, model rejection/deprecation, and at least weekly while active. A human may override a profile for a named scope. Reasoning depth never replaces tests, smoke, acceptance, or human approval.
 
 ## Human Interface
 

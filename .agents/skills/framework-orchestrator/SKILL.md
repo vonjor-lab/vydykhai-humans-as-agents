@@ -23,16 +23,17 @@ Read `docs/workflows/framework-orchestrator.md` for a cold-path decision. Load a
 ## Contract
 
 - Never implement, debug, fix product code, deploy, run acceptance smoke, or merge here. Never move work into the orchestrator because a task is difficult.
+- Run this control context on the resolved `ORCHESTRATOR` maximum-available profile. Before every new dispatch, classify the work as `ORCHESTRATOR_WORK`, `DISCOVERY`, `EXECUTION`, or `STALE_OR_REBRIEF`; do not change a current task's accepted profile mid-flight without a material re-brief.
 - Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo; agent plan; inference. Before instructing a running task, read events newer than its last Return Sync and preserve newer human direction.
 - Own product and coordination guardrails. A task owns local safety and contract boundaries; it detects a boundary and sends `CONSULT`, while the orchestrator decides `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, Peer Compass Review, or `NEEDS_DECISION`.
 - Protect the nearest DOD. Classify additions as DOD gap, guardrail, deliberate scope change, or future Idea Candidate. Do not make the task or human curate shared memory.
 - Before a cold-path brief, re-brief, dispatch, consultation decision, sequence decision, parent acceptance, milestone, or rotation, derive a Touch Set and intersect it with Intent Trail, Idea Memory, accepted/rejected lineage, safe operational sources, and active work. Give the task only a compact Memory Brief or raise `MEMORY_COVERAGE_GAP`.
 - Use `$daily-alignment` only when a meaningful meeting or external event materially changes another participant's safe next action. Never use it for ordinary task progress, a locally resolved blocker, urgency, Return Sync with no cross-person effect, or simple resume.
-- Choose Research Context for bounded uncertainty, Lab Mode for lower-cost isolated proof with a production exit, and Task Context for approved real-path delivery.
-- Dispatch role `EXECUTION` with the minimum contract: nearest outcome/DOD, scope/out of scope, owner/dependency boundary, freshness/Baseline, accepted mechanism, 1-3 distilled memory items, authority/safety envelope, checkpoint, material burn, verification, and compact consult/return triggers. Do not pass raw Project State, transcripts, full memory, task map, or orchestration deliberation.
+- Choose role `DISCOVERY` for bounded solution uncertainty, using Research Context without product code or a disposable Lab when proof needs it. Incorporate its Decision Packet before creating delivery work.
+- Dispatch role `EXECUTION` on the efficient profile only when Low-ready: one outcome and first action, no unresolved solution choice, explicit boundaries, objective acceptance, current inputs/access/environment, and compact material consult triggers. Add the nearest DOD, owner/dependency boundary, freshness/Baseline, accepted mechanism, Memory Brief, safety, burn, and verification. Do not pass raw Project State, transcripts, full memory, task map, or orchestration deliberation.
 - Create or prepare a separate context, verify its title/link and that implementation actually starts. Plan-only is not progress. If native creation is unavailable, prepare one tracker-linked startup packet and give one exact human action.
 - Let valid work run. A task resolves ordinary implementation failures itself and returns only at a named human checkpoint, irreducible blocker, or terminal result. Monitoring is a silent fallback only when direct return and tracker events are unavailable.
-- On repeated no-progress or unexpected expansion, perform one supervisory diagnosis and route `CONTINUE`, `REBRIEF`, `LAB`, or bounded `MAINTENANCE`; do not restart Daily Alignment or repeat status rituals.
+- On repeated no-progress or unexpected expansion, distinguish implementation defect, weak acceptance, and missing solution work, then route `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, `DISCOVERY`, or `NEEDS_DECISION`; do not restart Daily Alignment, repeat status rituals, or climb effort levels mechanically.
 - For a material meeting, merge, peer result, or human correction, intersect the delta with active as well as queued work. Wake only affected tasks: send a compact compatible patch, or pause only the invalidated boundary for patch/re-brief. Tasks never process raw coordination inputs.
 - Require `$accept-work` in the owning task context. That context keeps corrective fixes, exact-current-code smoke, human checkpoint, and manual merge. The orchestrator consumes the verdict, updates parent DOD, cross-person impact, reusable memory, and next-best-action without repeating task acceptance.
 - Keep one Success Line per accepted increment. A successor starts from the Accepted Baseline plus applicable lessons, not from a rejected state; sequence later increments instead of stretching one task across the product route.
@@ -42,6 +43,6 @@ Read `docs/workflows/framework-orchestrator.md` for a cold-path decision. Load a
 
 ## Finish
 
-Return one status: `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, `WAIT_FOR_MEMORY_COVERAGE`, `LAUNCH_TASK_CONTEXT`, `LAUNCH_RESEARCH_CONTEXT`, `SEND_ACCEPT_WORK`, `PREPARE_ORCHESTRATOR_ROTATION`, `REQUEST_ROTATION_CONFIRMATION`, `ROTATION_COMPLETE`, `ROTATION_CUTOVER_INCOMPLETE`, `NEEDS_DECISION`, or `BLOCKED`.
+Return one status: `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, `WAIT_FOR_MEMORY_COVERAGE`, `LAUNCH_TASK_CONTEXT`, `LAUNCH_DISCOVERY_CONTEXT`, `SEND_ACCEPT_WORK`, `PREPARE_ORCHESTRATOR_ROTATION`, `REQUEST_ROTATION_CONFIRMATION`, `ROTATION_COMPLETE`, `ROTATION_CUTOVER_INCOMPLETE`, `NEEDS_DECISION`, or `BLOCKED`.
 
 Always include the exact next action.

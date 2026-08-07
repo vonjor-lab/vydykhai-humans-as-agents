@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -21,6 +21,25 @@
     "reasoningPolicy": "deepest-bounded",
     "reasoningEffort": "xhigh",
     "refreshDays": 7
+  },
+  "agentRoutingPolicy": {
+    "policy": "role-routed",
+    "modelPolicy": "latest-available-flagship",
+    "refreshDays": 7,
+    "profiles": {
+      "orchestrator": {
+        "reasoningPolicy": "maximum-available",
+        "preferredEffortWhenAvailable": "ultra"
+      },
+      "discovery": {
+        "reasoningPolicy": "deep-bounded",
+        "preferredEffortWhenAvailable": "xhigh"
+      },
+      "execution": {
+        "reasoningPolicy": "efficient-bounded",
+        "preferredEffortWhenAvailable": "low"
+      }
+    }
   },
   "defaultScopeFreshnessDays": 7,
   "node": ">=18",

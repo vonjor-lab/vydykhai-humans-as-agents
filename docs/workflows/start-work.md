@@ -18,11 +18,11 @@ Before dispatching, re-briefing, or materially resuming a stale or paused task, 
 
 If a future option is useful but unnecessary for the nearest DOD, recommend keeping it out of the current work. After human confirmation, upsert it in Idea Memory with its value, touched surfaces, source, and recall trigger.
 
-## 2. Decide Whether To Research
+## 2. Decide Whether To Discover
 
-Use Research Context when one bounded question prevents a useful brief: source of truth, option comparison, product model, foundation, or affected contract.
+Use role `DISCOVERY` when one bounded question prevents a useful brief: source of truth, option comparison, product model, architecture, unresolved UX/UI or visual direction, foundation, or affected contract. Use Research Context when product code is unnecessary; use a disposable Lab only when a working proof materially improves the decision.
 
-Give it one question, sources, non-goals, stop condition, and expected Research Packet. Do not change product code. Incorporate the packet and close or archive the context before resuming the brief.
+Give it one question, sources, non-goals, stop condition, and expected Decision Packet: chosen approach, material rejected options and lessons, affected entities/interfaces, acceptance or visual evidence, risks, and unresolved owner decisions. Do not create production implementation. Incorporate the packet and close or archive the context before resuming the brief.
 
 ## 3. Draft The Epic Brief
 
@@ -58,6 +58,7 @@ For each task, write only the execution contract. Project-wide reasoning stays w
 
 ```md
 Title / outcome owner / backup / recipient:
+Role / profile: EXECUTION / <resolved efficient mapping>
 Goal and DOD impact:
 Scope / out of scope:
 Scope freshness / Accepted Baseline:
@@ -76,7 +77,9 @@ Dependencies / parallel boundary:
 Progress continuity: <Preserved / Replaced / Added / Remaining when patched, split, or re-briefed>
 ```
 
-Classify task as product capability, technical enabler, maintenance, research, or future option. A technical enabler does not close its parent product loop; name the product continuation and owner. Use the current resolved flagship / deepest bounded reasoning profile and make its environment mapping or fallback visible only in dispatch metadata.
+Before dispatch, classify each item as `ORCHESTRATOR_WORK`, `DISCOVERY`, `EXECUTION`, or `STALE_OR_REBRIEF`. An execution item is Low-ready only when it has one outcome and first action, no unresolved solution decision, explicit boundaries, objective acceptance, current baseline/data/access/environment, and compact material consult triggers. Otherwise resolve the gap, re-brief/split, or run Discovery.
+
+Also classify the work as product capability, technical enabler, maintenance, research, or future option. A technical enabler does not close its parent product loop; name the product continuation and owner. Pass the resolved role profile and make its environment mapping or fallback visible only in dispatch metadata.
 
 Keep one owning execution context and canonical Candidate per accepted increment. Before dispatching the next increment, show what closed, what remains before parent acceptance, and why the next slice is a DOD gap rather than polish. Do not stretch one task across the whole product route.
 
@@ -84,6 +87,6 @@ Keep one owning execution context and canonical Candidate per accepted increment
 
 Show the brief, task map, sequence, ownership, checkpoints, Memory Brief, open decisions, and risks. Ask for human approval.
 
-After approval, create/update tasks in the shared tracker and return the sequence to the Framework Orchestrator. Every implementation task starts in role `EXECUTION`: it continues the accepted mechanism, resolves ordinary failures autonomously, consults only at a declared boundary, runs `$accept-work`, and publishes Return Sync only at a named human checkpoint, irreducible blocker, or terminal result. It does not run orchestration or alignment workflows.
+After approval, create/update tasks in the shared tracker and return the sequence to the Framework Orchestrator. Every implementation task starts in role `EXECUTION` on the efficient profile: it continues the accepted mechanism, resolves ordinary failures autonomously, consults only at a material undeclared boundary, never climbs effort levels mechanically, runs `$accept-work`, and publishes Return Sync only at a named human checkpoint, irreducible blocker, or terminal result. It does not run orchestration or alignment workflows.
 
 Do not implement in this workflow.
