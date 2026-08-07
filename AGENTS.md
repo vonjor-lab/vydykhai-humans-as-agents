@@ -13,7 +13,7 @@ This repository is the canonical source for the universal Vydykhai collaboration
 - Keep `.agents/skills` concise and environment-neutral. `SKILL.md` owns behavior; files such as `agents/openai.yaml` are optional interface adapters.
 - Keep `docs/AGENTS_CORE.md`, skill contracts, and workflows behaviorally aligned.
 - Keep `BOOTSTRAP.md` as the agent-owned installation contract. Human-facing setup should remain one natural-language request, not a list of shell commands.
-- Default to `latest available flagship / deepest bounded reasoning`. Map to `xhigh` only where that label exists; never hardcode a vendor model or reasoning label in universal runtime rules.
+- Route reasoning by role on the latest available flagship: maximum available for the persistent orchestrator, deep bounded for solution discovery, and efficient bounded for execution. Map these to `Ultra / XHigh / Low` only where those labels exist; record the nearest fallback and never pin a vendor model id. Keep `defaultAgentProfile` only for older updater compatibility; `agentRoutingPolicy` is authoritative.
 - Product-local copies are execution mirrors. Universal changes land here first, then product repos update through `scripts/vydykhai.mjs`.
 - Treat `LICENSE.md`, `NOTICE.md`, `CITATION.cff`, and `docs/PROVENANCE.md` as ownership records. Do not change the creator, license, required notice, or provenance claims without the creator's explicit approval.
 - Do not merge substantive external contributions until the contributor agreement described in `CONTRIBUTING.md` has been executed.

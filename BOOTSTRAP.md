@@ -25,25 +25,26 @@ The bootstrap request authorizes creation of a setup branch, framework install/u
 8. Review the complete diff. Keep project rules outside the managed `AGENTS.md` block and reject secrets, transcripts, customer data, private links, or product internals in universal files.
 9. Commit and open a setup change or PR when repository-host access exists. Follow the target repository's merge policy; do not merge merely because bootstrap was requested.
 
-## Resolve The Agent Profile
+## Resolve Agent Routing
 
-The default policy is `latest available flagship / deepest bounded reasoning`.
+Use the latest available flagship model and resolve three reasoning profiles from the current agent environment:
 
-1. Resolve the strongest broadly capable coding and agentic model available in the current agent environment and account. Use its model catalog or current official model guidance; do not choose by version number alone.
-2. Use the deepest stable reasoning mode that fits the agreed burn boundary. Map this to Extra High / `xhigh` when that label exists. Do not silently substitute Max, Ultra, an unbounded tier, a faster model, or a cheaper model.
-3. If model discovery is unavailable, use the agent environment's current recommended flagship and mark verification pending.
-4. If the preferred bounded mode is unavailable, use the closest supported mode and record the fallback; do not automatically jump to Max or Ultra.
-5. Record policy, resolved model id, reasoning effort, check date/source, and any fallback in Project State.
-6. Re-resolve at framework update, new or rotated orchestrator, model rejection/deprecation, and active-project Health Review at least every seven days.
-7. Pass the resolved profile explicitly to new and resumed agent contexts when tools support it. Any fallback must be visible to the human and durable state.
+1. `ORCHESTRATOR`: maximum available stable reasoning; map to `Ultra` when that label exists.
+2. `DISCOVERY`: deep bounded reasoning; map to `XHigh` when that label exists.
+3. `EXECUTION`: efficient bounded reasoning; map to `Low` when that label exists.
+4. Resolve by current model catalog or authoritative guidance, not version number alone. If discovery is unavailable, use the environment's recommended flagship and mark verification pending.
+5. Use the closest supported profile when a preferred label is unavailable and record the fallback; never silently run a different profile.
+6. Record the policy, resolved model id, all three mappings, check date/source, and any fallback in Project State.
+7. Re-resolve at framework update, new or rotated orchestrator, model rejection/deprecation, and active-project Health Review at least every seven days.
+8. Pass the selected role profile explicitly to every new context when tools support it. A resumed current task keeps its accepted profile unless a re-brief changes it.
 
-An explicit human decision may choose a lower-cost or faster profile for a named scope. Universal framework files never pin a model id or require a vendor-specific configuration file.
+An explicit human decision may choose another profile for a named scope. Maximum reasoning does not authorize unbounded spend or external actions. Universal framework files never pin a model id or require a vendor-specific configuration file.
 
 ## Activate
 
 1. Apply `$project-launch` from the installed target repository.
 2. Create or update the compact Project Operating Brief, Project State, Shared Sync Contract, and pointers for Idea Memory, the Intent Trail decision map, and safe operational sources: Git-backed repo, durable tracker, coordination-input route, privacy boundary, and access coverage.
-3. Register participants, active orchestrator links, framework versions, resolved agent profiles, current tasks, sync readiness, and safe continuation.
+3. Register participants, active orchestrator links, framework versions, resolved role profiles, current tasks, sync readiness, and safe continuation.
 4. Test each active participant's human access and their orchestrator's required read/write access to the repo/tracker plus read access to relevant meeting and operational instructions. Use individual least-privilege authentication, never shared credentials or copied secret values. Record missing coverage as `SYNC_LIMITED` and do not claim complete alignment for affected work.
 5. Create the dedicated organization-only Framework Orchestrator context. Verify its actual title or stable handle, pin/foreground it when the environment supports that control, and confirm it can reconstruct compass, DOD, tasks, blockers, and next-best-action.
 6. Configure task Return Sync in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record and test the mapping in Project State; do not make the human poll tasks.
@@ -61,5 +62,5 @@ Report only:
 - task Return Sync mapping;
 - setup change/PR or the exact access blocker;
 - Project State and orchestrator link/status;
-- resolved agent profile and last-check date;
+- resolved agent routing and last-check date;
 - one next human action, if any.

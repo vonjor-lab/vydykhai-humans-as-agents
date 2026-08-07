@@ -48,7 +48,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.15.0");
+    assert.equal(lock.installedVersion, "1.16.0");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -58,7 +58,10 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const doctor = run(["doctor", target, "--offline"]);
     assert.equal(doctor.status, 0, doctor.stderr);
     assert.match(doctor.stdout, /Integrity: OK/);
-    assert.match(doctor.stdout, /latest-available-flagship \/ deepest-bounded/);
+    assert.match(doctor.stdout, /Agent routing: latest-available-flagship \/ role-routed/);
+    assert.match(doctor.stdout, /ORCHESTRATOR=maximum-available/);
+    assert.match(doctor.stdout, /DISCOVERY=deep-bounded/);
+    assert.match(doctor.stdout, /EXECUTION=efficient-bounded/);
     assert.match(doctor.stdout, /Creator: Alexander Rozhnov \(@vonjor-lab\)/);
     assert.match(doctor.stdout, /License: PolyForm-Small-Business-1\.0\.0/);
 
@@ -75,7 +78,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.15\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.16\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -87,6 +90,13 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.defaultAgentProfile.modelPolicy, "latest-available-flagship");
   assert.equal(manifest.defaultAgentProfile.reasoningEffort, "xhigh");
   assert.equal(manifest.defaultAgentProfile.reasoningPolicy, "deepest-bounded");
+  assert.equal(manifest.agentRoutingPolicy.policy, "role-routed");
+  assert.equal(manifest.agentRoutingPolicy.profiles.orchestrator.reasoningPolicy, "maximum-available");
+  assert.equal(manifest.agentRoutingPolicy.profiles.orchestrator.preferredEffortWhenAvailable, "ultra");
+  assert.equal(manifest.agentRoutingPolicy.profiles.discovery.reasoningPolicy, "deep-bounded");
+  assert.equal(manifest.agentRoutingPolicy.profiles.discovery.preferredEffortWhenAvailable, "xhigh");
+  assert.equal(manifest.agentRoutingPolicy.profiles.execution.reasoningPolicy, "efficient-bounded");
+  assert.equal(manifest.agentRoutingPolicy.profiles.execution.preferredEffortWhenAvailable, "low");
   assert.equal(manifest.defaultScopeFreshnessDays, 7);
   assert.ok(manifest.managedPaths.includes("docs/workflows"));
   assert.ok(!manifest.managedPaths.includes("docs/codex-workflows"));
@@ -100,6 +110,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /Touch Set/);
   assert.match(core, /Memory Brief/);
   assert.match(core, /MEMORY_COVERAGE_GAP/);
+  assert.match(core, /Role-Routed Agent Profiles/);
+  assert.match(core, /Low-ready/);
   assert.match(core, /24 hours old/);
   const projectState = await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8");
   assert.match(projectState, /Shared Sync:/);
@@ -112,6 +124,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal((projectState.match(/^## Next-Best-Action$/gm) || []).length, 1);
   const taskHandoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
   assert.match(taskHandoff, /Role: EXECUTION/);
+  assert.match(taskHandoff, /Agent profile: EXECUTION/);
   assert.match(taskHandoff, /Continue from:/);
   assert.match(taskHandoff, /Applicable Memory Brief:/);
   assert.match(taskHandoff, /Memory Delta:/);

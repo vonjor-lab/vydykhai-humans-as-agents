@@ -8,6 +8,7 @@ The orchestrator resolves project-wide meaning before dispatch. Give the task on
 # Task Context Startup
 
 Role: EXECUTION
+Agent profile: EXECUTION / <resolved efficient mapping and fallback if any>
 Title:
 Task / outcome owner / backup / recipient:
 Return to: <orchestrator context or stable shared-tracker event>
@@ -48,9 +49,9 @@ Return triggers: <named human checkpoint | irreducible blocker | terminal result
 
 - Start implementation immediately; approved planning is not repeated in the task context.
 - Own local planning, implementation, debugging, corrective fixes, tests, exact-current-code smoke, and technical evidence.
-- Resolve ordinary implementation failures autonomously inside the contract and burn limit. Do not send routine progress or a Return Sync for a locally resolved failure.
+- Resolve ordinary implementation failures autonomously inside the contract and burn limit. Do not send routine progress or a Return Sync for a locally resolved failure, and do not change reasoning profile mechanically.
 - Do not run `$project-launch`, `$start-work`, `$daily-alignment`, or `$framework-orchestrator` here. Use implementation/domain skills as needed and run `$accept-work` before completion.
-- Detect an undeclared boundary, but do not redesign project scope, sequence, ownership, or shared contracts. Send one compact `CONSULT`: `Boundary / Evidence / Proposed move / Safe continuation`, then pause only that boundary.
+- Detect an undeclared boundary, stale upstream state, unresolved solution choice, or evidence that the acceptance contract is insufficient, but do not redesign project scope, sequence, ownership, shared contracts, or model routing. Send one compact `CONSULT`: `Boundary / Evidence / Proposed move / Safe continuation`, then pause only that boundary.
 - Apply a targeted orchestrator instruction at the next safe operation boundary. Continue unaffected work unless the instruction or safety envelope says otherwise.
 - Keep corrective fixes, human smoke, and manual merge in this context because it owns the implementation evidence.
 
@@ -59,6 +60,7 @@ Return triggers: <named human checkpoint | irreducible blocker | terminal result
 ```md
 Status: <BLOCKED_BEFORE_START | NEEDS_REBRIEF | ACCEPT | ACCEPT_WITH_FOLLOWUPS | NEEDS_FIXES | BLOCKED>
 Task / context / PR / commit / artifact:
+Agent profile used / fallback:
 Accepted Baseline -> Candidate result:
 DOD impact / enabler continuation:
 Verification / exact-current-code smoke / merge:

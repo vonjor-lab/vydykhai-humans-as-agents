@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.15.0 | Статус: каноническое операционное ядро
+Версия: 1.16.0 | Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк совместной работы людей и AI-агентов. Он вырос из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action.
 
@@ -72,19 +72,13 @@ Bootstrap сопоставляет текущую агентскую среду 
 При запуске нужно записать и проверить repo/tracker, необходимый доступ каждого участника и оркестратора и маршрут coordination inputs из встреч, записей, transcripts, чатов, docs или ручных заметок. Для записи встреч при наличии рекомендуется Fathom; подходят также Read AI, tl;dv и любой другой доступный источник.
 Локальный notebook вроде Obsidian является input или view, пока он не стал общим, версионируемым и доступным агентам. Неполное покрытие получает статус `SYNC_LIMITED`: явно назвать, что невидимо, не заявлять полный alignment и продолжать пересекающуюся работу только с cautions либо ждать.
 
-## Профиль агента
-
-Политика по умолчанию - `latest available flagship / deepest bounded reasoning`: самая сильная доступная участнику универсальная модель для coding и agentic work с самым глубоким стабильным reasoning внутри согласованного burn boundary.
-
-- Выбирать по текущей доступности в agent environment и актуальному авторитетному model guidance, а не только по номеру версии.
-- Записывать policy, resolved model id, reasoning effort, дату/источник проверки и fallback в Project State.
-- Повторять проверку при bootstrap, framework update, создании или ротации orchestrator, model rejection/deprecation и активном Health Review не реже одного раза в семь дней.
-- Явно передавать resolved profile новым и возобновляемым контекстам, если tools это поддерживают.
-- Если discovery недоступен, использовать рекомендованный agent-environment flagship и отмечать verification pending.
-- Если среда использует название Extra High / `xhigh`, выбрать его. Иначе использовать ближайший bounded mode и записать mapping; не переходить автоматически на Max, Ultra или unbounded tier.
-- Не делать silent downgrade. Человек может явно выбрать более дешевый или быстрый profile для названного scope.
-
-Universal rules не фиксируют сегодняшний model id, поэтому будущий flagship можно принять без нового релиза фреймворка.
+## Профили по роли
+Использовать последнюю доступную flagship-модель и расходовать reasoning там, где принимается решение:
+- `ORCHESTRATOR`: максимальный доступный стабильный reasoning для compass, memory, routing, постановки задач, consultation, интеграции и next-best-action. Если среда использует это название, профиль соответствует `Ultra`.
+- `DISCOVERY`: глубокий bounded reasoning для еще не определенного решения: ограниченного research, продуктового или архитектурного выбора, неясного UX/UI или визуального направления и проектирования эксперимента. Если доступно, профиль соответствует `XHigh`.
+- `EXECUTION`: эффективный bounded reasoning для задачи, где решение и граница приемки уже определены. Если доступно, профиль соответствует `Low`.
+Это environment mappings, а не требования к конкретному vendor. Профили выбираются по текущей доступности и авторитетному guidance; actual model, все три mapping и fallback записываются в Project State и перепроверяются при bootstrap, framework update, rotation, model rejection/deprecation и активном Health Review не реже раза в семь дней. Новому context явно передается его role profile, если tools это поддерживают; silent substitution запрещен. Текущая задача сохраняет принятый profile до настоящего re-brief.
+Человек может изменить profile для названного scope. Максимальный reasoning не разрешает unbounded spend или внешнее действие, а любой profile не заменяет tests, smoke, acceptance и human checkpoints. Universal rules не фиксируют сегодняшний model id.
 
 ## Приоритет источников
 
@@ -156,11 +150,14 @@ Maintenance называет источник friction, сохраняет Accep
 
 Выбирать минимальный полезный контекст:
 
-- Research Context: ограниченный продуктовый или технический вопрос еще не готов для brief. Product code не меняется. На выходе короткий Research Packet; после incorporation context закрывается или архивируется.
+- Работа оркестратора: project-wide synthesis, prioritization, sequence и owner decision остаются в control context `ORCHESTRATOR`.
+- Research Context: ограниченный продуктовый или технический вопрос еще не готов для brief. Он работает как `DISCOVERY`, не меняет product code, возвращает короткий Decision Packet и после incorporation закрывается или архивируется.
 - Lab Mode: изолированная реализация или эксперимент сокращают риск, стоимость или время обратной связи. До запуска определить решение, Accepted Baseline, одну главную переменную, проверяемый человеком proof, stop/burn limit и путь promote/reject/re-brief. Выход проходит через production transfer, tests и risk-based real-flow smoke.
-- Task Context: результат и граница приемки достаточно ясны, чтобы реализовывать их в реальном продуктовом пути.
+- Task Context: результат и граница приемки достаточно ясны для `EXECUTION` в реальном продуктовом пути.
+- Stale или Re-brief: карточка устарела, смешивает разные типы работы, слишком широка, противоречива или не имеет обязательных inputs. До task context ее нужно обновить или разделить.
 
 Research уменьшает неопределенность. Lab уменьшает стоимость исполнения. Task доставляет принятый продуктовый или enabling результат.
+Discovery Decision Packet называет выбранный подход, существенные отвергнутые варианты и уроки, затронутые entities или interfaces, acceptance или visual evidence, риски и нерешенные owner decisions. Оркестратор соединяет его с compass и memory до создания execution tasks. По умолчанию Discovery не создает production implementation; disposable lab artifact должен быть заявлен явно.
 
 ### Одна линия успеха
 
@@ -174,6 +171,8 @@ Research уменьшает неопределенность. Lab уменьша
 Записывать короткий Learning Delta: `Keep`, `Rebuild`, `Drop` и `Unknown`, затем возвращать переиспользуемый урок как Memory Delta. Повторное исправление одного класса ошибки сначала запускает проверку baseline, scope, прошлой памяти и подхода, а не еще одну слепую попытку.
 
 ### 3. Dispatch
+Role `EXECUTION` запускается только для Low-ready работы: один конкретный результат и исполнимый первый шаг; нет нерешенного продуктового или архитектурного выбора; явно заданы scope, touch boundaries и non-goals; есть объективные DOD, tests/smoke/evidence и acceptance oracle; актуальны baseline, обязательные data, access и environment; заданы короткие существенные `CONSULT` triggers.
+Если чего-то не хватает, оркестратор сам закрывает пробел, делает re-brief или split либо запускает `DISCOVERY`. Consultation страхует от новой обнаруженной границы, но не заменяет качественную постановку задачи.
 
 Минимальный role-`EXECUTION` task contract содержит:
 
@@ -190,9 +189,10 @@ Raw Project State, Touch Set, transcripts, полные memory views, task map �
 
 ### 4. Исполнение
 
-Task context начинает implementation, а не повторяет согласованное планирование. Он отвечает за локальный план, implementation, debugging, tests и исправления, самостоятельно решает обычные ошибки внутри scope и burn и продолжает до named human checkpoint, неустранимого blocker или terminal result. Он не запускает project launch, shaping, alignment или orchestration workflows.
+Task context начинает implementation, а не повторяет согласованное планирование. Он отвечает за локальное планирование реализации, implementation, debugging, tests и исправления, самостоятельно решает обычные ошибки внутри scope и burn и продолжает до named human checkpoint, неустранимого blocker или terminal result. Он не запускает project launch, shaping, alignment или orchestration workflows.
 
-При незаявленном scope, authority, safety, общем механизме/contract, пересечении ownership, ставшем невозможным DOD или повторном отсутствии прогресса task отправляет один `CONSULT`: `Boundary`, `Evidence`, `Proposed move` и `Safe continuation`, затем останавливает только эту границу. Оркестратор подтягивает нужную durable truth и решает `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, Peer Compass Review или `NEEDS_DECISION`. Вспомогательная, demo, review или transport-задача не получает продуктовый DOD и burn только потому, что ее файлы изолированы.
+При незаявленном scope, authority, safety, общем механизме/contract, пересечении ownership, stale upstream state, нерешенном выборе решения, ставшем невозможным DOD или повторном отсутствии прогресса task отправляет один `CONSULT`: `Boundary`, `Evidence`, `Proposed move` и `Safe continuation`, затем останавливает только эту границу. Оркестратор подтягивает нужную durable truth и решает `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, `DISCOVERY` или `NEEDS_DECISION`; Peer Compass Review может поддержать этот маршрут. Вспомогательная, demo, review или transport-задача не получает продуктовый DOD и burn только потому, что ее файлы изолированы.
+Нельзя механически повышать reasoning застрявшей задачи по лестнице effort. Сначала различить implementation defect, слабый acceptance oracle и недостающую проработку решения. Затем построить новую попытку от Accepted Baseline с учетом evidence, сделать re-brief либо запустить bounded Discovery. High-consequence execution может оставаться на эффективном profile только при явных invariants, deterministic guards и review evidence и project coherence максимальным profile оркестратора до human merge или action approval; task acceptance остается в task.
 
 На объявленном return trigger task публикует один короткий Return Sync с маршрутом Memory Delta: `none`, `task-local only` или reusable candidate, не ожидая опроса человеком. Для локально исправленной ошибки routine progress return не отправляется. Если доступен native обмен между contexts, результат отправляется напрямую; иначе используется shared tracker event/hook. Передача между людьми завершена только после доступа получателя к точному artifact/revision и согласованной проверки. Для запускаемого результата с данными также доказываются exact environment, schema/migration revision, воспроизводимые безопасные test data и recipient access. Отсутствующие обязательные данные дают handoff статус `BLOCKED`, а не доказывают ошибку продукта; production data и secrets не копируются в память. Monitor используется только как fallback, когда оба return routes недоступны.
 
@@ -234,7 +234,7 @@ Task context начинает implementation, а не повторяет сог�
 - Alignment Window: используется, когда нужно согласовать packets встречи, milestone или локальной работы.
 - Idea Memory и Intent Trail decision map: каждый создается только тогда, когда будущая идея либо значимый intent/pivot должны пережить текущий context; это может быть section в Project State или связанное компактное представление. Безопасные операционные sources добавляются ссылками без значений секретов.
 
-Registry участников содержит: participant, orchestrator context link, установленную версию фреймворка, resolved agent profile и дату проверки, latest packet, active task и status.
+Registry участников содержит: participant, orchestrator context link, установленную версию фреймворка, resolved orchestrator profile и дату проверки, latest packet, active task и status.
 
 Перед dispatch или существенным resume на общей поверхности orchestrator каждого участника проверяет свою строку и публикует packet только при материальном изменении локального состояния или результатов встречи. Обычное execution внутри актуального contract не создает packet. Нельзя придумывать незакоммиченное состояние другого участника.
 
@@ -291,7 +291,7 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - Lab Mode не принимается как продуктовый результат без production transfer и real-flow verification.
 - Значения secrets, transcripts, private product data, proprietary prompts и customer information не попадают в public framework artifacts или общую память. Хранятся только least-privilege pointers на защищенные secret systems и private operational runbooks.
 - В установленных или распространяемых копиях фреймворка сохраняются license, creator metadata и required notice; они не распространяют права на project-specific работу.
-- Используется `latest available flagship / deepest bounded reasoning`; resolved profile и дата проверки хранятся в Project State, fallback показывается явно. Universal rules не содержат hardcoded model version или vendor-specific reasoning label.
+- Последняя доступная flagship-модель маршрутизируется по роли: максимальный reasoning для оркестратора, глубокий bounded для Discovery и эффективный bounded для Execution. Все resolved mappings и дата проверки хранятся в Project State; model version не фиксируется, а profile не заменяется незаметно.
 - Append-only evidence сохраняется, но текущие dashboards атомарно перестраиваются и не содержат дублирующих или противоречащих текущих секций.
 - Named human checkpoints, неустранимые blockers и terminal task results автоматически возвращаются в оркестратор; люди не должны опрашивать contexts или синхронизировать routine progress.
 - Next-best-action важнее status-only ответа.

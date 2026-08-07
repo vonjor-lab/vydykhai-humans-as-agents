@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.15.0 | Status: canonical operating core
+Version: 1.16.0 | Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
@@ -72,19 +72,13 @@ Distributed Vydykhai requires one shared Git-backed project repo and one durable
 At launch, record and test the repo/tracker, each participant and orchestrator's required access, and the coordination-input route from meetings, recordings, transcripts, chat, docs, or manual notes. Fathom is the recommended meeting recorder when available; Read AI, tl;dv, or another accessible source is valid.
 A local notebook such as Obsidian is an input or view unless it is shared, versioned, and agent-accessible. Missing coverage is `SYNC_LIMITED`: name what is invisible, never claim full alignment, and keep overlapping work inside explicit cautions or wait.
 
-## Agent Profile
-
-The default policy is `latest available flagship / deepest bounded reasoning`: the strongest broadly capable coding and agentic model available to that participant, with the deepest stable reasoning mode inside the agreed burn boundary.
-
-- Resolve by current agent-environment availability and current authoritative model guidance, not by version number alone.
-- Record the policy, resolved model id, reasoning effort, check date/source, and fallback in Project State.
-- Re-resolve at bootstrap, framework update, new or rotated orchestrator, model rejection/deprecation, and active-project Health Review at least every seven days.
-- Pass the resolved profile explicitly to new and resumed contexts when tools support it.
-- If discovery is unavailable, use the agent environment's recommended flagship and mark verification pending.
-- Map the policy to Extra High / `xhigh` when that label exists. Otherwise use the closest supported bounded mode and record it; do not automatically choose Max, Ultra, or an unbounded tier.
-- Never silently downgrade. A human may explicitly choose a cheaper or faster profile for a named scope.
-
-Universal rules never pin today's model id, allowing the project to adopt a future flagship without a framework release.
+## Role-Routed Agent Profiles
+Use the latest available flagship model and spend reasoning where the work is decided:
+- `ORCHESTRATOR`: maximum available stable reasoning for compass, memory, routing, task design, consultation, integration, and next-best-action. Map to `Ultra` when that label exists.
+- `DISCOVERY`: deep bounded reasoning for a solution that is not yet defined: bounded research, product or architecture choices, unresolved UX/UI or visual direction, and experiment design. Map to `XHigh` when available.
+- `EXECUTION`: efficient bounded reasoning for a task whose solution and acceptance boundary are already defined. Map to `Low` when available.
+These labels are environment mappings, not vendor requirements. Resolve by current availability and authoritative guidance, record the actual model and all three mappings in Project State, and recheck at bootstrap, framework update, orchestrator rotation, model rejection/deprecation, and active Health Review at least every seven days. Pass the selected role explicitly to a new context when tools support it; never silently substitute another profile. A resumed current task keeps its accepted profile unless a re-brief changes it.
+A human may override a profile for a named scope. Maximum reasoning never authorizes unbounded spend or external action, and no profile replaces tests, smoke, acceptance, or human checkpoints. Universal rules never pin today's model id.
 
 ## Source Precedence
 
@@ -156,11 +150,14 @@ At each cold-path brief, re-brief, dispatch, consultation decision, sequence dec
 
 Choose the smallest useful context:
 
-- Research Context: a bounded product or technical question is not ready for a brief. No product-code changes. Return a short Research Packet and close or archive the context after incorporation.
+- Orchestrator Work: project-wide synthesis, prioritization, sequencing, or an owner decision stays in the `ORCHESTRATOR` control context.
+- Research Context: a bounded product or technical question is not ready for a brief. Run it as `DISCOVERY`, make no product-code changes, return a short Decision Packet, and close or archive the context after incorporation.
 - Lab Mode: isolated implementation or experimentation reduces risk, cost, or time-to-feedback. Define the decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn limit, and promote/reject/re-brief route before starting. Exit through production transfer, tests, and risk-based real-flow smoke.
-- Task Context: the outcome and acceptance boundary are clear enough to implement in the real product path.
+- Task Context: the outcome and acceptance boundary are clear enough for `EXECUTION` in the real product path.
+- Stale Or Re-brief: the current card is outdated, mixed, too broad, contradictory, or missing required inputs. Revise or split it before creating a task context.
 
 Research reduces uncertainty. Lab reduces execution cost. A task delivers accepted product or enabling work.
+A Discovery Decision Packet names the chosen approach, material rejected options and lessons, affected entities or interfaces, acceptance or visual evidence, risks, and unresolved owner decisions. The orchestrator integrates it with the compass and memory before writing execution tasks. Discovery does not produce production implementation by default; a disposable lab artifact must be explicit.
 
 ### One Success Line
 
@@ -174,6 +171,8 @@ Build from success; learn from failure.
 Record a compact Learning Delta: `Keep`, `Rebuild`, `Drop`, and `Unknown`, then return any reusable lesson as Memory Delta. Repeated correction of the same failure class triggers a check of baseline, scope, prior memory, and approach before another attempt.
 
 ### 3. Dispatch
+Dispatch role `EXECUTION` only when the work is Low-ready: one concrete outcome and executable first action; no unresolved product or architecture decision; explicit scope, touch boundaries, and non-goals; objective DOD, tests/smoke/evidence, and acceptance oracle; current baseline plus required data, access, and environment; and compact material `CONSULT` triggers.
+If any item is missing, the orchestrator resolves it, re-briefs or splits the card, or launches `DISCOVERY`. Consultation is a safety valve for a newly discovered boundary, not a substitute for task design.
 
 The minimum role-`EXECUTION` task contract contains:
 
@@ -190,9 +189,10 @@ Keep raw Project State, Touch Set, transcripts, full memory views, task map, and
 
 ### 4. Execute
 
-The task context starts implementation instead of repeating approved planning. It owns local planning, implementation, debugging, tests, and corrective fixes, resolves ordinary failures autonomously inside scope and burn, and continues until a named human checkpoint, irreducible blocker, or terminal result. It does not run project launch, shaping, alignment, or orchestration workflows.
+The task context starts implementation instead of repeating approved planning. It owns local implementation planning, debugging, tests, and corrective fixes, resolves ordinary failures autonomously inside scope and burn, and continues until a named human checkpoint, irreducible blocker, or terminal result. It does not run project launch, shaping, alignment, or orchestration workflows.
 
-At an undeclared scope, authority, safety, shared mechanism/contract, ownership overlap, impossible DOD, or repeated no-progress boundary, the task sends one `CONSULT`: `Boundary`, `Evidence`, `Proposed move`, and `Safe continuation`, then pauses only that boundary. The orchestrator retrieves only the needed durable truth and decides `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, Peer Compass Review, or `NEEDS_DECISION`. A support, demo, review, or transport task never acquires product DOD or burn merely because its files are isolated.
+At an undeclared scope, authority, safety, shared mechanism/contract, ownership overlap, stale upstream state, unresolved solution choice, impossible DOD, or repeated no-progress boundary, the task sends one `CONSULT`: `Boundary`, `Evidence`, `Proposed move`, and `Safe continuation`, then pauses only that boundary. The orchestrator retrieves only the needed durable truth and decides `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, `DISCOVERY`, or `NEEDS_DECISION`; Peer Compass Review may support that route. A support, demo, review, or transport task never acquires product DOD or burn merely because its files are isolated.
+Do not mechanically escalate a struggling task through reasoning levels. First distinguish an implementation defect, a weak acceptance oracle, and missing solution work. Rebuild from the Accepted Baseline with learned evidence, re-brief, or launch bounded Discovery. High-consequence execution may still use the efficient profile only with explicit invariants, deterministic guards, and maximum-profile orchestrator review of evidence and project coherence before human merge or action approval; task acceptance stays in the task.
 
 At a declared return trigger, the task publishes one compact Return Sync with Memory Delta routing as `none`, `task-local only`, or a reusable candidate without waiting for human polling. It sends no routine progress return for a locally resolved failure. Use native cross-context messaging when available; otherwise use the shared tracker event/hook. Cross-person delivery is complete only after recipient access to the exact artifact/revision and the agreed check. Runnable data-backed work also proves exact environment, schema/migration revision, reproducible safe test data, and recipient access. Missing required data makes the handoff `BLOCKED`, not evidence of product failure; never copy production data or secrets into framework memory. A monitor is only the fallback when neither return route can wake the orchestrator.
 
@@ -234,7 +234,7 @@ Keep one authoritative current dashboard snapshot and create linked artifacts on
 - Alignment Window: use when meeting, milestone, or local-work packets need reconciliation.
 - Idea Memory and Intent Trail decision map: create each only when a future idea or meaningful intent/pivot must survive beyond its current context; keep it as a Project State section or linked compact view. Link safe operational sources without copying secret values.
 
-The participant registry includes: participant, orchestrator context link, installed framework version, resolved agent profile and check date, latest packet, active task, and status.
+The participant registry includes: participant, orchestrator context link, installed framework version, resolved orchestrator profile and check date, latest packet, active task, and status.
 
 Before dispatch or material resume on a shared surface, each participant's orchestrator checks its registry row and publishes a packet only when local or meeting state materially changed. Ordinary execution inside a current contract does not create a packet. Never invent another participant's uncommitted state.
 
@@ -291,7 +291,7 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Do not accept Lab Mode as product completion without production transfer and real-flow verification.
 - Do not expose secret values, transcripts, private product data, proprietary prompts, or customer information in public framework artifacts or shared memory. Store only least-privilege pointers to protected secret systems and private operational runbooks.
 - Preserve the framework license, creator metadata, and required notice in installed or redistributed framework copies; they do not claim ownership of project-specific work.
-- Use `latest available flagship / deepest bounded reasoning`, keep the resolved profile and check date in Project State, and make fallback visible. Do not hardcode a model version or vendor-specific reasoning label in universal rules.
+- Route the latest available flagship by role: maximum reasoning for the orchestrator, deep bounded reasoning for Discovery, and efficient bounded reasoning for Execution. Keep all resolved mappings and check date in Project State; do not pin a model version or silently substitute a profile.
 - Preserve append-only evidence, but atomically rebuild current dashboards and reject duplicate or contradictory current sections.
 - Return declared human checkpoints, irreducible blockers, and terminal task results to the orchestrator automatically; do not make people poll contexts or sync routine progress.
 - Prefer next-best-action over status-only reporting.

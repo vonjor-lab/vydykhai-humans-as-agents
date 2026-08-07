@@ -10,6 +10,24 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 1.16.0 - 2026-08-07
+
+Reasoning стал маршрутизироваться по роли работы, чтобы общая умность оркестратора не заставляла каждую хорошо поставленную задачу долго переосмыслять уже принятые решения.
+
+- Постоянный `ORCHESTRATOR` использует максимальный доступный reasoning и отвечает за compass, memory, routing, постановку задач, consultation, интеграцию и next-best-action.
+- `DISCOVERY` использует глубокий bounded reasoning, когда еще нужно найти решение: в research, продуктовой или архитектурной проработке, неясном UX/UI или visual direction и проектировании эксперимента.
+- `EXECUTION` использует эффективный bounded reasoning и сразу реализует уже определенное решение. В средах с такими названиями профили соответствуют `Ultra / XHigh / Low`; другие harnesses выбирают ближайшие эквиваленты и записывают fallback.
+- Перед dispatch оркестратор классифицирует ближайшую работу как `ORCHESTRATOR_WORK`, `DISCOVERY`, `EXECUTION` или `STALE_OR_REBRIEF`. Исторический backlog не пересобирается без необходимости.
+- Execution запускается только после Low-ready gate: один результат и первый шаг, отсутствие нерешенного product/architecture choice, явные boundaries, объективная приемка, актуальные data/access/environment и короткие material `CONSULT` triggers.
+- Discovery возвращает Decision Packet, который оркестратор соединяет с compass и memory до создания execution tasks. По умолчанию это не production implementation; disposable Lab должен быть заявлен явно.
+- Застрявшая задача не поднимается механически по лестнице effort. Оркестратор сначала различает implementation defect, слабый acceptance oracle и недостающую проработку, затем выбирает patch, re-brief/split, Discovery или stop.
+- High-consequence execution может оставаться на эффективном profile только с явными invariants, deterministic guards и control-plane review evidence и project coherence максимальным profile до human merge или action approval; task acceptance не переносится в orchestrator.
+- Manifest и `doctor` показывают role-routed policy. Старое `defaultAgentProfile` сохранено только для совместимости прежних updater versions.
+
+Переход: совместимый update in place. Активная задача сохраняет принятый profile и не прерывается; новая маршрутизация применяется при следующем dispatch или настоящем re-brief. Rotation не обязательна, если состояние текущего orchestrator остается надежным.
+
+Зачем: тратить максимальный reasoning на общую картину и неизвестные решения, а определенную работу выполнять быстрее, дешевле и без повторного планирования, сохраняя качество через task contract, tests, smoke, acceptance и orchestrator review.
+
 ## 1.15.0 - 2026-08-07
 
 Оркестратор и task contexts получили явное разделение control plane и execution plane, чтобы координационная умность не замедляла исполнение.

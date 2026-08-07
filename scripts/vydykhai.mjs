@@ -95,6 +95,19 @@ async function loadManifest(root) {
   ) {
     throw new Error(`Invalid default agent profile in ${file}`);
   }
+  const routing = manifest.agentRoutingPolicy;
+  if (
+    routing?.policy !== "role-routed" ||
+    routing?.modelPolicy !== "latest-available-flagship" ||
+    routing?.profiles?.orchestrator?.reasoningPolicy !== "maximum-available" ||
+    routing?.profiles?.orchestrator?.preferredEffortWhenAvailable !== "ultra" ||
+    routing?.profiles?.discovery?.reasoningPolicy !== "deep-bounded" ||
+    routing?.profiles?.discovery?.preferredEffortWhenAvailable !== "xhigh" ||
+    routing?.profiles?.execution?.reasoningPolicy !== "efficient-bounded" ||
+    routing?.profiles?.execution?.preferredEffortWhenAvailable !== "low"
+  ) {
+    throw new Error(`Invalid agent routing policy in ${file}`);
+  }
   manifest.managedPaths = manifest.managedPaths.map(normalizeManagedPath);
   return manifest;
 }
@@ -327,6 +340,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
     updateAvailable: Boolean(upstreamVersion && upstreamVersion !== installedVersion),
     sourceRevision: lock?.sourceRevision || (await sourceRevision(targetRoot)),
     agentProfilePolicy: manifest.defaultAgentProfile,
+    agentRoutingPolicy: manifest.agentRoutingPolicy,
     creator: manifest.creator,
     license: manifest.license,
     canonicalSource: manifest.canonicalSource,
@@ -343,8 +357,12 @@ function printDoctor(result, asJson) {
   }
   console.log(`Vydykhai ${result.installedVersion} (${result.mode})`);
   console.log(`Integrity: ${result.ok ? "OK" : "FAILED"}`);
+  const routing = result.agentRoutingPolicy;
+  console.log(`Agent routing: ${routing.modelPolicy} / ${routing.policy}`);
   console.log(
-    `Agent policy: ${result.agentProfilePolicy.modelPolicy} / ${result.agentProfilePolicy.reasoningPolicy}`,
+    `Profiles: ORCHESTRATOR=${routing.profiles.orchestrator.reasoningPolicy}; ` +
+      `DISCOVERY=${routing.profiles.discovery.reasoningPolicy}; ` +
+      `EXECUTION=${routing.profiles.execution.reasoningPolicy}`,
   );
   console.log(`Creator: ${result.creator.name} (@${result.creator.github})`);
   console.log(`License: ${result.license}`);
