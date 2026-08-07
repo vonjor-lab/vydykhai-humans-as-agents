@@ -1,4 +1,4 @@
 interface:
   display_name: "Accept Work"
-  short_description: "Accept work against intent and evidence"
-  default_prompt: "Use $accept-work to verify this work against current intent and evidence."
+  short_description: "Accept work in its execution context"
+  default_prompt: "Use $accept-work in the owning execution context to verify the delivered contract and exact current artifact."

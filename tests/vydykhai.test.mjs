@@ -38,9 +38,9 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.equal(await readFile(path.join(target, "NOTICE.md"), "utf8"), "product notice\n");
     assert.equal(await readFile(path.join(target, ".agents/skills/project-only/SKILL.md"), "utf8"), "project-only\n");
     assert.match(await readFile(path.join(target, "docs/workflows/README.md"), "utf8"), /environment-neutral workflows/);
-    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Consult when \/ Return to:/);
-    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Touch Set:/);
-    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory Brief:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Role: EXECUTION/);
+    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Consult when:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Applicable Memory Brief:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory Delta:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Recipient proof:/);
     assert.match(await readFile(path.join(target, "docs/workflows/intent-trail-template.md"), "utf8"), /APPROACH_PIVOT/);
@@ -48,7 +48,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.14.1");
+    assert.equal(lock.installedVersion, "1.15.0");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -75,7 +75,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.14\.1/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.15\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -111,12 +111,12 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectState, /Snapshot as of:/);
   assert.equal((projectState.match(/^## Next-Best-Action$/gm) || []).length, 1);
   const taskHandoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
-  assert.match(taskHandoff, /Continue from \/ applicable invariants:/);
-  assert.match(taskHandoff, /Touch Set:/);
-  assert.match(taskHandoff, /Memory Brief:/);
+  assert.match(taskHandoff, /Role: EXECUTION/);
+  assert.match(taskHandoff, /Continue from:/);
+  assert.match(taskHandoff, /Applicable Memory Brief:/);
   assert.match(taskHandoff, /Memory Delta:/);
-  assert.match(taskHandoff, /Consult when \/ Return to:/);
-  assert.match(taskHandoff, /Boundary consultation result:/);
+  assert.match(taskHandoff, /Consult when:/);
+  assert.match(taskHandoff, /Boundary consultation:/);
   assert.match(taskHandoff, /Progress continuity:/);
   assert.match(taskHandoff, /Recipient proof:/);
   assert.match(taskHandoff, /schema\/migration revision/);
@@ -139,6 +139,39 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(acceptWork, /zero-spend or no-mutation contract/);
   assert.match(acceptWork, /Memory Delta/);
   assert.match(acceptWork, /least-privilege access/);
+});
+
+test("orchestrator and task contexts keep distinct hot and cold paths", async () => {
+  const orchestratorSkill = await readFile(
+    path.join(root, ".agents/skills/framework-orchestrator/SKILL.md"),
+    "utf8",
+  );
+  const alignmentSkill = await readFile(path.join(root, ".agents/skills/daily-alignment/SKILL.md"), "utf8");
+  const acceptSkill = await readFile(path.join(root, ".agents/skills/accept-work/SKILL.md"), "utf8");
+  const orchestratorWorkflow = await readFile(path.join(root, "docs/workflows/framework-orchestrator.md"), "utf8");
+  const alignmentWorkflow = await readFile(path.join(root, "docs/workflows/daily-alignment.md"), "utf8");
+  const handoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
+
+  assert.match(orchestratorSkill, /Hot path:[\s\S]*Do not run Daily Alignment/);
+  assert.match(orchestratorSkill, /Never implement, debug, fix product code/);
+  assert.match(alignmentSkill, /Do not use for task-local failures/);
+  assert.match(acceptSkill, /owning execution context/);
+  assert.match(acceptSkill, /do not perform project-wide orchestration/);
+
+  assert.match(orchestratorWorkflow, /Working inside scope: stay quiet/);
+  assert.match(orchestratorWorkflow, /Material external delta:[\s\S]*Do not wake unaffected work/);
+  assert.match(orchestratorWorkflow, /Repeated no-progress:[\s\S]*do not restart alignment/);
+  assert.match(alignmentWorkflow, /Leave unaffected tasks asleep/);
+  assert.match(alignmentWorkflow, /Task contexts never read the raw transcript/);
+
+  const startup = handoff.split("## Startup")[1].split("## Execution Rules")[0];
+  assert.match(startup, /Role: EXECUTION/);
+  assert.match(startup, /Applicable Memory Brief:/);
+  assert.doesNotMatch(startup, /Touch Set:/);
+  assert.doesNotMatch(startup, /Project State:/);
+  assert.match(handoff, /Resolve ordinary implementation failures autonomously/);
+  assert.match(handoff, /Do not run `\$project-launch`, `\$start-work`, `\$daily-alignment`, or `\$framework-orchestrator` here/);
+  assert.match(handoff, /Publish Return Sync automatically only at a declared trigger/);
 });
 
 test("update from a local canonical source preserves project files", async () => {

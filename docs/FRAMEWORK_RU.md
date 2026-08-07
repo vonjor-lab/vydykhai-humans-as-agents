@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.14.1 | Статус: каноническое операционное ядро
+Версия: 1.15.0 | Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк совместной работы людей и AI-агентов. Он вырос из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action.
 
@@ -38,9 +38,10 @@
 - Research, lab и implementation идут в отдельных сфокусированных контекстах.
 - Общий Git-репозиторий хранит framework и project files. GitHub Issues и PR являются рекомендуемым sync space; аналогичный tracker подходит, только если все участники и их оркестраторы видят одно связанное состояние. Локальные копии и история чата являются evidence, но не source of truth.
 - Idea Memory хранит подтвержденные полезные идеи вне текущего scope и возвращает их, когда планирование касается нужной продуктовой поверхности.
-- Task contexts отвечают за implementation, исправления, `$accept-work`, smoke на точном актуальном коде, ручной merge после подтверждения человека и автоматический return sync в оркестратор.
-- Оркестратор отвечает за sequence, alignment, dispatch, запросы человеку, health checks и next-best-action.
-- В одной продуктовой фазе действует один active implementation context и один канонический Candidate, если brief явно не разрешает parallel-safe работу.
+- Оркестратор решает, что, зачем, когда и кем делается, и поддерживает понимание того, что изменилось: compass, sequence, alignment, dispatch, запросы человеку, общую память, health, parent closure и next-best-action.
+- Task contexts решают, как доставить и доказать один принятый инкремент: локальный план, implementation, debugging, исправления, `$accept-work`, smoke на точном актуальном коде, ручной merge после подтверждения человека и автоматический return по объявленным triggers.
+- Task обнаруживает границу исполнения, а оркестратор решает, как на нее реагировать на уровне проекта. Ни одна роль молча не забирает работу другой.
+- У одного принятого инкремента есть один owning execution context и один канонический Candidate, если brief явно не разрешает parallel-safe работу. Следующие инкременты ставит в sequence оркестратор, не растягивая один task на весь продуктовый маршрут.
 
 Agent context - это логическая граница, а не функция конкретного продукта. Он может быть thread, chat, session, run, workspace или tracker-linked agent.
 
@@ -99,7 +100,7 @@ Universal rules не фиксируют сегодняшний model id, поэ�
 
 ## Проактивные правила
 
-Правила фреймворка являются активными рекомендациями, а не скрытой проверкой. Если человек или агент предлагает путь против правила, оркестратор или task context должен вежливо назвать:
+Правила фреймворка являются активными рекомендациями, а не скрытой проверкой. Оркестратор отвечает за продуктовые и координационные guardrails. Task применяет локальную безопасность и свой execution contract, а на более широкой границе консультируется вместо framework-wide review. Если человек или агент предлагает путь против правила, ответственный context должен вежливо назвать:
 
 - нужное правило и конкретный риск;
 - рекомендуемый путь и точное следующее действие;
@@ -121,7 +122,7 @@ Universal rules не фиксируют сегодняшний model id, поэ�
 
 ### Актуальность scope
 
-Перед dispatch или возобновлением работы сопоставить задачу с последними DOD и решениями, результатами upstream-задач, затронутыми сущностями и contracts, активной работой, Idea Memory и текущим кодом.
+Перед dispatch, re-brief или существенным возобновлением stale/paused работы оркестратор сопоставляет задачу с последними DOD и решениями, результатами upstream-задач, затронутыми сущностями и contracts, активной работой, Idea Memory и текущим кодом. Обычное продолжение внутри актуального active contract является hot path: прочитать только новое значимое событие задачи и не перезапускать alignment, memory retrieval, scope freshness или dashboard rebuild.
 
 - `UNCHANGED`: контракт остается актуальным.
 - `PATCH_REQUIRED`: нужен ограниченный Brief Patch.
@@ -149,7 +150,7 @@ Maintenance называет источник friction, сохраняет Accep
 
 Длина сообщения не является trigger. Явные «запомни», «важно», «всегда», «никогда», «давай по-другому» и принятые pivots создают confirmed delta; предполагаемый более широкий смысл получает статус `PROVISIONAL` и один раз показывается человеку для поправки. Каждая задача маршрутизирует Memory Delta как `none`, `task-local only` или reusable candidate; оркестратор объединяет только переиспользуемую delta с существующим семейством решений вместо нового дубля. Полные сообщения не копируются, вместо этого сохраняется ссылка.
 
-При каждом brief, re-brief, resume, consultation, решении о sequence, acceptance, milestone и rotation из outcomes, entities, actors/surfaces, contracts/authorities и data/operational realms формируется Touch Set. Он сопоставляется с текущей картой решений, Idea Memory, accepted/rejected task lineage и безопасными операционными sources. Задача получает короткий Memory Brief: применимые правила, уроки rejected paths, уместные идеи без расширения scope, безопасные ссылки и conflicts либо `MEMORY_COVERAGE_GAP`. Текущие memory bodies перестраиваются атомарно; superseded evidence сохраняется по ссылкам.
+При каждом cold-path brief, re-brief, dispatch, решении consultation или sequence, parent acceptance, milestone и rotation оркестратор формирует Touch Set из outcomes, entities, actors/surfaces, contracts/authorities и data/operational realms. Он сопоставляет его с текущей картой решений, Idea Memory, accepted/rejected task lineage и безопасными операционными sources, а задаче передает только короткий Memory Brief: применимые правила, уроки rejected paths, безопасные ссылки и conflicts либо `MEMORY_COVERAGE_GAP`. Текущие memory bodies перестраиваются атомарно; superseded evidence сохраняется по ссылкам. На hot-path continue эта работа не повторяется.
 
 ### 2. Выбор режима
 
@@ -174,43 +175,42 @@ Research уменьшает неопределенность. Lab уменьша
 
 ### 3. Dispatch
 
-Минимальный task contract содержит:
+Минимальный role-`EXECUTION` task contract содержит:
 
 - Goal и DOD impact;
 - Scope, out of scope, владелец результата и граница зависимости/получателя;
-- Scope freshness, Accepted Baseline и Touch Set;
-- Memory Brief и продолжение принятого механизма с одним-тремя применимыми invariants;
+- Scope freshness, Accepted Baseline, принятый механизм и один-три отобранных пункта Memory Brief;
 - Product loop либо связанный enabling contract; enabler называет `Разблокировано`, `Еще не сделано` и следующий продуктовый slice;
-- Human checkpoint;
+- Authority/safety envelope и Human checkpoint;
 - Burn / stop и expansion appetite, когда они существенны;
 - Verification и completion route;
-- Consult when / Return to, а также event triggers для checkpoint, blocker и terminal result.
+- Узкие Consult when / Return to, срабатывающие только на named human checkpoint, неустранимый blocker или terminal result.
 
-По умолчанию task продолжает принятый механизм. Новый общий механизм или изменение системы должно быть явно записано в contract либо разрешено через consultation; локальная свобода implementation не дает права создавать его молча. Lab Mode, Peer Compass Review, model profile и подробные contracts добавляются только когда нужны. Перед patch работающей задачи оркестратор читает события task context новее последнего Return Sync и совмещает их с более свежими указаниями человека. Затем он создает или готовит context, проверяет title или stable handle, записывает ссылку и убеждается, что работа началась. Ответ только с планом не считается прогрессом.
+Raw Project State, Touch Set, transcripts, полные memory views, task map и размышления оркестратора не передаются в task. По умолчанию task продолжает принятый механизм; новый общий механизм или изменение системы должно быть явно записано либо разрешено через consultation. Lab Mode, Peer Compass Review, model profile и подробные contracts добавляются только когда нужны. Перед patch работающей задачи оркестратор читает события новее последнего Return Sync и совмещает их с более свежими указаниями человека. Затем он создает или готовит context, проверяет title/handle и ссылку и убеждается, что работа началась. Ответ только с планом не считается прогрессом.
 
 ### 4. Исполнение
 
-Task context начинает implementation, а не повторяет уже согласованное планирование, и автономно продолжает до human checkpoint, реального blocker или terminal result. Он возвращается за re-brief, если меняются цель, source of truth, общий contract, burn cap или freshness status.
+Task context начинает implementation, а не повторяет согласованное планирование. Он отвечает за локальный план, implementation, debugging, tests и исправления, самостоятельно решает обычные ошибки внутри scope и burn и продолжает до named human checkpoint, неустранимого blocker или terminal result. Он не запускает project launch, shaping, alignment или orchestration workflows.
 
-При встрече с незаявленной сущностью, общим механизмом или contract, конфликтом authority, пересечением ownership в коде или результате либо возможным изменением системы task останавливает только затронутую границу и отправляет `CONSULT`: `Boundary`, `Evidence`, `Proposed move` и `Safe continuation`. Вспомогательная, демонстрационная, review или transport-задача не получает DOD и burn продуктовой задачи только потому, что их файлы изолированы. Оркестратор подтягивает нужную durable truth и использует существующие маршруты: `CONTINUE`, `PATCH_REQUIRED` или `REBRIEF_REQUIRED`; пересечение owners запускает Peer Compass Review, а только реальный выбор человека получает `NEEDS_DECISION`.
+При незаявленном scope, authority, safety, общем механизме/contract, пересечении ownership, ставшем невозможным DOD или повторном отсутствии прогресса task отправляет один `CONSULT`: `Boundary`, `Evidence`, `Proposed move` и `Safe continuation`, затем останавливает только эту границу. Оркестратор подтягивает нужную durable truth и решает `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, Peer Compass Review или `NEEDS_DECISION`. Вспомогательная, demo, review или transport-задача не получает продуктовый DOD и burn только потому, что ее файлы изолированы.
 
-При checkpoint, blocker или terminal result task context без отдельного запроса человека публикует короткий Return Sync с маршрутом Memory Delta: `none`, `task-local only` или reusable candidate. Если доступен native обмен между contexts, результат отправляется напрямую; иначе он записывается в shared tracker и поднимает доступный event или hook. Передача между людьми завершена только после подтверждения доступа к точному shared artifact или revision и согласованной проверки получения. Для запускаемого результата с данными также указываются точные environment, schema/migration revision и воспроизводимый безопасный источник данных, например fixture, seed, snapshot или общая test environment, чтобы получатель мог пройти показательный сценарий. Отсутствующие или недоступные обязательные данные дают handoff статус `BLOCKED`, а не доказывают ошибку продукта; production data и secrets не копируются в память фреймворка. Monitor используется только как fallback, когда оба пути недоступны.
+На объявленном return trigger task публикует один короткий Return Sync с маршрутом Memory Delta: `none`, `task-local only` или reusable candidate, не ожидая опроса человеком. Для локально исправленной ошибки routine progress return не отправляется. Если доступен native обмен между contexts, результат отправляется напрямую; иначе используется shared tracker event/hook. Передача между людьми завершена только после доступа получателя к точному artifact/revision и согласованной проверки. Для запускаемого результата с данными также доказываются exact environment, schema/migration revision, воспроизводимые безопасные test data и recipient access. Отсутствующие обязательные данные дают handoff статус `BLOCKED`, а не доказывают ошибку продукта; production data и secrets не копируются в память. Monitor используется только как fallback, когда оба return routes недоступны.
 
 ### 5. Alignment
 
-Использовать `$daily-alignment` после содержательной встречи или события, которое меняет безопасное следующее действие другого участника. Опубликовать local packet, согласовать нужные packets, перестроить текущий dashboard и явно сказать, что может продолжаться.
+Использовать `$daily-alignment` только в оркестраторе после содержательной встречи или внешнего события, которое существенно меняет безопасное следующее действие другого участника. Task-local debugging, routine progress, срочность, локально исправленный blocker и обычное продолжение не являются alignment events.
 
 Отсутствующий участник не блокирует независимую работу. Работа на его активной поверхности или contract продолжается только в явных cautions либо ждет его packet.
 
-Если событие устарило контракт отложенной или приостановленной задачи, отметить ее `PATCH_REQUIRED` или `REBRIEF_REQUIRED`.
+Каждая существенная delta сопоставляется с active, queued и paused tasks. Незатронутые задачи не будятся. Active task получает только `что изменилось / к чему относится / что сохраняется / действие`: совместимый patch позволяет продолжить, а invalidating change останавливает только затронутую границу для `PATCH_REQUIRED` или `REBRIEF_REQUIRED`. Task не читает raw meeting inputs.
 
 ### 6. Приемка
 
-Перед завершением task context запускает `$accept-work`. Приемка сравнивает Candidate с его Accepted Baseline, последним решением человека, brief, DOD, deltas, product loop, burn, тестами и smoke evidence. Существенные изменения получают статус `Inherited`, `Deliberately changed` или `Unexpectedly changed`; необъясненное неожиданное изменение означает `NEEDS_FIXES`.
+Перед завершением owning task context запускает `$accept-work`. Приемка сравнивает Candidate с execution contract, Accepted Baseline, прямыми корректировками человека, адресными patches оркестратора, product loop, burn, тестами и smoke evidence; несвязанная память проекта не восстанавливается. Существенные изменения получают статус `Inherited`, `Deliberately changed` или `Unexpectedly changed`; необъясненное неожиданное изменение означает `NEEDS_FIXES`.
 
 Проверяются риски, которые изменил Candidate. Для runtime, integration или state changes smoke проводится на точных branch, worktree, commit, frontend, backend и browser target, которые принимаются; старый сервер или другая ветка не подходят. Не нужно проходить платный подготовительный путь, если тот же риск доказывается контролируемой точкой входа, а сам путь не менялся. Для zero-spend или no-mutation работы опасная возможность по возможности отключается технически, а counters проверяются до и после; нарушение остается раскрытым и не может называться нулевым. Backend state, UI shell, lab proof или enabler без названного продуктового продолжения сами по себе не закрывают capability.
 
-После приемки и обязательного human checkpoint Candidate становится новым Accepted Baseline. Rejected Candidate остается только evidence. Человек делает manual merge через task context, который публикует terminal Return Sync; затем оркестратор объединяет переиспользуемую Memory Delta с текущим семейством решений, перестраивает затронутую память и обновляет DOD burn, alignment, parent closure и next-best-action.
+После приемки и обязательного human checkpoint Candidate становится новым Accepted Baseline. Rejected Candidate остается только evidence. Человек делает manual merge через task context, который публикует terminal Return Sync. Оркестратор принимает этот verdict без повторной task acceptance, затем объединяет переиспользуемую Memory Delta и обновляет DOD burn, alignment, parent closure и next-best-action.
 
 ### 7. Health Review
 
@@ -236,7 +236,7 @@ Task context начинает implementation, а не повторяет уже 
 
 Registry участников содержит: participant, orchestrator context link, установленную версию фреймворка, resolved agent profile и дату проверки, latest packet, active task и status.
 
-Перед стартом или продолжением работы на общей поверхности orchestrator каждого участника проверяет свою строку и публикует новый packet, если локальное состояние или результаты встречи существенно изменились. Нельзя придумывать незакоммиченное состояние другого участника.
+Перед dispatch или существенным resume на общей поверхности orchestrator каждого участника проверяет свою строку и публикует packet только при материальном изменении локального состояния или результатов встречи. Обычное execution внутри актуального contract не создает packet. Нельзя придумывать незакоммиченное состояние другого участника.
 
 При публикации Team Alignment Delta либо изменении Project State, Idea Memory или Intent Trail затронутый current body перестраивается в той же операции. Сохраняется один current view; история остается по ссылкам, а не в stale или конфликтующих sections. Alignment Window ротируется, когда перестает быстро читаться.
 
@@ -283,7 +283,7 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - Человеческое общение остается продуктовым; branch и worktree mechanics показываются только когда влияют на решение или риск.
 - Implementation не начинается без goal, boundary, DOD impact, human checkpoint и verification route.
 - Нельзя заявлять team alignment, пока доступ к shared repo/tracker или важному input имеет статус `SYNC_LIMITED`.
-- Перед dispatch или resume проверяется актуальность scope; существенный устаревший scope не продолжается без подтвержденного patch или re-brief.
+- Scope freshness проверяется перед dispatch, re-brief или существенным resume stale/paused работы; обычное продолжение внутри актуального active contract ее не запускает.
 - Неожиданное разрастание задачи является diagnostic trigger; повторяющийся architecture tax нельзя считать нормой, а containment - устранением причины.
 - Ближайший DOD защищается от optional scope growth, будущие идеи сохраняются в Idea Memory, а переиспользуемые человеческий замысел, pivots и безопасные операционные знания - в текущей карте решений, а не только в памяти человека или истории чата.
 - Сохраняется одна линия успеха: новые Candidates строятся от Accepted Baseline и применимого Memory Brief с учетом уроков Rejected Candidates.
@@ -293,7 +293,7 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 - В установленных или распространяемых копиях фреймворка сохраняются license, creator metadata и required notice; они не распространяют права на project-specific работу.
 - Используется `latest available flagship / deepest bounded reasoning`; resolved profile и дата проверки хранятся в Project State, fallback показывается явно. Universal rules не содержат hardcoded model version или vendor-specific reasoning label.
 - Append-only evidence сохраняется, но текущие dashboards атомарно перестраиваются и не содержат дублирующих или противоречащих текущих секций.
-- Task events автоматически возвращаются в оркестратор; люди не должны опрашивать завершившиеся contexts.
+- Named human checkpoints, неустранимые blockers и terminal task results автоматически возвращаются в оркестратор; люди не должны опрашивать contexts или синхронизировать routine progress.
 - Next-best-action важнее status-only ответа.
 - Active orchestrator нельзя переключать без Rotation Memory Packet, candidate Memory Coverage Check и явного подтверждения человека.
 
@@ -302,10 +302,10 @@ Peer Compass Review предлагается, когда задачи, PR, пр�
 Канонические repo-scoped skills:
 
 - `$project-launch`: активировать проект и создать operating brief.
-- `$framework-orchestrator`: восстановить state, координировать, dispatch, supervise и выбрать next-best-action.
+- `$framework-orchestrator`: через hot или cold path координировать, dispatch, supervise, интегрировать результат и выбрать next-best-action.
 - `$start-work`: превратить большую тему в epic и task map.
 - `$daily-alignment`: асинхронно согласовать изменения встреч и событий.
-- `$accept-work`: принять task, milestone или epic по актуальному intent и evidence.
+- `$accept-work`: принять task, PR, lab/maintenance result или продуктовый инкремент в owning execution context.
 
 Поведение задают `SKILL.md` contracts. Среда может показывать их как `$skills`, commands, rules или automatic routes; optional interface metadata не меняет их смысл.
 

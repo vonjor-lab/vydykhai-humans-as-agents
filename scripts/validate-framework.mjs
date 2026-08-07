@@ -74,8 +74,12 @@ const projectStateTemplate = await text("docs/workflows/project-state-template.m
 const ideaMemoryTemplate = await text("docs/workflows/idea-memory-template.md");
 const intentTrailTemplate = await text("docs/workflows/intent-trail-template.md");
 const orchestratorWorkflow = await text("docs/workflows/framework-orchestrator.md");
+const dailyAlignmentWorkflow = await text("docs/workflows/daily-alignment.md");
 const taskHandoffTemplate = await text("docs/workflows/task-context-handoff-template.md");
 const acceptWorkflow = await text("docs/workflows/accept-work.md");
+const orchestratorSkill = await text(".agents/skills/framework-orchestrator/SKILL.md");
+const dailyAlignmentSkill = await text(".agents/skills/daily-alignment/SKILL.md");
+const acceptWorkSkill = await text(".agents/skills/accept-work/SKILL.md");
 const license = await text("LICENSE.md");
 const notice = await text("NOTICE.md");
 const managedNotice = await text("docs/VYDYKHAI_NOTICE.md");
@@ -91,6 +95,16 @@ if (!coreRu.includes("Фокус на DOD, память идей и путь з�
 }
 if (!coreEn.includes("Proactive Guardrails") || !coreRu.includes("Проактивные правила")) {
   fail("Core is missing Proactive Guardrails");
+}
+if (
+  !coreEn.includes("The orchestrator decides what, why, when, and who") ||
+  !coreRu.includes("Оркестратор решает, что, зачем, когда и кем") ||
+  !coreEn.includes("hot path") ||
+  !coreRu.includes("hot path") ||
+  !coreEn.includes("One accepted increment has one owning execution context") ||
+  !coreRu.includes("У одного принятого инкремента есть один owning execution context")
+) {
+  fail("Core is missing control/execution ownership or the lightweight continue path");
 }
 if (!coreEn.includes("Scope Freshness") || !coreRu.includes("Актуальность scope")) {
   fail("Core is missing Scope Freshness");
@@ -144,21 +158,41 @@ if (
 }
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
 if (
-  !taskHandoffTemplate.includes("Continue from / applicable invariants:") ||
-  !taskHandoffTemplate.includes("Touch Set:") ||
-  !taskHandoffTemplate.includes("Memory Brief:") ||
-  !taskHandoffTemplate.includes("Consult when / Return to:") ||
+  !taskHandoffTemplate.includes("Role: EXECUTION") ||
+  !taskHandoffTemplate.includes("Continue from:") ||
+  !taskHandoffTemplate.includes("Applicable Memory Brief:") ||
+  !taskHandoffTemplate.includes("Authority / safety envelope:") ||
+  !taskHandoffTemplate.includes("Consult when:") ||
+  !taskHandoffTemplate.includes("Return triggers:") ||
   !taskHandoffTemplate.includes("Learning Delta:") ||
   !taskHandoffTemplate.includes("Intent / Approach Delta:") ||
   !taskHandoffTemplate.includes("Memory Delta:") ||
-  !taskHandoffTemplate.includes("Boundary consultation result:") ||
+  !taskHandoffTemplate.includes("Boundary consultation:") ||
   !taskHandoffTemplate.includes("Progress continuity:") ||
   !taskHandoffTemplate.includes("Recipient proof:")
 ) {
-  fail("Task handoff is missing continuation, memory, consultation, learning, intent, progress, or receipt fields");
+  fail("Task contract is missing execution, continuation, safety, return, memory, or receipt fields");
+}
+const startupContract = taskHandoffTemplate.split("## Startup")[1]?.split("## Execution Rules")[0] || "";
+if (startupContract.includes("Touch Set:") || startupContract.includes("Project State:")) {
+  fail("Task startup leaks project-wide orchestration state");
+}
+if (
+  !taskHandoffTemplate.includes('Do not run `$project-launch`, `$start-work`, `$daily-alignment`, or `$framework-orchestrator` here') ||
+  !taskHandoffTemplate.includes("Do not send routine progress")
+) {
+  fail("Task contract is missing the execution-only hot path");
 }
 if (!orchestratorWorkflow.includes("Boundary consultation (`CONSULT`)")) {
   fail("Orchestrator workflow is missing boundary consultation");
+}
+if (
+  !orchestratorWorkflow.includes("Choose Hot Or Cold Path") ||
+  !orchestratorWorkflow.includes("Do not run Daily Alignment") ||
+  !orchestratorWorkflow.includes("Material external delta") ||
+  !orchestratorWorkflow.includes("Do not wake unaffected work")
+) {
+  fail("Orchestrator workflow is missing hot-path continuity or targeted external-delta routing");
 }
 if (
   !orchestratorWorkflow.includes("derive a Touch Set") ||
@@ -180,6 +214,20 @@ if (!orchestratorWorkflow.includes("newer than the last Return Sync")) {
 if (!orchestratorWorkflow.includes("no context message, no-op trace, or model wake-up")) {
   fail("Orchestrator monitor is not truly silent while unchanged");
 }
+if (
+  !dailyAlignmentWorkflow.includes("Task-local debugging") ||
+  !dailyAlignmentWorkflow.includes("Leave unaffected tasks asleep") ||
+  !dailyAlignmentWorkflow.includes("Task contexts never read the raw transcript")
+) {
+  fail("Daily Alignment may leak into task execution or wake unaffected work");
+}
+if (
+  !orchestratorSkill.includes("Do not use for task-local implementation") ||
+  !dailyAlignmentSkill.includes("Do not use for task-local failures") ||
+  !acceptWorkSkill.includes("do not perform project-wide orchestration")
+) {
+  fail("Skill descriptions do not enforce context ownership");
+}
 if (!acceptWorkflow.includes("Rejected Candidate")) fail("Acceptance is missing rejected-candidate handling");
 if (!acceptWorkflow.includes("Unexpectedly changed")) fail("Acceptance is missing inheritance classification");
 if (!acceptWorkflow.includes("recipient-side exact-artifact/revision proof")) {
@@ -197,6 +245,12 @@ if (
   !acceptWorkflow.includes("never a credential")
 ) {
   fail("Acceptance is missing memory return or safe operational verification");
+}
+if (
+  !acceptWorkflow.includes("Do not reconstruct unrelated Project State") ||
+  !acceptWorkflow.includes("orchestrator decides parent closure")
+) {
+  fail("Acceptance does not preserve task-local proof and orchestrator-owned parent closure");
 }
 if (!changelog.includes(`## ${manifest.version} -`)) fail("Changelog is missing current version");
 if (changelog.match(/^## (\d+\.\d+\.\d+) -/m)?.[1] !== manifest.version) {

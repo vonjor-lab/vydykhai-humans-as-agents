@@ -60,14 +60,14 @@ Rotation does not replace that pointer automatically. Project State records the 
 
 Explain:
 
-- ask the personal orchestrator to start, continue, process a meeting, or check work;
+- ask the personal orchestrator to start, continue, process a meeting, or check work; ordinary continue uses a lightweight hot path rather than restarting alignment or planning;
 - after a meaningful meeting, each relevant participant processes it asynchronously when they next resume; no fixed order is required;
-- keep research, lab, and implementation in separate contexts;
+- keep research, lab, and implementation in separate contexts; the orchestrator decides what/why/when/who, while a task decides how to implement and prove its accepted increment;
 - finish tasks with `$accept-work` in the task context;
 - perform manual smoke and merge in the task context after human confirmation;
 - let the chosen shared tracker carry durable state between people and agents;
 - confirm that both the person and their orchestrator can reach the shared repo/tracker and relevant meeting inputs; otherwise expect `SYNC_LIMITED` rather than full alignment;
-- let task contexts return checkpoints, blockers, and terminal results automatically; people should not poll them;
+- let task contexts solve ordinary failures themselves and return only named human checkpoints, irreducible blockers, and terminal results automatically; people should not poll them;
 - say useful ideas and corrections freely: the orchestrator protects the nearest DOD, stores future ideas, preserves meaningful intent and «do it differently» pivots, and recalls them at relevant planning;
 - expect every task to start with relevant prior decisions and finish with a compact memory delta; people do not tag or curate this manually;
 - expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.

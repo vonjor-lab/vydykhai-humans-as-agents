@@ -20,7 +20,7 @@ This repository is the canonical source for the universal Vydykhai collaboration
 - Product-specific rules stay outside framework-managed files in the target repo.
 - Do not add product names, customer data, meeting transcripts, credentials, proprietary prompts, internal thread ids, or implementation details from another repository.
 - Prefer deleting duplication over adding another rule or skill.
-- The Framework Orchestrator is organization-only. Task contexts own implementation, corrective fixes, `$accept-work`, exact-current-code smoke, and manual merge after human confirmation.
+- The Framework Orchestrator is the control plane: what/why/when/who and what changed. Task contexts are the execution plane: how to implement and prove one accepted increment, including corrective fixes, `$accept-work`, exact-current-code smoke, and manual merge after human confirmation. Tasks detect wider boundaries; the orchestrator decides the project response.
 - Preserve source precedence, explicit human checkpoints, asynchronous participant visibility, dashboard freshness, monitor cleanup, and orchestrator rotation.
 - Treat orchestrator rotation as a memory migration: previous packet, independent candidate coverage, visible delta, human-confirmed switch, and retained history context.
 - Treat Idea Memory and Intent Trail bodies as atomic current views, with comments and task history as evidence. Operational memory may point to protected secret systems and private runbooks but must never copy secret values.

@@ -6,7 +6,7 @@ Vydykhai is a framework for collaborative work between people and AI agents. It 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.14.1`
+Current version: `1.15.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -42,7 +42,8 @@ Historical snapshots remain available through Git releases and tags. Current ski
 
 - Start with a rough goal. The orchestrator helps brainstorm it into a shared compass, brief, and nearest DOD.
 - The orchestrator turns approved direction into focused tasks while keeping implementation out of the coordination context.
-- A task continues the accepted product mechanism. It consults the orchestrator only at an undeclared boundary; Research or Lab is used only when uncertainty, cost, or risk justifies it.
+- The orchestrator decides what/why/when/who and what changed; a focused task decides how to implement and prove one accepted increment.
+- A task continues the accepted product mechanism, resolves ordinary failures itself, and consults only at an undeclared boundary. Research or Lab is used only when uncertainty, cost, or risk justifies it.
 - Meetings and asynchronous local work converge through shared Git-backed state. An absent participant blocks only overlapping work.
 - Before work starts, the orchestrator matches its Touch Set with prior decisions, rejected paths, ideas, and safe operational sources, then gives the task only the relevant Memory Brief.
 - Each result is verified against the current artifact or exact code and returns a compact Memory Delta; the orchestrator merges only reusable lessons, updates DOD progress and next-best-action, and runs deeper memory synthesis only when needed.

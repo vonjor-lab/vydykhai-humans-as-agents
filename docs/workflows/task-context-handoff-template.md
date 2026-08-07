@@ -1,30 +1,29 @@
-# Task Context Handoff
+# Task Context Contract
 
-Use the minimum contract. Add optional fields only when they alter execution safety.
+The orchestrator resolves project-wide meaning before dispatch. Give the task only what it needs to execute and prove one accepted increment. Do not copy Project State, meeting transcripts, Idea Memory, Intent Trail, the full task map, or orchestration deliberation into the task.
+
+## Startup
 
 ```md
 # Task Context Startup
 
+Role: EXECUTION
 Title:
 Task / outcome owner / backup / recipient:
-Orchestrator / Project State:
-Latest relevant delta:
-Touch Set: <outcomes | entities | actors/surfaces | contracts/authorities | data/operational realms>
-Memory Brief: <1-3 current decisions/invariants | rejected-path lessons | relevant ideas without scope growth | safe operational sources | conflicts/gaps or none>
-Continue from / applicable invariants: <accepted mechanism/reference plus Memory Brief>
-Agent profile: <resolved model / reasoning mapping / checked date / fallback>
-Consult when / Return to: <semantic boundary signals / orchestrator context or stable shared-tracker event>
-Return triggers: <human checkpoint | real blocker | terminal result>
+Return to: <orchestrator context or stable shared-tracker event>
 
-## Goal And DOD
+## Outcome
 
-<one outcome and named DOD impact>
+Goal and nearest DOD impact:
+Product loop or linked enabler:
+For an enabler: Unlocks / Still missing / next product slice and owner:
 
-## Scope Boundary
+## Execution Boundary
 
 Freshness: <UNCHANGED | PATCH_REQUIRED | REBRIEF_REQUIRED> | Checked: <date/evidence>
 Accepted Baseline: <commit, artifact, or proven behavior>
-Candidate: <one active candidate reference>
+Continue from: <accepted mechanism/reference>
+Applicable Memory Brief: <1-3 distilled decisions/invariants, rejected-path lessons, or safe operational references; conflicts/gaps or none>
 Progress continuity: <UNCHANGED | Preserved / Replaced / Added / Remaining>
 
 In scope:
@@ -33,58 +32,45 @@ In scope:
 Out of scope:
 - <work>
 
-## Product Loop Or Enabler
+Authority / safety envelope: <allowed actions and named approval boundaries>
+Dependency / recipient boundary: <only what this execution must preserve or deliver>
 
-<actor, entry/action, result/recovery, or linked capability/contract>
-For an enabler: Unlocks / Still missing / next product slice and owner:
+## Completion
 
-## Human Checkpoint
+Human checkpoint: <none | product decision | visual review | paid/external approval | manual smoke and merge>
+Burn / stop limit: <not material or concrete cap and stop condition>
+Verification: <risk-based tests, exact-current-code smoke, and recipient proof when relevant>
+Consult when: <only undeclared scope/authority/shared-contract/safety boundary, DOD made impossible, or repeated no-progress stop>
+Return triggers: <named human checkpoint | irreducible blocker | terminal result>
+```
 
-<none | product decision | visual review | paid/external approval | manual smoke and merge>
-Judgment owner / why this person:
+## Execution Rules
 
-Trigger and exact requested evidence:
-Safe continuation before checkpoint:
+- Start implementation immediately; approved planning is not repeated in the task context.
+- Own local planning, implementation, debugging, corrective fixes, tests, exact-current-code smoke, and technical evidence.
+- Resolve ordinary implementation failures autonomously inside the contract and burn limit. Do not send routine progress or a Return Sync for a locally resolved failure.
+- Do not run `$project-launch`, `$start-work`, `$daily-alignment`, or `$framework-orchestrator` here. Use implementation/domain skills as needed and run `$accept-work` before completion.
+- Detect an undeclared boundary, but do not redesign project scope, sequence, ownership, or shared contracts. Send one compact `CONSULT`: `Boundary / Evidence / Proposed move / Safe continuation`, then pause only that boundary.
+- Apply a targeted orchestrator instruction at the next safe operation boundary. Continue unaffected work unless the instruction or safety envelope says otherwise.
+- Keep corrective fixes, human smoke, and manual merge in this context because it owns the implementation evidence.
 
-## Burn / Stop Limit
+## Return Sync
 
-<not material or concrete cap and stop condition>
-
-Expected touched surface / first human-verifiable evidence: <only when expansion risk is material>
-
-## Verification And Completion
-
-- <tests/checks>
-- for auth/data/storage/migration/deploy work: verify exact environment, least-privilege access, safe runbook, backup/recovery route, and a non-destructive preflight; never copy secret values into evidence
-- for runnable data-backed handoff: verify schema/migration revision, reproducible safe fixture/seed/snapshot/shared test environment, and recipient access; missing required data is `BLOCKED`, not product-failure evidence
-- exact-current-code runtime smoke when user-facing or integration-affecting
-- for zero-spend/no-mutation work: capability guard plus before/after counters
-- run `$accept-work` in this task context before completion
-- keep corrective fixes, human smoke, and manual merge in this task context
-
-## Optional Safety Modes
-
-Research / Lab / Peer Compass Review: <only when relevant>
-Experiment decision / one variable / proof / exit: <only for Lab Mode>
-
-## Handoff Back
-
-Status: <EXECUTION_STARTED | BLOCKED_BEFORE_START | NEEDS_REBRIEF | ACCEPT | ACCEPT_WITH_FOLLOWUPS | NEEDS_FIXES | BLOCKED>
-PR / commit / artifact:
-Accepted Baseline / Candidate result:
-Learning Delta: <Keep | Rebuild | Drop | Unknown, when a candidate is rejected>
-Intent / Approach Delta: <none | INTENT / WORKING_RULE / APPROACH_PIVOT; Before / Now / Why / Keep / Drop / applies to / source>
-Memory Delta: <none | task-local only | reusable: confirmed / refined / superseded / new decision family; referenced Learning / Intent / Operational evidence; touch keys; safe source link>
-Boundary consultation result: <none | resolved existing route; evidence/link>
-DOD and parent result:
+```md
+Status: <BLOCKED_BEFORE_START | NEEDS_REBRIEF | ACCEPT | ACCEPT_WITH_FOLLOWUPS | NEEDS_FIXES | BLOCKED>
+Task / context / PR / commit / artifact:
+Accepted Baseline -> Candidate result:
+DOD impact / enabler continuation:
+Verification / exact-current-code smoke / merge:
 Human checkpoint result:
 Burn result:
-Expansion result / route: <when triggered>
-Exact-current-code smoke / merge:
-Participant impact / alignment needed:
-Recipient proof: <not applicable | exact shared artifact or revision / agreed check / recipient environment / schema-migration revision and reproducible safe data source when data-backed / recipient access / representative scenario>
-Risks / follow-ups:
+Boundary consultation: <none | Boundary / Evidence / Proposed move / Safe continuation>
+Learning Delta: <none | Keep / Rebuild / Drop / Unknown>
+Intent / Approach Delta: <none | Before / Now / Why / Keep / Drop / applies to / source>
+Memory Delta: <none | task-local only | reusable candidate with touch keys and safe source>
+Recipient proof: <not applicable | exact artifact/revision, environment, schema/migration revision, access, agreed check, and reproducible safe data when required>
+Risks / required follow-ups / optional Idea Candidates:
 Recommended orchestrator next action:
 ```
 
-A launch is incomplete when the child only writes a plan. It must start execution, name a blocker, or request re-brief. At every return trigger, publish this handoff automatically through native context messaging or the durable tracker; do not wait for a human to poll the task. A cross-person handoff remains incomplete until recipient proof is returned.
+A launch is incomplete when the task only writes a plan. It must start execution, name a real blocker, or request re-brief. Publish Return Sync automatically only at a declared trigger through native context messaging or the durable tracker; do not wait for human polling. A cross-person handoff remains incomplete until recipient proof is returned.
