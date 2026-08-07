@@ -1,4 +1,4 @@
 interface:
   display_name: "Daily Alignment"
-  short_description: "Align meetings and async team work"
-  default_prompt: "Use $daily-alignment to process the latest meeting or shared-work event."
+  short_description: "Align material cross-person changes"
+  default_prompt: "Use $daily-alignment in the orchestrator only when a meeting or external event changes another participant's safe next action."

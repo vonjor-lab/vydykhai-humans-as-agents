@@ -1,57 +1,44 @@
 ---
 name: framework-orchestrator
-description: Continue a Vydykhai product stream, restore project state, coordinate people and agent contexts, process meetings or merges, launch or resume work, supervise acceptance, recover stalled work, rotate stale orchestration context, or choose the next-best-action.
+description: Operate the organization-only control context for shaping, routing, dispatch, material coordination changes, supervision, parent acceptance, health, or rotation. Do not use for task-local implementation, debugging, routine progress, or an ordinary continue inside a current active contract.
 ---
 
 # Framework Orchestrator
 
-Act as the organization-only control context for one participant and product stream.
+Decide what, why, when, and who; maintain what changed. Task contexts decide how to implement and prove their accepted increment.
 
 ## Read
 
 1. `AGENTS.md`
 2. `docs/FRAMEWORK.md`
 
-Read `docs/workflows/framework-orchestrator.md` when dispatching, supervising, recovering, or rotating. Load other workflows only when routing into their action.
+Read `docs/workflows/framework-orchestrator.md` for a cold-path decision. Load another workflow only when routing into that action.
 
-## Preflight
+## Entry Path
 
-- Restore Project State, including this participant's framework version/check, Shared Sync readiness, compass/DOD, participants, active Alignment Window, Idea Memory, Intent Trail decision map, safe operational sources, tasks/PRs/contexts, human checkpoints, and latest verified repository state.
-- Run `node scripts/vydykhai.mjs doctor` on first use, after update, when integrity is uncertain, or on the first active use after that participant's check becomes 24 hours old. Record installed/latest version and check time; stay silent when current, and keep an unavailable check pending without blocking otherwise safe work.
-- Verify this context is the registered active orchestrator for this participant and stream. If another context is current, reconcile or rotate before changing shared state.
-- If rotation is pending, read the Rotation Memory Packet and Memory Coverage status. A candidate stays read-only until explicit human confirmation changes the active pointer.
-- Compare dashboard state with the latest durable event. Reject duplicate or contradictory current sections; atomically rebuild one current DOD, active-work view, framework/agent policy, and next-best-action before relying on it.
-- Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo; agent plan; inference. Before sending a patch, resume, or correction to a running task, read task events newer than its last Return Sync and reconcile any newer human direction.
-- Check scope freshness before every dispatch or resume. Use `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`; age prompts a reread but never changes scope by itself.
-- Re-resolve the agent profile when missing, older than seven days, after framework update/rotation, or when a model is rejected/deprecated. Default to `latest available flagship / deepest bounded reasoning`, record the environment mapping, and expose any fallback in Project State.
+- **Hot path:** an ordinary continue, routine progress question, or task event inside a current contract. Read only the newest relevant task event. If work is active, stay quiet; if the child stopped at plan-only, send one direct execution instruction. Do not run Daily Alignment, scope freshness, Memory Intersection, dashboard rebuild, or repeated preflight merely to continue.
+- **Cold path:** project launch, new dispatch, material re-brief/resume, cross-person meeting or merge impact, boundary consultation, repeated no-progress, parent acceptance, health review, framework update, or rotation. Restore only the durable state needed for that decision and use the full workflow.
+- Run `node scripts/vydykhai.mjs doctor` for a new orchestrator, after update, when integrity is uncertain, or on the first active use after that participant's check becomes 24 hours old. A routine version check stays silent when current and does not interrupt otherwise safe execution.
 
 ## Contract
 
-- Never implement product code, fix defects, deploy, run acceptance smoke, or merge here.
-- Apply Proactive Guardrails whenever a proposed action conflicts with the framework: name the rule and risk, recommend the route and exact action, distinguish what can be preserved from what must be rebuilt, and allow an explicit bounded human override.
-- Route large or changed intent to `$start-work`, meeting/event impact to `$daily-alignment`, and completion checks to `$accept-work` in the task context. Capture explicit remember/important/always/never/do-it-differently corrections and meaningful method changes as `INTENT`, `WORKING_RULE`, or `APPROACH_PIVOT`; merge reusable changes into their decision family and echo inferred wider intent once as `PROVISIONAL`.
-- When a new request would expand active work, classify it as a DOD gap, required guardrail, deliberate scope change, or future idea. Recommend keeping optional scope out of the task, state the DOD/time impact, and upsert the idea into shared Idea Memory after human confirmation.
-- Before every brief, re-brief, resume, consultation, sequence decision, acceptance, or milestone, derive a Touch Set and intersect it with the current decision map, Idea Memory, accepted/rejected lineage, safe operational sources, and active work. Return a compact Memory Brief or `MEMORY_COVERAGE_GAP`; never make the human tag memory or promote an idea silently.
-- Run an Expansion Check before further growth when first evidence misses appetite, a local goal crosses unplanned layers/contracts, incidental platform friction recurs, the same correction fails twice, or cost grows without DOD movement. State expected/expanded/cause and route to `CONTINUE`, `REBRIEF`, `LAB`, or bounded `MAINTENANCE`.
-- Treat backup, cleanup, migration, and caps as containment until the recurring cause is removed or explicitly deferred. Maintenance closes only after the original representative flow is materially smaller/faster, recurrence is tested, and work returns to the original task.
-- Choose Research Context for bounded uncertainty, Lab Mode for lower-cost isolated proof, and Task Context for approved real-path delivery.
-- Dispatch only from the minimum task contract: goal/DOD, scope, outcome owner and dependency/recipient boundary, freshness/Baseline, Touch Set, Memory Brief, accepted mechanism plus 1-3 applicable invariants, product loop or enabler `Unlocks / Still missing / next product slice`, checkpoint, burn, verification, and `Consult when / Return to` plus terminal return triggers.
-- Pass the resolved flagship model and mapped bounded reasoning profile explicitly to new and resumed contexts when supported. Never silently downgrade; expose fallback and allow only an explicit human scope override.
-- Create or prepare a separate context, verify its actual title, record its link, and verify execution started. A plan-only response is not progress. A re-brief or split maps prior progress as `Preserved / Replaced / Added / Remaining` instead of resetting it.
-- Keep one active implementation context and canonical Candidate per product phase. A successor starts from the Accepted Baseline plus applicable Memory Brief and uses the Rejected Candidate's Learning Delta; it does not patch failure as its implicit base.
-- Let launched work continue the accepted mechanism until a human checkpoint, real blocker, or terminal result. At an undeclared entity, shared mechanism/contract, authority conflict, ownership overlap in code or outcome, or possible system change, pause only that boundary and resolve compact `CONSULT` evidence through existing routes. A support/demo/review/transport task never acquires product DOD or burn by isolation alone. Require automatic Return Sync; monitoring is only a fallback.
-- If native context creation is unavailable, prepare the stable shared-tracker handle and startup packet, then give one exact launch action. Never move implementation into the orchestrator context.
-- Supervise through shared task, agent context, PR/artifact, acceptance result, human checkpoint, and shared alignment state.
-- Ask the human with an addressee, the judgment that person owns, exact observable action/link, output location, safe continuation boundary, and return-sync instruction. Keep technical verification with agents.
-- Never say human participation is unnecessary while a named checkpoint remains.
-- Request Peer Compass Review before overlapping owner work changes a shared flow, surface, contract, PR, or DOD row.
-- Keep one fallback monitor on one gate only when event-driven return is unavailable; while unchanged create no context message, no-op trace, or model wake-up; prevent scope/spend/merge, update it when the gate changes, and delete it at terminal state.
-- After acceptance or merge, deduplicate reusable Memory Delta into the current decision family, atomically rebuild affected memory views, and update DOD burn, parent closure, participant impact, Project State, and next-best-action. An enabler reports what it unlocks and what product slice remains; cross-person delivery waits for confirmed access to the exact artifact/revision and the agreed recipient check. For runnable data-backed work, missing environment/schema/test-data parity is `BLOCKED`, not failed product evidence.
-- When upstream is newer, read every changelog release where `installed < release <= latest` oldest first. Report `installed -> latest`, release count, one concise delta per release, and the combined project impact; never omit a skipped release. Record one update plan in Project State: now before next dispatch when idle or currently relevant, otherwise after a named task/checkpoint. At that window prepare or reuse one update branch, run `update` and `doctor`, open or refresh its PR, and report what changed. Never duplicate the update, overwrite conflicts, merge silently, or change active-task rules mid-flight; rotate only when migration or context health requires it.
-- Run Health Review after a milestone, several slices, repeated follow-ups, stalled DOD burn, unexpected task expansion, recurring architecture/data/tooling tax, owner dropout, repeated compaction, or chat archaeology. Rebuild stale memory bodies, merge decision families, retire absorbed entries, and test one representative Memory Intersection.
-- When context is no longer compact, announce and explain rotation first. The previous context publishes state, decision families, material task-local pivots, and safe operational pointers; the candidate independently checks high-signal sources/Return Syncs and tests retrieval on representative Touch Sets, not merely packet/dashboard consistency. The human sees the delta and confirms; only then switch, move returns, pin the new context, rename/unpin the old one, and leave its prominent active-link notice. Keep history accessible; report unsupported UI controls visibly.
-- Never store secret values in shared memory; use only protected-system/runbook references and non-destructive access checks.
-- Never invent another participant's uncommitted state. Missing participants block only overlapping work.
+- Never implement, debug, fix product code, deploy, run acceptance smoke, or merge here. Never move work into the orchestrator because a task is difficult.
+- Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo; agent plan; inference. Before instructing a running task, read events newer than its last Return Sync and preserve newer human direction.
+- Own product and coordination guardrails. A task owns local safety and contract boundaries; it detects a boundary and sends `CONSULT`, while the orchestrator decides `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, Peer Compass Review, or `NEEDS_DECISION`.
+- Protect the nearest DOD. Classify additions as DOD gap, guardrail, deliberate scope change, or future Idea Candidate. Do not make the task or human curate shared memory.
+- Before a cold-path brief, re-brief, dispatch, consultation decision, sequence decision, parent acceptance, milestone, or rotation, derive a Touch Set and intersect it with Intent Trail, Idea Memory, accepted/rejected lineage, safe operational sources, and active work. Give the task only a compact Memory Brief or raise `MEMORY_COVERAGE_GAP`.
+- Use `$daily-alignment` only when a meaningful meeting or external event materially changes another participant's safe next action. Never use it for ordinary task progress, a locally resolved blocker, urgency, Return Sync with no cross-person effect, or simple resume.
+- Choose Research Context for bounded uncertainty, Lab Mode for lower-cost isolated proof with a production exit, and Task Context for approved real-path delivery.
+- Dispatch role `EXECUTION` with the minimum contract: nearest outcome/DOD, scope/out of scope, owner/dependency boundary, freshness/Baseline, accepted mechanism, 1-3 distilled memory items, authority/safety envelope, checkpoint, material burn, verification, and compact consult/return triggers. Do not pass raw Project State, transcripts, full memory, task map, or orchestration deliberation.
+- Create or prepare a separate context, verify its title/link and that implementation actually starts. Plan-only is not progress. If native creation is unavailable, prepare one tracker-linked startup packet and give one exact human action.
+- Let valid work run. A task resolves ordinary implementation failures itself and returns only at a named human checkpoint, irreducible blocker, or terminal result. Monitoring is a silent fallback only when direct return and tracker events are unavailable.
+- On repeated no-progress or unexpected expansion, perform one supervisory diagnosis and route `CONTINUE`, `REBRIEF`, `LAB`, or bounded `MAINTENANCE`; do not restart Daily Alignment or repeat status rituals.
+- For a material meeting, merge, peer result, or human correction, intersect the delta with active as well as queued work. Wake only affected tasks: send a compact compatible patch, or pause only the invalidated boundary for patch/re-brief. Tasks never process raw coordination inputs.
+- Require `$accept-work` in the owning task context. That context keeps corrective fixes, exact-current-code smoke, human checkpoint, and manual merge. The orchestrator consumes the verdict, updates parent DOD, cross-person impact, reusable memory, and next-best-action without repeating task acceptance.
+- Keep one Success Line per accepted increment. A successor starts from the Accepted Baseline plus applicable lessons, not from a rejected state; sequence later increments instead of stretching one task across the product route.
+- Ask a human only for a real product judgment, paid/external action, visual review, or manual smoke/merge. Name the person, observable action/link, safe continuation, and return route.
+- Run Health Review for stalled DOD burn, repeated correction/expansion, recurring architecture/data/tooling tax, stale memory, owner dropout, compaction, or chat archaeology. Rotate only through visible memory coverage and human-confirmed cutover.
+- Never store secret values in shared memory, invent another participant's uncommitted state, or block unrelated work for a missing participant.
 
 ## Finish
 

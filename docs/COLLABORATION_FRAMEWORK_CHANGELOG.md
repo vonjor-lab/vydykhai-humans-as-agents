@@ -10,6 +10,23 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 1.15.0 - 2026-08-07
+
+Оркестратор и task contexts получили явное разделение control plane и execution plane, чтобы координационная умность не замедляла исполнение.
+
+- Оркестратор решает, что, зачем, когда и кем делается, поддерживает общую память и обрабатывает изменения; task context решает, как реализовать и доказать один принятый инкремент.
+- Обычное продолжение актуальной задачи стало hot path: без Daily Alignment, повторного scope freshness, Memory Intersection, dashboard rebuild или нового briefing. Полная cold-path проверка остается для dispatch, re-brief, существенных внешних изменений, consultation, parent acceptance, health и rotation.
+- Task получает короткий role-`EXECUTION` contract: ближайший DOD, границы, baseline, принятый механизм, один-три отобранных memory items, authority/safety envelope, проверку и узкие consult/return triggers. Raw Project State, Touch Set, transcripts, полная память и оркестрационные размышления остаются у оркестратора.
+- Task самостоятельно решает обычные implementation failures и не запускает project launch, start-work, daily-alignment или framework-orchestrator. Он только обнаруживает широкую границу и отправляет компактный `CONSULT`; проектный маршрут выбирает оркестратор.
+- Return Sync отправляется автоматически только при named human checkpoint, неустранимом blocker или terminal result. Routine progress и локально исправленные ошибки не создают синк-ритуал.
+- Daily Alignment запускается только при существенном изменении безопасного следующего действия другого участника. Delta сопоставляется с active, queued и paused work; незатронутые tasks не будятся, а затронутые получают только адресный patch или re-brief signal.
+- `$accept-work`, corrective fixes, exact-current-code smoke, human checkpoint и manual merge остаются в owning task context. Оркестратор принимает verdict без повторной task acceptance и обновляет parent DOD, shared impact, reusable memory и next-best-action.
+- Повторное отсутствие DOD progress вызывает одну supervisory diagnosis с маршрутом `CONTINUE`, `REBRIEF`, `LAB` или bounded `MAINTENANCE`, а не очередной Daily Alignment или статусный цикл.
+
+Переход: совместимый update in place. Существующие Project State, memory, issues и active contexts остаются действительными. Новый execution contract применяется при следующем dispatch или реальном re-brief; активная задача получает patch только при материальном влиянии. Обязательная rotation не нужна.
+
+Зачем: task contexts быстрее и дешевле двигаются к проверяемому результату, а оркестратор сохраняет целостность проекта и адресно вмешивается только тогда, когда действительно изменилась безопасная картина работы.
+
 ## 1.14.1 - 2026-08-06
 
 Линия 1.14 сделала накопленную память активной частью работы, а не архивом, который должен помнить человек.

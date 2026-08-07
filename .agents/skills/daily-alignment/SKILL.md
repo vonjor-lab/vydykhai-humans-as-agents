@@ -1,6 +1,6 @@
 ---
 name: daily-alignment
-description: Process a daily or meaningful meeting, transcript, chat decision, merge, blocker, accepted result, owner change, or return-to-work event that may change another participant's safe next action.
+description: Use only in an orchestrator context to reconcile a meaningful meeting or external coordination event that materially changes another participant's safe next action. Do not use for task-local failures, routine progress, urgency, a Return Sync with no cross-person impact, or ordinary resume/continue.
 ---
 
 # Daily Alignment
@@ -30,7 +30,8 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 - Rebuild the Alignment Window body in the same operation as the delta.
 - Update the participant registry with orchestrator context link, installed framework version, resolved agent profile/check date, latest packet, active task, and status.
 - Create a Brief Patch for a small approved change; route material goal, scope, sequence, ownership, or task-map changes to `$start-work`.
-- Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; do not mutate their scope silently or treat age alone as a scope change.
+- Intersect the delta with active, queued, and paused tasks. Do not wake an unaffected task. Send an affected active task only `what changed / applies to / preserved / action`: a compatible patch lets it continue, while an invalidating change pauses only the affected boundary for `PATCH_REQUIRED` or `REBRIEF_REQUIRED`. Tasks never process raw meeting or alignment inputs.
+- Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; do not mutate scope silently or treat age alone as a scope change.
 - Rotate and archive the Alignment Window after a milestone or when it is no longer quickly scannable.
 - Update the Framework Orchestrator state, relevant Idea Memory and Intent Trail decision families, safe operational pointers, and next-best-action. Keep task-local pivots in their task; return reusable changes as Memory Delta and rebuild affected current views atomically without secret values.
 

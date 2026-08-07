@@ -1,4 +1,4 @@
 interface:
   display_name: "Framework Orchestrator"
-  short_description: "Coordinate work and next-best-action"
-  default_prompt: "Use $framework-orchestrator to restore this stream and choose the next-best-action."
+  short_description: "Coordinate through hot or cold path"
+  default_prompt: "Use $framework-orchestrator to coordinate this stream; keep ordinary task continuation on the lightweight hot path."

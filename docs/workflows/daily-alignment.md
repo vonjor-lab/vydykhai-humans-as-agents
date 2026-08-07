@@ -2,6 +2,8 @@
 
 Goal: reconcile material meeting, event, and local-work changes asynchronously.
 
+Run only from an orchestrator context when the input may change another participant's safe next action. Task-local debugging, routine progress, urgency, a locally resolved blocker, and ordinary continue are not alignment events.
+
 ## Durable State
 
 - Project State holds the Shared Sync Contract, current compass, DOD, participant registry, tasks, and active Alignment Window.
@@ -66,11 +68,15 @@ When shared guidance changes:
 2. Create a Brief Patch or re-brief signal when needed.
 3. Rebuild the Alignment Window body from all current packets/deltas.
 4. Update Project State: latest delta, participant rows, task/sequence impact, and next action.
-5. Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; age alone is only a re-read signal.
+5. Intersect the delta with active, queued, and paused tasks.
+6. Leave unaffected tasks asleep. For an affected active task, send only `what changed / applies to / preserved / action`: a compatible patch continues execution; an invalidating change pauses only the affected boundary for `PATCH_REQUIRED` or `REBRIEF_REQUIRED`.
+7. Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; age alone is only a re-read signal.
 
 Preserve an optional extension as an Idea Candidate. Separately keep task-local pivots in their task and return reusable decision or safe operational changes as Memory Delta candidates. The orchestrator merges confirmed cross-task intent/rules into the current Intent Trail decision family, rebuilds its body atomically, and never copies secret values. Inferred wider applicability is `PROVISIONAL` and echoed once; do not copy full messages when a durable source link is available.
 
 Do not leave a new delta behind an old dashboard.
+
+Task contexts never read the raw transcript, participant packets, or Alignment Window as part of normal execution. The orchestrator distills only the delta needed by that task.
 
 ## 6. Rotate
 

@@ -1,6 +1,6 @@
 ---
 name: accept-work
-description: Accept, reject, or classify readiness of a task, PR, milestone, epic, lab result, or product capability against the latest human intent, brief, DOD, alignment, product loop, burn limits, and exact-current-code verification.
+description: Run the final acceptance of a task, PR, lab/maintenance result, or product increment in its owning execution context. Verify the delivered contract and exact current artifact; do not perform project-wide orchestration, alignment, parent sequencing, or implementation from another context.
 ---
 
 # Accept Work
@@ -13,24 +13,24 @@ Run the final self-check in the task context before claiming completion.
 2. `docs/FRAMEWORK.md`
 3. `docs/workflows/accept-work.md`
 
-Load the task issue, current PR/diff, latest explicit human decision, relevant deltas/patches, verification output, and neighboring contracts.
+Load the task contract, current PR/diff or artifact, direct human corrections in this context, targeted patches delivered by the orchestrator, and verification output. Do not reconstruct unrelated Project State or raw meeting history.
 
 ## Contract
 
-- Reconstruct the Accepted Baseline, Candidate, Touch Set, Memory Brief, and task-local approach lineage using source precedence. Do not let an old issue, plan, or Rejected Candidate override a later proven state or human correction.
+- Reconstruct the Accepted Baseline, Candidate, applicable Memory Brief, and task-local approach lineage using source precedence. Do not let an old issue, plan, or Rejected Candidate override a later proven state, direct human correction, or targeted orchestrator patch.
 - Compare delivered behavior with goal/DOD, scope, declared continuation basis/invariants, product loop or linked enabler, progress continuity, human checkpoint, material burn, and verification route. An enabler must state `Unlocks`, `Still missing`, and the next product slice. Classify material deltas as `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; unexplained unexpected change is `NEEDS_FIXES`.
-- Keep accepted sub-slices distinct from parent closure.
+- Keep accepted sub-slices distinct from parent closure. Report DOD impact; the orchestrator decides parent closure, cross-person impact, and next-best-action.
 - Separate required DOD follow-ups from optional future ideas. Required gaps keep the parent open; optional ideas do not expand accepted scope and return to the orchestrator as Idea Candidates.
 - Require the promised visible user/operator loop for product capability closure. Backend state, route, UI shell, test, readiness card, or lab proof alone is insufficient.
 - For Lab Mode, verify its decision, one-variable contract, proof, Learning Delta, production transfer, tests, and risk-based real-flow verification before product acceptance.
-- Incorporate or resolve boundary consultations, required Peer Compass Review, and material alignment conflicts; a task cannot silently turn an undeclared boundary into a new shared mechanism.
+- Incorporate resolved boundary consultations and targeted Peer Compass Review or alignment patches; do not run their project-wide workflows here. A task cannot silently turn an undeclared boundary into a new shared mechanism.
 - If this is maintenance triggered by expansion, verify the named recurring cause was removed or explicitly deferred, the original representative flow became materially smaller/faster, recurrence is covered, and the return to delivery is explicit. Containment alone is not acceptance of root-cause repair.
 - Verify the risks changed by the Candidate. For runtime/integration/state work, prove repo/worktree, branch, commit, dirty state, frontend/backend commands and URLs, browser target, and smoke result from the exact code being accepted. For auth/data/storage/migration/deploy work, verify exact environment, least-privilege access, safe runbook, backup/recovery route, and a non-destructive preflight without exposing secret values. For runnable data-backed handoffs, also prove schema/migration revision, a reproducible safe test-data source such as fixture/seed/snapshot/shared test environment, and recipient access; missing required data is `BLOCKED`, not product-failure evidence. For zero-spend/no-mutation work, disable the dangerous capability when practical, record counters before/after, and never erase or relabel a breach as zero.
 - Treat missing or inconclusive current-code smoke as `NEEDS_FIXES` or `BLOCKED`.
 - Complete the declared human checkpoint with observable questions that match the judgment that person owns; agents retain technical verification. Do not state that the human is unnecessary when visual review, paid approval, product decision, or manual smoke/merge remains.
 - If the Candidate is rejected or the human says «do it differently», record the `APPROACH_PIVOT`: Before/Now/Why/Keep/Drop/touch keys/source. Build any successor from the Accepted Baseline plus applicable Memory Brief while carrying forward proven changes and lessons.
 - Keep corrective fixes, smoke, and manual merge in the task context. Promote the Candidate to Accepted Baseline only after acceptance and the required human checkpoint.
-- At every human checkpoint, real blocker, or terminal result, publish Return Sync with Intent/Approach evidence plus Memory Delta routing: `none`, `task-local only`, or a compact reusable candidate. The orchestrator promotes only reusable lessons. Cross-person delivery remains incomplete until recipient proof.
+- At a named human checkpoint, irreducible blocker, or terminal result, publish one Return Sync with Intent/Approach evidence plus Memory Delta routing: `none`, `task-local only`, or a compact reusable candidate. Do not emit routine progress returns. The orchestrator promotes only reusable lessons and performs project-wide follow-through. Cross-person delivery remains incomplete until recipient proof.
 
 ## Finish
 

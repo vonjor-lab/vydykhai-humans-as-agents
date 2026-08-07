@@ -14,7 +14,7 @@ Read:
 
 Apply source precedence. Classify new commentary as scope change, DOD gap, guardrail, future option, or Intent/Approach Delta. A meaningful method change may be an `APPROACH_PIVOT` even when DOD is unchanged.
 
-Before dispatching or resuming a task, compare it with current DOD/decisions, upstream results, affected entities/contracts, active work, memory, safe operational sources, and code. Identify the accepted existing mechanism the task continues; do not infer permission to create a parallel one. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`. Seven days is a re-read signal, not an automatic change. A patch, split, or re-brief maps earlier progress as `Preserved`, `Replaced`, `Added`, and `Remaining`.
+Before dispatching, re-briefing, or materially resuming a stale or paused task, compare it with current DOD/decisions, upstream results, affected entities/contracts, active work, memory, safe operational sources, and code. Identify the accepted existing mechanism the task continues; do not infer permission to create a parallel one. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`. Seven days is a re-read signal, not an automatic change. A patch, split, or re-brief maps earlier progress as `Preserved`, `Replaced`, `Added`, and `Remaining`. An ordinary continue inside a current active contract is not a re-brief or freshness event.
 
 If a future option is useful but unnecessary for the nearest DOD, recommend keeping it out of the current work. After human confirmation, upsert it in Idea Memory with its value, touched surfaces, source, and recall trigger.
 
@@ -43,7 +43,7 @@ Compare with active epics, shared contracts, deltas, and known lessons. Surface 
 
 Derive a `Touch Set` from the proposed outcome, entities, actors/surfaces, contracts/authorities, and data/operational realms. Intersect it with the current Intent Trail decision map, Idea Memory, applicable accepted/rejected task lineage, and safe operational sources.
 
-Record one compact `Memory Brief`: one to three current decisions/invariants, relevant rejected-path lessons, matching future ideas without scope growth, safe runbook/access/backup/recovery references, and conflicts or `MEMORY_COVERAGE_GAP`. Do not make the human tag memory or read the full trail.
+Record one compact `Memory Brief`: one to three current decisions/invariants, relevant rejected-path lessons, matching future ideas without scope growth, safe runbook/access/backup/recovery references, and conflicts or `MEMORY_COVERAGE_GAP`. Keep the Touch Set and full memory intersection in the orchestrator; give the task only the distilled brief. Do not make the human or task scan the full trail.
 
 Propose:
 
@@ -54,36 +54,36 @@ When a local outcome is likely to pull unrelated layers, name the expected surfa
 
 ## 5. Build The Task Map
 
-For each task, write only:
+For each task, write only the execution contract. Project-wide reasoning stays with the orchestrator:
 
 ```md
 Title / outcome owner / backup / recipient:
 Goal and DOD impact:
 Scope / out of scope:
 Scope freshness / Accepted Baseline:
-Touch Set: <outcomes | entities | actors/surfaces | contracts/authorities | data/operational realms>
-Memory Brief: <current decisions/invariants | rejected-path lessons | relevant ideas | safe operational sources | conflicts/gaps>
-Continue from / applicable invariants: <accepted mechanism plus Memory Brief>
+Continue from: <accepted mechanism/reference>
+Applicable Memory Brief: <1-3 distilled decisions/invariants, rejected-path lessons, or safe operational references; conflicts/gaps or none>
 Product loop or linked enabler:
 For enabler: Unlocks / Still missing / next product slice:
+Authority / safety envelope:
 Human checkpoint:
 Burn / stop limit:
 Expected surface / first evidence: <only when expansion risk is material>
 Verification / completion route:
-Consult when / Return to: <semantic boundaries / orchestrator or tracker>
-Checkpoint / blocker / terminal return triggers:
+Consult when: <undeclared scope/authority/shared-contract/safety boundary, impossible DOD, or repeated no-progress stop>
+Return to / triggers: <orchestrator or tracker / named human checkpoint, irreducible blocker, terminal result>
 Dependencies / parallel boundary:
 Progress continuity: <Preserved / Replaced / Added / Remaining when patched, split, or re-briefed>
 ```
 
 Classify task as product capability, technical enabler, maintenance, research, or future option. A technical enabler does not close its parent product loop; name the product continuation and owner. Use the current resolved flagship / deepest bounded reasoning profile and make its environment mapping or fallback visible only in dispatch metadata.
 
-Keep one active implementation context and canonical Candidate per product phase. Before adding another slice, show what already closed, what remains before parent acceptance, and why this is a DOD gap rather than polish.
+Keep one owning execution context and canonical Candidate per accepted increment. Before dispatching the next increment, show what closed, what remains before parent acceptance, and why the next slice is a DOD gap rather than polish. Do not stretch one task across the whole product route.
 
 ## 6. Approve And Publish
 
 Show the brief, task map, sequence, ownership, checkpoints, Memory Brief, open decisions, and risks. Ask for human approval.
 
-After approval, create/update tasks in the shared tracker and return the sequence to the Framework Orchestrator. Every implementation task must start execution, continue the accepted mechanism with its Memory Brief, consult at an undeclared semantic boundary, run through checkpoint/blocker/terminal result, apply `$accept-work`, and publish Return Sync with Memory Delta routing as `none`, `task-local only`, or a compact reusable candidate automatically.
+After approval, create/update tasks in the shared tracker and return the sequence to the Framework Orchestrator. Every implementation task starts in role `EXECUTION`: it continues the accepted mechanism, resolves ordinary failures autonomously, consults only at a declared boundary, runs `$accept-work`, and publishes Return Sync only at a named human checkpoint, irreducible blocker, or terminal result. It does not run orchestration or alignment workflows.
 
 Do not implement in this workflow.

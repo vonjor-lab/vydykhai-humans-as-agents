@@ -12,14 +12,14 @@ Use source precedence:
 4. agent plan or handoff;
 5. inference.
 
-Identify the `Accepted Baseline`, current `Candidate`, task Touch Set and Memory Brief, material task-local pivots, and any `Rejected Candidate` used as evidence. Summarize:
+Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory Brief, material task-local pivots, targeted orchestrator patches, and any `Rejected Candidate` used as evidence. Do not reconstruct unrelated Project State, raw meeting history, or the full decision map. Summarize:
 
 - goal and DOD impact;
 - scope/out of scope;
 - scope freshness and baseline/candidate references;
 - product loop or linked enabler;
 - progress continuity and, for an enabler, `Unlocks / Still missing / next product slice`;
-- parent closure expectation;
+- reported parent DOD impact; the orchestrator decides parent closure and sequence;
 - human checkpoint;
 - Lab/Peer Review contract when used;
 - current approach and why material pivots replaced earlier paths;
@@ -64,7 +64,7 @@ Check:
 - Candidate ancestry and experiment decision; a Rejected Candidate is evidence, not the implicit correction base;
 - continuation basis and material delta classification: `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; unexplained unexpected change is not acceptable;
 - applicable intent/working rules and unresolved Intent/Approach Delta;
-- Touch Set coverage, Memory Brief use, and any new or corrected reusable lesson;
+- applicable Memory Brief use and any new or corrected reusable lesson;
 - boundary consultations and whether an undeclared entity, shared mechanism, authority conflict, or ownership overlap was resolved before expansion;
 - required Peer Compass Review and alignment;
 - material burn and stop limits;
@@ -83,12 +83,12 @@ Check:
 
 ## 6. Finish In The Task Context
 
-Keep fixes, smoke, and manual merge in the task context. After human confirmation:
+Keep fixes, smoke, and manual merge in the owning task context. After human confirmation:
 
 - promote the accepted Candidate to the new Accepted Baseline;
 - update task/PR status and acceptance summary;
-- publish alignment only when another participant's safe action changes;
-- report DOD impact, parent state, human checkpoint, burn, verification, merge, risks, and recommended orchestrator next action.
+- request alignment only when another participant's safe action changes; the orchestrator runs that workflow.
+- report DOD impact, human checkpoint, burn, verification, merge, risks, and recommended orchestrator action; the orchestrator decides parent state and next-best-action.
 - for an enabler, report `Unlocks`, `Still missing`, and the next product slice/owner; do not close the parent from technical completion alone.
 - classify each follow-up as a required DOD gap or optional Idea Candidate; optional ideas do not keep the accepted task or parent open by themselves.
 - report Idea Memory entries absorbed by this work and confirmed candidates that the orchestrator should deduplicate and upsert.
