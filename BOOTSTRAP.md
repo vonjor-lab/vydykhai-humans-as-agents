@@ -43,7 +43,7 @@ An explicit human decision may choose another profile for a named scope. Maximum
 ## Activate
 
 1. Apply `$project-launch` from the installed target repository.
-2. Create or update the compact Project Operating Brief, Project State, Shared Sync Contract, and pointers for Idea Memory, the Intent Trail decision map, and safe operational sources: Git-backed repo, durable tracker, coordination-input route, privacy boundary, and access coverage.
+2. Create or update the compact Project Operating Brief, Project State, Shared Sync Contract, one Project Memory Graph, tracker projection, and safe operational pointers: Git-backed repo, durable tracker, coordination-input route, privacy boundary, and access coverage. Existing Idea Memory and Intent Trail are migration inputs, not parallel current truth.
 3. Register participants, active orchestrator links, framework versions, resolved role profiles, current tasks, sync readiness, and safe continuation.
 4. Test each active participant's human access and their orchestrator's required read/write access to the repo/tracker plus read access to relevant meeting and operational instructions. Use individual least-privilege authentication, never shared credentials or copied secret values. Record missing coverage as `SYNC_LIMITED` and do not claim complete alignment for affected work.
 5. Create the dedicated organization-only Framework Orchestrator context. Verify its actual title or stable handle, pin/foreground it when the environment supports that control, and confirm it can reconstruct compass, DOD, tasks, blockers, and next-best-action.

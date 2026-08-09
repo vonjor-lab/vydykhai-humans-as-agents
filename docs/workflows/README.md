@@ -26,8 +26,9 @@ The orchestrator selects the required skill and workflow.
 ## Durable Artifacts
 
 - `project-state-template.md`: compact current project/stream dashboard.
-- `idea-memory-template.md`: optional shared memory that protects DOD focus without losing confirmed future ideas.
-- `intent-trail-template.md`: compact current intent, working rules, and meaningful approach-pivot lineage.
+- `project-memory-graph-template.md`: one compact active memory for decisions, ideas, lessons, and safe operational pointers.
+- `idea-memory-template.md`: compatibility input for projects migrating older Idea Memory into the graph.
+- `intent-trail-template.md`: compatibility input for projects migrating an older Intent Trail into the graph.
 - `alignment-issue-template.md`: one meeting, milestone, or compact work window.
 - `local-alignment-packet.md`: one participant's material local delta.
 - `team-alignment-delta.md`: reconciled shared guidance.

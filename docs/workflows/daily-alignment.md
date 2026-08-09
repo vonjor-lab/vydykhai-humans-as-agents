@@ -30,8 +30,8 @@ Capture only what changes shared work:
 - task/PR and material local delta;
 - shared surfaces or contracts touched;
 - changed assumption or decision;
-- meaningful intent, working rule, or `APPROACH_PIVOT`, including task-local «do it differently» changes that redefine the method without changing DOD;
-- confirmed future idea and its likely recall trigger;
+  - meaningful intent, invariant, or approach pivot, including task-local «do it differently» changes that redefine the method without changing DOD;
+  - confirmed future idea and its likely recall trigger as a graph candidate;
 - overlap, blocker, or human checkpoint;
 - safe continuation boundary.
 
@@ -39,7 +39,7 @@ Do not paste large diffs or routine commit updates.
 
 ## 3. Publish Local Packet
 
-Append a packet using `local-alignment-packet.md`. Include participant/orchestrator, framework/model state, scope, local delta, `Intent/Approach Delta: none` or Before/Now/Why/Keep/Drop/scope/source, conflicts/needs, and safe continuation.
+Append a packet using `local-alignment-packet.md`. Include participant/orchestrator, framework/model state, scope, local delta, `Memory candidates: NO_MEMORY_DELTA` or compact reusable proposals with source, conflicts/needs, and safe continuation.
 
 Supersede this participant's older packet; never overwrite another participant's packet or invent their local state.
 
@@ -72,7 +72,7 @@ When shared guidance changes:
 6. Leave unaffected tasks asleep. For an affected active task, send only `what changed / applies to / preserved / action`: a compatible patch continues execution; an invalidating change pauses only the affected boundary for `PATCH_REQUIRED` or `REBRIEF_REQUIRED`.
 7. Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; age alone is only a re-read signal.
 
-Preserve an optional extension as an Idea Candidate. Separately keep task-local pivots in their task and return reusable decision or safe operational changes as Memory Delta candidates. The orchestrator merges confirmed cross-task intent/rules into the current Intent Trail decision family, rebuilds its body atomically, and never copies secret values. Inferred wider applicability is `PROVISIONAL` and echoed once; do not copy full messages when a durable source link is available.
+Preserve an optional extension as an `IDEA` candidate. Keep task-local pivots in their task and return reusable `INVARIANT`, `DECISION`, or safe `POINTER` candidates. The orchestrator re-reads the Project Memory Graph watermark, integrates all unseen events without overwriting another participant, and never copies secret values. Inferred wider applicability is `PROVISIONAL` and echoed once; use durable source links instead of full messages.
 
 Do not leave a new delta behind an old dashboard.
 

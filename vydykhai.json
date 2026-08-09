@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -40,6 +40,40 @@
         "preferredEffortWhenAvailable": "low"
       }
     }
+  },
+  "memoryPolicy": {
+    "policy": "project-memory-graph",
+    "nodeTypes": [
+      "invariant",
+      "decision",
+      "idea",
+      "pointer"
+    ],
+    "candidateActions": [
+      "no-change",
+      "add",
+      "refine",
+      "supersede",
+      "retire",
+      "conflict"
+    ],
+    "taskBriefMaxNodes": 7,
+    "legacyInputs": [
+      "intent-trail",
+      "idea-memory"
+    ]
+  },
+  "trackerPolicy": {
+    "policy": "task-contract-with-event-driven-projection",
+    "statuses": [
+      "todo",
+      "next",
+      "in-progress",
+      "in-review",
+      "blocked",
+      "done",
+      "parked"
+    ]
   },
   "defaultScopeFreshnessDays": 7,
   "node": ">=18",

@@ -1,6 +1,6 @@
 # Task Context Contract
 
-The orchestrator resolves project-wide meaning before dispatch. Give the task only what it needs to execute and prove one accepted increment. Do not copy Project State, meeting transcripts, Idea Memory, Intent Trail, the full task map, or orchestration deliberation into the task.
+The orchestrator resolves project-wide meaning before dispatch. Give the task only what it needs to execute and prove one accepted increment. Do not copy Project State, meeting transcripts, the full Project Memory Graph, task map, or orchestration deliberation into the task.
 
 ## Startup
 
@@ -24,7 +24,7 @@ For an enabler: Unlocks / Still missing / next product slice and owner:
 Freshness: <UNCHANGED | PATCH_REQUIRED | REBRIEF_REQUIRED> | Checked: <date/evidence>
 Accepted Baseline: <commit, artifact, or proven behavior>
 Continue from: <accepted mechanism/reference>
-Applicable Memory Brief: <1-3 distilled decisions/invariants, rejected-path lessons, or safe operational references; conflicts/gaps or none>
+Applicable Memory Brief: <up to 7 node ids with distilled decisions/invariants, rejected-path lessons, safe operational pointers, sources, and conflicts/gaps or none>
 Progress continuity: <UNCHANGED | Preserved / Replaced / Added / Remaining>
 
 In scope:
@@ -67,11 +67,10 @@ Verification / exact-current-code smoke / merge:
 Human checkpoint result:
 Burn result:
 Boundary consultation: <none | Boundary / Evidence / Proposed move / Safe continuation>
-Learning Delta: <none | Keep / Rebuild / Drop / Unknown>
-Intent / Approach Delta: <none | Before / Now / Why / Keep / Drop / applies to / source>
-Memory Delta: <none | task-local only | reusable candidate with touch keys and safe source>
+Learning / approach evidence: <none | Before / Now / Why / Keep / Rebuild / Drop / Unknown / source>
+Memory candidates: <NO_MEMORY_DELTA | task-local only | one or more ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT candidates with type, current value, touch keys, relations, and safe source>
 Recipient proof: <not applicable | exact artifact/revision, environment, schema/migration revision, access, agreed check, and reproducible safe data when required>
-Risks / required follow-ups / optional Idea Candidates:
+Risks / required follow-ups / optional future candidates:
 Recommended orchestrator next action:
 ```
 

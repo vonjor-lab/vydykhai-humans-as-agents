@@ -1,14 +1,30 @@
 # Vydykhai: Collaborative Vibe Coding with Humans as Agents
 
-«Выдыхай» - это фреймворк совместной работы людей и AI-агентов. Он вырос из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action.
+«Выдыхай» - это устанавливаемая система совместной работы людей и AI-агентов. Она выросла из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action. Пользователю не нужно изучать регламент: после подключения оркестратор сам применяет его в работе.
 
-Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
+Vydykhai is an installable operating system for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator applies the operating rules and maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.16.0`
+Current version: `1.17.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
+
+## Что изменится для вас
+
+- Вы можете сказать идею, уточнение или «давай по-другому» один раз. Полезный вывод останется общей памятью проекта и вернется в следующей подходящей задаче.
+- Каждая новая задача получает только относящиеся к ней решения и уроки. Исполнитель не перечитывает историю проекта и не повторяет уже разобранные ошибки.
+- Принятые уроки одного участника становятся доступны оркестраторам остальных через общий репозиторий, а не остаются внутри личного чата.
+- GitHub показывает реальное `сейчас / дальше / заблокировано / готово`; встречи и локальная работа меняют эту картину только при существенном событии.
+- Человек занимается целью, оценкой результата и необходимыми решениями. Поддержание памяти, связей задач и следующего действия берет на себя оркестратор.
+
+## What Changes for You
+
+- Say an idea, correction, or change of approach once. Its reusable lesson stays in shared project memory and returns when future work touches it.
+- Each task receives only the decisions and lessons it needs, so execution does not reread project history or repeat known failures.
+- One participant's accepted lessons become available to the other orchestrators through the shared repository instead of remaining trapped in a personal chat.
+- The tracker reflects the real `now / next / blocked / done` picture and changes only on material work events.
+- People own the goal, judgment, and approvals; the orchestrator owns memory, task coherence, and the next action.
 
 ## Give This To Your Agent
 
@@ -47,7 +63,7 @@ Historical snapshots remain available through Git releases and tags. Current ski
 - A task continues the accepted product mechanism, resolves ordinary failures itself, and consults only at an undeclared boundary. Research or Lab is used only when uncertainty, cost, or risk justifies it.
 - Meetings and asynchronous local work converge through shared Git-backed state. An absent participant blocks only overlapping work.
 - Before work starts, the orchestrator matches its Touch Set with prior decisions, rejected paths, ideas, and safe operational sources, then gives the task only the relevant Memory Brief.
-- Each result is verified against the current artifact or exact code and returns a compact Memory Delta; the orchestrator merges only reusable lessons, updates DOD progress and next-best-action, and runs deeper memory synthesis only when needed.
+- Each result is verified against the current artifact or exact code and returns `NO_MEMORY_DELTA` or compact candidates; the orchestrator integrates only reusable lessons, updates the visible plan and next-best-action, and compacts memory only when needed.
 
 People normally speak only to their orchestrator in natural language. Vydykhai uses native context creation, messaging, and UI controls when the harness supports them; otherwise it uses the shared tracker and gives one exact human action. It never treats a missing harness capability as completed automation.
 

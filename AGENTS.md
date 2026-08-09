@@ -23,7 +23,7 @@ This repository is the canonical source for the universal Vydykhai collaboration
 - The Framework Orchestrator is the control plane: what/why/when/who and what changed. Task contexts are the execution plane: how to implement and prove one accepted increment, including corrective fixes, `$accept-work`, exact-current-code smoke, and manual merge after human confirmation. Tasks detect wider boundaries; the orchestrator decides the project response.
 - Preserve source precedence, explicit human checkpoints, asynchronous participant visibility, dashboard freshness, monitor cleanup, and orchestrator rotation.
 - Treat orchestrator rotation as a memory migration: previous packet, independent candidate coverage, visible delta, human-confirmed switch, and retained history context.
-- Treat Idea Memory and Intent Trail bodies as atomic current views, with comments and task history as evidence. Operational memory may point to protected secret systems and private runbooks but must never copy secret values.
+- Treat Project Memory Graph as the one compact active memory; existing Idea Memory and Intent Trail are migration inputs. Keep comments and task history as evidence, preserve old-id mapping, and never copy secret values from protected systems or private runbooks.
 - Run `node scripts/validate-framework.mjs` and `node --test tests/*.test.mjs` before committing.
 - Run `git diff --check` before committing documentation changes.
 

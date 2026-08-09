@@ -1,8 +1,8 @@
-# Intent Trail Template
+# Intent Trail Compatibility Template
 
-Use one compact shared current view per project or stream when meaningful human intent or the first significant approach pivot must survive beyond one context. Idea Memory holds future options; Intent Trail is the current decision map: active intent, working rules, and why important decisions changed.
+For projects using the current memory policy, store reusable intent, working rules, and approach pivots as `INVARIANT` or `DECISION` nodes in `project-memory-graph-template.md`; do not create a second active decision map. This file remains for migrating an existing Intent Trail without losing lineage or sources.
 
-It is not a transcript, backlog, or copy of every instruction. Message length is irrelevant. Preserve the smallest useful lineage and link the source.
+It is not a transcript, backlog, or copy of every instruction. During migration, preserve the smallest useful lineage, link the source, map old ids to graph nodes, and leave this artifact read-only after cutover.
 
 ```md
 # Intent Trail: <project or stream>
@@ -18,12 +18,10 @@ Last reconciliation: <date/checkpoint>
 
 Rules:
 
-- Capture semantic impact, not verbosity. Explicit remember/important/always/never/do-it-differently language and a human-approved pivot are `CONFIRMED`; inferred wider applicability is `PROVISIONAL` and must be echoed once for correction.
-- `APPROACH_PIVOT` applies even when DOD is unchanged and the change is operational or task-local, if it replaces the main method, layer, baseline, sequence, boundary, or verification route.
-- Keep task-local lineage in the task issue or context and include it in Return Sync. Promote it here only when it affects another task, a reusable mechanism, a project quality bar, or future planning.
-- Merge a reusable delta into its existing decision family instead of appending a semantic duplicate. Rebuild the current body atomically so newer comments never leave the active map stale; keep superseded evidence in linked history.
-- Derive touch keys from the work rather than asking people to tag memory. At cold-path brief, re-brief, dispatch, consultation decision, parent acceptance, milestone, and rotation, the orchestrator matches the Touch Set to current cards and returns only a compact Memory Brief or an explicit `MEMORY_COVERAGE_GAP`. Ordinary task continue does not rerun retrieval.
-- Operational cards contain only safe metadata: service/environment, owner, secret-manager reference, runbook/backup/restore link, required guardrail, and last safe check. Never store credentials, secret values, private payloads, or recovery material in this view.
-- Do not copy full messages by default. Preserve a privacy-safe summary and source link; quote or copy exact text only when the human requests it or the source is not durable and the wording is necessary.
-- At task return, use Memory Delta only to route existing Learning, Intent/Approach, or operational evidence: `none`, `task-local only`, or `reusable` as confirmed, refined, superseded, or new. It is not a second narrative; only the orchestrator merges reusable deltas into this map.
-- At rotation, compact decision families and test retrieval against representative current or upcoming Touch Sets. State coverage is not enough when the candidate cannot find the applicable rule, rejected path, idea, or safe operational source.
+- Freeze new writes when migration starts. Treat the current body and later comments as source evidence, not as two competing current maps.
+- Map `INTENT` and `WORKING_RULE` to the smallest reusable `INVARIANT` or `DECISION`. Map an `APPROACH_PIVOT` to a `DECISION` when it changed the main method, baseline, sequence, boundary, or verification route even if DOD stayed the same.
+- Derive Touch keys and relations from the work. Keep task-local lineage as evidence unless it affects another task, a reusable mechanism, a project quality bar, or future planning.
+- Merge semantic duplicates into one graph node and map every old id to `covered`, `superseded`, `evidence only`, or `ambiguous` in the graph's Legacy Source Map. Preserve source links and rejected-path lessons without copying chronology.
+- Inferred wider applicability remains `PROVISIONAL` until echoed once for human correction. Equal-authority conflicts remain visible for a human decision.
+- Operational entries become safe `POINTER` nodes containing only owner, protected location, allowed retrieval route, guardrail, and last safe check. Never store credentials, secret values, private payloads, or recovery material.
+- Finish only after representative Touch Sets retrieve the expected current decisions and every old id has a disposition. Then mark the Intent Trail legacy/read-only; all future retrieval and updates use the Project Memory Graph.

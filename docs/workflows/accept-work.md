@@ -12,7 +12,7 @@ Use source precedence:
 4. agent plan or handoff;
 5. inference.
 
-Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory Brief, material task-local pivots, targeted orchestrator patches, and any `Rejected Candidate` used as evidence. Do not reconstruct unrelated Project State, raw meeting history, or the full decision map. Summarize:
+Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory Brief, material task-local pivots, targeted orchestrator patches, and any `Rejected Candidate` used as evidence. Do not reconstruct unrelated Project State, raw meeting history, or the full Project Memory Graph. Summarize:
 
 - goal and DOD impact;
 - scope/out of scope;
@@ -63,7 +63,7 @@ Check:
 - Lab proof followed by production transfer and real-flow verification;
 - Candidate ancestry and experiment decision; a Rejected Candidate is evidence, not the implicit correction base;
 - continuation basis and material delta classification: `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; unexplained unexpected change is not acceptable;
-- applicable intent/working rules and unresolved Intent/Approach Delta;
+- applicable graph nodes and unresolved learning/approach evidence;
 - applicable Memory Brief use and any new or corrected reusable lesson;
 - boundary consultations and whether an undeclared entity, shared mechanism, authority conflict, or ownership overlap was resolved before expansion;
 - required Peer Compass Review and alignment;
@@ -90,12 +90,11 @@ Keep fixes, smoke, and manual merge in the owning task context. After human conf
 - request alignment only when another participant's safe action changes; the orchestrator runs that workflow.
 - report DOD impact, human checkpoint, burn, verification, merge, risks, and recommended orchestrator action; the orchestrator decides parent state and next-best-action.
 - for an enabler, report `Unlocks`, `Still missing`, and the next product slice/owner; do not close the parent from technical completion alone.
-- classify each follow-up as a required DOD gap or optional Idea Candidate; optional ideas do not keep the accepted task or parent open by themselves.
-- report Idea Memory entries absorbed by this work and confirmed candidates that the orchestrator should deduplicate and upsert.
-- report Intent Trail decision families applied, confirmed, refined, superseded, or proposed; keep local-only lineage in the task.
+- classify each follow-up as a required DOD gap or optional `IDEA` candidate; optional ideas do not keep the accepted task or parent open by themselves.
+- report graph nodes applied, confirmed, refined, superseded, or contradicted; keep local-only lineage in the task.
 - report boundary consultations and any deliberately changed or unexpected surfaces.
-- publish terminal Return Sync with `Intent/Approach Delta` plus Memory Delta routing: `none`, `task-local only`, or a compact reusable candidate referencing the Learning/Intent/Operational evidence, touch keys, and safe source. The orchestrator deduplicates reusable deltas and atomically rebuilds the current decision map; it does not promote every task note.
+- publish terminal Return Sync with learning/approach evidence plus `Memory candidates: NO_MEMORY_DELTA`, `task-local only`, or compact `ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT` candidates containing type, current value, touch keys, relations, and safe source. The orchestrator integrates reusable candidates into the graph; the task never edits shared memory and not every task note is promoted.
 
-For a rejected Candidate or human «do it differently», record Learning Delta plus `APPROACH_PIVOT`. Any successor starts from the Accepted Baseline plus applicable Memory Brief, preserves proven parts, and rebuilds failed parts using those lessons.
+For a rejected Candidate or human «do it differently», record learning/approach evidence and return a `DECISION` candidate when it can affect future work. Any successor starts from the Accepted Baseline plus applicable Memory Brief, preserves proven parts, and rebuilds failed parts using those lessons.
 
 Do not close a parent from an accepted sub-slice unless its product loop and DOD are closed or explicitly moved out of scope.

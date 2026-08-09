@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.16.0 | Status: canonical operating core
+Version: 1.17.0 | Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
@@ -37,7 +37,7 @@ Vydykhai combines them: design the compass and task contract top-down, let agent
 - Each participant has one active Framework Orchestrator for a product stream. It organizes work and never implements product code.
 - Research, lab, and implementation run in separate focused contexts.
 - A shared Git-backed project repo carries the framework and project files. GitHub Issues and PRs are the recommended durable sync space; an equivalent tracker is valid only when every participant and orchestrator can reach the same linked state. Local copies and chat history are evidence, not the source of truth.
-- Idea Memory keeps confirmed useful ideas outside current scope and recalls them when planning touches the relevant product surface.
+- Project Memory Graph keeps current decisions, reusable lessons, confirmed future ideas, and safe operational pointers in one compact shared view.
 - The orchestrator decides what, why, when, and who, and maintains what changed: compass, sequence, alignment, dispatch, human requests, shared memory, health, parent closure, and next-best-action.
 - Task contexts decide how to deliver and prove one accepted increment: local planning, implementation, debugging, corrective fixes, `$accept-work`, exact-current-code smoke, manual merge after human confirmation, and automatic return at declared triggers.
 - A task detects an execution boundary; the orchestrator decides the project response. Neither role silently takes over the other's work.
@@ -116,7 +116,7 @@ If the compass changes, publish a visible patch or re-brief. Do not silently mut
 
 ### Scope Freshness
 
-Before dispatching, re-briefing, or materially resuming stale or paused work, the orchestrator compares the task with the latest DOD and decisions, upstream results, affected entities and contracts, active work, Idea Memory, and current code. An ordinary continue inside a current active contract is a hot path: read only the newest relevant task event and do not rerun alignment, memory retrieval, scope freshness, or dashboard rebuild.
+Before dispatching, re-briefing, or materially resuming stale or paused work, the orchestrator compares the task with the latest DOD and decisions, upstream results, affected entities and contracts, active work, applicable Project Memory Graph nodes, and current code. An ordinary continue inside a current active contract is a hot path: read only the newest relevant task event and do not rerun alignment, memory retrieval, scope freshness, or dashboard rebuild.
 
 - `UNCHANGED`: the contract is still current.
 - `PATCH_REQUIRED`: a bounded Brief Patch is required.
@@ -133,18 +133,18 @@ State `Expected`, `Expanded into`, `Likely cause`, and one route:
 - `MAINTENANCE`: recurring architecture, data, or tooling friction should be removed before affected delivery continues.
 Maintenance must name the friction source, preserve the Accepted Baseline, change the smallest shared cause, prove the original representative flow became materially smaller or faster, test against recurrence, and return explicitly to the original task. Backup, cleanup, migration, or a cap contains impact but does not close the debt unless the recurrence source is removed or deliberately deferred. Set appetite from the task and repository; file, line, or time counts are warnings, never universal verdicts.
 
-### DOD Focus, Idea Memory, And Intent Trail
+### DOD Focus And Project Memory Graph
 
-New ideas must not delay the nearest DOD, useful ideas must not disappear, and meaningful human intent and operational knowledge must survive task and orchestrator changes. Idea Memory holds future options; Intent Trail is the current decision map for active intent, working rules, and reusable reasoning. Sensitive values stay in protected systems; the map keeps only safe operational references.
+New ideas must not delay the nearest DOD, useful ideas must not disappear, and meaningful intent, decisions, lessons, and operational knowledge must survive people, tasks, and orchestrator changes. One shared Project Memory Graph keeps only the current reusable meaning; raw history remains linked evidence. Sensitive values stay in protected systems and appear only as safe pointers.
 
 - A missing requirement is a DOD gap; a required safety, quality, or product boundary is a guardrail. Keep both in the task or re-brief.
 - A deliberate change to the promised outcome requires a visible human scope decision and updated DOD, burn, and sequence.
-- A useful extension that is not needed for the current DOD should stay out of the task. After human confirmation, upsert it into shared Idea Memory with its value, affected surfaces, source, and recall trigger.
-- Record `INTENT`, `WORKING_RULE`, or `APPROACH_PIVOT` when a human meaningfully changes the goal, quality bar, method, layer, baseline, sequence, boundary, or verification route, even if DOD is unchanged and the pivot is local to one task. Capture `Before`, `Now`, `Why`, `Keep`, `Drop`, touch keys, relations, and source.
+- A useful extension not needed for the current DOD stays out of the task. After human confirmation, store it as an `IDEA` node with value, touch keys, source, and recall trigger.
+- Store durable product, quality, authority, safety, or operating boundaries as `INVARIANT`; current choices and meaningful approach pivots as `DECISION`; and protected runbook, environment, access, backup, or recovery routes as safe `POINTER` nodes.
 
-Message length is not a trigger. Explicit remember/important/always/never/do-it-differently language and accepted pivots are confirmed deltas; inferred wider intent is `PROVISIONAL` and echoed once for correction. Every task routes Memory Delta as `none`, `task-local only`, or a reusable candidate; the orchestrator merges only reusable deltas into an existing decision family instead of appending duplicates. Link the source instead of copying full messages.
+Message length is not a trigger. Explicit remember/important/always/never/do-it-differently language and accepted pivots are confirmed candidates; inferred wider intent is `PROVISIONAL` and echoed once for correction. Every task, acceptance, meeting delta, or material human correction returns `NO_MEMORY_DELTA` or one compact candidate action: `ADD`, `REFINE`, `SUPERSEDE`, `RETIRE`, or `CONFLICT`. Task contexts never rewrite shared memory. The orchestrator merges semantic duplicates, links sources instead of copying messages, and asks the human only when equal-authority meaning conflicts.
 
-At each cold-path brief, re-brief, dispatch, consultation decision, sequence decision, parent acceptance, milestone, and rotation, the orchestrator derives a Touch Set from outcomes, entities, actors/surfaces, contracts/authorities, and data/operational realms. It intersects that set with the current decision map, Idea Memory, accepted/rejected task lineage, and safe operational sources, then gives the task only a compact Memory Brief with applicable rules, rejected-path lessons, safe source links, and conflicts or `MEMORY_COVERAGE_GAP`. Rebuild current memory bodies atomically; preserve superseded evidence through links. Do not repeat this work on a hot-path continue.
+At each cold-path brief, re-brief, dispatch, consultation decision, sequence decision, parent acceptance, milestone, and rotation, the orchestrator derives a Touch Set from outcomes, entities, actors/surfaces, contracts/authorities, and data/operational realms. It retrieves the smallest complete Memory Brief, normally three to seven relevant nodes and fewer when fewer apply, with source links, rejected-path lessons, and conflicts or `MEMORY_COVERAGE_GAP`. Before integrating candidates, re-read the graph watermark and unseen events; if another participant changed it, recompute instead of overwriting. Compact at milestones, rotation, duplication, retrieval failure, or loss of scanability while preserving old-id mapping and immutable evidence. Do not repeat this work on a hot-path continue.
 
 ### 2. Route
 
@@ -168,7 +168,7 @@ Build from success; learn from failure.
 - `Rejected Candidate` is evidence, never the implicit base for another correction.
 - A successor starts from the Accepted Baseline plus applicable Memory Brief, keeps proven changes, and rebuilds failed changes using the rejected candidate's lessons.
 
-Record a compact Learning Delta: `Keep`, `Rebuild`, `Drop`, and `Unknown`, then return any reusable lesson as Memory Delta. Repeated correction of the same failure class triggers a check of baseline, scope, prior memory, and approach before another attempt.
+Record compact learning evidence: `Keep`, `Rebuild`, `Drop`, and `Unknown`, then return any reusable lesson as a graph candidate. Repeated correction of the same failure class triggers a check of baseline, scope, prior memory, and approach before another attempt.
 
 ### 3. Dispatch
 Dispatch role `EXECUTION` only when the work is Low-ready: one concrete outcome and executable first action; no unresolved product or architecture decision; explicit scope, touch boundaries, and non-goals; objective DOD, tests/smoke/evidence, and acceptance oracle; current baseline plus required data, access, and environment; and compact material `CONSULT` triggers.
@@ -178,7 +178,7 @@ The minimum role-`EXECUTION` task contract contains:
 
 - Goal and DOD impact;
 - Scope, out of scope, outcome owner, and dependency/recipient boundary;
-- Scope freshness, Accepted Baseline, accepted mechanism, and one to three distilled Memory Brief items;
+- Scope freshness, Accepted Baseline, accepted mechanism, and the smallest complete Memory Brief of up to seven nodes;
 - Product loop or linked enabling contract; an enabler states `Unlocks`, `Still missing`, and the next product slice;
 - Authority/safety envelope and human checkpoint;
 - Burn / stop and expansion appetite when material;
@@ -194,7 +194,7 @@ The task context starts implementation instead of repeating approved planning. I
 At an undeclared scope, authority, safety, shared mechanism/contract, ownership overlap, stale upstream state, unresolved solution choice, impossible DOD, or repeated no-progress boundary, the task sends one `CONSULT`: `Boundary`, `Evidence`, `Proposed move`, and `Safe continuation`, then pauses only that boundary. The orchestrator retrieves only the needed durable truth and decides `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, `DISCOVERY`, or `NEEDS_DECISION`; Peer Compass Review may support that route. A support, demo, review, or transport task never acquires product DOD or burn merely because its files are isolated.
 Do not mechanically escalate a struggling task through reasoning levels. First distinguish an implementation defect, a weak acceptance oracle, and missing solution work. Rebuild from the Accepted Baseline with learned evidence, re-brief, or launch bounded Discovery. High-consequence execution may still use the efficient profile only with explicit invariants, deterministic guards, and maximum-profile orchestrator review of evidence and project coherence before human merge or action approval; task acceptance stays in the task.
 
-At a declared return trigger, the task publishes one compact Return Sync with Memory Delta routing as `none`, `task-local only`, or a reusable candidate without waiting for human polling. It sends no routine progress return for a locally resolved failure. Use native cross-context messaging when available; otherwise use the shared tracker event/hook. Cross-person delivery is complete only after recipient access to the exact artifact/revision and the agreed check. Runnable data-backed work also proves exact environment, schema/migration revision, reproducible safe test data, and recipient access. Missing required data makes the handoff `BLOCKED`, not evidence of product failure; never copy production data or secrets into framework memory. A monitor is only the fallback when neither return route can wake the orchestrator.
+At a declared return trigger, the task publishes one compact Return Sync with `NO_MEMORY_DELTA`, `task-local only`, or reusable graph candidates without waiting for human polling. It sends no routine progress return for a locally resolved failure. Use native cross-context messaging when available; otherwise use the shared tracker event/hook. Cross-person delivery is complete only after recipient access to the exact artifact/revision and the agreed check. Runnable data-backed work also proves exact environment, schema/migration revision, reproducible safe test data, and recipient access. Missing required data makes the handoff `BLOCKED`, not evidence of product failure; never copy production data or secrets into framework memory. A monitor is only the fallback when neither return route can wake the orchestrator.
 
 ### 5. Align
 
@@ -210,13 +210,13 @@ The owning task context runs `$accept-work` before completion. It compares the C
 
 Verify the risks changed by the Candidate. For runtime, integration, or state changes, smoke the exact branch, worktree, commit, frontend, backend, and browser target being accepted; do not use an old server or another branch. Avoid a paid setup path when an equivalent controlled entry proves the changed risk and that paid path did not change. For zero-spend or no-mutation work, disable the dangerous capability when practical and prove before/after counters; any breach remains disclosed and cannot be reported as zero. Product capability is not closed by backend state, UI shell, lab proof, or an enabler without its named product continuation.
 
-After acceptance and the required human checkpoint, promote the Candidate to Accepted Baseline. A rejected candidate remains evidence only. Merge manually through the task context, which publishes its terminal Return Sync. The orchestrator consumes that verdict without repeating task acceptance, then deduplicates reusable Memory Delta and updates DOD burn, alignment, parent closure, and next-best-action.
+After acceptance and the required human checkpoint, promote the Candidate to Accepted Baseline. A rejected candidate remains evidence only. Merge manually through the task context, which publishes its terminal Return Sync with `NO_MEMORY_DELTA` or compact memory candidates. The orchestrator consumes that verdict without repeating task acceptance, integrates reusable candidates into the graph, and updates DOD burn, alignment, parent closure, tracker projection, and next-best-action.
 
 ### 7. Review Health
 
 Run a short Health Review after a milestone, several accepted slices, repeated follow-ups, unexpected expansion, stalled DOD burn, owner dropout, repeated context compaction, or when work starts relying on chat archaeology.
 
-Check progress toward compass and DOD; blockers, repeated costs, and technical slicing without product progress; unexpected expansion or recurring architecture/data/tooling tax; stale scope, competing candidates, and corrections built on rejected work; research or lab outputs missing from the real path; stale operational artifacts or trapped decisions; memory-body freshness and representative retrieval; and whether the active orchestrator should rotate.
+Check progress toward compass and DOD; blockers, repeated costs, and technical slicing without product progress; unexpected expansion or recurring architecture/data/tooling tax; stale scope, competing candidates, and corrections built on rejected work; research or lab outputs missing from the real path; stale operational artifacts or trapped decisions; graph freshness, duplicate/conflicting nodes and representative retrieval; tracker truthfulness; and whether the active orchestrator should rotate.
 
 ## Humans As Agents
 
@@ -232,16 +232,16 @@ Keep one authoritative current dashboard snapshot and create linked artifacts on
 
 - Project State: the required compass, DOD, participant registry, active orchestrator contexts, current tasks, and latest alignment state.
 - Alignment Window: use when meeting, milestone, or local-work packets need reconciliation.
-- Idea Memory and Intent Trail decision map: create each only when a future idea or meaningful intent/pivot must survive beyond its current context; keep it as a Project State section or linked compact view. Link safe operational sources without copying secret values.
+- Project Memory Graph: one compact current view for active invariants, decisions, future ideas, rejected-path lessons, and safe operational pointers. Existing Idea Memory and Intent Trail artifacts are migration inputs, not parallel active truth.
 
 The participant registry includes: participant, orchestrator context link, installed framework version, resolved orchestrator profile and check date, latest packet, active task, and status.
 
 Before dispatch or material resume on a shared surface, each participant's orchestrator checks its registry row and publishes a packet only when local or meeting state materially changed. Ordinary execution inside a current contract does not create a packet. Never invent another participant's uncommitted state.
 
-When publishing a Team Alignment Delta, Project State, Idea Memory, or Intent Trail change, rebuild the affected current body in the same operation. Keep one current view; link history instead of retaining stale or conflicting sections. Rotate an Alignment Window when it stops being quickly scannable.
+The task issue body is its one current execution contract; comments are evidence. The shared tracker is a human-readable projection of Project State and current issues, not a second planner. Use `Todo -> Next -> In Progress -> In Review -> Done`, plus `Blocked` and `Parked`, with owner, priority, formal parent/dependencies where supported, milestone or delivery window, checkpoint, and PR/artifact. Keep compact views for current work, roadmap, parked work, recent completion, and control; use fixed sprints only when the team actually works that way.
+At dispatch, material re-brief, blocker, acceptance, and close, update the task contract, Project State, and tracker projection together before announcing the new state. Routine progress does not rewrite dashboards or Alignment. When publishing a Team Alignment Delta or graph change, rebuild its affected current view in the same operation. Link history instead of retaining stale or conflicting sections and rotate an Alignment Window when it stops being quickly scannable.
 
 ## Meetings
-
 Meetings, recordings, transcripts, team chats, and notes are one coordination input layer. They are raw inputs until the orchestrator distills them into the shared tracker and a human approves changes to compass, scope, sequence, ownership, or DOD.
 
 After a meeting, one short request such as `run daily alignment` should be enough. The orchestrator reads the available source, updates durable state, asks for missing packets only where they matter, and returns continue, continue with cautions, wait, or blocked.
@@ -285,7 +285,7 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Do not claim team alignment while shared repo/tracker or relevant input access is `SYNC_LIMITED`.
 - Check scope freshness before dispatch, re-brief, or material resume of stale/paused work; ordinary continue inside a current active contract does not trigger it.
 - Treat unexpected task expansion as a diagnostic trigger; do not normalize recurring architecture tax or close containment as root-cause repair.
-- Protect the nearest DOD from optional scope growth, preserve future ideas in Idea Memory, and preserve reusable human intent, pivots, and safe operational knowledge in the current decision map instead of relying on chat or human recall.
+- Protect the nearest DOD from optional scope growth and preserve reusable decisions, future ideas, pivots, lessons, and safe operational pointers in one Project Memory Graph instead of relying on chat or human recall.
 - Keep one Success Line: build successor candidates from the Accepted Baseline plus applicable Memory Brief while carrying forward lessons from rejected candidates.
 - Do not close a parent from an accepted sub-slice unless its promised product loop and DOD are closed or explicitly moved out of scope.
 - Do not accept Lab Mode as product completion without production transfer and real-flow verification.
