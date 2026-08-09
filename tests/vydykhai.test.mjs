@@ -41,14 +41,15 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Role: EXECUTION/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Consult when:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Applicable Memory Brief:/);
-    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory Delta:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory candidates:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/project-memory-graph-template.md"), "utf8"), /Legacy Source Map/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Recipient proof:/);
     assert.match(await readFile(path.join(target, "docs/workflows/intent-trail-template.md"), "utf8"), /APPROACH_PIVOT/);
     assert.match(await readFile(path.join(target, "docs/workflows/project-state-template.md"), "utf8"), /Task return mapping:/);
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.16.0");
+    assert.equal(lock.installedVersion, "1.17.0");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -62,6 +63,8 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /ORCHESTRATOR=maximum-available/);
     assert.match(doctor.stdout, /DISCOVERY=deep-bounded/);
     assert.match(doctor.stdout, /EXECUTION=efficient-bounded/);
+    assert.match(doctor.stdout, /Memory: project-memory-graph; task brief <= 7 nodes/);
+    assert.match(doctor.stdout, /Tracker: task-contract-with-event-driven-projection/);
     assert.match(doctor.stdout, /Creator: Alexander Rozhnov \(@vonjor-lab\)/);
     assert.match(doctor.stdout, /License: PolyForm-Small-Business-1\.0\.0/);
 
@@ -78,7 +81,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.16\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.17\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -98,14 +101,17 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.agentRoutingPolicy.profiles.execution.reasoningPolicy, "efficient-bounded");
   assert.equal(manifest.agentRoutingPolicy.profiles.execution.preferredEffortWhenAvailable, "low");
   assert.equal(manifest.defaultScopeFreshnessDays, 7);
+  assert.equal(manifest.memoryPolicy.policy, "project-memory-graph");
+  assert.equal(manifest.memoryPolicy.taskBriefMaxNodes, 7);
+  assert.equal(manifest.trackerPolicy.policy, "task-contract-with-event-driven-projection");
   assert.ok(manifest.managedPaths.includes("docs/workflows"));
   assert.ok(!manifest.managedPaths.includes("docs/codex-workflows"));
-  assert.match(await readFile(path.join(root, "docs/workflows/idea-memory-template.md"), "utf8"), /protects the nearest DOD/);
+  assert.match(await readFile(path.join(root, "docs/workflows/idea-memory-template.md"), "utf8"), /legacy\/read-only/);
   const core = await readFile(path.join(root, "docs/FRAMEWORK.md"), "utf8");
   assert.match(core, /Shared Sync Contract/);
   assert.match(core, /Expansion Check/);
-  assert.match(core, /Intent Trail/);
-  assert.match(core, /APPROACH_PIVOT/);
+  assert.match(core, /Project Memory Graph/);
+  assert.match(core, /NO_MEMORY_DELTA/);
   assert.match(core, /CONSULT/);
   assert.match(core, /Touch Set/);
   assert.match(core, /Memory Brief/);
@@ -116,7 +122,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   const projectState = await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8");
   assert.match(projectState, /Shared Sync:/);
   assert.match(projectState, /Context visibility:/);
-  assert.match(projectState, /Intent Trail:/);
+  assert.match(projectState, /Project Memory Graph:/);
+  assert.match(projectState, /Tracker projection:/);
   assert.match(projectState, /Operational sources:/);
   assert.match(projectState, /Latest seen:/);
   assert.match(projectState, /Update:/);
@@ -127,7 +134,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(taskHandoff, /Agent profile: EXECUTION/);
   assert.match(taskHandoff, /Continue from:/);
   assert.match(taskHandoff, /Applicable Memory Brief:/);
-  assert.match(taskHandoff, /Memory Delta:/);
+  assert.match(taskHandoff, /Memory candidates:/);
   assert.match(taskHandoff, /Consult when:/);
   assert.match(taskHandoff, /Boundary consultation:/);
   assert.match(taskHandoff, /Progress continuity:/);
@@ -145,12 +152,14 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /no context message, no-op trace, or model wake-up/);
   assert.match(orchestratorWorkflow, /representative current\/upcoming Touch Sets/);
   assert.match(orchestratorWorkflow, /non-destructive access check/);
+  assert.match(orchestratorWorkflow, /graph watermark/);
+  assert.match(orchestratorWorkflow, /tracker projection/);
   const acceptWork = await readFile(path.join(root, "docs/workflows/accept-work.md"), "utf8");
   assert.match(acceptWork, /Unexpectedly changed/);
   assert.match(acceptWork, /recipient-side exact-artifact\/revision proof/);
   assert.match(acceptWork, /reproducible safe data source/);
   assert.match(acceptWork, /zero-spend or no-mutation contract/);
-  assert.match(acceptWork, /Memory Delta/);
+  assert.match(acceptWork, /Memory candidates/);
   assert.match(acceptWork, /least-privilege access/);
 });
 

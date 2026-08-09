@@ -26,8 +26,9 @@ Compass: <brief/doc/issue link>
 Current DOD: <milestone and rows>
 Active Alignment Window: <link or none>
 Latest Team Alignment Delta: <id/link or none>
-Idea Memory: <link, section, or none> | Last intersection: <brief/checkpoint/date or none>
-Intent Trail: <link, section, or none> | Current view: decision map | Last reconciliation/retrieval test: <task/brief/checkpoint/date or none>
+Project Memory Graph: <link or section> | Watermark: <event/revision/date> | Last retrieval/coverage check: <task/checkpoint/result>
+Legacy memory inputs: <Intent Trail / Idea Memory links awaiting or completing migration, or none>
+Tracker projection: <project/board link or equivalent> | Mapping: <statuses/fields/views> | Last reconciled: <event/date>
 Scope freshness policy: <days; default 7> | Last project-level check: <date/event>
 Updated from durable event: <event/link/date>
 
@@ -39,9 +40,9 @@ Updated from durable event: <event/link/date>
 
 ## Active Work
 
-| Task | Role / profile | Outcome owner / recipient | Task context | Baseline -> Candidate | PR/artifact | Human checkpoint | DOD impact | Status | Next |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| <task> | <DISCOVERY or EXECUTION / mapping> | <owner / recipient or none> | <link> | <accepted -> active> | <link> | <checkpoint> | <row> | <state> | <action> |
+| Task | Owner / recipient | Context | Baseline -> Candidate | Parent / dependencies | PR/artifact | DOD impact | Tracker status | Checkpoint / next |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| <task> | <owner / recipient or none> | <role/profile + link> | <accepted -> active> | <formal links or none> | <link> | <row> | <Todo / Next / In Progress / In Review / Blocked / Done / Parked> | <checkpoint / action> |
 
 ## Decisions And Blockers
 
@@ -58,4 +59,4 @@ Updated from durable event: <event/link/date>
 <!-- vydykhai:project-state:end -->
 ```
 
-Update this body after accepted work, merge, material alignment, owner change, health review, or orchestrator rotation. Link archived Alignment Windows instead of copying their full history.
+Update this body after dispatch, material re-brief, blocker, accepted work, merge, material alignment, owner change, health review, or orchestrator rotation. In the same operation, reconcile the task issue's current contract and tracker projection. Link archived Alignment Windows instead of copying their full history.

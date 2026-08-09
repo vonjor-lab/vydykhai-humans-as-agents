@@ -20,7 +20,7 @@ created_at: <ISO timestamp>
 Active task / PR:
 Meeting or event decisions affecting my work:
 Intent / Approach Delta: <none | type/status; Before / Now / Why / Keep / Drop / applies to / source>
-Memory Delta: <none | task-local only | reusable: confirmed / refined / superseded / new decision family; evidence/touch keys/safe source>
+Memory candidates: <NO_MEMORY_DELTA | task-local only | ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT with type, value, touch keys, relations, and safe source>
 Material local delta:
 Touch Set / shared surfaces or contracts:
 Conflicts, overlaps, or needs:

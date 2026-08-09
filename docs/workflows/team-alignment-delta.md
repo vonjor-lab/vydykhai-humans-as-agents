@@ -23,7 +23,7 @@ Pending participants/packets:
 
 - <decision or material event>
 - Intent / Approach Delta: <none | confirmed/provisional pivot or rule and durable destination>
-- Memory Delta: <none | decision family / idea / safe operational pointer updated; source>
+- Memory candidates: <NO_MEMORY_DELTA | integrated/pending graph candidates and source>
 
 ### Cross-Work Impact
 

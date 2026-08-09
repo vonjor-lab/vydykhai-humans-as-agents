@@ -1,8 +1,8 @@
-# Idea Memory Template
+# Idea Memory Compatibility Template
 
-Use one compact shared artifact per project or product stream when the first confirmed future idea must be preserved. It protects the nearest DOD from optional scope growth without making people remember what was deferred.
+For projects using the current memory policy, store future ideas as `IDEA` nodes in `project-memory-graph-template.md`; do not create a second active memory. This file remains for migrating an existing Idea Memory without losing its ids or sources.
 
-Idea Memory is not a backlog, task list, promise, or permission to implement or spend. Keep the current view short; retain sources and resolved history as evidence in the shared tracker.
+Idea Memory is not a backlog, task list, promise, or permission to implement or spend. During migration, map each active or ambiguous entry to the Project Memory Graph, retain sources as evidence, then mark this artifact legacy/read-only.
 
 ```md
 # Idea Memory: <project or stream>
@@ -18,11 +18,8 @@ Last full review: <date/checkpoint>
 
 Rules:
 
-- Add only a human-confirmed idea or a confirmed candidate returned by task, research, lab, alignment, or acceptance work.
-- An explicit human request to remember an idea is confirmation. Otherwise ask once before persisting an optional extension.
-- Search Idea Memory, active tasks, briefs, decisions, and accepted work before adding. Update an existing entry instead of creating a semantic duplicate.
-- Recall triggers should name product contact points such as a brief, surface, contract, milestone, or next work touching a topic; a date alone is weak.
-- At a planning intersection, recommend: use as guard, shape separately, keep remembered, or retire as absorbed, duplicated, or superseded.
-- Human approval is required before an idea changes current scope, DOD, sequence, or becomes a task.
-- Rebuild the current body atomically whenever an entry changes. Newer comments are evidence, not a second current list; merge duplicates and remove retired entries from the active view while preserving their id, reason, and destination in history.
-- If no remembered idea intersects, record `Idea Memory Intersection: none`.
+- Freeze new writes when migration starts. Treat the current body and later comments as source evidence, not as two competing current lists.
+- Map each still-useful, human-confirmed option to an `IDEA` node with its value, Touch keys, recall trigger, and source. A date alone is not a useful recall trigger.
+- Mark an entry `absorbed`, `duplicated`, `superseded`, `retired`, or `ambiguous` when it should not remain an active idea. Human approval is required before an idea changes current scope, DOD, sequence, or becomes a task.
+- Merge semantic duplicates into one graph node while preserving every old id, reason, and destination in the graph's Legacy Source Map.
+- Finish only after representative planning Touch Sets retrieve the expected ideas and every old id has a disposition. Then mark Idea Memory legacy/read-only; all future idea capture and recall use the Project Memory Graph.

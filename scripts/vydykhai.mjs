@@ -341,6 +341,8 @@ async function doctor(targetRoot, { offline = false } = {}) {
     sourceRevision: lock?.sourceRevision || (await sourceRevision(targetRoot)),
     agentProfilePolicy: manifest.defaultAgentProfile,
     agentRoutingPolicy: manifest.agentRoutingPolicy,
+    memoryPolicy: manifest.memoryPolicy,
+    trackerPolicy: manifest.trackerPolicy,
     creator: manifest.creator,
     license: manifest.license,
     canonicalSource: manifest.canonicalSource,
@@ -364,6 +366,10 @@ function printDoctor(result, asJson) {
       `DISCOVERY=${routing.profiles.discovery.reasoningPolicy}; ` +
       `EXECUTION=${routing.profiles.execution.reasoningPolicy}`,
   );
+  console.log(
+    `Memory: ${result.memoryPolicy.policy}; task brief <= ${result.memoryPolicy.taskBriefMaxNodes} nodes`,
+  );
+  console.log(`Tracker: ${result.trackerPolicy.policy}`);
   console.log(`Creator: ${result.creator.name} (@${result.creator.github})`);
   console.log(`License: ${result.license}`);
   console.log(`Canonical source: ${result.canonicalSource}`);

@@ -29,7 +29,7 @@ Capture only:
 - agent routing policy, resolved model and three role mappings, check date/source, and visible fallback rule;
 - agent environment adapter and context mapping;
 - task Return Sync mapping and scope-freshness interval;
-- first milestone DOD;
+- first milestone DOD and the tracker projection for `now / next / blocked / done`;
 - open decisions and immediate risks.
 
 Treat coordination inputs as raw until distilled and approved.
@@ -40,7 +40,9 @@ Use Fathom as the recommended meeting recorder when available. Read AI, tl;dv, a
 
 Create or update one compact Project State using `project-state-template.md`.
 
-Keep Idea Memory and the Intent Trail decision-map pointer in Project State. Create each compact shared view only when its first confirmed future idea or meaningful cross-context intent/pivot must be preserved; either may be a Project State section or one linked current-state artifact. Link operational knowledge to private durable runbooks or secret-management systems instead of copying sensitive values into the tracker.
+Create one Project Memory Graph using `project-memory-graph-template.md` when the first reusable decision, idea, lesson, or safe operational pointer must survive its source context. Link operational knowledge to private durable runbooks or secret-management systems instead of copying sensitive values into the tracker. For an upgraded project, map existing Idea Memory and Intent Trail ids into the graph before marking those artifacts legacy/read-only.
+
+Configure one lightweight tracker projection. The task issue body is the current contract; Project State holds the route; the board or equivalent shows `Todo`, `Next`, `In Progress`, `In Review`, `Blocked`, `Done`, and `Parked`. Record owner, priority, formal parent/dependencies where supported, milestone or delivery window, checkpoint, and PR/artifact. Keep views compact and use fixed sprints only when the team actually needs them.
 
 Register each participant with:
 
@@ -65,11 +67,11 @@ Explain:
 - keep research, lab, and implementation in separate contexts; the orchestrator decides what/why/when/who, while a task decides how to implement and prove its accepted increment;
 - finish tasks with `$accept-work` in the task context;
 - perform manual smoke and merge in the task context after human confirmation;
-- let the chosen shared tracker carry durable state between people and agents;
+- let the chosen shared tracker carry durable state between people and agents and expect its `now / next / blocked / done` view to match Project State;
 - confirm that both the person and their orchestrator can reach the shared repo/tracker and relevant meeting inputs; otherwise expect `SYNC_LIMITED` rather than full alignment;
 - let task contexts solve ordinary failures themselves and return only named human checkpoints, irreducible blockers, and terminal results automatically; people should not poll them;
-- say useful ideas and corrections freely: the orchestrator protects the nearest DOD, stores future ideas, preserves meaningful intent and «do it differently» pivots, and recalls them at relevant planning;
-- expect every task to start with relevant prior decisions and finish with a compact memory delta; people do not tag or curate this manually;
+- say useful ideas and corrections freely: the orchestrator protects the nearest DOD, stores reusable meaning in one shared graph, and recalls it at relevant planning;
+- expect every task to start with only relevant prior decisions and finish with `NO_MEMORY_DELTA` or compact candidates; people do not tag or curate memory manually;
 - expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.
 - expect an orchestrator rotation to be announced before it starts and made visually obvious after confirmation; new coordination moves to the pinned replacement while the old context stays only as unpinned history.
 

@@ -8,15 +8,15 @@ Read:
 
 - latest explicit human decision;
 - product compass and DOD;
-- current Idea Memory, Intent Trail decision map, safe operational sources, and their last reconciliation;
+- current Project Memory Graph, safe operational pointers, watermark, and last retrieval check;
 - relevant meetings, docs, issues, PRs, deltas, and verified repo state;
 - overlapping work and participant ownership.
 
-Apply source precedence. Classify new commentary as scope change, DOD gap, guardrail, future option, or Intent/Approach Delta. A meaningful method change may be an `APPROACH_PIVOT` even when DOD is unchanged.
+Apply source precedence. Classify new commentary as scope change, DOD gap, guardrail, future option, or a reusable memory candidate. A meaningful method change may become a `DECISION` even when DOD is unchanged.
 
 Before dispatching, re-briefing, or materially resuming a stale or paused task, compare it with current DOD/decisions, upstream results, affected entities/contracts, active work, memory, safe operational sources, and code. Identify the accepted existing mechanism the task continues; do not infer permission to create a parallel one. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`. Seven days is a re-read signal, not an automatic change. A patch, split, or re-brief maps earlier progress as `Preserved`, `Replaced`, `Added`, and `Remaining`. An ordinary continue inside a current active contract is not a re-brief or freshness event.
 
-If a future option is useful but unnecessary for the nearest DOD, recommend keeping it out of the current work. After human confirmation, upsert it in Idea Memory with its value, touched surfaces, source, and recall trigger.
+If a future option is useful but unnecessary for the nearest DOD, recommend keeping it out of current work. After human confirmation, return an `IDEA / ADD or REFINE` candidate with its value, touch keys, source, and recall trigger.
 
 ## 2. Decide Whether To Discover
 
@@ -41,9 +41,9 @@ If it cannot be explained compactly, split the topic before tasking.
 
 Compare with active epics, shared contracts, deltas, and known lessons. Surface overlap in code or intended outcome, duplicated work, conflicting assumptions, and unsafe parallel edits. A support, demo, review, or transport task stays separate from the product task's DOD and burn even when its files are isolated.
 
-Derive a `Touch Set` from the proposed outcome, entities, actors/surfaces, contracts/authorities, and data/operational realms. Intersect it with the current Intent Trail decision map, Idea Memory, applicable accepted/rejected task lineage, and safe operational sources.
+Derive a `Touch Set` from the proposed outcome, entities, actors/surfaces, contracts/authorities, and data/operational realms. Match it to the Project Memory Graph, applicable accepted/rejected task lineage, durable evidence, and active work.
 
-Record one compact `Memory Brief`: one to three current decisions/invariants, relevant rejected-path lessons, matching future ideas without scope growth, safe runbook/access/backup/recovery references, and conflicts or `MEMORY_COVERAGE_GAP`. Keep the Touch Set and full memory intersection in the orchestrator; give the task only the distilled brief. Do not make the human or task scan the full trail.
+Record the smallest complete `Memory Brief`, normally three to seven graph nodes and fewer when fewer apply: current decisions/invariants, relevant rejected-path lessons, matching future ideas without scope growth, safe operational pointers, source links, and conflicts or `MEMORY_COVERAGE_GAP`. Keep the Touch Set and full retrieval reasoning in the orchestrator; give the task only the distilled brief.
 
 Propose:
 
@@ -63,7 +63,7 @@ Goal and DOD impact:
 Scope / out of scope:
 Scope freshness / Accepted Baseline:
 Continue from: <accepted mechanism/reference>
-Applicable Memory Brief: <1-3 distilled decisions/invariants, rejected-path lessons, or safe operational references; conflicts/gaps or none>
+Applicable Memory Brief: <smallest complete set, maximum 7 node ids with distilled rules, lessons, pointers, sources, and conflicts/gaps or none>
 Product loop or linked enabler:
 For enabler: Unlocks / Still missing / next product slice:
 Authority / safety envelope:
@@ -87,6 +87,6 @@ Keep one owning execution context and canonical Candidate per accepted increment
 
 Show the brief, task map, sequence, ownership, checkpoints, Memory Brief, open decisions, and risks. Ask for human approval.
 
-After approval, create/update tasks in the shared tracker and return the sequence to the Framework Orchestrator. Every implementation task starts in role `EXECUTION` on the efficient profile: it continues the accepted mechanism, resolves ordinary failures autonomously, consults only at a material undeclared boundary, never climbs effort levels mechanically, runs `$accept-work`, and publishes Return Sync only at a named human checkpoint, irreducible blocker, or terminal result. It does not run orchestration or alignment workflows.
+After approval, create/update each task's one current contract, formal parent/dependencies where supported, and tracker projection together, then return the sequence to the Framework Orchestrator. Every implementation task starts in role `EXECUTION` on the efficient profile: it continues the accepted mechanism, resolves ordinary failures autonomously, consults only at a material undeclared boundary, never climbs effort levels mechanically, runs `$accept-work`, and publishes Return Sync with `NO_MEMORY_DELTA` or compact candidates only at a named human checkpoint, irreducible blocker, or terminal result. It does not run orchestration or alignment workflows.
 
 Do not implement in this workflow.
