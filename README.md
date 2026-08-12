@@ -1,8 +1,8 @@
 # Vydykhai: Team Autopilot for People and AI
 
-«Выдыхай» - командный автопилот для совместной работы людей и AI-агентов. Вы задаете цель и принимаете смысловые решения. AI-оркестратор работает как штурман: превращает разговоры команды в общий бриф, согласованные задачи, критерии приемки и следующий шаг, сохраняет накопленный опыт и возвращает работу к результату, когда она начинает расползаться.
+«Выдыхай» - командный автопилот для людей, которые работают над одним проектом, каждый со своим AI. Участники могут использовать разные компьютеры, модели и агентные среды: Vydykhai связывает их личных оркестраторов общим брифом, памятью, задачами и приемкой. Работа, сделанная отдельно, сходится в один результат, а участники не ломают изменения друг друга. Люди задают цель и принимают смысловые решения; оркестраторы держат общий маршрут и следующий шаг.
 
-Vydykhai is a team autopilot for collaborative work between people and AI agents. You set the goal and make judgment calls. The AI orchestrator acts as a navigator: it turns team conversations into a shared brief, aligned tasks, acceptance criteria, and the next step; preserves what the team learns; and brings drifting work back to the intended outcome.
+Vydykhai is a team autopilot for people working on one project, each with their own AI. Participants may use different computers, models, and agent environments: Vydykhai connects their personal orchestrators through a shared brief, memory, tasks, and acceptance process. Work done separately converges into one result without participants breaking one another's changes. People set the goal and make judgment calls; orchestrators maintain the shared route and next step.
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
