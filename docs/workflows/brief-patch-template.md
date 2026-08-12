@@ -19,7 +19,8 @@ Status: <proposed | approved | applied>
 - <meeting decision, new evidence, conflict resolution, or clarification>
 
 Intent / Approach Delta: <none | Before / Now / Why / Keep / Drop / applies to / source>
-Memory Brief change: <none | added / refined / conflicted / coverage gap; source>
+Memory Reflection: <none | ABSENT | RETRIEVAL_MISS | APPLICATION_MISS | VERIFICATION_MISS; graph event/source>
+Memory Brief change: <none | executable Because / Apply / Avoid / Verify / Source delta | MEMORY_COVERAGE_GAP>
 
 ### Impact
 

@@ -41,15 +41,17 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Role: EXECUTION/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Consult when:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Applicable Memory Brief:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory Brief result:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory candidates:/);
     assert.match(await readFile(path.join(target, "docs/workflows/project-memory-graph-template.md"), "utf8"), /Legacy Source Map/);
+    assert.match(await readFile(path.join(target, "docs/workflows/project-memory-graph-template.md"), "utf8"), /Representative Retrieval Scenarios/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Recipient proof:/);
     assert.match(await readFile(path.join(target, "docs/workflows/intent-trail-template.md"), "utf8"), /APPROACH_PIVOT/);
     assert.match(await readFile(path.join(target, "docs/workflows/project-state-template.md"), "utf8"), /Task return mapping:/);
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.17.0");
+    assert.equal(lock.installedVersion, "1.18.0");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -63,7 +65,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /ORCHESTRATOR=maximum-available/);
     assert.match(doctor.stdout, /DISCOVERY=deep-bounded/);
     assert.match(doctor.stdout, /EXECUTION=efficient-bounded/);
-    assert.match(doctor.stdout, /Memory: project-memory-graph; task brief <= 7 nodes/);
+    assert.match(doctor.stdout, /Memory: project-memory-graph v2; task brief <= 7 executable nodes/);
     assert.match(doctor.stdout, /Tracker: task-contract-with-event-driven-projection/);
     assert.match(doctor.stdout, /Creator: Alexander Rozhnov \(@vonjor-lab\)/);
     assert.match(doctor.stdout, /License: PolyForm-Small-Business-1\.0\.0/);
@@ -81,7 +83,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.17\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.18\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -102,6 +104,11 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.agentRoutingPolicy.profiles.execution.preferredEffortWhenAvailable, "low");
   assert.equal(manifest.defaultScopeFreshnessDays, 7);
   assert.equal(manifest.memoryPolicy.policy, "project-memory-graph");
+  assert.equal(manifest.memoryPolicy.graphVersion, 2);
+  assert.ok(manifest.memoryPolicy.anchorKinds.includes("entity"));
+  assert.ok(manifest.memoryPolicy.nodeTypes.includes("lesson"));
+  assert.ok(manifest.memoryPolicy.relationTypes.includes("learned-from"));
+  assert.ok(manifest.memoryPolicy.memoryMissTypes.includes("retrieval-miss"));
   assert.equal(manifest.memoryPolicy.taskBriefMaxNodes, 7);
   assert.equal(manifest.trackerPolicy.policy, "task-contract-with-event-driven-projection");
   assert.ok(manifest.managedPaths.includes("docs/workflows"));
@@ -116,6 +123,9 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /Touch Set/);
   assert.match(core, /Memory Brief/);
   assert.match(core, /MEMORY_COVERAGE_GAP/);
+  assert.match(core, /Memory Reflection/);
+  assert.match(core, /RETRIEVAL_MISS/);
+  assert.match(core, /Because \/ Apply \/ Avoid \/ Verify \/ Source/);
   assert.match(core, /Role-Routed Agent Profiles/);
   assert.match(core, /Low-ready/);
   assert.match(core, /24 hours old/);
@@ -123,6 +133,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectState, /Shared Sync:/);
   assert.match(projectState, /Context visibility:/);
   assert.match(projectState, /Project Memory Graph:/);
+  assert.match(projectState, /Last memory delta:/);
   assert.match(projectState, /Tracker projection:/);
   assert.match(projectState, /Operational sources:/);
   assert.match(projectState, /Latest seen:/);
@@ -134,6 +145,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(taskHandoff, /Agent profile: EXECUTION/);
   assert.match(taskHandoff, /Continue from:/);
   assert.match(taskHandoff, /Applicable Memory Brief:/);
+  assert.match(taskHandoff, /Memory Brief result:/);
   assert.match(taskHandoff, /Memory candidates:/);
   assert.match(taskHandoff, /Consult when:/);
   assert.match(taskHandoff, /Boundary consultation:/);
@@ -150,7 +162,10 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /never omit a skipped release/);
   assert.match(orchestratorWorkflow, /newer than the last Return Sync/);
   assert.match(orchestratorWorkflow, /no context message, no-op trace, or model wake-up/);
-  assert.match(orchestratorWorkflow, /representative current\/upcoming Touch Sets/);
+  assert.match(orchestratorWorkflow, /representative current, upcoming, and prior-miss Touch Sets/);
+  assert.match(orchestratorWorkflow, /Memory Reflection/);
+  assert.match(orchestratorWorkflow, /APPLICATION_MISS/);
+  assert.match(orchestratorWorkflow, /side-by-side read-only candidate/);
   assert.match(orchestratorWorkflow, /non-destructive access check/);
   assert.match(orchestratorWorkflow, /graph watermark/);
   assert.match(orchestratorWorkflow, /tracker projection/);

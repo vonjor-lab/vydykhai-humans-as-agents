@@ -31,6 +31,7 @@ The following canonical commits provide a compact, independently inspectable rec
 | 2026-07-14 | [`v1.8.0`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/releases/tag/v1.8.0) | DOD Focus and durable Idea Memory |
 | 2026-07-22 | [`v1.9.0`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/releases/tag/v1.9.0) | Closed-loop task return, Scope Freshness, One Success Line, and Proactive Guardrails |
 | 2026-07-25 | [`v1.10.0`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/releases/tag/v1.10.0) | Shared Sync Contract and Expansion Check |
+| 2026-08-12 | [`v1.18.0`](https://github.com/vonjor-lab/vydykhai-humans-as-agents/releases/tag/v1.18.0) | Closed memory control loop with anchored retrieval, miss reflection, and practical coverage evaluation |
 
 ## Evidence Policy
 

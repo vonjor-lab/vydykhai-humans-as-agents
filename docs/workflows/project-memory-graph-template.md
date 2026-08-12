@@ -1,28 +1,46 @@
 # Project Memory Graph Template
 
-Use one compact shared current view per project or product stream. It keeps only knowledge that can change a future decision: active invariants, decisions, useful deferred ideas, rejected-path lessons, and safe pointers to operational instructions. Raw discussions, routine progress, and secret values stay outside it as linked evidence.
+Use one compact shared graph per project or product stream. Project State is current working memory; this graph is reusable semantic and decision memory; linked meetings, messages, tasks, PRs, and rejected candidates are episodic evidence; each task receives only an executable Memory Brief. Never make chat history or a visualization another source of truth.
 
 ```md
-<!-- vydykhai:project-memory-graph v1 -->
+<!-- vydykhai:project-memory-graph v2 -->
 
 # Project Memory Graph: <project or stream>
 
 Project State: <link>
 Watermark: <last integrated event id / revision / date>
 Last compaction: <date / trigger>
-Last retrieval check: <task or Touch Set / result>
+Last reflection: <event / miss class / result>
+Last retrieval check: <scenario or task / evaluator / result>
 
-## Current Nodes
+## Anchor Index
 
-| ID | Type / status | Current rule or value | Applies to / touch keys | Why / rejected path | Relations | Source |
-| --- | --- | --- | --- | --- | --- | --- |
-| MEM-01 | <INVARIANT | DECISION | IDEA | POINTER> / <ACTIVE | PROVISIONAL> | <smallest reusable statement> | <outcomes, entities, actors/surfaces, contracts/authorities, data/operations> | <rationale and what must not be repeated, or none> | <supports, conflicts, supersedes, depends on, or none> | <durable evidence link> |
+| ID | Kind | Canonical name / aliases | Scope | Source |
+| --- | --- | --- | --- | --- |
+| ENT-01 | <OUTCOME | ACTOR | ENTITY | SURFACE | CONTRACT | DATA | OPERATION> | <stable name; accepted aliases> | <project / stream / boundary> | <durable source> |
 
-## Pending Candidates
+## Current Memory Nodes
 
-| Event | Action | Proposed change | Touch keys | Source | State |
-| --- | --- | --- | --- | --- | --- |
-| <id> | <ADD | REFINE | SUPERSEDE | RETIRE | CONFLICT | NO_CHANGE> | <compact candidate> | <keys> | <durable link> | <pending | integrated | needs human> |
+### MEM-01 — <short title>
+- Type / status: `<INVARIANT | DECISION | LESSON | IDEA | POINTER> / <ACTIVE | PROVISIONAL | CONFLICT>`
+- About: <anchor ids> | Recall when: <task language, condition, or trigger>
+- Apply: <one current executable statement>
+- Avoid: <rejected path or none>
+- Applies / exceptions: <scope and explicit exclusions>
+- Relations: <about / requires / constrains / supersedes / conflicts / learned-from / verified-by -> ids, or none>
+- Source / checked: <durable evidence link / date or result>
+
+## Pending Memory Events
+
+| Event | Trigger | Before / Now / Why | Anchors | Miss | Action | Source | State |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| <id> | <task / meeting / acceptance / correction> | <compact delta> | <ENT ids / unresolved terms> | <NONE | ABSENT | RETRIEVAL_MISS | APPLICATION_MISS | VERIFICATION_MISS> | <ADD | REFINE | SUPERSEDE | RETIRE | CONFLICT | NO_CHANGE> | <durable link> | <pending | integrated | needs human> |
+
+## Representative Retrieval Scenarios
+
+| Scenario | Touch anchors | Expected executable brief | Independent result | Regression source |
+| --- | --- | --- | --- | --- |
+| <real current or prior-risk situation> | <ENT ids and query terms> | <Apply / Avoid / Verify expectations> | <pass / miss class / checked by / date> | <source or none> |
 
 ## Legacy Source Map
 
@@ -35,10 +53,13 @@ Last retrieval check: <task or Touch Set / result>
 
 Rules:
 
-- `INVARIANT` is a durable product, quality, authority, safety, or operating boundary. `DECISION` is a current choice and its useful rejected path. `IDEA` is valuable but outside the nearest DOD. `POINTER` locates a protected runbook, environment, access, backup, or recovery route without copying secrets.
-- Every task, meeting delta, acceptance, or human pivot may append one compact candidate event or `NO_CHANGE`. The orchestrator integrates reusable candidates; task contexts never rewrite the graph.
-- Before changing the current body, re-read its watermark and all unseen candidate events. If the body changed during integration, recompute from the new revision instead of overwriting another participant's update.
-- Apply one action per candidate: `ADD`, `REFINE`, `SUPERSEDE`, `RETIRE`, `CONFLICT`, or `NO_CHANGE`. Merge semantic duplicates into the existing node. Ask the human only when sources with equal authority conflict or meaning would be lost.
-- At a cold-path brief, derive the Touch Set and return the smallest complete Memory Brief, normally three to seven nodes and fewer when fewer apply. Include source links and a visible `MEMORY_COVERAGE_GAP` when relevant memory cannot be proven. Never load the full graph into an execution task.
-- Compact at a milestone, rotation, repeated duplicate, retrieval miss, or when the current view stops being quickly scannable. Preserve rule, scope, authority, rationale/rejected path, relations, and provenance; keep old evidence and id mapping rather than copied chronology.
+- Anchors give stable identity to outcomes, actors, product entities, surfaces, contracts, data, and operations. Reuse one anchor across synonyms; do not create a new memory node merely because later work uses different wording.
+- Keep one reusable meaning per memory node. `INVARIANT` is a durable boundary; `DECISION` is a current choice; `LESSON` is a reusable cause or failed-path learning; `IDEA` is valuable but outside the nearest DOD; `POINTER` locates protected operational knowledge without copying it.
+- Current meaning and evidence stay separate. Update `Apply`, `Avoid`, scope, relations, and provenance; link chronology instead of copying it. Type every relation and use `supersedes` rather than leaving two competing current rules.
+- Every task, meeting delta, acceptance, or material human correction emits one compact event or `NO_CHANGE`. Task contexts never rewrite shared memory. Before integration, re-read the watermark and unseen events; recompute on concurrent change, merge semantic duplicates, and ask the human only when equal-authority meaning conflicts.
+- A correction or repeated owner explanation triggers Memory Reflection before apology or patch: derive `Before / Now / Why / scope`, resolve anchors, retrieve related nodes, and classify `ABSENT`, `RETRIEVAL_MISS`, `APPLICATION_MISS`, or `VERIFICATION_MISS`. Integrate the smallest correction, rerun retrieval, and intersect the delta with active and queued work.
+- For a cold-path query, resolve exact anchors and aliases first, add semantic candidates when wording differs, traverse relevant typed relations one or two hops, then filter by status, source precedence, scope, applicability, and supersession. Prefer current mandatory constraints and direct matches; recency alone never overrides applicability.
+- Return no more than seven nodes and fewer when fewer apply, compiled as executable items: `Because <anchor>, apply <rule>, avoid <path>, verify <evidence>, source <link>`. Drop a node that changes neither action, boundary, guardrail, nor acceptance. Raise `MEMORY_COVERAGE_GAP` when required meaning cannot be proven.
+- Acceptance records each brief item as applied, missed, contradicted, or not exercised and returns any reusable delta. A miss becomes or updates a representative regression scenario. Coverage passes only when a fresh evaluator can reconstruct the expected executable brief and its acceptance implication; matching ids or self-report alone is insufficient.
+- Compact at a milestone, rotation, duplicate cluster, retrieval miss, or loss of scanability. Preserve stable ids, aliases, current meaning, applicability, typed relations, old-id mapping, and immutable evidence.
 - Never store credentials, tokens, private payloads, production data, or recovery values. A `POINTER` records only the protected location, owner, allowed retrieval route, and last non-destructive access check.

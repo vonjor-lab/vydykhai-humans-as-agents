@@ -72,7 +72,7 @@ When shared guidance changes:
 6. Leave unaffected tasks asleep. For an affected active task, send only `what changed / applies to / preserved / action`: a compatible patch continues execution; an invalidating change pauses only the affected boundary for `PATCH_REQUIRED` or `REBRIEF_REQUIRED`.
 7. Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; age alone is only a re-read signal.
 
-Preserve an optional extension as an `IDEA` candidate. Keep task-local pivots in their task and return reusable `INVARIANT`, `DECISION`, or safe `POINTER` candidates. The orchestrator re-reads the Project Memory Graph watermark, integrates all unseen events without overwriting another participant, and never copies secret values. Inferred wider applicability is `PROVISIONAL` and echoed once; use durable source links instead of full messages.
+Preserve an optional extension as an `IDEA` candidate. Keep task-local pivots in their task and return reusable `INVARIANT`, `DECISION`, `LESSON`, or safe `POINTER` candidates. A meeting correction or repeated owner explanation triggers orchestrator-owned Memory Reflection: retrieve related nodes, classify `ABSENT / RETRIEVAL_MISS / APPLICATION_MISS / VERIFICATION_MISS`, integrate the smallest atomic event, rerun the affected executable Brief, and intersect it with active/queued work. Re-read the graph watermark and unseen events, never overwrite another participant or copy secret values, keep inferred wider applicability `PROVISIONAL`, and link sources instead of messages.
 
 Do not leave a new delta behind an old dashboard.
 

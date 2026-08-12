@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -43,11 +43,31 @@
   },
   "memoryPolicy": {
     "policy": "project-memory-graph",
+    "graphVersion": 2,
+    "anchorKinds": [
+      "outcome",
+      "actor",
+      "entity",
+      "surface",
+      "contract",
+      "data",
+      "operation"
+    ],
     "nodeTypes": [
       "invariant",
       "decision",
+      "lesson",
       "idea",
       "pointer"
+    ],
+    "relationTypes": [
+      "about",
+      "requires",
+      "constrains",
+      "supersedes",
+      "conflicts",
+      "learned-from",
+      "verified-by"
     ],
     "candidateActions": [
       "no-change",
@@ -56,6 +76,12 @@
       "supersede",
       "retire",
       "conflict"
+    ],
+    "memoryMissTypes": [
+      "absent",
+      "retrieval-miss",
+      "application-miss",
+      "verification-miss"
     ],
     "taskBriefMaxNodes": 7,
     "legacyInputs": [

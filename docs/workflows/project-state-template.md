@@ -21,12 +21,13 @@ Orchestrator rotation: <stable | announced | reconciling | candidate ready | awa
 Candidate orchestrator context: <link/title or none>
 Previous orchestrator context: <retired unpinned history/reference link or none>
 Context visibility: <active pinned/foreground | previous unpinned + final notice | exact manual action pending>
-Memory coverage: <Rotation Memory Packet link | candidate check link | missing/ambiguous count>
+Memory coverage: <Rotation Memory Packet link | candidate retrieval check | missing/ambiguous count>
 Compass: <brief/doc/issue link>
 Current DOD: <milestone and rows>
 Active Alignment Window: <link or none>
 Latest Team Alignment Delta: <id/link or none>
-Project Memory Graph: <link or section> | Watermark: <event/revision/date> | Last retrieval/coverage check: <task/checkpoint/result>
+Project Memory Graph: <link or section> | Schema: <version> | Watermark: <event/revision/date> | Last reflection/retrieval check: <event/scenario/result>
+Last memory delta: <task/event -> nodes added/refined/superseded/retired/conflicted or NO_CHANGE -> affected work>
 Legacy memory inputs: <Intent Trail / Idea Memory links awaiting or completing migration, or none>
 Tracker projection: <project/board link or equivalent> | Mapping: <statuses/fields/views> | Last reconciled: <event/date>
 Scope freshness policy: <days; default 7> | Last project-level check: <date/event>

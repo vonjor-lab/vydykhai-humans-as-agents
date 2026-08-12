@@ -23,7 +23,7 @@ Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory 
 - human checkpoint;
 - Lab/Peer Review contract when used;
 - current approach and why material pivots replaced earlier paths;
-- memory decisions and rejected-path lessons applied, missed, or contradicted;
+- each executable Memory Brief item and whether it was applied, missed, contradicted, or not exercised;
 - outcome owner, recipient/dependency boundary, and any required recipient proof;
 - material burn limit;
 - verification route.
@@ -63,8 +63,8 @@ Check:
 - Lab proof followed by production transfer and real-flow verification;
 - Candidate ancestry and experiment decision; a Rejected Candidate is evidence, not the implicit correction base;
 - continuation basis and material delta classification: `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; unexplained unexpected change is not acceptable;
-- applicable graph nodes and unresolved learning/approach evidence;
-- applicable Memory Brief use and any new or corrected reusable lesson;
+- applicable Memory Brief items and unresolved learning/approach evidence;
+- each brief item's `Apply / Avoid / Verify` evidence and any new, corrected, missed, or contradicted reusable lesson;
 - boundary consultations and whether an undeclared entity, shared mechanism, authority conflict, or ownership overlap was resolved before expansion;
 - required Peer Compass Review and alignment;
 - material burn and stop limits;
@@ -92,9 +92,10 @@ Keep fixes, smoke, and manual merge in the owning task context. After human conf
 - for an enabler, report `Unlocks`, `Still missing`, and the next product slice/owner; do not close the parent from technical completion alone.
 - classify each follow-up as a required DOD gap or optional `IDEA` candidate; optional ideas do not keep the accepted task or parent open by themselves.
 - report graph nodes applied, confirmed, refined, superseded, or contradicted; keep local-only lineage in the task.
+- report `Memory Brief result` item by item as `applied / missed / contradicted / not exercised`; a miss is evidence for orchestrator-owned Memory Reflection and a representative regression scenario.
 - report boundary consultations and any deliberately changed or unexpected surfaces.
 - publish terminal Return Sync with learning/approach evidence plus `Memory candidates: NO_MEMORY_DELTA`, `task-local only`, or compact `ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT` candidates containing type, current value, touch keys, relations, and safe source. The orchestrator integrates reusable candidates into the graph; the task never edits shared memory and not every task note is promoted.
 
-For a rejected Candidate or human «do it differently», record learning/approach evidence and return a `DECISION` candidate when it can affect future work. Any successor starts from the Accepted Baseline plus applicable Memory Brief, preserves proven parts, and rebuilds failed parts using those lessons.
+For a rejected Candidate, human «do it differently», or statement that the direction was already known, record learning/approach and miss evidence and return a `DECISION` or `LESSON` candidate when reusable. Apply a clear task-local correction, but leave full graph retrieval, miss classification, and impact analysis to the orchestrator. Any successor starts from the Accepted Baseline plus refreshed Memory Brief, preserves proven parts, and rebuilds failed parts using those lessons.
 
 Do not close a parent from an accepted sub-slice unless its product loop and DOD are closed or explicitly moved out of scope.
