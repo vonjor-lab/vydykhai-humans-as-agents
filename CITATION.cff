@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use Vydykhai in published work, please cite it using this metadata."
 type: software
-title: "Vydykhai: Collaborative Vibe Coding with Humans as Agents"
+title: "Vydykhai: Team Autopilot for People and AI"
 authors:
   - family-names: Rozhnov
     given-names: Alexander
@@ -10,4 +10,4 @@ date-released: "2026-08-12"
 license: PolyForm-Small-Business-1.0.0
 repository-code: "https://github.com/vonjor-lab/vydykhai-humans-as-agents"
 url: "https://github.com/vonjor-lab/vydykhai-humans-as-agents"
-abstract: "A lightweight operating framework for collaborative vibe coding and broader AI-assisted work, with humans as agents of meaning and judgment and an AI orchestrator coordinating shared goals, tasks, alignment, acceptance, and next-best-action."
+abstract: "A lightweight operating framework for collaborative work between people and AI agents. People set goals and make judgment calls while an AI orchestrator acts as a navigator, turning team conversations into briefs, aligned tasks, acceptance criteria, and next steps."
