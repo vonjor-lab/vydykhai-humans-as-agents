@@ -21,7 +21,7 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 - Treat meeting recordings, transcripts, chat, and notes as raw inputs; Fathom, Read AI, tl;dv, another recorder, or an approved manual source are equivalent once accessible.
 - Identify the meeting/event scope, expected participants, affected tasks/contracts, active Alignment Window, and latest delta.
 - Apply source precedence; a current human correction supersedes an old task-context plan.
-- Classify optional future ideas as `IDEA` candidates. Capture meaningful human intent, invariants, and «do it differently» method changes as graph candidates with Before/Now/Why/Keep/Drop/touch keys/source, even when DOD is unchanged; inferred wider applicability stays `PROVISIONAL` until echoed for correction.
+- Classify optional future ideas as `IDEA` candidates. Capture meaningful intent, invariants, «do it differently» changes, and reusable failed-path lessons with Before/Now/Why/Keep/Drop/anchors/source even when DOD is unchanged. A correction or repeated owner explanation triggers orchestrator-owned Memory Reflection and `ABSENT / RETRIEVAL_MISS / APPLICATION_MISS / VERIFICATION_MISS`; inferred wider applicability stays `PROVISIONAL` until echoed.
 - Publish this participant's Local Alignment Packet only when meeting or local state materially changes shared work.
 - Never overwrite or invent another participant's packet or uncommitted state.
 - Reconcile the packets that matter and list missing participants explicitly.
@@ -33,7 +33,7 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 - Intersect the delta with active, queued, and paused tasks. Do not wake an unaffected task. Send an affected active task only `what changed / applies to / preserved / action`: a compatible patch lets it continue, while an invalidating change pauses only the affected boundary for `PATCH_REQUIRED` or `REBRIEF_REQUIRED`. Tasks never process raw meeting or alignment inputs.
 - Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; do not mutate scope silently or treat age alone as a scope change.
 - Rotate and archive the Alignment Window after a milestone or when it is no longer quickly scannable.
-- Update Framework Orchestrator state, Project Memory Graph candidates, safe operational pointers, affected task contracts/tracker projection, and next-best-action. Keep task-local pivots in their task; re-read graph watermark/unseen events before integration and rebuild affected current views atomically without secret values.
+- Update Framework Orchestrator state, atomic Project Memory Graph candidates, executable Briefs, safe operational pointers, affected task contracts/tracker projection, and next-best-action. Keep task-local pivots in their task; re-read graph watermark/unseen events, rerun affected retrieval after integration, and rebuild current views atomically without secret values.
 
 ## Finish
 

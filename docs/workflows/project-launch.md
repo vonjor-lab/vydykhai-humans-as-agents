@@ -40,7 +40,7 @@ Use Fathom as the recommended meeting recorder when available. Read AI, tl;dv, a
 
 Create or update one compact Project State using `project-state-template.md`.
 
-Create one Project Memory Graph using `project-memory-graph-template.md` when the first reusable decision, idea, lesson, or safe operational pointer must survive its source context. Link operational knowledge to private durable runbooks or secret-management systems instead of copying sensitive values into the tracker. For an upgraded project, map existing Idea Memory and Intent Trail ids into the graph before marking those artifacts legacy/read-only.
+Create one Project Memory Graph using `project-memory-graph-template.md` when the first reusable decision, idea, lesson, or safe operational pointer must survive its source context. Start stable anchors for outcomes, actors, product entities, surfaces, contracts, data, and operations as they become relevant; keep one meaning per memory node and link operational knowledge to protected runbooks or secret systems. For an upgraded graph, build a side-by-side read-only candidate, preserve ids and sources, compare current/upcoming/prior-miss plus one grounded historical retrieval scenario, show loss/conflict/delta, and switch only after human confirmation. Map existing Idea Memory and Intent Trail ids before marking them legacy/read-only.
 
 Configure one lightweight tracker projection. The task issue body is the current contract; Project State holds the route; the board or equivalent shows `Todo`, `Next`, `In Progress`, `In Review`, `Blocked`, `Done`, and `Parked`. Record owner, priority, formal parent/dependencies where supported, milestone or delivery window, checkpoint, and PR/artifact. Keep views compact and use fixed sprints only when the team actually needs them.
 
@@ -70,8 +70,8 @@ Explain:
 - let the chosen shared tracker carry durable state between people and agents and expect its `now / next / blocked / done` view to match Project State;
 - confirm that both the person and their orchestrator can reach the shared repo/tracker and relevant meeting inputs; otherwise expect `SYNC_LIMITED` rather than full alignment;
 - let task contexts solve ordinary failures themselves and return only named human checkpoints, irreducible blockers, and terminal results automatically; people should not poll them;
-- say useful ideas and corrections freely: the orchestrator protects the nearest DOD, stores reusable meaning in one shared graph, and recalls it at relevant planning;
-- expect every task to start with only relevant prior decisions and finish with `NO_MEMORY_DELTA` or compact candidates; people do not tag or curate memory manually;
+- say useful ideas and corrections freely: the orchestrator protects the nearest DOD, investigates whether known meaning was absent, not retrieved, not applied, or not verified, and repairs the shared graph plus affected work;
+- expect every task to start with short `Because / Apply / Avoid / Verify / Source` memory items and finish with their application result plus `NO_MEMORY_DELTA` or compact candidates; people do not tag or curate memory manually;
 - expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.
 - expect an orchestrator rotation to be announced before it starts and made visually obvious after confirmation; new coordination moves to the pinned replacement while the old context stays only as unpinned history.
 

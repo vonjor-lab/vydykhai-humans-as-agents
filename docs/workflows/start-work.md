@@ -41,9 +41,9 @@ If it cannot be explained compactly, split the topic before tasking.
 
 Compare with active epics, shared contracts, deltas, and known lessons. Surface overlap in code or intended outcome, duplicated work, conflicting assumptions, and unsafe parallel edits. A support, demo, review, or transport task stays separate from the product task's DOD and burn even when its files are isolated.
 
-Derive a `Touch Set` from the proposed outcome, entities, actors/surfaces, contracts/authorities, and data/operational realms. Match it to the Project Memory Graph, applicable accepted/rejected task lineage, durable evidence, and active work.
+Derive a `Touch Set` from the proposed outcome, actors, entities, surfaces, contracts/authorities, and data/operational realms. Resolve stable graph anchors and aliases, add semantic candidates when wording differs, traverse relevant typed relations one or two hops, then filter by source precedence, status, scope, applicability, and supersession.
 
-Record the smallest complete `Memory Brief`, normally three to seven graph nodes and fewer when fewer apply: current decisions/invariants, relevant rejected-path lessons, matching future ideas without scope growth, safe operational pointers, source links, and conflicts or `MEMORY_COVERAGE_GAP`. Keep the Touch Set and full retrieval reasoning in the orchestrator; give the task only the distilled brief.
+Record the smallest complete `Memory Brief`, no more than seven nodes and fewer when fewer apply. Each item must say `Because <anchor>, apply <rule>, avoid <path>, verify <evidence>, source <link>` and may expose a conflict or `MEMORY_COVERAGE_GAP`; ids alone are invalid. Drop an item that changes neither first action, boundary, guardrail, nor acceptance. Keep the Touch Set and retrieval reasoning in the orchestrator.
 
 Propose:
 
@@ -63,7 +63,7 @@ Goal and DOD impact:
 Scope / out of scope:
 Scope freshness / Accepted Baseline:
 Continue from: <accepted mechanism/reference>
-Applicable Memory Brief: <smallest complete set, maximum 7 node ids with distilled rules, lessons, pointers, sources, and conflicts/gaps or none>
+Applicable Memory Brief: <maximum 7 executable Because / Apply / Avoid / Verify / Source items with node ids, or MEMORY_COVERAGE_GAP / none>
 Product loop or linked enabler:
 For enabler: Unlocks / Still missing / next product slice:
 Authority / safety envelope:
@@ -87,6 +87,6 @@ Keep one owning execution context and canonical Candidate per accepted increment
 
 Show the brief, task map, sequence, ownership, checkpoints, Memory Brief, open decisions, and risks. Ask for human approval.
 
-After approval, create/update each task's one current contract, formal parent/dependencies where supported, and tracker projection together, then return the sequence to the Framework Orchestrator. Every implementation task starts in role `EXECUTION` on the efficient profile: it continues the accepted mechanism, resolves ordinary failures autonomously, consults only at a material undeclared boundary, never climbs effort levels mechanically, runs `$accept-work`, and publishes Return Sync with `NO_MEMORY_DELTA` or compact candidates only at a named human checkpoint, irreducible blocker, or terminal result. It does not run orchestration or alignment workflows.
+After approval, create/update each task's one current contract, formal parent/dependencies where supported, and tracker projection together, then return the sequence to the Framework Orchestrator. Every implementation task starts in role `EXECUTION` on the efficient profile: it continues the accepted mechanism, resolves ordinary failures autonomously, consults only at a material undeclared boundary, never climbs effort levels mechanically, runs `$accept-work`, records each Memory Brief item as applied/missed/contradicted/not exercised, and publishes Return Sync with `NO_MEMORY_DELTA` or compact candidates only at a named human checkpoint, irreducible blocker, or terminal result. It does not run orchestration or alignment workflows.
 
 Do not implement in this workflow.

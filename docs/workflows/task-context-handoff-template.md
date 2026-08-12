@@ -24,7 +24,7 @@ For an enabler: Unlocks / Still missing / next product slice and owner:
 Freshness: <UNCHANGED | PATCH_REQUIRED | REBRIEF_REQUIRED> | Checked: <date/evidence>
 Accepted Baseline: <commit, artifact, or proven behavior>
 Continue from: <accepted mechanism/reference>
-Applicable Memory Brief: <up to 7 node ids with distilled decisions/invariants, rejected-path lessons, safe operational pointers, sources, and conflicts/gaps or none>
+Applicable Memory Brief: <up to 7 executable items: node id / Because / Apply / Avoid / Verify / Source, or MEMORY_COVERAGE_GAP / none>
 Progress continuity: <UNCHANGED | Preserved / Replaced / Added / Remaining>
 
 In scope:
@@ -52,6 +52,7 @@ Return triggers: <named human checkpoint | irreducible blocker | terminal result
 - Resolve ordinary implementation failures autonomously inside the contract and burn limit. Do not send routine progress or a Return Sync for a locally resolved failure, and do not change reasoning profile mechanically.
 - Do not run `$project-launch`, `$start-work`, `$daily-alignment`, or `$framework-orchestrator` here. Use implementation/domain skills as needed and run `$accept-work` before completion.
 - Detect an undeclared boundary, stale upstream state, unresolved solution choice, or evidence that the acceptance contract is insufficient, but do not redesign project scope, sequence, ownership, shared contracts, or model routing. Send one compact `CONSULT`: `Boundary / Evidence / Proposed move / Safe continuation`, then pause only that boundary.
+- If a human says an instruction was already decided or the supplied brief contradicts known direction, follow the clear current instruction inside scope and send compact miss evidence through `CONSULT`; do not search the full graph or run project-wide reflection here.
 - Apply a targeted orchestrator instruction at the next safe operation boundary. Continue unaffected work unless the instruction or safety envelope says otherwise.
 - Keep corrective fixes, human smoke, and manual merge in this context because it owns the implementation evidence.
 
@@ -68,7 +69,8 @@ Human checkpoint result:
 Burn result:
 Boundary consultation: <none | Boundary / Evidence / Proposed move / Safe continuation>
 Learning / approach evidence: <none | Before / Now / Why / Keep / Rebuild / Drop / Unknown / source>
-Memory candidates: <NO_MEMORY_DELTA | task-local only | one or more ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT candidates with type, current value, touch keys, relations, and safe source>
+Memory Brief result: <each item applied | missed | contradicted | not exercised, with evidence>
+Memory candidates: <NO_MEMORY_DELTA | task-local only | one or more ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT candidates with type, Apply/Avoid, anchors, scope, relations, and safe source>
 Recipient proof: <not applicable | exact artifact/revision, environment, schema/migration revision, access, agreed check, and reproducible safe data when required>
 Risks / required follow-ups / optional future candidates:
 Recommended orchestrator next action:

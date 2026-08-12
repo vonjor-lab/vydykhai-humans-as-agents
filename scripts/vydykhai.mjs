@@ -367,7 +367,7 @@ function printDoctor(result, asJson) {
       `EXECUTION=${routing.profiles.execution.reasoningPolicy}`,
   );
   console.log(
-    `Memory: ${result.memoryPolicy.policy}; task brief <= ${result.memoryPolicy.taskBriefMaxNodes} nodes`,
+    `Memory: ${result.memoryPolicy.policy} v${result.memoryPolicy.graphVersion}; task brief <= ${result.memoryPolicy.taskBriefMaxNodes} executable nodes`,
   );
   console.log(`Tracker: ${result.trackerPolicy.policy}`);
   console.log(`Creator: ${result.creator.name} (@${result.creator.github})`);

@@ -6,22 +6,22 @@ Vydykhai is an installable operating system for collaborative work between peopl
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.17.0`
+Current version: `1.18.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
 ## Что изменится для вас
 
-- Вы можете сказать идею, уточнение или «давай по-другому» один раз. Полезный вывод останется общей памятью проекта и вернется в следующей подходящей задаче.
-- Каждая новая задача получает только относящиеся к ней решения и уроки. Исполнитель не перечитывает историю проекта и не повторяет уже разобранные ошибки.
+- Вы можете сказать идею, уточнение или «давай по-другому» один раз. Оркестратор разберется, что именно изменилось, обновит общую память и проверит, какие текущие или будущие задачи это затрагивает.
+- Каждая новая задача получает короткие применимые указания: что делать, чего не повторять и как проверить результат. Исполнитель не перечитывает историю проекта и не получает только непонятные ссылки на память.
 - Принятые уроки одного участника становятся доступны оркестраторам остальных через общий репозиторий, а не остаются внутри личного чата.
 - GitHub показывает реальное `сейчас / дальше / заблокировано / готово`; встречи и локальная работа меняют эту картину только при существенном событии.
 - Человек занимается целью, оценкой результата и необходимыми решениями. Поддержание памяти, связей задач и следующего действия берет на себя оркестратор.
 
 ## What Changes for You
 
-- Say an idea, correction, or change of approach once. Its reusable lesson stays in shared project memory and returns when future work touches it.
-- Each task receives only the decisions and lessons it needs, so execution does not reread project history or repeat known failures.
+- Say an idea, correction, or change of approach once. The orchestrator investigates what changed, updates shared memory, and checks which current or future tasks are affected.
+- Each task receives short applicable instructions: what to do, what not to repeat, and how to verify the result. Execution does not reread project history or receive opaque memory references.
 - One participant's accepted lessons become available to the other orchestrators through the shared repository instead of remaining trapped in a personal chat.
 - The tracker reflects the real `now / next / blocked / done` picture and changes only on material work events.
 - People own the goal, judgment, and approvals; the orchestrator owns memory, task coherence, and the next action.
@@ -62,8 +62,8 @@ Historical snapshots remain available through Git releases and tags. Current ski
 - Reasoning follows the work: the orchestrator uses the strongest available profile, unresolved solution work uses a deep discovery profile, and a ready execution task uses the fast profile.
 - A task continues the accepted product mechanism, resolves ordinary failures itself, and consults only at an undeclared boundary. Research or Lab is used only when uncertainty, cost, or risk justifies it.
 - Meetings and asynchronous local work converge through shared Git-backed state. An absent participant blocks only overlapping work.
-- Before work starts, the orchestrator matches its Touch Set with prior decisions, rejected paths, ideas, and safe operational sources, then gives the task only the relevant Memory Brief.
-- Each result is verified against the current artifact or exact code and returns `NO_MEMORY_DELTA` or compact candidates; the orchestrator integrates only reusable lessons, updates the visible plan and next-best-action, and compacts memory only when needed.
+- Before work starts, the orchestrator resolves stable product anchors, follows their current decision and lesson links, and gives the task an executable Memory Brief: apply, avoid, verify, and source.
+- A correction triggers a Memory Miss investigation instead of an apology-only patch. Each accepted result returns `NO_MEMORY_DELTA` or compact candidates; the orchestrator updates reusable meaning, affected work, the visible plan, and next-best-action.
 
 People normally speak only to their orchestrator in natural language. Vydykhai uses native context creation, messaging, and UI controls when the harness supports them; otherwise it uses the shared tracker and gives one exact human action. It never treats a missing harness capability as completed automation.
 

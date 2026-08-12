@@ -61,6 +61,17 @@ if (manifest.defaultScopeFreshnessDays !== 7) fail("Default scope freshness must
 if (manifest.memoryPolicy?.policy !== "project-memory-graph") {
   fail("Memory policy must use the Project Memory Graph");
 }
+if (manifest.memoryPolicy?.graphVersion !== 2) fail("Project Memory Graph schema must be version 2");
+for (const kind of ["outcome", "actor", "entity", "surface", "contract", "data", "operation"]) {
+  if (!manifest.memoryPolicy?.anchorKinds?.includes(kind)) fail(`Memory policy is missing anchor kind: ${kind}`);
+}
+if (!manifest.memoryPolicy?.nodeTypes?.includes("lesson")) fail("Memory policy is missing LESSON nodes");
+for (const relation of ["about", "requires", "constrains", "supersedes", "conflicts", "learned-from", "verified-by"]) {
+  if (!manifest.memoryPolicy?.relationTypes?.includes(relation)) fail(`Memory policy is missing relation: ${relation}`);
+}
+for (const miss of ["absent", "retrieval-miss", "application-miss", "verification-miss"]) {
+  if (!manifest.memoryPolicy?.memoryMissTypes?.includes(miss)) fail(`Memory policy is missing miss type: ${miss}`);
+}
 if (manifest.memoryPolicy?.taskBriefMaxNodes !== 7) fail("Task Memory Brief maximum must be 7 nodes");
 if (manifest.trackerPolicy?.policy !== "task-contract-with-event-driven-projection") {
   fail("Tracker policy must use the event-driven task projection");
@@ -166,11 +177,16 @@ if (
   !coreEn.includes("Memory Brief") ||
   !coreRu.includes("Memory Brief") ||
   !coreEn.includes("MEMORY_COVERAGE_GAP") ||
-  !coreRu.includes("MEMORY_COVERAGE_GAP")
+  !coreRu.includes("MEMORY_COVERAGE_GAP") ||
+  !coreEn.includes("RETRIEVAL_MISS") ||
+  !coreRu.includes("RETRIEVAL_MISS") ||
+  !coreEn.includes("Because / Apply / Avoid / Verify / Source") ||
+  !coreRu.includes("Because / Apply / Avoid / Verify / Source")
 ) {
-  fail("Core is missing active decision-memory retrieval");
+  fail("Core is missing executable memory retrieval or miss reflection");
 }
 if (!projectStateTemplate.includes("Project Memory Graph:")) fail("Project State is missing the memory graph pointer");
+if (!projectStateTemplate.includes("Last memory delta:")) fail("Project State is missing the memory delta pointer");
 if (!projectStateTemplate.includes("Tracker projection:")) fail("Project State is missing the tracker projection");
 if (!projectStateTemplate.includes("Operational sources:")) fail("Project State is missing safe operational-source pointers");
 if (!projectStateTemplate.includes("Shared Sync:")) fail("Project State is missing Shared Sync readiness");
@@ -199,14 +215,22 @@ if (
 if (
   !projectMemoryGraphTemplate.includes("INVARIANT") ||
   !projectMemoryGraphTemplate.includes("DECISION") ||
+  !projectMemoryGraphTemplate.includes("LESSON") ||
   !projectMemoryGraphTemplate.includes("IDEA") ||
   !projectMemoryGraphTemplate.includes("POINTER") ||
+  !projectMemoryGraphTemplate.includes("Anchor Index") ||
+  !projectMemoryGraphTemplate.includes("Apply:") ||
+  !projectMemoryGraphTemplate.includes("Avoid:") ||
+  !projectMemoryGraphTemplate.includes("Memory Reflection") ||
+  !projectMemoryGraphTemplate.includes("Representative Retrieval Scenarios") ||
+  !projectMemoryGraphTemplate.includes("RETRIEVAL_MISS") ||
+  !projectMemoryGraphTemplate.includes("matching ids or self-report alone is insufficient") ||
   !projectMemoryGraphTemplate.includes("Watermark:") ||
   !projectMemoryGraphTemplate.includes("Legacy Source Map") ||
-  !projectMemoryGraphTemplate.includes("normally three to seven nodes") ||
+  !projectMemoryGraphTemplate.includes("no more than seven nodes") ||
   !projectMemoryGraphTemplate.includes("Never store credentials")
 ) {
-  fail("Project Memory Graph is missing node, concurrency, retrieval, lineage, or secret-safety rules");
+  fail("Project Memory Graph is missing anchors, atomic nodes, reflection, executable retrieval, evaluation, lineage, or secret-safety rules");
 }
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
 if (
@@ -218,6 +242,7 @@ if (
   !taskHandoffTemplate.includes("Consult when:") ||
   !taskHandoffTemplate.includes("Return triggers:") ||
   !taskHandoffTemplate.includes("Learning / approach evidence:") ||
+  !taskHandoffTemplate.includes("Memory Brief result:") ||
   !taskHandoffTemplate.includes("Memory candidates:") ||
   !taskHandoffTemplate.includes("Boundary consultation:") ||
   !taskHandoffTemplate.includes("Progress continuity:") ||
@@ -251,7 +276,10 @@ if (
   !orchestratorWorkflow.includes("Memory Brief") ||
   !orchestratorWorkflow.includes("graph watermark") ||
   !orchestratorWorkflow.includes("tracker projection") ||
-  !orchestratorWorkflow.includes("representative current/upcoming Touch Sets") ||
+  !orchestratorWorkflow.includes("representative current, upcoming, and prior-miss Touch Sets") ||
+  !orchestratorWorkflow.includes("Memory Reflection") ||
+  !orchestratorWorkflow.includes("APPLICATION_MISS") ||
+  !orchestratorWorkflow.includes("side-by-side read-only candidate") ||
   !orchestratorWorkflow.includes("non-destructive access check")
 ) {
   fail("Orchestrator workflow is missing memory retrieval or rotation proof");
@@ -295,6 +323,7 @@ if (!acceptWorkflow.includes("zero-spend or no-mutation contract")) {
 }
 if (
   !acceptWorkflow.includes("Memory candidates") ||
+  !acceptWorkflow.includes("applied / missed / contradicted / not exercised") ||
   !acceptWorkflow.includes("least-privilege access") ||
   !acceptWorkflow.includes("never a credential")
 ) {

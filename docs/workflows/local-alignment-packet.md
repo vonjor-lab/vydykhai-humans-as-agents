@@ -20,7 +20,8 @@ created_at: <ISO timestamp>
 Active task / PR:
 Meeting or event decisions affecting my work:
 Intent / Approach Delta: <none | type/status; Before / Now / Why / Keep / Drop / applies to / source>
-Memory candidates: <NO_MEMORY_DELTA | task-local only | ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT with type, value, touch keys, relations, and safe source>
+Memory Reflection: <none | correction/repeated explanation; suggested ABSENT / RETRIEVAL_MISS / APPLICATION_MISS / VERIFICATION_MISS; source>
+Memory candidates: <NO_MEMORY_DELTA | task-local only | ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT with type, Apply/Avoid, anchors, scope, relations, and safe source>
 Material local delta:
 Touch Set / shared surfaces or contracts:
 Conflicts, overlaps, or needs:
