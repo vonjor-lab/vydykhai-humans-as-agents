@@ -1,8 +1,8 @@
-# Vydykhai: Collaborative Vibe Coding with Humans as Agents
+# Vydykhai: Team Autopilot for People and AI
 
-«Выдыхай» - это устанавливаемая система совместной работы людей и AI-агентов. Она выросла из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action. Пользователю не нужно изучать регламент: после подключения оркестратор сам применяет его в работе.
+«Выдыхай» - командный автопилот для совместной работы людей и AI-агентов. Вы задаете цель и принимаете смысловые решения. AI-оркестратор работает как штурман: превращает разговоры команды в общий бриф, согласованные задачи, критерии приемки и следующий шаг, сохраняет накопленный опыт и возвращает работу к результату, когда она начинает расползаться.
 
-Vydykhai is an installable operating system for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator applies the operating rules and maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
+Vydykhai is a team autopilot for collaborative work between people and AI agents. You set the goal and make judgment calls. The AI orchestrator acts as a navigator: it turns team conversations into a shared brief, aligned tasks, acceptance criteria, and the next step; preserves what the team learns; and brings drifting work back to the intended outcome.
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
