@@ -6,13 +6,14 @@ Vydykhai is a team autopilot for people working on one project, each with their 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.19.2`
+Current version: `1.19.3`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
 ## Что изменится для вас
 
 - Вы можете сказать идею, уточнение или «давай по-другому» один раз. Оркестратор разберется, что именно изменилось, обновит общую память и проверит, какие текущие или будущие задачи это затрагивает.
+- Обещание «запомнить и вернуться к этому» сохраняется вместе с причиной и моментом возврата. При подключении к действующему проекту или после доказанного пропуска оркестратор может экономично сверить такие обещания с текущей памятью, не переписывая всю историю.
 - Каждая новая задача получает короткие применимые указания: что делать, чего не повторять и как проверить результат. Исполнитель не перечитывает историю проекта и не получает только непонятные ссылки на память.
 - Принятые уроки одного участника становятся доступны оркестраторам остальных через общий репозиторий, а не остаются внутри личного чата.
 - Три уровня контекстов не смешиваются: канонический репозиторий развивает только универсальную формулу, проектный оркестратор только организует один проект, а вся работа выполняется в отдельных task, discovery, lab или maintenance contexts.
@@ -24,6 +25,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 ## What Changes for You
 
 - Say an idea, correction, or change of approach once. The orchestrator investigates what changed, updates shared memory, and checks which current or future tasks are affected.
+- A promise to remember and revisit something keeps both its reason and return condition. When joining an existing project or after a proven miss, the orchestrator can reconcile these promises with current memory without rebuilding the whole history.
 - Each task receives short applicable instructions: what to do, what not to repeat, and how to verify the result. Execution does not reread project history or receive opaque memory references.
 - One participant's accepted lessons become available to the other orchestrators through the shared repository instead of remaining trapped in a personal chat.
 - Three context layers stay separate: the canonical repository evolves only the universal formula, a project orchestrator only organizes one project, and all work happens in separate task, discovery, lab, or maintenance contexts.

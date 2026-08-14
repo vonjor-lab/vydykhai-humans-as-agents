@@ -53,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.19.2");
+    assert.equal(lock.installedVersion, "1.19.3");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -112,7 +112,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.19\.2/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.19\.3/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -145,6 +145,13 @@ test("current manifest preserves updater compatibility fields", async () => {
     "allowed-non-destructive-route",
     "last-safe-check",
     "expiry-or-reentry-condition",
+  ]);
+  assert.deepEqual(manifest.memoryPolicy.recallCommitmentRequiredFields, [
+    "current-meaning",
+    "source",
+    "capability-aliases-and-trigger",
+    "applicability-timing-and-checkpoint",
+    "pending-human-question",
   ]);
   assert.equal(manifest.memoryPolicy.taskBriefMaxNodes, 7);
   assert.equal(manifest.actionReceiptPolicy.policy, "critical-transition-readback");
@@ -180,6 +187,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /Memory Reflection/);
   assert.match(core, /RETRIEVAL_MISS/);
   assert.match(core, /Because \/ Apply \/ Avoid \/ Verify \/ Source/);
+  assert.match(core, /recall commitment/);
+  assert.match(core, /complete id mapping is not semantic coverage/);
   assert.match(core, /Role-Routed Agent Profiles/);
   assert.match(core, /Low-ready/);
   assert.match(core, /24 hours old/);
@@ -237,6 +246,15 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /tracker projection/);
   assert.match(orchestratorWorkflow, /Work Hygiene Check/);
   assert.match(orchestratorWorkflow, /one machine cannot certify the team/);
+  assert.match(orchestratorWorkflow, /bounded read-only memory backfill/);
+  assert.match(orchestratorWorkflow, /ordinary future-work queries/);
+  const projectLaunch = await readFile(path.join(root, "docs/workflows/project-launch.md"), "utf8");
+  assert.match(projectLaunch, /bounded read-only memory backfill/);
+  assert.match(projectLaunch, /Do not copy the full transcript or model narration/);
+  const graphTemplate = await readFile(path.join(root, "docs/workflows/project-memory-graph-template.md"), "utf8");
+  assert.match(graphTemplate, /Owner gate:/);
+  assert.match(graphTemplate, /five fields/);
+  assert.match(graphTemplate, /node counts alone do not prove semantic coverage/);
   const acceptWork = await readFile(path.join(root, "docs/workflows/accept-work.md"), "utf8");
   assert.match(acceptWork, /Unexpectedly changed/);
   assert.match(acceptWork, /recipient-side exact-artifact\/revision proof/);

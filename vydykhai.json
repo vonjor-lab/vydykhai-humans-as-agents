@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.19.2",
+  "version": "1.19.3",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -90,6 +90,13 @@
       "allowed-non-destructive-route",
       "last-safe-check",
       "expiry-or-reentry-condition"
+    ],
+    "recallCommitmentRequiredFields": [
+      "current-meaning",
+      "source",
+      "capability-aliases-and-trigger",
+      "applicability-timing-and-checkpoint",
+      "pending-human-question"
     ],
     "taskBriefMaxNodes": 7,
     "legacyInputs": [
