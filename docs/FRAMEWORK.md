@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.19.1 | Status: canonical operating core
+Version: 1.19.2 | Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
@@ -214,9 +214,9 @@ After acceptance and the required human checkpoint, promote the Candidate to Acc
 
 ### 7. Review Health
 
-Run a short Health Review after a milestone, several accepted slices, repeated follow-ups, unexpected expansion, stalled DOD burn, owner dropout, repeated context compaction, or when work starts relying on chat archaeology.
+Run a short Health Review after a milestone, several accepted slices, repeated follow-ups, unexpected expansion, stalled DOD burn, owner dropout, repeated context compaction, when work starts relying on chat archaeology, or on the first cold-path project activity when the previous review is more than seven days old.
 
-Check progress toward compass and DOD; blockers, repeated costs, and technical slicing without product progress; unexpected expansion or recurring architecture/data/tooling tax; stale scope, competing candidates, and corrections built on rejected work; research or lab outputs missing from the real path; stale operational artifacts or trapped decisions; atomic graph anchors/nodes, duplicate or conflicting meaning, Memory Misses, and fresh-evaluator retrieval scenarios; tracker truthfulness; and whether the active orchestrator should rotate.
+Check progress toward compass and DOD; blockers, repeated costs, and technical slicing without product progress; unexpected expansion or recurring architecture/data/tooling tax; stale scope, competing candidates, corrections built on rejected work, research or lab outputs missing from the real path, trapped decisions, tracker truthfulness, graph quality and retrieval, and whether the active orchestrator should rotate. Include a `Work Hygiene Check` across every live task, PR, branch, context, worktree, runtime, and monitor that exists: each needs an owner, relation to the current goal/DOD, state, and exit or re-entry trigger, then is classified `ACTIVE`, `WAITING`, `FINISH`, `SALVAGE`, or `RETIRE`. Shared artifacts come from shared metadata; local-only artifacts come from their owner's focused maintenance task, so one machine never claims global cleanliness. Age is a review signal, never deletion authority or a fixed branch limit. The orchestrator only classifies, routes, and stores the check date plus unresolved exceptions in Project State; owning or focused tasks inspect and clean. Preserve evidence and unique work, salvage useful stale work onto the current Accepted Baseline instead of reviving it wholesale, and keep artifact inventory out of the semantic graph except for reusable decisions and lessons.
 
 ## Humans As Agents
 

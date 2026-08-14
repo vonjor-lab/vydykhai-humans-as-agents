@@ -187,6 +187,14 @@ if (
 if (!coreEn.includes("Scope Freshness") || !coreRu.includes("Актуальность scope")) {
   fail("Core is missing Scope Freshness");
 }
+if (
+  !coreEn.includes("Work Hygiene Check") ||
+  !coreRu.includes("Work Hygiene Check") ||
+  !coreEn.includes("ACTIVE`, `WAITING`, `FINISH`, `SALVAGE`, or `RETIRE") ||
+  !coreRu.includes("ACTIVE`, `WAITING`, `FINISH`, `SALVAGE` или `RETIRE")
+) {
+  fail("Core is missing Work Hygiene Check or its artifact dispositions");
+}
 if (!coreEn.includes("One Success Line") || !coreRu.includes("Одна линия успеха")) {
   fail("Core is missing One Success Line");
 }
@@ -284,6 +292,7 @@ if (
   !taskHandoffTemplate.includes("Learning / approach evidence:") ||
   !taskHandoffTemplate.includes("Memory Brief result:") ||
   !taskHandoffTemplate.includes("Memory candidates:") ||
+  !taskHandoffTemplate.includes("Artifact disposition:") ||
   !taskHandoffTemplate.includes("Return receipt id:") ||
   !taskHandoffTemplate.includes("Boundary consultation:") ||
   !taskHandoffTemplate.includes("Progress continuity:") ||
@@ -303,6 +312,16 @@ if (
 }
 if (!orchestratorWorkflow.includes("Boundary consultation (`CONSULT`)")) {
   fail("Orchestrator workflow is missing boundary consultation");
+}
+if (
+  !orchestratorWorkflow.includes("Work Hygiene Check") ||
+  !orchestratorWorkflow.includes("one machine cannot certify the team") ||
+  !orchestratorSkill.includes("Work Hygiene Check") ||
+  !projectStateTemplate.includes("Work hygiene:") ||
+  !acceptWorkflow.includes("Artifact disposition") ||
+  !acceptWorkSkill.includes("Artifact disposition")
+) {
+  fail("Framework is missing work-hygiene ownership, state, or terminal disposition rules");
 }
 if (
   !orchestratorWorkflow.includes("Choose Hot Or Cold Path") ||

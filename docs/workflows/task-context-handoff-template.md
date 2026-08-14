@@ -73,6 +73,7 @@ Learning / approach evidence: <none | Before / Now / Why / Keep / Rebuild / Drop
 Memory Brief result: <each item applied | missed | contradicted | not exercised, with evidence>
 Memory candidates: <NO_MEMORY_DELTA | task-local only | one or more ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT candidates with type, Apply/Avoid, anchors, scope, relations, and safe source>
 Recipient proof: <not applicable | exact artifact/revision, environment, schema/migration revision, access, agreed check, and reproducible safe data when required>
+Artifact disposition: <context / PR / branch / worktree / runtime / monitor -> ACTIVE | WAITING | FINISH (cleaned/pending) | SALVAGE | RETIRE (cleaned/pending) | not applicable, with proof or re-entry>
 Risks / required follow-ups / optional future candidates:
 Recommended orchestrator next action:
 ```

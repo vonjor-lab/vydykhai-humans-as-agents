@@ -44,6 +44,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Applicable Memory Brief:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory Brief result:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory candidates:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Artifact disposition:/);
     assert.match(await readFile(path.join(target, "docs/workflows/project-memory-graph-template.md"), "utf8"), /Legacy Source Map/);
     assert.match(await readFile(path.join(target, "docs/workflows/project-memory-graph-template.md"), "utf8"), /Representative Retrieval Scenarios/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Recipient proof:/);
@@ -52,11 +53,15 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.19.1");
+    assert.equal(lock.installedVersion, "1.19.2");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
       /not the canonical framework maintenance context/,
+    );
+    assert.match(
+      await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
+      /Work Hygiene Check/,
     );
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
@@ -107,7 +112,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.19\.1/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.19\.2/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -178,6 +183,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /Role-Routed Agent Profiles/);
   assert.match(core, /Low-ready/);
   assert.match(core, /24 hours old/);
+  assert.match(core, /Work Hygiene Check/);
+  assert.match(core, /ACTIVE.*WAITING.*FINISH.*SALVAGE.*RETIRE/);
   const projectState = await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8");
   assert.match(projectState, /Shared Sync:/);
   assert.match(projectState, /Context visibility:/);
@@ -189,6 +196,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectState, /Latest seen:/);
   assert.match(projectState, /Update:/);
   assert.match(projectState, /Snapshot as of:/);
+  assert.match(projectState, /Work hygiene:/);
   assert.equal((projectState.match(/^## Next-Best-Action$/gm) || []).length, 1);
   const taskHandoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
   assert.match(taskHandoff, /Role: EXECUTION/);
@@ -203,6 +211,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(taskHandoff, /Progress continuity:/);
   assert.match(taskHandoff, /Recipient proof:/);
   assert.match(taskHandoff, /schema\/migration revision/);
+  assert.match(taskHandoff, /Artifact disposition:/);
   const orchestratorWorkflow = await readFile(path.join(root, "docs/workflows/framework-orchestrator.md"), "utf8");
   assert.match(orchestratorWorkflow, /THIS ORCHESTRATOR IS RETIRED - DO NOT CONTINUE HERE/);
   assert.match(orchestratorWorkflow, /ROTATION_CUTOVER_INCOMPLETE/);
@@ -226,6 +235,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /owning task owns acceptance\/live receipts/);
   assert.match(orchestratorWorkflow, /graph watermark/);
   assert.match(orchestratorWorkflow, /tracker projection/);
+  assert.match(orchestratorWorkflow, /Work Hygiene Check/);
+  assert.match(orchestratorWorkflow, /one machine cannot certify the team/);
   const acceptWork = await readFile(path.join(root, "docs/workflows/accept-work.md"), "utf8");
   assert.match(acceptWork, /Unexpectedly changed/);
   assert.match(acceptWork, /recipient-side exact-artifact\/revision proof/);
@@ -234,6 +245,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(acceptWork, /Memory candidates/);
   assert.match(acceptWork, /least-privilege access/);
   assert.match(acceptWork, /complete protected pointer/);
+  assert.match(acceptWork, /Artifact disposition/);
   assert.match(acceptWork, /Acceptance, merge, and deploy are separate authorities/);
   const intentTrail = await readFile(path.join(root, "docs/workflows/intent-trail-template.md"), "utf8");
   assert.match(intentTrail, /protected reference without its value/);

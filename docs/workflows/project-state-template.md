@@ -30,7 +30,7 @@ Project Memory Graph: <link or section> | Schema: <version> | Watermark: <event/
 Last memory delta: <task/event -> nodes added/refined/superseded/retired/conflicted or NO_CHANGE -> affected work>
 Legacy memory inputs: <Intent Trail / Idea Memory links awaiting or completing migration, or none>
 Tracker projection: <project/board link or equivalent> | Mapping: <statuses/fields/views> | Last reconciled: <event/date>
-Scope freshness policy: <days; default 7> | Last project-level check: <date/event>
+Scope freshness policy: <days; default 7> | Last project-level check: <date/event> | Work hygiene: <last checked/result; unresolved artifact + ACTIVE/WAITING/FINISH/SALVAGE/RETIRE disposition, or none>
 Updated from durable event: <event/link/date>
 
 ## Participants
