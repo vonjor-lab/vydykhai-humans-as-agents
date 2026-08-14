@@ -12,7 +12,7 @@ Snapshot as of: <date / latest durable event>
 Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current | check pending | now | after task/checkpoint | PR/link | blocked>
 Shared Sync: Repo: <url> | Tracker: <url> | Readiness: <READY | SYNC_LIMITED, with gaps>
 Coordination inputs: <meeting recorder/transcript/chat/docs/manual route> | Access checked: <date/result>
-Operational sources: <private runbooks / environment and secret-manager references / backup-restore docs or none> | Access checked: <date/result; never secret values>
+Operational sources: <complete protected POINTER ids or none: owner / protected reference / environment+scope / allowed non-destructive route / expiry or re-entry; never secret values> | Access checked: <date/result/source>
 Agent routing: latest available flagship | ORCHESTRATOR: maximum available | DISCOVERY: deep bounded | EXECUTION: efficient bounded
 Resolved profiles: <model id / orchestrator mapping / discovery mapping / execution mapping> | Checked: <date/source> | Fallback: <none, pending, or reason>
 Environment adapter: <native | adapter path> | Context mapping: <thread/chat/session/run/workspace/tracker handle>

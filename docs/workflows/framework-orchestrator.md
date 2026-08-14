@@ -3,7 +3,6 @@ Goal: preserve compass, sequence, shared state, and next-best-action without imp
 ## 1. Choose Hot Or Cold Path
 Do not create a background model wake-up only to check the framework.
 **Hot path:** an ordinary continue, routine progress question, or task event still inside a current execution contract. Read only the latest relevant event. If it contains a material human correction or repeated owner explanation, switch only that meaning to the cold-path Memory Reflection below; otherwise stay quiet while work is active or send one direct execution instruction after plan-only. Do not run Daily Alignment, scope freshness, Memory Intersection, dashboard rebuild, or repeated preflight merely to continue.
-
 **Cold path:** project launch, new dispatch, stale/paused work requiring material resume, re-brief, material human correction, cross-person meeting/merge impact, boundary consultation, repeated no-progress, parent acceptance, health review, framework update, or rotation. Then:
 1. Read only the relevant Project State, compass/DOD, decisions, shared state, memory, tasks/contexts, and verified repo evidence.
 2. Run `node scripts/vydykhai.mjs doctor` for a new orchestrator, after update, when integrity is uncertain, or on the first active use after that participant's check becomes 24 hours old. Record installed/latest version and check time; remain silent when current, and keep an unavailable check pending without blocking otherwise safe work.
@@ -40,7 +39,6 @@ When upstream is newer, read every changelog release where `installed < release 
 - `continue`: current task remains inside its contract -> hot path, no alignment ritual.
 
 Before creating a context, classify it as `ORCHESTRATOR_WORK` for project-wide synthesis/priority/sequence/owner decisions; `DISCOVERY` when the solution needs deep research, product/architecture/UX/visual work, or experiment design; `EXECUTION` when solution and acceptance are Low-ready; or `STALE_OR_REBRIEF` when the card is outdated, mixed, too broad, contradictory, or missing inputs.
-
 ## 3. Protect DOD Focus And Shared Safety
 Before changing active work, classify a new idea or request:
 
@@ -52,6 +50,7 @@ Before changing active work, classify a new idea or request:
 For a future idea, tell the human what remains in scope, why adding the idea would delay the DOD, and when it should return. After confirmation, return an `IDEA` candidate to the Project Memory Graph. Task, research, and lab contexts may propose candidates, but the orchestrator integrates them and owns the current view.
 At every cold-path brief, re-brief, dispatch, consultation or sequence decision, parent acceptance, milestone, and rotation, derive a Touch Set and resolve stable anchors/aliases for outcomes, actors, entities, surfaces, contracts, data, and operations. Add semantic candidates, traverse relevant typed relations one or two hops, then filter by source precedence, status, scope, applicability, and supersession. Return no more than seven nodes and fewer when fewer apply as executable `Because / Apply / Avoid / Verify / Source` items; ids alone are invalid. Keep retrieval reasoning here, raise `MEMORY_COVERAGE_GAP` when required meaning is unproven, and do not repeat this on hot-path continue.
 Integrate atomic candidate events with `ADD`, `REFINE`, `SUPERSEDE`, `RETIRE`, `CONFLICT`, or `NO_CHANGE`. Keep one reusable meaning per node and separate current meaning from linked chronology. Before rewriting, re-read the graph watermark and unseen events; recompute on concurrent change, merge semantic duplicates, preserve stable anchors/aliases, typed relations, evidence and old-id mapping, and never copy secret values.
+For protected access or recovery, a current `POINTER` is complete only with owner, protected reference without its value, environment/scope, allowed non-destructive route, last safe check time/result/source, and expiry or re-entry condition. Retrieval must emit these fields directly. Otherwise return `MEMORY_COVERAGE_GAP / BLOCKED` before history search, human secret re-request, or live action; repair the pointer from linked durable evidence, perform only the allowed non-destructive check, rerun retrieval, and continue only when it passes.
 On a natural request for more possibilities, return relevant active ideas filtered by the named topic, horizon, or compass. Do not dump the full register or require the human to know its location.
 Before work on a shared surface or any instruction to a running task, check:
 
@@ -83,13 +82,14 @@ When tools allow:
 
 1. Create the separate task/research context from current approved base.
 2. Name it from issue/sequence and short outcome.
-3. Read back and correct the actual title.
+3. Read back and correct the actual title/link, role/profile, active start, and Return Sync route.
 4. Record the link/title in Project State and task issue.
 5. Verify the child starts execution and continues to a named human checkpoint, irreducible blocker, or terminal result; plan-only is not progress. Before any later instruction, read newer task events and reconcile newer human direction.
 
 Without native context creation, prepare the stable shared-tracker handle and startup packet, record both in Project State, and give one exact launch action. Do not implement in the orchestrator context.
 
 A plan-only response is not a launched task. Send it back to execute within scope or name the blocking decision.
+At task launch, Return Sync, protected access, and acceptance/merge/deploy, intent is not state. The orchestrator owns launch and Return Sync receipts; the acting context owns protected-access receipts; the owning task owns acceptance/live receipts. Consume returned task receipts without repeating their action. Record one compact `Trigger / Retrieved rule / Expected / Observed / Evidence / PASS|MISMATCH|UNVERIFIED` Action Receipt in the existing task, return, or acceptance record. Only `PASS` closes the transition and stays silent; `MISMATCH` or `UNVERIFIED` stops only that transition, triggers repair or Memory Reflection, and must pass readback before continuation.
 
 ## 5. Supervise
 
@@ -113,7 +113,7 @@ Use this state machine:
 - Accepted but smoke/merge pending: return the human to the task context.
 - Cross-person handoff: keep delivery open until the recipient confirms the exact shared artifact/revision and performs the agreed receipt check; runnable work includes a representative scenario in their environment.
 - Accepted enabler: report what it unlocks, what product behavior is still missing, and its next product slice; keep the parent open.
-- Accepted and merged: integrate reusable candidates and each brief item result (`applied / missed / contradicted / not exercised`); turn a miss into a regression scenario, then atomically reconcile affected tasks, the task issue, Project State, tracker projection, DOD burn, parent closure, participant impact, and next-best-action.
+- Accepted and merged: verify the owning acceptance and fresh exact merge/live authority Action Receipt, then integrate reusable candidates and each brief item result (`applied / missed / contradicted / not exercised`); turn a miss into a regression scenario and atomically reconcile affected tasks, the task issue, Project State, tracker projection, DOD burn, parent closure, participant impact, and next-best-action.
 - Repeated no-progress: distinguish implementation defect, weak acceptance oracle, and missing solution work. Rebuild from the Accepted Baseline with learned evidence, re-brief/split, or launch bounded Discovery; do not restart alignment, repeat status rituals, or climb reasoning levels mechanically.
 Do not implement, debug, smoke, or merge from the orchestrator. Task detects execution boundaries; orchestrator decides project response.
 

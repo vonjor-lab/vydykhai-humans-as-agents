@@ -46,7 +46,7 @@ Start or restart runtime from the exact code being accepted. Old servers, old ta
 
 For a zero-spend or no-mutation contract, disable the dangerous capability when practical and record relevant counters before and after. Any accidental call, spend, or mutation remains evidence, changes the classification, and cannot later be described as zero.
 
-For authentication, data, storage, migration, deployment, or recovery work, verify the exact environment, least-privilege access, current safe runbook, backup/restore route, and a non-destructive preflight before mutation. Evidence may name a secret-manager reference and last safe check, never a credential, token, private payload, or recovery value. Missing operational memory or access is `BLOCKED`.
+For authentication, data, storage, migration, deployment, or recovery work, verify the exact environment, least-privilege access, current safe runbook, backup/restore route, and a non-destructive preflight before mutation. Evidence may name only a complete protected pointer: owner, protected reference, environment/scope, allowed non-destructive route, last safe check time/result/source, and expiry or re-entry condition, never a credential, token, private payload, or recovery value. Missing fields, stale check, or unavailable access is `MEMORY_COVERAGE_GAP / BLOCKED` until repaired and rechecked.
 
 For runnable data-backed handoffs, verify the exact schema/migration revision, a reproducible safe data source such as a fixture, seed, snapshot, or shared test environment, and the recipient's access before interpreting the recipient-side scenario. Missing or inaccessible required data makes the evidence inconclusive and the handoff `BLOCKED`, not a product failure. Never move production data, private payloads, or secret values through framework memory.
 
@@ -95,6 +95,8 @@ Keep fixes, smoke, and manual merge in the owning task context. After human conf
 - report `Memory Brief result` item by item as `applied / missed / contradicted / not exercised`; a miss is evidence for orchestrator-owned Memory Reflection and a representative regression scenario.
 - report boundary consultations and any deliberately changed or unexpected surfaces.
 - publish terminal Return Sync with learning/approach evidence plus `Memory candidates: NO_MEMORY_DELTA`, `task-local only`, or compact `ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT` candidates containing type, current value, touch keys, relations, and safe source. The orchestrator integrates reusable candidates into the graph; the task never edits shared memory and not every task note is promoted.
+
+Before merge, deploy, spend, or shared-state mutation, read back owning acceptance plus fresh exact actor, environment, revision, permitted mutation, and stop conditions as the Action Receipt. Acceptance, merge, and deploy are separate authorities; an absent, stale, or cross-environment receipt is `BLOCKED` for that action.
 
 For a rejected Candidate, human «do it differently», or statement that the direction was already known, record learning/approach and miss evidence and return a `DECISION` or `LESSON` candidate when reusable. Apply a clear task-local correction, but leave full graph retrieval, miss classification, and impact analysis to the orchestrator. Any successor starts from the Accepted Baseline plus refreshed Memory Brief, preserves proven parts, and rebuilds failed parts using those lessons.
 
