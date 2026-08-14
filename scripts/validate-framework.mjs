@@ -84,6 +84,17 @@ for (const field of [
     fail(`Memory policy is missing protected pointer field: ${field}`);
   }
 }
+for (const field of [
+  "current-meaning",
+  "source",
+  "capability-aliases-and-trigger",
+  "applicability-timing-and-checkpoint",
+  "pending-human-question",
+]) {
+  if (!manifest.memoryPolicy?.recallCommitmentRequiredFields?.includes(field)) {
+    fail(`Memory policy is missing recall commitment field: ${field}`);
+  }
+}
 if (manifest.memoryPolicy?.taskBriefMaxNodes !== 7) fail("Task Memory Brief maximum must be 7 nodes");
 if (manifest.actionReceiptPolicy?.policy !== "critical-transition-readback") {
   fail("Action Receipt policy must use critical-transition-readback");
@@ -152,10 +163,12 @@ const projectMemoryGraphTemplate = await text("docs/workflows/project-memory-gra
 const ideaMemoryTemplate = await text("docs/workflows/idea-memory-template.md");
 const intentTrailTemplate = await text("docs/workflows/intent-trail-template.md");
 const orchestratorWorkflow = await text("docs/workflows/framework-orchestrator.md");
+const projectLaunchWorkflow = await text("docs/workflows/project-launch.md");
 const dailyAlignmentWorkflow = await text("docs/workflows/daily-alignment.md");
 const taskHandoffTemplate = await text("docs/workflows/task-context-handoff-template.md");
 const acceptWorkflow = await text("docs/workflows/accept-work.md");
 const orchestratorSkill = await text(".agents/skills/framework-orchestrator/SKILL.md");
+const projectLaunchSkill = await text(".agents/skills/project-launch/SKILL.md");
 const dailyAlignmentSkill = await text(".agents/skills/daily-alignment/SKILL.md");
 const acceptWorkSkill = await text(".agents/skills/accept-work/SKILL.md");
 const license = await text("LICENSE.md");
@@ -225,7 +238,11 @@ if (
   !coreEn.includes("RETRIEVAL_MISS") ||
   !coreRu.includes("RETRIEVAL_MISS") ||
   !coreEn.includes("Because / Apply / Avoid / Verify / Source") ||
-  !coreRu.includes("Because / Apply / Avoid / Verify / Source")
+  !coreRu.includes("Because / Apply / Avoid / Verify / Source") ||
+  !coreEn.includes("recall commitment") ||
+  !coreRu.includes("обязательством памяти") ||
+  !coreEn.includes("complete id mapping is not semantic coverage") ||
+  !coreRu.includes("полная карта id не доказывает semantic coverage")
 ) {
   fail("Core is missing executable memory retrieval or miss reflection");
 }
@@ -248,6 +265,12 @@ if (!projectStateTemplate.includes("Latest seen:") || !projectStateTemplate.incl
 if (!ideaMemoryTemplate.includes("Idea Memory is not a backlog")) fail("Idea Memory migration template is missing its scope guard");
 if (!ideaMemoryTemplate.includes("legacy/read-only")) fail("Idea Memory migration does not end in read-only evidence");
 if (!ideaMemoryTemplate.includes("Freeze new writes")) fail("Idea Memory migration may keep accepting new writes");
+if (
+  !ideaMemoryTemplate.includes("Owner question / timing") ||
+  !ideaMemoryTemplate.includes("Id coverage alone is insufficient")
+) {
+  fail("Idea Memory migration may lose recall commitments during semantic compression");
+}
 if (
   !intentTrailTemplate.includes("migration") ||
   !intentTrailTemplate.includes("Freeze new writes") ||
@@ -273,6 +296,9 @@ if (
   !projectMemoryGraphTemplate.includes("Legacy Source Map") ||
   !projectMemoryGraphTemplate.includes("no more than seven nodes") ||
   !projectMemoryGraphTemplate.includes("Protected pointer (POINTER only)") ||
+  !projectMemoryGraphTemplate.includes("Owner gate:") ||
+  !projectMemoryGraphTemplate.includes("five fields") ||
+  !projectMemoryGraphTemplate.includes("complete id disposition or node counts alone do not prove semantic coverage") ||
   !projectMemoryGraphTemplate.includes("Raw trigger") ||
   !projectMemoryGraphTemplate.includes("historical reconstruction may repair the node but is not a successful lookup") ||
   !projectMemoryGraphTemplate.includes("zero secret read") ||
@@ -281,6 +307,13 @@ if (
   fail("Project Memory Graph is missing anchors, atomic nodes, reflection, executable retrieval, evaluation, lineage, or secret-safety rules");
 }
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
+if (
+  !projectLaunchWorkflow.includes("bounded read-only memory backfill") ||
+  !projectLaunchSkill.includes("bounded read-only memory backfill") ||
+  !projectLaunchWorkflow.includes("ordinary future-work questions")
+) {
+  fail("Existing-project launch is missing economical historical memory reconciliation");
+}
 if (
   !taskHandoffTemplate.includes("Role: EXECUTION") ||
   !taskHandoffTemplate.includes("Agent profile: EXECUTION") ||
@@ -348,6 +381,15 @@ if (
   !orchestratorWorkflow.includes("actual title/link, role/profile, active start, and Return Sync route")
 ) {
   fail("Orchestrator workflow is missing memory retrieval or rotation proof");
+}
+if (
+  !orchestratorWorkflow.includes("open recall commitments") ||
+  !orchestratorWorkflow.includes("bounded read-only memory backfill") ||
+  !orchestratorWorkflow.includes("id counts and mapping completeness alone are insufficient") ||
+  !orchestratorSkill.includes("open recall commitments") ||
+  !orchestratorSkill.includes("ordinary future-work queries")
+) {
+  fail("Orchestrator is missing recall-commitment retrieval or semantic backfill proof");
 }
 if (!orchestratorWorkflow.includes("first active use") || !orchestratorWorkflow.includes("installed < release <= latest")) {
   fail("Orchestrator workflow is missing active framework update discovery");
