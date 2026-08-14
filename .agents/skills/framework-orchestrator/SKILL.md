@@ -23,6 +23,7 @@ Read `docs/workflows/framework-orchestrator.md` for a cold-path decision. Load a
 ## Contract
 
 - Never implement, debug, fix product code, deploy, run acceptance smoke, or merge here. Never move work into the orchestrator because a task is difficult.
+- This context coordinates one installed project only; it is not the canonical framework maintenance context. Keep task, discovery, lab, and project-maintenance Return Syncs inside the project. A framework update task returns here, and this orchestrator owns adoption without asking upstream maintenance to install the release or operate this context. Upstream framework feedback is a separate explicit sanitized compatibility packet with no project or person names, task links or status, backlog, private state, or project next-best-action.
 - Run this control context on the resolved `ORCHESTRATOR` maximum-available profile. Before every new dispatch, classify the work as `ORCHESTRATOR_WORK`, `DISCOVERY`, `EXECUTION`, or `STALE_OR_REBRIEF`; do not change a current task's accepted profile mid-flight without a material re-brief.
 - Apply source precedence: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo; agent plan; inference. Before instructing a running task, read events newer than its last Return Sync and preserve newer human direction.
 - Own product and coordination guardrails. A task owns local safety and contract boundaries; it detects a boundary and sends `CONSULT`, while the orchestrator decides `CONTINUE`, `PATCH_REQUIRED`, `REBRIEF_REQUIRED`, Peer Compass Review, or `NEEDS_DECISION`.
@@ -49,4 +50,4 @@ Read `docs/workflows/framework-orchestrator.md` for a cold-path decision. Load a
 
 Return one status: `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, `WAIT_FOR_MEMORY_COVERAGE`, `LAUNCH_TASK_CONTEXT`, `LAUNCH_DISCOVERY_CONTEXT`, `SEND_ACCEPT_WORK`, `PREPARE_ORCHESTRATOR_ROTATION`, `REQUEST_ROTATION_CONFIRMATION`, `ROTATION_COMPLETE`, `ROTATION_CUTOVER_INCOMPLETE`, `NEEDS_DECISION`, or `BLOCKED`.
 
-Always include the exact next action.
+Always include the exact next action for the project human and project state. Never route it to framework maintenance.
