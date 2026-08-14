@@ -60,6 +60,7 @@ Return triggers: <named human checkpoint | irreducible blocker | terminal result
 
 ```md
 Status: <BLOCKED_BEFORE_START | NEEDS_REBRIEF | ACCEPT | ACCEPT_WITH_FOLLOWUPS | NEEDS_FIXES | BLOCKED>
+Return receipt id: <unique event id>
 Task / context / PR / commit / artifact:
 Agent profile used / fallback:
 Accepted Baseline -> Candidate result:
@@ -76,4 +77,4 @@ Risks / required follow-ups / optional future candidates:
 Recommended orchestrator next action:
 ```
 
-A launch is incomplete when the task only writes a plan. It must start execution, name a real blocker, or request re-brief. Publish Return Sync automatically only at a declared trigger through native context messaging or the durable tracker; do not wait for human polling. A cross-person handoff remains incomplete until recipient proof is returned.
+A launch is incomplete when the task only writes a plan. It must start execution, name a real blocker, or request re-brief. Publish Return Sync automatically only at a declared trigger through native context messaging or the durable tracker; the orchestrator must read back the same receipt id, sender, recipient, evidence, consumption, and routed next action. Do not wait for human polling. A cross-person handoff remains incomplete until recipient proof is returned.

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.18.0",
+  "version": "1.19.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -83,10 +83,46 @@
       "application-miss",
       "verification-miss"
     ],
+    "protectedPointerRequiredFields": [
+      "owner",
+      "protected-reference",
+      "environment-and-scope",
+      "allowed-non-destructive-route",
+      "last-safe-check",
+      "expiry-or-reentry-condition"
+    ],
     "taskBriefMaxNodes": 7,
     "legacyInputs": [
       "intent-trail",
       "idea-memory"
+    ]
+  },
+  "actionReceiptPolicy": {
+    "policy": "critical-transition-readback",
+    "boundaries": [
+      "task-launch",
+      "return-sync",
+      "protected-access",
+      "acceptance-and-live-action"
+    ],
+    "boundaryOwners": {
+      "task-launch": "orchestrator",
+      "return-sync": "orchestrator",
+      "protected-access": "acting-context",
+      "acceptance-and-live-action": "owning-task"
+    },
+    "fields": [
+      "trigger",
+      "retrieved-rule",
+      "expected-action",
+      "observed-action",
+      "evidence",
+      "result"
+    ],
+    "results": [
+      "pass",
+      "mismatch",
+      "unverified"
     ]
   },
   "trackerPolicy": {

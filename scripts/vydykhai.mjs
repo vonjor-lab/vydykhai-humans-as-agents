@@ -342,6 +342,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
     agentProfilePolicy: manifest.defaultAgentProfile,
     agentRoutingPolicy: manifest.agentRoutingPolicy,
     memoryPolicy: manifest.memoryPolicy,
+    actionReceiptPolicy: manifest.actionReceiptPolicy,
     trackerPolicy: manifest.trackerPolicy,
     creator: manifest.creator,
     license: manifest.license,
@@ -369,6 +370,13 @@ function printDoctor(result, asJson) {
   console.log(
     `Memory: ${result.memoryPolicy.policy} v${result.memoryPolicy.graphVersion}; task brief <= ${result.memoryPolicy.taskBriefMaxNodes} executable nodes`,
   );
+  if (result.actionReceiptPolicy?.policy && Array.isArray(result.actionReceiptPolicy.boundaries)) {
+    console.log(
+      `Action receipts: ${result.actionReceiptPolicy.policy}; ${result.actionReceiptPolicy.boundaries.length} critical boundaries`,
+    );
+  } else {
+    console.log("Action receipts: not declared by installed version");
+  }
   console.log(`Tracker: ${result.trackerPolicy.policy}`);
   console.log(`Creator: ${result.creator.name} (@${result.creator.github})`);
   console.log(`License: ${result.license}`);

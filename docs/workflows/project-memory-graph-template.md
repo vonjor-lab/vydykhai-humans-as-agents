@@ -27,6 +27,7 @@ Last retrieval check: <scenario or task / evaluator / result>
 - Apply: <one current executable statement>
 - Avoid: <rejected path or none>
 - Applies / exceptions: <scope and explicit exclusions>
+- Protected pointer (POINTER only): <owner | protected reference, never value | environment and scope | allowed non-destructive route | last safe check time, result, and source | expiry or re-entry condition>
 - Relations: <about / requires / constrains / supersedes / conflicts / learned-from / verified-by -> ids, or none>
 - Source / checked: <durable evidence link / date or result>
 
@@ -38,9 +39,9 @@ Last retrieval check: <scenario or task / evaluator / result>
 
 ## Representative Retrieval Scenarios
 
-| Scenario | Touch anchors | Expected executable brief | Independent result | Regression source |
+| Raw trigger | Expected executable action or gate | Independent pass 1 | Independent pass 2 | Regression source |
 | --- | --- | --- | --- | --- |
-| <real current or prior-risk situation> | <ENT ids and query terms> | <Apply / Avoid / Verify expectations> | <pass / miss class / checked by / date> | <source or none> |
+| <ordinary task language without node ids or prepared Touch Set> | <Apply / Avoid / Verify or BLOCKED expectation> | <observed action / evidence / pass or miss> | <observed action / evidence / pass or miss> | <source or none> |
 
 ## Legacy Source Map
 
@@ -62,4 +63,4 @@ Rules:
 - Return no more than seven nodes and fewer when fewer apply, compiled as executable items: `Because <anchor>, apply <rule>, avoid <path>, verify <evidence>, source <link>`. Drop a node that changes neither action, boundary, guardrail, nor acceptance. Raise `MEMORY_COVERAGE_GAP` when required meaning cannot be proven.
 - Acceptance records each brief item as applied, missed, contradicted, or not exercised and returns any reusable delta. A miss becomes or updates a representative regression scenario. Coverage passes only when a fresh evaluator can reconstruct the expected executable brief and its acceptance implication; matching ids or self-report alone is insufficient.
 - Compact at a milestone, rotation, duplicate cluster, retrieval miss, or loss of scanability. Preserve stable ids, aliases, current meaning, applicability, typed relations, old-id mapping, and immutable evidence.
-- Never store credentials, tokens, private payloads, production data, or recovery values. A `POINTER` records only the protected location, owner, allowed retrieval route, and last non-destructive access check.
+- Never store credentials, tokens, private payloads, production data, or recovery values. A protected `POINTER` records owner, protected reference without its value, environment/scope, allowed non-destructive route, last safe check time/result/source, and expiry or re-entry condition. Retrieval must emit these fields directly or return `MEMORY_COVERAGE_GAP / BLOCKED`; historical reconstruction may repair the node but is not a successful lookup. Keep one raw two-pass regression for protected access and prove zero secret read.

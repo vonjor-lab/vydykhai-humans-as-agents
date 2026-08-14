@@ -72,7 +72,43 @@ for (const relation of ["about", "requires", "constrains", "supersedes", "confli
 for (const miss of ["absent", "retrieval-miss", "application-miss", "verification-miss"]) {
   if (!manifest.memoryPolicy?.memoryMissTypes?.includes(miss)) fail(`Memory policy is missing miss type: ${miss}`);
 }
+for (const field of [
+  "owner",
+  "protected-reference",
+  "environment-and-scope",
+  "allowed-non-destructive-route",
+  "last-safe-check",
+  "expiry-or-reentry-condition",
+]) {
+  if (!manifest.memoryPolicy?.protectedPointerRequiredFields?.includes(field)) {
+    fail(`Memory policy is missing protected pointer field: ${field}`);
+  }
+}
 if (manifest.memoryPolicy?.taskBriefMaxNodes !== 7) fail("Task Memory Brief maximum must be 7 nodes");
+if (manifest.actionReceiptPolicy?.policy !== "critical-transition-readback") {
+  fail("Action Receipt policy must use critical-transition-readback");
+}
+for (const boundary of ["task-launch", "return-sync", "protected-access", "acceptance-and-live-action"]) {
+  if (!manifest.actionReceiptPolicy?.boundaries?.includes(boundary)) {
+    fail(`Action Receipt policy is missing boundary: ${boundary}`);
+  }
+}
+for (const [boundary, owner] of Object.entries({
+  "task-launch": "orchestrator",
+  "return-sync": "orchestrator",
+  "protected-access": "acting-context",
+  "acceptance-and-live-action": "owning-task",
+})) {
+  if (manifest.actionReceiptPolicy?.boundaryOwners?.[boundary] !== owner) {
+    fail(`Action Receipt boundary ${boundary} must be owned by ${owner}`);
+  }
+}
+for (const field of ["trigger", "retrieved-rule", "expected-action", "observed-action", "evidence", "result"]) {
+  if (!manifest.actionReceiptPolicy?.fields?.includes(field)) fail(`Action Receipt policy is missing field: ${field}`);
+}
+for (const result of ["pass", "mismatch", "unverified"]) {
+  if (!manifest.actionReceiptPolicy?.results?.includes(result)) fail(`Action Receipt policy is missing result: ${result}`);
+}
 if (manifest.trackerPolicy?.policy !== "task-contract-with-event-driven-projection") {
   fail("Tracker policy must use the event-driven task projection");
 }
@@ -228,6 +264,10 @@ if (
   !projectMemoryGraphTemplate.includes("Watermark:") ||
   !projectMemoryGraphTemplate.includes("Legacy Source Map") ||
   !projectMemoryGraphTemplate.includes("no more than seven nodes") ||
+  !projectMemoryGraphTemplate.includes("Protected pointer (POINTER only)") ||
+  !projectMemoryGraphTemplate.includes("Raw trigger") ||
+  !projectMemoryGraphTemplate.includes("historical reconstruction may repair the node but is not a successful lookup") ||
+  !projectMemoryGraphTemplate.includes("zero secret read") ||
   !projectMemoryGraphTemplate.includes("Never store credentials")
 ) {
   fail("Project Memory Graph is missing anchors, atomic nodes, reflection, executable retrieval, evaluation, lineage, or secret-safety rules");
@@ -244,6 +284,7 @@ if (
   !taskHandoffTemplate.includes("Learning / approach evidence:") ||
   !taskHandoffTemplate.includes("Memory Brief result:") ||
   !taskHandoffTemplate.includes("Memory candidates:") ||
+  !taskHandoffTemplate.includes("Return receipt id:") ||
   !taskHandoffTemplate.includes("Boundary consultation:") ||
   !taskHandoffTemplate.includes("Progress continuity:") ||
   !taskHandoffTemplate.includes("Recipient proof:")
@@ -280,7 +321,12 @@ if (
   !orchestratorWorkflow.includes("Memory Reflection") ||
   !orchestratorWorkflow.includes("APPLICATION_MISS") ||
   !orchestratorWorkflow.includes("side-by-side read-only candidate") ||
-  !orchestratorWorkflow.includes("non-destructive access check")
+  !orchestratorWorkflow.includes("non-destructive access check") ||
+  !orchestratorWorkflow.includes("last safe check time/result/source") ||
+  !orchestratorWorkflow.includes("MEMORY_COVERAGE_GAP / BLOCKED") ||
+  !orchestratorWorkflow.includes("Action Receipt") ||
+  !orchestratorWorkflow.includes("Only `PASS` closes the transition") ||
+  !orchestratorWorkflow.includes("actual title/link, role/profile, active start, and Return Sync route")
 ) {
   fail("Orchestrator workflow is missing memory retrieval or rotation proof");
 }
@@ -325,7 +371,8 @@ if (
   !acceptWorkflow.includes("Memory candidates") ||
   !acceptWorkflow.includes("applied / missed / contradicted / not exercised") ||
   !acceptWorkflow.includes("least-privilege access") ||
-  !acceptWorkflow.includes("never a credential")
+  !acceptWorkflow.includes("never a credential") ||
+  !acceptWorkflow.includes("Acceptance, merge, and deploy are separate authorities")
 ) {
   fail("Acceptance is missing memory return or safe operational verification");
 }

@@ -23,5 +23,5 @@ Rules:
 - Derive Touch keys and relations from the work. Keep task-local lineage as evidence unless it affects another task, a reusable mechanism, a project quality bar, or future planning.
 - Merge semantic duplicates into one graph node and map every old id to `covered`, `superseded`, `evidence only`, or `ambiguous` in the graph's Legacy Source Map. Preserve source links and rejected-path lessons without copying chronology.
 - Inferred wider applicability remains `PROVISIONAL` until echoed once for human correction. Equal-authority conflicts remain visible for a human decision.
-- Operational entries become safe `POINTER` nodes containing only owner, protected location, allowed retrieval route, guardrail, and last safe check. Never store credentials, secret values, private payloads, or recovery material.
+- Operational entries become safe `POINTER` nodes containing only owner, protected reference without its value, environment/scope, allowed non-destructive route, last safe check time/result/source, and expiry or re-entry condition. Never store credentials, secret values, private payloads, or recovery material.
 - Finish only after representative Touch Sets retrieve the expected current decisions and every old id has a disposition. Then mark the Intent Trail legacy/read-only; all future retrieval and updates use the Project Memory Graph.

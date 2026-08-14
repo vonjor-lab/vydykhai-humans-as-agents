@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -51,7 +52,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.18.0");
+    assert.equal(lock.installedVersion, "1.19.0");
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
     assert.equal(lock.license, "PolyForm-Small-Business-1.0.0");
@@ -66,9 +67,27 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /DISCOVERY=deep-bounded/);
     assert.match(doctor.stdout, /EXECUTION=efficient-bounded/);
     assert.match(doctor.stdout, /Memory: project-memory-graph v2; task brief <= 7 executable nodes/);
+    assert.match(doctor.stdout, /Action receipts: critical-transition-readback; 4 critical boundaries/);
     assert.match(doctor.stdout, /Tracker: task-contract-with-event-driven-projection/);
     assert.match(doctor.stdout, /Creator: Alexander Rozhnov \(@vonjor-lab\)/);
     assert.match(doctor.stdout, /License: PolyForm-Small-Business-1\.0\.0/);
+
+    const legacyManifestPath = path.join(target, "vydykhai.json");
+    const legacyManifest = JSON.parse(await readFile(legacyManifestPath, "utf8"));
+    delete legacyManifest.actionReceiptPolicy;
+    legacyManifest.version = "1.18.0";
+    const legacyManifestText = `${JSON.stringify(legacyManifest, null, 2)}\n`;
+    await writeFile(legacyManifestPath, legacyManifestText);
+    const legacyLockPath = path.join(target, ".vydykhai-lock.json");
+    const legacyLock = JSON.parse(await readFile(legacyLockPath, "utf8"));
+    legacyLock.installedVersion = "1.18.0";
+    legacyLock.managedFiles["vydykhai.json"] = createHash("sha256").update(legacyManifestText).digest("hex");
+    await writeFile(legacyLockPath, `${JSON.stringify(legacyLock, null, 2)}\n`);
+
+    const legacyDoctor = run(["doctor", target, "--offline"]);
+    assert.equal(legacyDoctor.status, 0, legacyDoctor.stderr);
+    assert.match(legacyDoctor.stdout, /Vydykhai 1\.18\.0/);
+    assert.match(legacyDoctor.stdout, /Action receipts: not declared by installed version/);
 
     const corePath = path.join(target, "docs/FRAMEWORK.md");
     await writeFile(corePath, "local modification\n");
@@ -83,7 +102,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.18\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.19\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -109,7 +128,30 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.ok(manifest.memoryPolicy.nodeTypes.includes("lesson"));
   assert.ok(manifest.memoryPolicy.relationTypes.includes("learned-from"));
   assert.ok(manifest.memoryPolicy.memoryMissTypes.includes("retrieval-miss"));
+  assert.deepEqual(manifest.memoryPolicy.protectedPointerRequiredFields, [
+    "owner",
+    "protected-reference",
+    "environment-and-scope",
+    "allowed-non-destructive-route",
+    "last-safe-check",
+    "expiry-or-reentry-condition",
+  ]);
   assert.equal(manifest.memoryPolicy.taskBriefMaxNodes, 7);
+  assert.equal(manifest.actionReceiptPolicy.policy, "critical-transition-readback");
+  assert.deepEqual(manifest.actionReceiptPolicy.boundaries, [
+    "task-launch",
+    "return-sync",
+    "protected-access",
+    "acceptance-and-live-action",
+  ]);
+  assert.deepEqual(manifest.actionReceiptPolicy.boundaryOwners, {
+    "task-launch": "orchestrator",
+    "return-sync": "orchestrator",
+    "protected-access": "acting-context",
+    "acceptance-and-live-action": "owning-task",
+  });
+  assert.ok(manifest.actionReceiptPolicy.fields.includes("observed-action"));
+  assert.deepEqual(manifest.actionReceiptPolicy.results, ["pass", "mismatch", "unverified"]);
   assert.equal(manifest.trackerPolicy.policy, "task-contract-with-event-driven-projection");
   assert.ok(manifest.managedPaths.includes("docs/workflows"));
   assert.ok(!manifest.managedPaths.includes("docs/codex-workflows"));
@@ -123,6 +165,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /Touch Set/);
   assert.match(core, /Memory Brief/);
   assert.match(core, /MEMORY_COVERAGE_GAP/);
+  assert.match(core, /expiry or re-entry condition/);
+  assert.match(core, /Action Receipt/);
   assert.match(core, /Memory Reflection/);
   assert.match(core, /RETRIEVAL_MISS/);
   assert.match(core, /Because \/ Apply \/ Avoid \/ Verify \/ Source/);
@@ -136,6 +180,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectState, /Last memory delta:/);
   assert.match(projectState, /Tracker projection:/);
   assert.match(projectState, /Operational sources:/);
+  assert.match(projectState, /complete protected POINTER ids/);
   assert.match(projectState, /Latest seen:/);
   assert.match(projectState, /Update:/);
   assert.match(projectState, /Snapshot as of:/);
@@ -147,6 +192,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(taskHandoff, /Applicable Memory Brief:/);
   assert.match(taskHandoff, /Memory Brief result:/);
   assert.match(taskHandoff, /Memory candidates:/);
+  assert.match(taskHandoff, /Return receipt id:/);
   assert.match(taskHandoff, /Consult when:/);
   assert.match(taskHandoff, /Boundary consultation:/);
   assert.match(taskHandoff, /Progress continuity:/);
@@ -167,6 +213,12 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /APPLICATION_MISS/);
   assert.match(orchestratorWorkflow, /side-by-side read-only candidate/);
   assert.match(orchestratorWorkflow, /non-destructive access check/);
+  assert.match(orchestratorWorkflow, /last safe check time\/result\/source/);
+  assert.match(orchestratorWorkflow, /before history search, human secret re-request, or live action/);
+  assert.match(orchestratorWorkflow, /actual title\/link, role\/profile, active start, and Return Sync route/);
+  assert.match(orchestratorWorkflow, /Action Receipt/);
+  assert.match(orchestratorWorkflow, /Only `PASS` closes the transition/);
+  assert.match(orchestratorWorkflow, /owning task owns acceptance\/live receipts/);
   assert.match(orchestratorWorkflow, /graph watermark/);
   assert.match(orchestratorWorkflow, /tracker projection/);
   const acceptWork = await readFile(path.join(root, "docs/workflows/accept-work.md"), "utf8");
@@ -176,6 +228,11 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(acceptWork, /zero-spend or no-mutation contract/);
   assert.match(acceptWork, /Memory candidates/);
   assert.match(acceptWork, /least-privilege access/);
+  assert.match(acceptWork, /complete protected pointer/);
+  assert.match(acceptWork, /Acceptance, merge, and deploy are separate authorities/);
+  const intentTrail = await readFile(path.join(root, "docs/workflows/intent-trail-template.md"), "utf8");
+  assert.match(intentTrail, /protected reference without its value/);
+  assert.match(intentTrail, /expiry or re-entry condition/);
 });
 
 test("orchestrator and task contexts keep distinct hot and cold paths", async () => {
