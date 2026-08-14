@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.19.0 | Status: canonical operating core
+Version: 1.19.1 | Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
@@ -34,16 +34,16 @@ Vydykhai combines them: design the compass and task contract top-down, let agent
 ## Operating Model
 
 - The product compass holds the goal, users, desired outcome, DOD, non-goals, constraints, and current decisions. It may evolve, but never silently.
-- Each participant has one active Framework Orchestrator for a product stream. It organizes work and never implements product code.
-- Research, lab, and implementation run in separate focused contexts.
+- The canonical framework maintenance context evolves universal rules, releases, and tooling only; it never installs into product repositories or operates their orchestrators. Separately, each participant has one active Framework Orchestrator for a product stream. It organizes that project and never implements product code.
+- Research, lab, implementation, and project maintenance run in separate focused contexts. These are the only contexts that perform project work.
 - A shared Git-backed project repo carries the framework and project files. GitHub Issues and PRs are the recommended durable sync space; an equivalent tracker is valid only when every participant and orchestrator can reach the same linked state. Local copies and chat history are evidence, not the source of truth.
 - Project Memory Graph links stable product anchors to current decisions, reusable lessons, confirmed future ideas, and safe operational pointers in one compact shared view.
 - The orchestrator decides what, why, when, and who, and maintains what changed: compass, sequence, alignment, dispatch, human requests, shared memory, health, parent closure, and next-best-action.
 - Task contexts decide how to deliver and prove one accepted increment: local planning, implementation, debugging, corrective fixes, `$accept-work`, exact-current-code smoke, manual merge after human confirmation, and automatic return at declared triggers.
-- A task detects an execution boundary; the orchestrator decides the project response. Neither role silently takes over the other's work.
+- A task detects an execution boundary; the orchestrator decides the project response. Neither role silently takes over the other's work. Focused work and framework update tasks return only to the project orchestrator, which owns adoption without upstream supervision. A possible universal lesson goes upstream only as a separate explicit sanitized compatibility packet, never as project task state or next-best-action.
 - One accepted increment has one owning execution context and one canonical Candidate unless the brief explicitly defines parallel-safe work. The orchestrator sequences later increments instead of stretching one task across the product route.
 
-An agent context is a logical boundary, not a vendor feature. It may be implemented as a thread, chat, session, run, workspace, or tracker-linked agent.
+An agent context is a logical boundary, not a vendor feature. It may be implemented as a thread, chat, session, run, workspace, or tracker-linked agent. A sanitized upstream packet contains no project or person names, task ids or links, backlog, private evidence, current project state, or project next-best-action.
 
 One active orchestrator does not mean one eternal context. Rotate it when its memory is no longer compact or reliable.
 

@@ -6,7 +6,7 @@ Vydykhai is a team autopilot for people working on one project, each with their 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.19.0`
+Current version: `1.19.1`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -15,6 +15,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - Вы можете сказать идею, уточнение или «давай по-другому» один раз. Оркестратор разберется, что именно изменилось, обновит общую память и проверит, какие текущие или будущие задачи это затрагивает.
 - Каждая новая задача получает короткие применимые указания: что делать, чего не повторять и как проверить результат. Исполнитель не перечитывает историю проекта и не получает только непонятные ссылки на память.
 - Принятые уроки одного участника становятся доступны оркестраторам остальных через общий репозиторий, а не остаются внутри личного чата.
+- Три уровня контекстов не смешиваются: канонический репозиторий развивает только универсальную формулу, проектный оркестратор только организует один проект, а вся работа выполняется в отдельных task, discovery, lab или maintenance contexts.
 - Команда или правильный план больше не считаются выполненным переходом сами по себе: оркестратор проверяет фактический запуск и возврат результата, а выполняющая task - свой защищенный доступ, приемку и live-действие. Следующий шаг не строится на неподтвержденном состоянии, и проверка не дублируется.
 - GitHub показывает реальное `сейчас / дальше / заблокировано / готово`; встречи и локальная работа меняют эту картину только при существенном событии.
 - Человек занимается целью, оценкой результата и необходимыми решениями. Поддержание памяти, связей задач и следующего действия берет на себя оркестратор.
@@ -24,6 +25,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - Say an idea, correction, or change of approach once. The orchestrator investigates what changed, updates shared memory, and checks which current or future tasks are affected.
 - Each task receives short applicable instructions: what to do, what not to repeat, and how to verify the result. Execution does not reread project history or receive opaque memory references.
 - One participant's accepted lessons become available to the other orchestrators through the shared repository instead of remaining trapped in a personal chat.
+- Three context layers stay separate: the canonical repository evolves only the universal formula, a project orchestrator only organizes one project, and all work happens in separate task, discovery, lab, or maintenance contexts.
 - A command or correct plan is no longer treated as a completed transition by itself: the orchestrator verifies actual launch and result return, while the executing task verifies its own protected access, acceptance, and live action. The next step never relies on unverified state, and verification is not duplicated.
 - The tracker reflects the real `now / next / blocked / done` picture and changes only on material work events.
 - People own the goal, judgment, and approvals; the orchestrator owns memory, task coherence, and the next action.
