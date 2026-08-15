@@ -12,6 +12,7 @@ Goal: establish the minimum operating system before implementation starts.
 6. Keep project rules outside managed files and the managed `AGENTS.md` block.
 7. Resolve role-routed profiles on the latest available flagship: maximum available for `ORCHESTRATOR`, deep bounded for `DISCOVERY`, and efficient bounded for `EXECUTION`; record actual model, environment mappings, check date/source, and any fallback.
 8. Resolve task return in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record the mapping and test it without asking people to poll.
+9. Name the active control context `[ORCHESTRATOR] <project> — Vydykhai <version>`, read back its actual title, and pin or foreground exactly that one context when supported.
 
 ## Project Operating Brief
 
@@ -45,6 +46,8 @@ Create one Project Memory Graph using `project-memory-graph-template.md` when th
 For an existing project with meaningful history, route an early bounded read-only memory backfill without blocking safe current execution. Start from the accepted brief or earliest reliable baseline; inventory high-signal human corrections, meeting decisions, accepted pivots, open “remember/revisit/discuss later” commitments, checkpoints, and accepted lessons; cluster by stable anchors; let later evidence supersede earlier meaning; deeply inspect only missing, ambiguous, or conflicting clusters; and compare a side-by-side graph candidate. A fresh evaluator must use ordinary future-work questions to recover each materially distinct open commitment's concrete meaning, source, return condition, and human gate before the orchestrator asks only genuine ambiguities and integrates the approved delta. Do not copy the full transcript or model narration into memory.
 
 Configure one lightweight tracker projection. The task issue body is the current contract; Project State holds the route; the board or equivalent shows `Todo`, `Next`, `In Progress`, `In Review`, `Blocked`, `Done`, and `Parked`. Record owner, priority, formal parent/dependencies where supported, milestone or delivery window, checkpoint, and PR/artifact. Keep views compact and use fixed sprints only when the team actually needs them.
+
+Use one navigation grammar from the first task onward: `<work-id> [<track>] [<mode>] — <short outcome>`. The short outcome uses the project's working language; fixed metadata tags do not drift between agents. GitHub uses the owning Issue as the work id, never a PR number. Mutable status stays in the tracker and native context state.
 
 Register each participant with:
 

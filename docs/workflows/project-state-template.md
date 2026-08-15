@@ -43,7 +43,7 @@ Updated from durable event: <event/link/date>
 
 | Task | Owner / recipient | Context | Baseline -> Candidate | Parent / dependencies | PR/artifact | DOD impact | Tracker status | Checkpoint / next |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| <task> | <owner / recipient or none> | <role/profile + link> | <accepted -> active> | <formal links or none> | <link> | <row> | <Todo / Next / In Progress / In Review / Blocked / Done / Parked> | <checkpoint / action> |
+| <work-id> [<track>] [<mode>] — <short outcome> | <owner / recipient or none> | <role/profile + canonical title/link> | <accepted -> active> | <formal links or none> | <PR/artifact linked to owning work> | <row> | <Todo / Next / In Progress / In Review / Blocked / Done / Parked> | <checkpoint / action> |
 
 ## Decisions And Blockers
 

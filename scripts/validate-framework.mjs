@@ -225,6 +225,14 @@ if (
 if (!coreEn.includes("Expansion Check") || !coreRu.includes("Проверка разрастания")) {
   fail("Core is missing Expansion Check");
 }
+if (
+  !coreEn.includes("<work-id> [<track>] [<mode>] — <short outcome>") ||
+  !coreRu.includes("<work-id> [<track>] [<mode>] — <короткий результат>") ||
+  !coreEn.includes("never a bare task, PR, or context number") ||
+  !coreRu.includes("Голые номера task, PR или context не используются")
+) {
+  fail("Core is missing canonical context names or meaningful human-facing work references");
+}
 if (!coreEn.includes("CONSULT") || !coreRu.includes("CONSULT")) {
   fail("Core is missing boundary consultation");
 }
@@ -378,9 +386,19 @@ if (
   !orchestratorWorkflow.includes("MEMORY_COVERAGE_GAP / BLOCKED") ||
   !orchestratorWorkflow.includes("Action Receipt") ||
   !orchestratorWorkflow.includes("Only `PASS` closes the transition") ||
-  !orchestratorWorkflow.includes("actual title/link, role/profile, active start, and Return Sync route")
+  !orchestratorWorkflow.includes("canonical title plus actual link, role/profile, active start, and Return Sync route")
 ) {
   fail("Orchestrator workflow is missing memory retrieval or rotation proof");
+}
+if (
+  !orchestratorWorkflow.includes("PR #<pr> → <canonical work reference>") ||
+  !orchestratorWorkflow.includes("Bare task, PR, and context numbers are not meaningful references") ||
+  !orchestratorSkill.includes("Never substitute a PR or context id for work identity") ||
+  !projectLaunchWorkflow.includes("[ORCHESTRATOR] <project> — Vydykhai <version>") ||
+  !projectLaunchSkill.includes("[ORCHESTRATOR] <project> — Vydykhai <version>") ||
+  !taskHandoffTemplate.includes("Title: <work-id> [<track>] [<mode>] — <short outcome")
+) {
+  fail("Context naming or human-facing reference contract is incomplete");
 }
 if (
   !orchestratorWorkflow.includes("open recall commitments") ||

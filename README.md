@@ -6,7 +6,7 @@ Vydykhai is a team autopilot for people working on one project, each with their 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.19.3`
+Current version: `1.19.4`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -19,6 +19,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - Три уровня контекстов не смешиваются: канонический репозиторий развивает только универсальную формулу, проектный оркестратор только организует один проект, а вся работа выполняется в отдельных task, discovery, lab или maintenance contexts.
 - Команда или правильный план больше не считаются выполненным переходом сами по себе: оркестратор проверяет фактический запуск и возврат результата, а выполняющая task - свой защищенный доступ, приемку и live-действие. Следующий шаг не строится на неподтвержденном состоянии, и проверка не дублируется.
 - GitHub показывает реальное `сейчас / дальше / заблокировано / готово`; встречи и локальная работа меняют эту картину только при существенном событии.
+- Названия и ссылки на работу читаются без расшифровки: оркестратор всегда называет задачу по ее номеру и короткому результату, а PR показывает как артефакт этой задачи, а не как замену ее смысла.
 - Оркестратор время от времени проверяет рабочие хвосты: у каждой открытой задачи, PR, ветки или task context должна быть понятная роль и выход. Забытое не копится молча и не удаляется без проверки.
 - Человек занимается целью, оценкой результата и необходимыми решениями. Поддержание памяти, связей задач и следующего действия берет на себя оркестратор.
 
@@ -31,6 +32,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - Three context layers stay separate: the canonical repository evolves only the universal formula, a project orchestrator only organizes one project, and all work happens in separate task, discovery, lab, or maintenance contexts.
 - A command or correct plan is no longer treated as a completed transition by itself: the orchestrator verifies actual launch and result return, while the executing task verifies its own protected access, acceptance, and live action. The next step never relies on unverified state, and verification is not duplicated.
 - The tracker reflects the real `now / next / blocked / done` picture and changes only on material work events.
+- Work names and references are self-explanatory: the orchestrator always names a task by its tracker id and short outcome, while a PR is shown as that task's artifact rather than a substitute for its meaning.
 - The orchestrator periodically checks unfinished work: every open task, PR, branch, or task context needs a clear purpose and exit. Forgotten work neither accumulates silently nor gets deleted without proof.
 - People own the goal, judgment, and approvals; the orchestrator owns memory, task coherence, and the next action.
 
