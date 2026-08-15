@@ -22,9 +22,9 @@ Pending decisions / participants:
 Can continue:
 Next-best-action:
 ```
+Render every task in this view and every human-facing plan, status, next action, handoff, or question as `<work-id> [<track>] [<mode>] — <short outcome>`. On GitHub the work id is the owning Issue, never a PR; another tracker uses its stable task key. A PR is `PR #<pr> → <canonical work reference>`. Bare task, PR, and context numbers are not meaningful references.
 Rebuild a stale dashboard only when the cold-path decision depends on it; ordinary execution never waits for cosmetic dashboard maintenance.
 When upstream is newer, read every changelog release where `installed < release <= latest` oldest first. Report the range, release count, one concise delta per release, and the combined project impact; never omit a skipped release. Put one shared plan in Project State and next-best-action: update now before next dispatch when no active work depends on old rules or the change addresses a current coordination/safety risk; otherwise update after a named task/checkpoint. At that window prepare or reuse one update branch, run `update` and `doctor`, open or refresh its PR, and report the short delta. Never duplicate update work, overwrite conflicts, merge silently, or change active-task rules mid-flight. Re-read the updated core; rotate only when migration or context health requires it. Framework updating remains project-local: its focused maintenance task returns to this project orchestrator, which records activation in Project State without asking upstream maintenance to install the release or operate this context. Do not send project tasks, links, participants, current state, or next-best-action to the canonical framework maintenance context. If a project exposes a potentially universal defect, prepare a separate sanitized compatibility packet only after an explicit upstream-feedback decision.
-
 ## 2. Classify The Request
 - `launch`: project activation or missing operating memory -> `$project-launch`.
 - `shape`: raw goal, major change, or task-map revision -> `$start-work`.
@@ -81,8 +81,8 @@ Keep Project State, raw Touch Set, transcripts, full memory views, task map, and
 When tools allow:
 
 1. Create the separate task/research context from current approved base.
-2. Name it from issue/sequence and short outcome.
-3. Read back and correct the actual title/link, role/profile, active start, and Return Sync route.
+2. Name it `<work-id> [<track>] [<mode>] — <short outcome>` using the owning Issue or stable tracker key, one track such as `[DOD1]` or `[SYSTEM]`, and only `[DISCOVERY]`, `[LAB]`, `[MAINT]`, or `[REVIEW]` when normal execution is not the mode. Never use a PR number as the work id.
+3. Read back and correct the canonical title plus actual link, role/profile, active start, and Return Sync route.
 4. Record the link/title in Project State and task issue.
 5. Verify the child starts execution and continues to a named human checkpoint, irreducible blocker, or terminal result; plan-only is not progress. Before any later instruction, read newer task events and reconcile newer human direction.
 
@@ -136,8 +136,8 @@ If rotation is needed:
 6. Show the coverage delta to the human. Persist approved missing items without mass-creating tasks or reviving stale ideas.
 7. After explicit human confirmation, change the active pointer and verify the new context can reconstruct compass, DOD, queue, remembered intent/rules, active-task approach lineage, blockers, latest delta, and next action.
 8. Retarget native returns, tracker hooks, and monitors so no new event can land in the previous context. Remove obsolete rotation monitors.
-9. Bring the new context forward, pin it when the environment supports pinning, verify its title, and publish one activation message with the old-history link, current state, and next-best-action.
-10. Rename the previous context with a localized retired/superseded prefix, unpin it, and send its final message only after all routing has moved. The message must be visually prominent and equivalent to:
+9. Name the new context `[ORCHESTRATOR] <project> — Vydykhai <version>`, bring it forward, pin it when the environment supports pinning, verify its title, and publish one activation message with the old-history link, current state, and next-best-action.
+10. Rename the previous context `[RETIRED][ORCHESTRATOR] <project> — Vydykhai <version>`, unpin it, and send its final message only after all routing has moved. The message must be visually prominent and equivalent to:
 ```md
 # THIS ORCHESTRATOR IS RETIRED - DO NOT CONTINUE HERE
 Active orchestrator: <title and link>
@@ -147,4 +147,4 @@ Continue all new coordination there. This context remains available only as read
 If the previous context is unavailable, mark `MEMORY_RECOVERY_INCOMPLETE`, let only clearly safe work continue, and request human confirmation before the candidate becomes authoritative.
 
 ## 8. Finish
-Do not stop at status. Return current state, durable links, safe continuation, one explicit next-best-action, and any named missing decision inside the project boundary.
+Do not stop at status. Return current state, durable links, safe continuation, one explicit next-best-action, and any named missing decision inside the project boundary. Use canonical work references throughout; never make the human decode a bare issue, PR, or context number.

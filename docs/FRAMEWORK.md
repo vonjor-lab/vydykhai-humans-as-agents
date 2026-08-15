@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.19.3 | Status: canonical operating core
+Version: 1.19.4 | Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
@@ -43,9 +43,9 @@ Vydykhai combines them: design the compass and task contract top-down, let agent
 - A task detects an execution boundary; the orchestrator decides the project response. Neither role silently takes over the other's work. Focused work and framework update tasks return only to the project orchestrator, which owns adoption without upstream supervision. A possible universal lesson goes upstream only as a separate explicit sanitized compatibility packet, never as project task state or next-best-action.
 - One accepted increment has one owning execution context and one canonical Candidate unless the brief explicitly defines parallel-safe work. The orchestrator sequences later increments instead of stretching one task across the product route.
 
-An agent context is a logical boundary, not a vendor feature. It may be implemented as a thread, chat, session, run, workspace, or tracker-linked agent. A sanitized upstream packet contains no project or person names, task ids or links, backlog, private evidence, current project state, or project next-best-action.
+An agent context is a logical boundary, not a vendor feature. It may be implemented as a thread, chat, session, run, workspace, or tracker-linked agent. Names are navigation, not a second tracker: a focused context and every human-facing work reference use `<work-id> [<track>] [<mode>] — <short outcome>` in the project's language with fixed tags. GitHub uses the owning Issue; another tracker uses its stable task key; a PR or context id never replaces work identity. Normal execution omits mode; other modes are `[DISCOVERY]`, `[LAB]`, `[MAINT]`, or `[REVIEW]`. Say `PR #456 → #123 [DOD1] — <short outcome>`, never a bare task, PR, or context number. A sanitized upstream packet contains no project or person names, task ids or links, backlog, private evidence, current project state, or project next-best-action.
 
-One active orchestrator does not mean one eternal context. Rotate it when its memory is no longer compact or reliable.
+One active orchestrator does not mean one eternal context. Name it `[ORCHESTRATOR] <project> — Vydykhai <version>` and its replaced predecessor `[RETIRED][ORCHESTRATOR] <project> — Vydykhai <version>`; `[FRAMEWORK] Vydykhai — maintenance` is reserved for universal maintenance. Keep mutable status in the tracker and native open/archive state, pin or foreground exactly one active orchestrator, and archive focused work only after terminal Return Sync and artifact disposition. Normalize live or queued contexts at launch, rotation, or their next cold-path touch; do not mass-rename closed history. Rotate the orchestrator when its memory is no longer compact or reliable.
 
 ## Activation
 
@@ -185,7 +185,7 @@ The minimum role-`EXECUTION` task contract contains:
 - Verification and completion route;
 - Narrow Consult when / Return to, triggered only by a named human checkpoint, irreducible blocker, or terminal result.
 
-Keep raw Project State, Touch Set, transcripts, full memory views, task map, and orchestration deliberation outside the task. The task continues the accepted mechanism by default; a new shared mechanism or system change must be explicit or resolved through consultation. Add Lab Mode, Peer Compass Review, model profile, or detailed contracts only when relevant. Before patching a running task, the orchestrator reads events newer than its last Return Sync and reconciles newer human direction. It creates or prepares the context, then reads back actual title/handle, link, role/profile, active start, and Return Sync route in the launch Action Receipt. A plan-only child response, requested profile, or unverified send is not progress.
+Keep raw Project State, Touch Set, transcripts, full memory views, task map, and orchestration deliberation outside the task. The task continues the accepted mechanism by default; a new shared mechanism or system change must be explicit or resolved through consultation. Add Lab Mode, Peer Compass Review, model profile, or detailed contracts only when relevant. Before patching a running task, the orchestrator reads events newer than its last Return Sync and reconciles newer human direction. It creates or prepares the context, then reads back and corrects the canonical title plus actual link, role/profile, active start, and Return Sync route in the launch Action Receipt. A plan-only child response, requested profile, or unverified send is not progress.
 
 ### 4. Execute
 

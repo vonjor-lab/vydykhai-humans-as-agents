@@ -9,7 +9,7 @@ The orchestrator resolves project-wide meaning before dispatch. Give the task on
 
 Role: EXECUTION
 Agent profile: EXECUTION / <resolved efficient mapping and fallback if any>
-Title:
+Title: <work-id> [<track>] [<mode>] — <short outcome; owning Issue/stable task key, never PR; omit mode for normal execution>
 Task / outcome owner / backup / recipient:
 Return to: <orchestrator context or stable shared-tracker event>
 

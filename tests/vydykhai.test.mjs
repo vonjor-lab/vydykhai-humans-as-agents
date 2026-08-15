@@ -53,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.19.3");
+    assert.equal(lock.installedVersion, "1.19.4");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -112,7 +112,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.19\.3/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.19\.4/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -238,7 +238,10 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /non-destructive access check/);
   assert.match(orchestratorWorkflow, /last safe check time\/result\/source/);
   assert.match(orchestratorWorkflow, /before history search, human secret re-request, or live action/);
-  assert.match(orchestratorWorkflow, /actual title\/link, role\/profile, active start, and Return Sync route/);
+  assert.match(orchestratorWorkflow, /canonical title plus actual link, role\/profile, active start, and Return Sync route/);
+  assert.match(orchestratorWorkflow, /<work-id> \[<track>\] \[<mode>\] — <short outcome>/);
+  assert.match(orchestratorWorkflow, /PR #<pr> → <canonical work reference>/);
+  assert.match(orchestratorWorkflow, /Bare task, PR, and context numbers are not meaningful references/);
   assert.match(orchestratorWorkflow, /Action Receipt/);
   assert.match(orchestratorWorkflow, /Only `PASS` closes the transition/);
   assert.match(orchestratorWorkflow, /owning task owns acceptance\/live receipts/);
@@ -282,6 +285,8 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   const handoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
 
   assert.match(orchestratorSkill, /Hot path:[\s\S]*Do not run Daily Alignment/);
+  assert.match(orchestratorSkill, /\[ORCHESTRATOR\] <project> — Vydykhai <version>/);
+  assert.match(orchestratorSkill, /Never substitute a PR or context id for work identity/);
   assert.match(orchestratorSkill, /Never implement, debug, fix product code/);
   assert.match(alignmentSkill, /Do not use for task-local failures/);
   assert.match(acceptSkill, /owning execution context/);
