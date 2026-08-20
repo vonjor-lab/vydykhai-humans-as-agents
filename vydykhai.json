@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.19.4",
+  "version": "1.20.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -40,6 +40,25 @@
         "preferredEffortWhenAvailable": "low"
       }
     }
+  },
+  "projectActivationPolicy": {
+    "policy": "evidence-backed-project-activation",
+    "requiredChecks": [
+      "target-repository-and-framework",
+      "shared-repo-and-tracker",
+      "participant-readiness",
+      "coordination-input-route",
+      "current-operational-route",
+      "compass-and-first-dod",
+      "orchestrator-and-return-sync",
+      "first-route-and-next-best-action"
+    ],
+    "results": [
+      "project-ready",
+      "project-ready-with-limits",
+      "needs-decision",
+      "blocked-by-access"
+    ]
   },
   "memoryPolicy": {
     "policy": "project-memory-graph",

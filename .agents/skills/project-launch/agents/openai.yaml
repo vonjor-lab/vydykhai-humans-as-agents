@@ -1,4 +1,4 @@
 interface:
   display_name: "Project Launch"
-  short_description: "Activate a project with Vydykhai"
+  short_description: "Prove and activate project readiness"
   default_prompt: "Use $project-launch to activate this project with Vydykhai."

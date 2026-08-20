@@ -1,95 +1,87 @@
 # Project Launch Workflow
 
-Goal: establish the minimum operating system before implementation starts.
+Goal: turn one installation request into a proven shared operating project before implementation starts.
 
-## Preflight
+## 1. Discover Before Asking
 
-1. Confirm the target product repo and agent working directory.
-2. Run `node scripts/vydykhai.mjs doctor` when the kit is installed.
-3. If missing and the user supplied the canonical link, execute `BOOTSTRAP.md` yourself before planning tasks. Ask only for missing access or target identity.
-4. Confirm a shared Git-backed project repo and durable tracker exist; recommend GitHub with Issues and PRs, including for non-code work.
-5. Confirm framework-managed files can be committed and pulled by the team.
-6. Keep project rules outside managed files and the managed `AGENTS.md` block.
-7. Resolve role-routed profiles on the latest available flagship: maximum available for `ORCHESTRATOR`, deep bounded for `DISCOVERY`, and efficient bounded for `EXECUTION`; record actual model, environment mappings, check date/source, and any fallback.
-8. Resolve task return in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record the mapping and test it without asking people to poll.
-9. Name the active control context `[ORCHESTRATOR] <project> — Vydykhai <version>`, read back its actual title, and pin or foreground exactly that one context when supported.
+1. Confirm the target product repo and agent working directory from observed state. Inspect local path, remote, host, owner, visibility, git state, instructions, and privacy constraints.
+2. Run `node scripts/vydykhai.mjs doctor` when the kit is installed. `doctor` proves framework integrity only; it never proves live project readiness.
+3. If the kit is missing and the user supplied the canonical link, execute `BOOTSTRAP.md` yourself. If no repo exists, ask only unresolved host, owner, or visibility and prepare a private Git-backed repo when tools allow.
+4. Inventory existing briefs, tasks, board, Project State, memory, branches, PRs, environments, deployment instructions, and accepted operating rules before creating anything. Reuse current truth.
+5. Use available repo-host, tracker, context, meeting, and operational tools directly. Ask the human only for missing access, trust, or a decision; never hand them setup commands.
+6. Use the first real Project State create/update plus readback as the tracker write test. Never create disposable probe issues, branches, or credentials.
+7. Resolve role-routed profiles on the latest available flagship: maximum available for `ORCHESTRATOR`, deep bounded for `DISCOVERY`, and efficient bounded for `EXECUTION`; record actual mappings, check source/date, and fallback.
+8. Resolve task return in this order: native cross-context message, shared-tracker event/hook, then one fallback monitor. Record the route and verify it on the first real dispatch without human polling.
+9. Reuse the registered active orchestrator when healthy and create one only when absent. Replace it only through confirmed rotation, never by leaving two active contexts. Name it `[ORCHESTRATOR] <project> — Vydykhai <version>`, read back its actual title and maximum profile, and pin or foreground exactly that one context when supported; Project State owns the current pointer.
 
-## Project Operating Brief
+## 2. Project Activation Gate
+
+Record each gate as `PASS`, `LIMITED`, `BLOCKED`, or `NOT_REQUIRED`, with observed evidence and one repair action:
+
+1. **Home and kit:** exact target repo, private-by-default visibility when newly created, accepted framework change, and passing `doctor` on this participant's checkout.
+2. **Shared sync:** one writable Git-backed repo and durable tracker with stable links, history, permissions, and read/write access. GitHub Repo + Issues/Projects/PRs is the recommended and best-supported default; an equivalent is valid by capability.
+3. **People:** current participants, role/decision scope, owner/backup or absence route, availability, agent environment, active orchestrator, framework check, and a self-published readiness receipt. One machine cannot certify another.
+4. **Inputs:** an accessible route from meetings, recordings, transcripts, chat, docs, or approved manual notes into durable shared state. Prefer direct access for each relevant orchestrator; otherwise name one intake owner and a traceable approval route.
+5. **Operations for the first DOD:** only required environments/services, current deployed baseline or revision, protected pointers, merge/deploy authority, backup/rollback route, and stop conditions. Future-only access is `NOT_REQUIRED`; secret values never enter shared state.
+6. **Course:** accepted goal, users/actors, first useful outcome, nearest DOD, non-goals, initial `now / next / blocked / done` route, and named open decisions.
+7. **Control loop:** active registered orchestrator, tracker projection, Return Sync mapping, and one exact next-best-action. First live Return Sync proof is appended automatically when the first task returns.
+
+Use one overall result:
+
+- `PROJECT_READY`: every gate needed by the first DOD passes.
+- `PROJECT_READY_WITH_LIMITS`: named gaps do not affect the first route; state the safe boundary and repair owner.
+- `NEEDS_DECISION`: a real human choice about goal, ownership, host, privacy, or authority remains.
+- `BLOCKED_BY_ACCESS`: missing access prevents the first safe route.
+
+An idea may be shaped while its private project home is being prepared, but do not dispatch shared execution or claim team alignment before the relevant gates pass. A missing participant blocks only overlapping work.
+
+## 3. Project Operating Brief
 
 Capture only:
 
-- project and target repo;
-- product goal and first useful outcome;
-- users or actors;
-- non-goals and constraints;
-- shared Git-backed repo, durable tracker, source of truth, and privacy boundary;
-- coordination inputs and access route: meetings, recordings, transcripts, chat, docs, or manual notes;
-- safe operational sources: environments/services, owner, secret-manager references, runbooks, backup/restore routes, and last access check, never secret values;
-- Shared Sync readiness and missing human/agent access;
-- participants, decision owner, owner/backup convention, and availability;
-- agent routing policy, resolved model and three role mappings, check date/source, and visible fallback rule;
-- agent environment adapter and context mapping;
-- task Return Sync mapping and scope-freshness interval;
-- first milestone DOD and the tracker projection for `now / next / blocked / done`;
-- open decisions and immediate risks.
+- project, target repo, durable tracker, source of truth, and privacy boundary;
+- product goal, first useful outcome, users/actors, first DOD, non-goals, and constraints;
+- participants, role/decision scope, owner/backup convention, and availability;
+- coordination inputs, direct or intake-owner route, access evidence, and approval path;
+- safe operational sources for the first DOD: environment/service owner, current baseline/revision, protected references, runbooks, merge/deploy authority, recovery route, and last safe check, never secret values;
+- agent environment adapter, role mappings, context mapping, Return Sync route, and scope-freshness interval;
+- tracker projection, open decisions, immediate risks, and first next action.
 
-Treat coordination inputs as raw until distilled and approved.
+Treat coordination inputs as raw until distilled and approved. Fathom is the recommended meeting recorder when available; Read AI, tl;dv, another recorder, team chat, docs, or manual notes are valid by capability. A local notebook is an input/view unless it is shared, versioned, and agent-accessible.
 
-Use Fathom as the recommended meeting recorder when available. Read AI, tl;dv, another recorder, team chat, or manual notes are valid when every relevant orchestrator can read the source. Treat Obsidian or another local notebook as an input/view unless it is shared, versioned, and agent-accessible.
+## 4. Durable State
 
-## Project State
+Create or update one compact Project State using `project-state-template.md`. Store the current Project Activation Receipt and participant readiness there.
 
-Create or update one compact Project State using `project-state-template.md`.
+Create one Project Memory Graph when the first reusable decision, idea, lesson, or safe operational pointer must survive its source context. Start stable anchors as relevant; keep one meaning per node and link operations to protected runbooks or secret systems.
 
-Create one Project Memory Graph using `project-memory-graph-template.md` when the first reusable decision, idea, lesson, or safe operational pointer must survive its source context. Start stable anchors for outcomes, actors, product entities, surfaces, contracts, data, and operations as they become relevant; keep one meaning per memory node and link operational knowledge to protected runbooks or secret systems. For an upgraded graph, build a side-by-side read-only candidate, preserve ids and sources, compare current/upcoming/prior-miss plus one grounded historical retrieval scenario, show loss/conflict/delta, and switch only after human confirmation. Map existing Idea Memory and Intent Trail ids before marking them legacy/read-only.
+For an existing project with meaningful history, route an early bounded read-only memory backfill without blocking safe current work. Start from the accepted brief or earliest reliable baseline; inventory high-signal human corrections, meeting decisions, accepted pivots, open recall commitments, checkpoints, and accepted lessons; cluster by stable anchors; let later evidence supersede earlier meaning; and deeply inspect only missing, ambiguous, or conflicting clusters. A fresh evaluator uses ordinary future-work questions to recover concrete meaning, source, return condition, and human gate before confirmed integration. Do not copy the full transcript or model narration.
 
-For an existing project with meaningful history, route an early bounded read-only memory backfill without blocking safe current execution. Start from the accepted brief or earliest reliable baseline; inventory high-signal human corrections, meeting decisions, accepted pivots, open “remember/revisit/discuss later” commitments, checkpoints, and accepted lessons; cluster by stable anchors; let later evidence supersede earlier meaning; deeply inspect only missing, ambiguous, or conflicting clusters; and compare a side-by-side graph candidate. A fresh evaluator must use ordinary future-work questions to recover each materially distinct open commitment's concrete meaning, source, return condition, and human gate before the orchestrator asks only genuine ambiguities and integrates the approved delta. Do not copy the full transcript or model narration into memory.
+For an old graph, build a side-by-side read-only candidate, preserve ids/sources, compare practical retrieval, show loss/conflict/delta, and switch only after human confirmation. Map old Idea Memory and Intent Trail before making them read-only evidence.
 
-Configure one lightweight tracker projection. The task issue body is the current contract; Project State holds the route; the board or equivalent shows `Todo`, `Next`, `In Progress`, `In Review`, `Blocked`, `Done`, and `Parked`. Record owner, priority, formal parent/dependencies where supported, milestone or delivery window, checkpoint, and PR/artifact. Keep views compact and use fixed sprints only when the team actually needs them.
+Configure one lightweight tracker projection. The task issue body is the current contract; Project State holds the route; the board or equivalent shows `Todo`, `Next`, `In Progress`, `In Review`, `Blocked`, `Done`, and `Parked`. Record owner, priority, formal parent/dependencies where supported, milestone or delivery window, checkpoint, and PR/artifact. Use fixed sprints only when the team needs them.
 
-Use one navigation grammar from the first task onward: `<work-id> [<track>] [<mode>] — <short outcome>`. The short outcome uses the project's working language; fixed metadata tags do not drift between agents. GitHub uses the owning Issue as the work id, never a PR number. Mutable status stays in the tracker and native context state.
+Use one navigation grammar from the first task onward: `<work-id> [<track>] [<mode>] — <short outcome>`. GitHub uses the owning Issue, never a PR number; another tracker uses its stable key.
 
-Register each participant with:
+## 5. Team Onboarding
 
-- active orchestrator context link/title;
-- installed framework version;
-- resolved agent routing and last check;
-- latest alignment packet;
-- active task;
-- current status;
-- repo/tracker/input access status.
+Commit the framework once into the project repo. Each participant pulls the accepted setup change; their own orchestrator runs `doctor`, proves repo/tracker/input access, and writes its readiness receipt. The project orchestrator records, but never invents, another participant's state.
 
-Do not store a permanent orchestrator context id in universal or project-wide framework rules. Project State owns the current pointer and can replace it during rotation.
+Keep that receipt to one durable event: participant/role, agent environment and orchestrator link, framework/`doctor`, repo/tracker/input checks, availability/backup route, result, date, and exact gap if any.
 
-Rotation does not replace that pointer automatically. Project State records the previous context, read-only candidate, Rotation Memory Packet, candidate Memory Coverage Check, explicit human confirmation, and visible cutover status. After the switch, the new context is foregrounded/pinned when supported; the old context is renamed, unpinned, and left with a final retirement notice and active link.
+Explain only the working loop:
 
-## Team Onboarding
+- speak naturally to the personal orchestrator; it creates and names focused contexts and keeps the tracker current;
+- after a meaningful meeting, process it asynchronously; unrelated work continues when someone is absent;
+- keep discovery, lab, implementation, and maintenance in separate contexts; tasks finish with `$accept-work`, exact-current-code smoke, human confirmation, and manual merge in the task context;
+- tasks solve ordinary local failures and return automatically at named checkpoints, irreducible blockers, or terminal results; people do not poll them;
+- say ideas and corrections freely; the orchestrator protects the nearest DOD, updates shared memory, and routes only affected work.
 
-Explain:
+## 6. First Route And Finish
 
-- ask the personal orchestrator to start, continue, process a meeting, or check work; ordinary continue uses a lightweight hot path rather than restarting alignment or planning;
-- after a meaningful meeting, each relevant participant processes it asynchronously when they next resume; no fixed order is required;
-- keep research, lab, and implementation in separate contexts; the orchestrator decides what/why/when/who, while a task decides how to implement and prove its accepted increment;
-- finish tasks with `$accept-work` in the task context;
-- perform manual smoke and merge in the task context after human confirmation;
-- let the chosen shared tracker carry durable state between people and agents and expect its `now / next / blocked / done` view to match Project State;
-- confirm that both the person and their orchestrator can reach the shared repo/tracker and relevant meeting inputs; otherwise expect `SYNC_LIMITED` rather than full alignment;
-- let task contexts solve ordinary failures themselves and return only named human checkpoints, irreducible blockers, and terminal results automatically; people should not poll them;
-- say useful ideas and corrections freely: the orchestrator protects the nearest DOD, investigates whether known meaning was absent, not retrieved, not applied, or not verified, and repairs the shared graph plus affected work;
-- expect an existing project to receive one early memory backfill that checks high-signal human commitments against the current graph without rebuilding or exposing the full history;
-- expect every task to start with short `Because / Apply / Avoid / Verify / Source` memory items and finish with their application result plus `NO_MEMORY_DELTA` or compact candidates; people do not tag or curate memory manually;
-- expect setup, update, `doctor`, skill routing, adapter setup, and context launch to be agent-owned rather than manual command work.
-- expect an orchestrator rotation to be announced before it starts and made visually obvious after confirmation; new coordination moves to the pinned replacement while the old context stays only as unpinned history.
+- Use `$start-work` inside the launch flow when the goal, brief, first DOD, or task map still needs shaping.
+- Use `$daily-alignment` when recent coordination inputs materially changed another participant's safe next action.
+- Use `$framework-orchestrator` only after the first route is clear and its relevant activation gates pass.
+- Do not implement, deploy, smoke, or merge in the launch/orchestrator context.
 
-## First Route
-
-- Use `$start-work` for a raw or large goal.
-- Use `$daily-alignment` when recent coordination inputs may already have changed direction.
-- Use `$framework-orchestrator` when an approved task is ready.
-- Return `NEEDS_DECISION` when source of truth, access, ownership, or DOD is unclear.
-
-Do not implement in the launch context.
-
-## Finish
-
-Report Project State, compass/DOD, Shared Sync readiness, participants, active orchestrator context registration, framework/adapter status, first route, and one exact next action.
+Publish and read back one Project Activation Receipt containing gate results/evidence, Project State, compass/DOD, participants, Shared Sync, operational readiness for the first DOD, active orchestrator, first route, safe limits, and one exact next action. Return `PROJECT_READY`, `PROJECT_READY_WITH_LIMITS`, `NEEDS_DECISION`, or `BLOCKED_BY_ACCESS` and never stop at a setup summary without the next-best-action.

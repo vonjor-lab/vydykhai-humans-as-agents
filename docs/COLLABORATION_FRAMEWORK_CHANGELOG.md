@@ -10,6 +10,21 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 1.20.0 - 2026-08-20
+
+Одна просьба подключить Vydykhai теперь должна закончиться не установкой файлов, а доказанно готовым к работе проектом.
+
+### Что изменится для команды
+
+- Агент сам находит текущий project repo или помогает подготовить приватный, проверяет remote, host, owner, visibility и существующие briefs, tasks, board, memory, branches, PR и operating rules. Человеку задаются только вопросы, которые нельзя разрешить из доступного состояния.
+- `doctor` отвечает только за целостность установленного kit. Живую готовность проверяет `$project-launch`: общий writable repo и tracker, участники, coordination inputs, operations первого DOD, принятый курс, active orchestrator, Return Sync route и next-best-action.
+- Фреймворк устанавливается в проект один раз и приходит остальным через pull. Каждый orchestrator сам публикует readiness receipt своей машины и доступов; один участник больше не считается подключенным по предположению другого.
+- GitHub Repo + Issues/Projects/PRs и Fathom остаются рекомендуемой и лучше всего отлаженной конфигурацией, но могут быть заменены эквивалентами по возможностям. Если прямого доступа к источнику встречи нет, назначается intake owner и подтвержденный traceable маршрут в shared state.
+- На старте не собираются все credentials и production powers. Проверяется только путь к первому DOD: нужные environments, безопасные protected pointers, merge/deploy authority, non-destructive access check, backup/rollback и stop conditions.
+- Итог запуска всегда видим: `PROJECT_READY`, `PROJECT_READY_WITH_LIMITS`, `NEEDS_DECISION` или `BLOCKED_BY_ACCESS`, evidence по каждому gate, безопасная граница и одно точное следующее действие. Необязательный gap не останавливает независимую работу, а отсутствующий участник блокирует только пересечение.
+
+Новый skill и ручной setup-ритуал не добавлены. Это совместимый новый операционный элемент внутри bootstrap, `$project-launch`, Project State и существующего orchestrator gate. Текущие tasks продолжаются; receipt появляется при новом проекте, reconnect или перед первым dispatch после обновления.
+
 ## 1.19.4 - 2026-08-15
 
 Названия контекстов и ссылки оркестратора на работу снова стали одним понятным навигационным слоем.

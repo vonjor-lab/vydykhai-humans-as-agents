@@ -6,12 +6,13 @@ Vydykhai is a team autopilot for people working on one project, each with their 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.19.4`
+Current version: `1.20.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
 ## Что изменится для вас
 
+- Одной просьбы подключить Vydykhai достаточно, чтобы агент не просто установил файлы, а нашел или подготовил приватный репозиторий, проверил общую синхронизацию, подключил людей и их оркестраторы, уточнил первый DOD и показал доказанный статус запуска с одним следующим действием.
 - Вы можете сказать идею, уточнение или «давай по-другому» один раз. Оркестратор разберется, что именно изменилось, обновит общую память и проверит, какие текущие или будущие задачи это затрагивает.
 - Обещание «запомнить и вернуться к этому» сохраняется вместе с причиной и моментом возврата. При подключении к действующему проекту или после доказанного пропуска оркестратор может экономично сверить такие обещания с текущей памятью, не переписывая всю историю.
 - Каждая новая задача получает короткие применимые указания: что делать, чего не повторять и как проверить результат. Исполнитель не перечитывает историю проекта и не получает только непонятные ссылки на память.
@@ -25,6 +26,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 
 ## What Changes for You
 
+- One request to connect Vydykhai now makes the agent do more than install files: it discovers or prepares the private project home, proves shared sync, connects people and their orchestrators, resolves the first DOD, and returns an evidence-backed launch status with one next action.
 - Say an idea, correction, or change of approach once. The orchestrator investigates what changed, updates shared memory, and checks which current or future tasks are affected.
 - A promise to remember and revisit something keeps both its reason and return condition. When joining an existing project or after a proven miss, the orchestrator can reconcile these promises with current memory without rebuilding the whole history.
 - Each task receives short applicable instructions: what to do, what not to repeat, and how to verify the result. Execution does not reread project history or receive opaque memory references.
@@ -44,11 +46,28 @@ Open your coding agent in the project you want to build and send one message:
 Подключи Vydykhai к этому проекту и запусти оркестратор. Сам определи возможности своей агентской среды и выполни BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents
 ```
 
-That is the normal installation path. The agent identifies the target repo, installs and validates the framework, prepares the setup change, creates Project State, and starts the dedicated orchestrator. A bare URL is not enough to express intent; the one sentence above is.
+That is the normal installation path. The agent identifies the target repo, installs and validates the framework, connects the shared operating space, prepares Project State, and starts the dedicated orchestrator. A bare URL is not enough to express intent; the one sentence above is.
 
 If the project is still only an idea and has no repository, send the same request. The agent asks only for unresolved host, owner, or visibility and prepares a private Git-backed operating repo when its tools allow.
 
 The human may still need to grant repository/network access or approve merge. They should not need to clone repositories, run installer commands, choose skills, or copy prompts.
+
+## Когда проект запущен / When The Project Is Ready
+
+Установка файлов еще не означает, что проект запущен. `doctor` проверяет только целостность комплекта, а `$project-launch` сам находит или готовит общее пространство, проверяет участников и их доступы, источник синков, безопасный путь к первому DOD, цель и первый план. Каждый участник подтверждается собственным оркестратором; результатом становится видимый статус готовности и одно следующее действие.
+
+`doctor` proves only that the installed framework kit is current and intact. `$project-launch` owns live project activation and may report `PROJECT_READY` only after it has read back:
+
+- the target repository and installed kit;
+- one shared writable Git-backed repo and durable tracker;
+- each current participant's role, orchestrator, framework check, and required access;
+- a usable route from meetings, transcripts, chat, docs, or approved manual notes into shared state;
+- only the environments, current deployed revision, protected pointers, merge/deploy authority, and recovery route needed by the first DOD;
+- the accepted goal, first DOD, tracker view, active orchestrator, Return Sync route, and exact next action.
+
+GitHub Repo + Issues/Projects/PRs and Fathom are the recommended, best-supported setup, not a vendor lock-in. Equivalent tools are valid when they provide the same durable linked state, permissions, history, and agent access. The framework is committed once into the project; every participant receives it through the shared repo, while their own orchestrator proves local `doctor` and access readiness. One machine never certifies another.
+
+Missing non-critical coverage produces `PROJECT_READY_WITH_LIMITS` with the exact safe boundary. Missing access that blocks the first route produces `BLOCKED_BY_ACCESS`; Vydykhai never claims team memory or alignment that it cannot observe.
 
 ## Start Here
 
@@ -83,17 +102,17 @@ Give the agent the request above from a task attached to the target project. [`B
 
 The installer writes only framework-managed files and one marked block in the target `AGENTS.md`. Project-specific rules stay outside that block. The agent reviews and validates the diff, prepares the setup branch or PR, and leaves merge under the project's normal policy.
 
-The orchestrator applies `$project-launch`, registers the project and participants, creates the first compass and DOD, and chooses the next route. People do not need to select skills manually afterward.
+The orchestrator applies `$project-launch`, registers the project and participants, proves the activation gates, creates the first compass and DOD, and chooses the next route. People do not need to select skills manually afterward.
 
 ## Shared Sync
 
-Distributed Vydykhai needs one shared Git-backed project repo and durable tracker, even when the work is research, writing, design, or another non-code form of vibe work. GitHub with Issues and PRs is the recommended and best-supported default. Another host or tracker is valid if it gives stable links, history, access control, participant-owned updates, and read/write access to each participant's orchestrator.
+Distributed Vydykhai needs one shared Git-backed project repo and durable tracker, even when the work is research, writing, design, or another non-code form of vibe work. GitHub Repo + Issues/Projects/PRs is the recommended and best-supported default. Another host or tracker is valid if it gives stable links, history, access control, participant-owned updates, and read/write access to each participant's orchestrator.
 
-At launch, the agent records and tests this sync space plus the meeting-input route. Fathom is the recommended recorder when available; Read AI, tl;dv, another transcript service, team chat, or an approved manual summary can provide the same input. A local notebook such as Obsidian remains an input or view unless it is shared, versioned, and agent-accessible.
+At launch, the agent records and tests this sync space plus the meeting-input route. Fathom is the recommended recorder when available; Read AI, tl;dv, another transcript service, team chat, or an approved manual summary can provide the same input. Prefer direct access for each relevant orchestrator; otherwise name one intake owner who publishes an approved traceable delta. A local notebook such as Obsidian remains an input or view unless it is shared, versioned, and agent-accessible.
 
 After a meaningful meeting, each relevant participant can say `Process the latest meeting.` whenever they next resume. Their orchestrator reads the configured source, publishes only the material local delta, reconciles available packets in the tracker, and states what can continue; no fixed order or simultaneous attendance is required.
 
-Give every person and agent only the access they need; never share credentials or use public-by-link access for private meeting material. If someone cannot reach the repo, tracker, or relevant meeting source, the orchestrator marks `SYNC_LIMITED`, names the missing visibility, and does not claim complete alignment for overlapping work.
+Give every person and agent only the access they need; never share credentials or use public-by-link access for private meeting material. If the repo/tracker or both direct and intake-owner source routes leave required work invisible, the orchestrator marks `SYNC_LIMITED`, names the missing visibility, and does not claim complete alignment for overlapping work.
 
 ## Update And Diagnose
 

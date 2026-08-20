@@ -57,6 +57,28 @@ if (manifest.agentRoutingPolicy?.profiles?.execution?.preferredEffortWhenAvailab
   fail("Execution preferred effort mapping must be low");
 }
 if (manifest.agentRoutingPolicy?.refreshDays !== 7) fail("Agent routing refreshDays must be 7");
+if (manifest.projectActivationPolicy?.policy !== "evidence-backed-project-activation") {
+  fail("Project activation policy must be evidence-backed-project-activation");
+}
+for (const check of [
+  "target-repository-and-framework",
+  "shared-repo-and-tracker",
+  "participant-readiness",
+  "coordination-input-route",
+  "current-operational-route",
+  "compass-and-first-dod",
+  "orchestrator-and-return-sync",
+  "first-route-and-next-best-action",
+]) {
+  if (!manifest.projectActivationPolicy?.requiredChecks?.includes(check)) {
+    fail(`Project activation policy is missing check: ${check}`);
+  }
+}
+for (const result of ["project-ready", "project-ready-with-limits", "needs-decision", "blocked-by-access"]) {
+  if (!manifest.projectActivationPolicy?.results?.includes(result)) {
+    fail(`Project activation policy is missing result: ${result}`);
+  }
+}
 if (manifest.defaultScopeFreshnessDays !== 7) fail("Default scope freshness must be 7 days");
 if (manifest.memoryPolicy?.policy !== "project-memory-graph") {
   fail("Memory policy must use the Project Memory Graph");
@@ -154,6 +176,7 @@ if (!manifest.managedPaths.includes("docs/workflows") || manifest.managedPaths.i
 
 const coreEn = await text("docs/FRAMEWORK.md");
 const coreRu = await text("docs/FRAMEWORK_RU.md");
+const bootstrap = await text("BOOTSTRAP.md");
 const changelog = await text("docs/COLLABORATION_FRAMEWORK_CHANGELOG.md");
 const readme = await text("README.md");
 const compatibilityEn = await text("docs/COLLABORATION_FRAMEWORK_2026-06-10.md");
@@ -215,6 +238,14 @@ if (!coreEn.includes("Shared Sync Contract") || !coreRu.includes("Контрак
   fail("Core is missing Shared Sync Contract");
 }
 if (
+  !coreEn.includes("Project Activation Receipt") ||
+  !coreRu.includes("Project Activation Receipt") ||
+  !coreEn.includes("PROJECT_READY_WITH_LIMITS") ||
+  !coreRu.includes("PROJECT_READY_WITH_LIMITS")
+) {
+  fail("Core is missing evidence-backed project activation");
+}
+if (
   !coreEn.includes("Role-Routed Agent Profiles") ||
   !coreRu.includes("Профили по роли") ||
   !coreEn.includes("Low-ready") ||
@@ -259,6 +290,16 @@ if (!projectStateTemplate.includes("Last memory delta:")) fail("Project State is
 if (!projectStateTemplate.includes("Tracker projection:")) fail("Project State is missing the tracker projection");
 if (!projectStateTemplate.includes("Operational sources:")) fail("Project State is missing safe operational-source pointers");
 if (!projectStateTemplate.includes("Shared Sync:")) fail("Project State is missing Shared Sync readiness");
+if (!projectStateTemplate.includes("## Project Activation Receipt")) {
+  fail("Project State is missing the Project Activation Receipt");
+}
+if (
+  !projectStateTemplate.includes("Readiness receipt") ||
+  !projectStateTemplate.includes("Decision scope / backup") ||
+  !projectStateTemplate.includes("Active orchestrator / agent environment")
+) {
+  fail("Project State is missing participant role or self-readiness evidence");
+}
 if (!projectStateTemplate.includes("Baseline -> Candidate")) fail("Project State is missing the Success Line pointer");
 if (!projectStateTemplate.includes("Task return mapping:")) fail("Project State is missing the task return mapping");
 if (!projectStateTemplate.includes("Snapshot as of:") || !projectStateTemplate.includes("Rebuild its body atomically")) {
@@ -321,6 +362,22 @@ if (
   !projectLaunchWorkflow.includes("ordinary future-work questions")
 ) {
   fail("Existing-project launch is missing economical historical memory reconciliation");
+}
+if (
+  !bootstrap.includes("Project Activation Receipt") ||
+  !bootstrap.includes("one machine cannot certify another") ||
+  !projectLaunchWorkflow.includes("doctor` proves framework integrity only") ||
+  !projectLaunchWorkflow.includes("Never create disposable probe issues") ||
+  !projectLaunchWorkflow.includes("Operations for the first DOD") ||
+  !projectLaunchWorkflow.includes("current deployed baseline or revision") ||
+  !projectLaunchWorkflow.includes("never by leaving two active contexts") ||
+  !projectLaunchWorkflow.includes("PROJECT_READY_WITH_LIMITS") ||
+  !projectLaunchSkill.includes("one machine cannot certify another") ||
+  !projectLaunchSkill.includes("never leave two active contexts") ||
+  !orchestratorSkill.includes("Project Activation Receipt") ||
+  !orchestratorWorkflow.includes("Project Activation gates pass")
+) {
+  fail("Project activation is missing live evidence, participant ownership, or first-dispatch enforcement");
 }
 if (
   !taskHandoffTemplate.includes("Role: EXECUTION") ||

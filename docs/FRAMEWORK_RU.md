@@ -1,6 +1,6 @@
 # Фреймворк совместной вайб-разработки «Выдыхай»
 
-Версия: 1.19.4 | Статус: каноническое операционное ядро
+Версия: 1.20.0 | Статус: каноническое операционное ядро
 
 «Выдыхай» - это фреймворк совместной работы людей и AI-агентов. Он вырос из совместного вайбкодинга, но подходит и для более широкого vibe work: помогает группе превратить сырую цель в общий компас, разойтись по задачам без потери связности, сохранить возникающие идеи, принять результаты и снова собраться вокруг следующего шага. Люди остаются агентами смысла и решений, а AI-оркестратор поддерживает общую картину, последовательность, синки, приемку и next-best-action.
 
@@ -36,7 +36,7 @@
 - Продуктовый компас хранит цель, пользователей, желаемый результат, DOD, non-goals, ограничения и текущие решения. Он может меняться, но не незаметно.
 - Тред сопровождения канонического фреймворка развивает только универсальные правила, релизы и инструменты; он не устанавливает фреймворк в продуктовые репозитории и не управляет их оркестраторами. Отдельно у каждого участника есть один активный Framework Orchestrator на product stream. Он организует конкретный проект и не пишет продуктовый код.
 - Исследование, лаборатория, исполнение и обслуживание проекта идут в отдельных сфокусированных контекстах. Только в них выполняется проектная работа.
-- Общий Git-репозиторий хранит framework и project files. GitHub Issues и PR являются рекомендуемым sync space; аналогичный tracker подходит, только если все участники и их оркестраторы видят одно связанное состояние. Локальные копии и история чата являются evidence, но не source of truth.
+- Общий Git-репозиторий хранит framework и project files. GitHub Repo + Issues/Projects/PRs является рекомендуемым sync space; аналогичный tracker подходит, только если все участники и их оркестраторы видят одно связанное состояние. Локальные копии и история чата являются evidence, но не source of truth.
 - Project Memory Graph связывает стабильные продуктовые anchors с текущими решениями, переиспользуемыми уроками, подтвержденными будущими идеями и безопасными операционными указателями в одном компактном общем представлении.
 - Оркестратор решает, что, зачем, когда и кем делается, и поддерживает понимание того, что изменилось: compass, sequence, alignment, dispatch, запросы человеку, общую память, health, parent closure и next-best-action.
 - Task contexts решают, как доставить и доказать один принятый инкремент: локальный план, implementation, debugging, исправления, `$accept-work`, smoke на точном актуальном коде, ручной merge после подтверждения человека и автоматический return по объявленным triggers.
@@ -49,7 +49,7 @@ Agent context - это логическая граница, а не функци
 
 ## Активация
 
-Фреймворк работает только после установки комплекта в целевой product repo и запуска агента из этого репозитория. Обычный человеческий интерфейс - один запрос coding agent, подключенному к целевому repo:
+Комплект фреймворка один раз устанавливается в целевой репозиторий и через него попадает ко всем участникам. Обычный человеческий интерфейс - один запрос coding agent, подключенному к целевому проекту, даже если проект пока существует только как идея:
 
 ```text
 Подключи Vydykhai к этому проекту и запусти оркестратор. Сам определи возможности своей агентской среды и выполни BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents
@@ -57,20 +57,20 @@ Agent context - это логическая граница, а не функци
 
 Обязательный порядок:
 
-1. Bootstrap-агент определяет target repo, сохраняет существующую работу, устанавливает или обновляет kit и запускает `doctor`.
-2. Он проверяет diff, готовит setup commit или PR и оставляет project rules вне managed files.
-3. Он создает Project State и запускает личный Framework Orchestrator context из target repo.
-4. `$project-launch` создает Project Operating Brief, компас, первый DOD, registry участников, Shared Sync Contract и первый маршрут.
-5. После принятия setup change каждый участник делает обычный pull и через своего orchestrator подтверждает framework и sync access.
+1. Bootstrap находит или готовит приватный дом проекта, сохраняет существующую работу, устанавливает или обновляет kit и до создания нового инвентаризирует текущие artifacts.
+2. `doctor` проверяет только целостность фреймворка; `$project-launch` доказывает реальные права repo/tracker, готовность участников, inputs, operations первого DOD, курс и control loop.
+3. `$project-launch` при необходимости помогает сформировать сырую цель, затем создает Operating Brief, Project State, компас, первый DOD, Shared Sync Contract, tracker route и безопасные operational pointers.
+4. Каждый участник получает принятый setup через pull; его собственный orchestrator доказывает локальный `doctor` и необходимый доступ к repo/tracker/inputs, потому что одна машина не может сертифицировать другую.
+5. Активный orchestrator и маршрут Return Sync проверяются readback, после чего один Project Activation Receipt показывает evidence, безопасные ограничения, первый маршрут и next-best-action.
 
-Bootstrap-запрос разрешает setup branch/PR и общие operating artifacts. Он не разрешает merge, destructive overwrite, платные действия, production changes или раскрытие private data. Если не хватает tool или доступа, агент просит только эту возможность и не перекладывает команды установки на человека.
+Bootstrap-запрос разрешает setup branch/PR и общие operating artifacts, но не merge, destructive overwrite, платное действие, production change или раскрытие private data. Идею можно осмыслять, пока готовится приватный дом проекта, но shared execution и заявления о team alignment ждут прохождения нужных activation gates. Если не хватает tool или доступа, агент дает человеку одно точное действие.
 
-Bootstrap сопоставляет текущую агентскую среду с project instructions, вызовом skills/rules, отдельными resumable contexts, durable shared state и execution/verification. Если среда не умеет native skill discovery или context creation, создается один тонкий native adapter со ссылками на канонические файлы, а mapping записывается в Project State. Операционная логика не копируется в environment-specific rules.
-
-### Контракт общей синхронизации
-Для распределенной работы Vydykhai нужны общий Git-репозиторий проекта и durable tracker. Рекомендуемый и лучше всего отлаженный вариант, в том числе для не-программных проектов, - GitHub с Issues и PR. Аналог должен давать стабильные ссылки, историю, независимые обновления участников, access control и read/write доступ агентам.
-При запуске нужно записать и проверить repo/tracker, необходимый доступ каждого участника и оркестратора и маршрут coordination inputs из встреч, записей, transcripts, чатов, docs или ручных заметок. Для записи встреч при наличии рекомендуется Fathom; подходят также Read AI, tl;dv и любой другой доступный источник.
-Локальный notebook вроде Obsidian является input или view, пока он не стал общим, версионируемым и доступным агентам. Неполное покрытие получает статус `SYNC_LIMITED`: явно назвать, что невидимо, не заявлять полный alignment и продолжать пересекающуюся работу только с cautions либо ждать.
+### Контракт общей синхронизации и готовность проекта
+Для распределенной работы Vydykhai нужны общий writable Git-backed repo и durable tracker. Рекомендуемый и лучше всего отлаженный вариант - GitHub Repo + Issues/Projects/PRs; аналог должен давать стабильные ссылки, историю, права, независимые обновления участников и read/write доступ агентам.
+Project launch фиксирует `PASS / LIMITED / BLOCKED / NOT_REQUIRED` для home/kit, shared sync, людей, inputs, operations первого DOD, курса и control loop. Доступ к tracker доказывает первая настоящая запись Project State с readback; одноразовые проверочные artifacts запрещены.
+Coordination input может быть напрямую доступен каждому нужному orchestrator или проходить через назначенного intake owner в подтвержденную traceable delta. Рекомендуется Fathom; подходят другой recorder, chat, docs, ручные заметки или общий agent-accessible notebook.
+Operational readiness охватывает только текущий DOD: владельцев environments, текущий deployed baseline/revision, безопасные protected pointers, merge/deploy authority, non-destructive check, recovery route и stop conditions. Система не просит все credentials, не хранит secret values и не подразумевает production authority.
+Только доказанный receipt возвращает `PROJECT_READY`; несущественные gaps дают `PROJECT_READY_WITH_LIMITS`, настоящее решение человека - `NEEDS_DECISION`, а доступ, блокирующий первый безопасный маршрут, - `BLOCKED_BY_ACCESS`. Отсутствующий участник блокирует только пересекающуюся работу.
 
 ## Профили по роли
 Использовать последнюю доступную flagship-модель и расходовать reasoning там, где принимается решение:
@@ -106,7 +106,7 @@ Bootstrap сопоставляет текущую агентскую среду 
 
 ### 0. Запуск
 
-Подключить repo, участников, coordination inputs, source of truth, privacy rules, компас и первый DOD. Зарегистрировать active orchestrator contexts в Project State.
+Подключить и доказать repo, участников, маршрут coordination inputs, operations первого DOD, source of truth, privacy rules, компас и первый DOD. До первого dispatch зарегистрировать active orchestrator contexts и опубликовать Project Activation Receipt.
 
 ### 1. Осмысление
 
@@ -234,7 +234,7 @@ Task context начинает implementation, а не повторяет сог�
 - Alignment Window: используется, когда нужно согласовать packets встречи, milestone или локальной работы.
 - Project Memory Graph: один компактный текущий граф стабильных anchors, атомарных invariants, решений, уроков, будущих идей, безопасных pointers, типизированных relations и retrieval scenarios. Существующие graphs, Idea Memory и Intent Trail являются migration inputs, а не параллельной active truth.
 
-Registry участников содержит: participant, orchestrator context link, установленную версию фреймворка, resolved orchestrator profile и дату проверки, latest packet, active task и status.
+Registry участников содержит: participant и role/decision scope, backup или absence route, orchestrator context link, framework и проверку `doctor`, resolved profile, доступ к repo/tracker/input, собственный readiness receipt, latest packet, active task, availability и status. Одна машина не сертифицирует другую.
 
 Перед dispatch или существенным resume на общей поверхности orchestrator каждого участника проверяет свою строку и публикует packet только при материальном изменении локального состояния или результатов встречи. Обычное execution внутри актуального contract не создает packet. Нельзя придумывать незакоммиченное состояние другого участника.
 
@@ -242,7 +242,7 @@ Body задачи является ее единственным текущим 
 При dispatch, существенном re-brief, blocker, acceptance и close task contract, Project State и tracker projection обновляются вместе до объявления нового состояния. Routine progress не переписывает dashboards или Alignment. При публикации Team Alignment Delta или изменении графа затронутый current view перестраивается в той же операции. История остается по ссылкам, а Alignment Window ротируется, когда перестает быстро читаться.
 
 ## Встречи
-Meetings, записи, transcripts, командные чаты и заметки являются одним слоем coordination inputs. Они остаются raw input, пока orchestrator не дистиллирует их в shared tracker, а человек не подтвердит изменения compass, scope, sequence, ownership или DOD.
+Meetings, записи, transcripts, командные чаты и заметки являются одним слоем coordination inputs. Они остаются raw, пока orchestrators с прямым доступом или назначенный intake owner не дистиллируют их в traceable shared delta, а человек не подтвердит изменения compass, scope, sequence, ownership или DOD.
 
 После встречи достаточно короткой команды `сделай daily alignment`. Оркестратор читает доступный источник, обновляет durable state, просит недостающие packets только там, где они важны, и возвращает continue, continue with cautions, wait или blocked.
 
