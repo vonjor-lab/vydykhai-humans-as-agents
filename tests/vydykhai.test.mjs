@@ -53,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.19.4");
+    assert.equal(lock.installedVersion, "1.20.0");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -76,6 +76,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /ORCHESTRATOR=maximum-available/);
     assert.match(doctor.stdout, /DISCOVERY=deep-bounded/);
     assert.match(doctor.stdout, /EXECUTION=efficient-bounded/);
+    assert.match(doctor.stdout, /Project activation: evidence-backed-project-activation; 8 live checks via project-launch/);
     assert.match(doctor.stdout, /Memory: project-memory-graph v2; task brief <= 7 executable nodes/);
     assert.match(doctor.stdout, /Action receipts: critical-transition-readback; 4 critical boundaries/);
     assert.match(doctor.stdout, /Tracker: task-contract-with-event-driven-projection/);
@@ -85,6 +86,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const legacyManifestPath = path.join(target, "vydykhai.json");
     const legacyManifest = JSON.parse(await readFile(legacyManifestPath, "utf8"));
     delete legacyManifest.actionReceiptPolicy;
+    delete legacyManifest.projectActivationPolicy;
     legacyManifest.version = "1.18.0";
     const legacyManifestText = `${JSON.stringify(legacyManifest, null, 2)}\n`;
     await writeFile(legacyManifestPath, legacyManifestText);
@@ -97,6 +99,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const legacyDoctor = run(["doctor", target, "--offline"]);
     assert.equal(legacyDoctor.status, 0, legacyDoctor.stderr);
     assert.match(legacyDoctor.stdout, /Vydykhai 1\.18\.0/);
+    assert.match(legacyDoctor.stdout, /Project activation: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Action receipts: not declared by installed version/);
 
     const corePath = path.join(target, "docs/FRAMEWORK.md");
@@ -112,7 +115,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.19\.4/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.20\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -131,6 +134,23 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.agentRoutingPolicy.profiles.discovery.preferredEffortWhenAvailable, "xhigh");
   assert.equal(manifest.agentRoutingPolicy.profiles.execution.reasoningPolicy, "efficient-bounded");
   assert.equal(manifest.agentRoutingPolicy.profiles.execution.preferredEffortWhenAvailable, "low");
+  assert.equal(manifest.projectActivationPolicy.policy, "evidence-backed-project-activation");
+  assert.deepEqual(manifest.projectActivationPolicy.requiredChecks, [
+    "target-repository-and-framework",
+    "shared-repo-and-tracker",
+    "participant-readiness",
+    "coordination-input-route",
+    "current-operational-route",
+    "compass-and-first-dod",
+    "orchestrator-and-return-sync",
+    "first-route-and-next-best-action",
+  ]);
+  assert.deepEqual(manifest.projectActivationPolicy.results, [
+    "project-ready",
+    "project-ready-with-limits",
+    "needs-decision",
+    "blocked-by-access",
+  ]);
   assert.equal(manifest.defaultScopeFreshnessDays, 7);
   assert.equal(manifest.memoryPolicy.policy, "project-memory-graph");
   assert.equal(manifest.memoryPolicy.graphVersion, 2);
@@ -191,11 +211,17 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /complete id mapping is not semantic coverage/);
   assert.match(core, /Role-Routed Agent Profiles/);
   assert.match(core, /Low-ready/);
+  assert.match(core, /Project Activation Receipt/);
+  assert.match(core, /PROJECT_READY_WITH_LIMITS/);
   assert.match(core, /24 hours old/);
   assert.match(core, /Work Hygiene Check/);
   assert.match(core, /ACTIVE.*WAITING.*FINISH.*SALVAGE.*RETIRE/);
   const projectState = await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8");
   assert.match(projectState, /Shared Sync:/);
+  assert.match(projectState, /Project activation:/);
+  assert.match(projectState, /## Project Activation Receipt/);
+  assert.match(projectState, /Decision scope \/ backup/);
+  assert.match(projectState, /Readiness receipt/);
   assert.match(projectState, /Context visibility:/);
   assert.match(projectState, /Project Memory Graph:/);
   assert.match(projectState, /Last memory delta:/);
@@ -243,6 +269,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /PR #<pr> → <canonical work reference>/);
   assert.match(orchestratorWorkflow, /Bare task, PR, and context numbers are not meaningful references/);
   assert.match(orchestratorWorkflow, /Action Receipt/);
+  assert.match(orchestratorWorkflow, /Project Activation gates pass/);
   assert.match(orchestratorWorkflow, /Only `PASS` closes the transition/);
   assert.match(orchestratorWorkflow, /owning task owns acceptance\/live receipts/);
   assert.match(orchestratorWorkflow, /graph watermark/);
@@ -254,6 +281,11 @@ test("current manifest preserves updater compatibility fields", async () => {
   const projectLaunch = await readFile(path.join(root, "docs/workflows/project-launch.md"), "utf8");
   assert.match(projectLaunch, /bounded read-only memory backfill/);
   assert.match(projectLaunch, /Do not copy the full transcript or model narration/);
+  assert.match(projectLaunch, /doctor` proves framework integrity only/);
+  assert.match(projectLaunch, /Never create disposable probe issues/);
+  assert.match(projectLaunch, /One machine cannot certify another/);
+  assert.match(projectLaunch, /Operations for the first DOD/);
+  assert.match(projectLaunch, /PROJECT_READY_WITH_LIMITS/);
   const graphTemplate = await readFile(path.join(root, "docs/workflows/project-memory-graph-template.md"), "utf8");
   assert.match(graphTemplate, /Owner gate:/);
   assert.match(graphTemplate, /five fields/);

@@ -17,7 +17,7 @@ Comments remain evidence; a stale body must be rebuilt before use.
 Determine:
 
 - meeting or event key and source link;
-- Shared Sync readiness and source access for expected participants/orchestrators;
+- Shared Sync readiness and direct source access or named intake-owner route for expected participants/orchestrators;
 - expected participants and affected tasks/contracts;
 - current participant and active task;
 - active Alignment Window and latest delta;

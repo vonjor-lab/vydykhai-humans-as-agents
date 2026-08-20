@@ -10,9 +10,11 @@ Use one compact issue or equivalent artifact per project or product stream. It i
 Snapshot as of: <date / latest durable event>
 
 Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current | check pending | now | after task/checkpoint | PR/link | blocked>
+Project activation: <PROJECT_READY | PROJECT_READY_WITH_LIMITS | NEEDS_DECISION | BLOCKED_BY_ACCESS> | Checked: <date/event>
+First route: <START_WORK | ALIGN | ORCHESTRATE> | Next-best-action: <one exact action>
 Shared Sync: Repo: <url> | Tracker: <url> | Readiness: <READY | SYNC_LIMITED, with gaps>
-Coordination inputs: <meeting recorder/transcript/chat/docs/manual route> | Access checked: <date/result>
-Operational sources: <complete protected POINTER ids or none: owner / protected reference / environment+scope / allowed non-destructive route / expiry or re-entry; never secret values> | Access checked: <date/result/source>
+Coordination inputs: <meeting recorder/transcript/chat/docs/manual route> | Intake: <direct per relevant orchestrator | named intake owner + approval route> | Access checked: <date/result>
+Operational sources: Current DOD: <complete protected POINTER ids | NOT_REQUIRED: owner / environment+scope / current baseline+revision / protected reference / allowed non-destructive route / expiry or re-entry; never secret values> | Merge/deploy/recovery authority: <route> | Access checked: <date/result/source>
 Agent routing: latest available flagship | ORCHESTRATOR: maximum available | DISCOVERY: deep bounded | EXECUTION: efficient bounded
 Resolved profiles: <model id / orchestrator mapping / discovery mapping / execution mapping> | Checked: <date/source> | Fallback: <none, pending, or reason>
 Environment adapter: <native | adapter path> | Context mapping: <thread/chat/session/run/workspace/tracker handle>
@@ -33,11 +35,23 @@ Tracker projection: <project/board link or equivalent> | Mapping: <statuses/fiel
 Scope freshness policy: <days; default 7> | Last project-level check: <date/event> | Work hygiene: <last checked/result; unresolved artifact + ACTIVE/WAITING/FINISH/SALVAGE/RETIRE disposition, or none>
 Updated from durable event: <event/link/date>
 
+## Project Activation Receipt
+
+| Gate | Result | Evidence | Gap / repair owner |
+| --- | --- | --- | --- |
+| Home and kit | <PASS / LIMITED / BLOCKED / NOT_REQUIRED> | <repo/remote/visibility/doctor/setup change> | <none or action/owner> |
+| Shared sync | <...> | <repo/tracker write + readback> | <...> |
+| People | <...> | <current participant readiness receipts> | <...> |
+| Inputs | <...> | <direct access or intake-owner route> | <...> |
+| Operations for first DOD | <...> | <environment/pointers/authority/recovery or NOT_REQUIRED> | <...> |
+| Course | <...> | <accepted goal/first DOD/tracker route> | <...> |
+| Control loop | <...> | <active orchestrator/Return Sync mapping/next action> | <...> |
+
 ## Participants
 
-| Participant | Active orchestrator | Framework / checked | Orchestrator profile | Sync access | Latest packet | Active task | Status |
+| Participant / role | Decision scope / backup | Active orchestrator / agent environment | Framework / doctor | Repo / tracker / input | Readiness receipt | Active task | Availability |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| <name> | <context link/title> | <version / checked> | <model / reasoning / checked> | <repo/tracker/input status> | <packet/link> | <task/link> | <active / away / waiting / superseded> |
+| <name / role> | <scope / backup or absence route> | <context link/title> | <version / checked> | <READY / SYNC_LIMITED with gaps> | <event/link> | <task/link> | <active / away / waiting / superseded> |
 
 ## Active Work
 

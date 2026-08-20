@@ -17,7 +17,7 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 
 ## Contract
 
-- Verify the Shared Sync Contract and relevant source access before claiming coverage. If the repo/tracker or meeting input is unavailable to an expected participant's orchestrator, mark `SYNC_LIMITED` and name the affected boundary.
+- Verify the Shared Sync Contract and relevant source route before claiming coverage. Use direct access for each relevant orchestrator or one named intake owner whose accessible source becomes an approved traceable shared delta. If neither route or the repo/tracker is available, mark `SYNC_LIMITED` and name the affected boundary.
 - Treat meeting recordings, transcripts, chat, and notes as raw inputs; Fathom, Read AI, tl;dv, another recorder, or an approved manual source are equivalent once accessible.
 - Identify the meeting/event scope, expected participants, affected tasks/contracts, active Alignment Window, and latest delta.
 - Apply source precedence; a current human correction supersedes an old task-context plan.

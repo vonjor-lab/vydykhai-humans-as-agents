@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.19.4 | Status: canonical operating core
+Version: 1.20.0 | Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
@@ -36,7 +36,7 @@ Vydykhai combines them: design the compass and task contract top-down, let agent
 - The product compass holds the goal, users, desired outcome, DOD, non-goals, constraints, and current decisions. It may evolve, but never silently.
 - The canonical framework maintenance context evolves universal rules, releases, and tooling only; it never installs into product repositories or operates their orchestrators. Separately, each participant has one active Framework Orchestrator for a product stream. It organizes that project and never implements product code.
 - Research, lab, implementation, and project maintenance run in separate focused contexts. These are the only contexts that perform project work.
-- A shared Git-backed project repo carries the framework and project files. GitHub Issues and PRs are the recommended durable sync space; an equivalent tracker is valid only when every participant and orchestrator can reach the same linked state. Local copies and chat history are evidence, not the source of truth.
+- A shared Git-backed project repo carries the framework and project files. GitHub Repo + Issues/Projects/PRs is the recommended durable sync space; an equivalent tracker is valid only when every participant and orchestrator can reach the same linked state. Local copies and chat history are evidence, not the source of truth.
 - Project Memory Graph links stable product anchors to current decisions, reusable lessons, confirmed future ideas, and safe operational pointers in one compact shared view.
 - The orchestrator decides what, why, when, and who, and maintains what changed: compass, sequence, alignment, dispatch, human requests, shared memory, health, parent closure, and next-best-action.
 - Task contexts decide how to deliver and prove one accepted increment: local planning, implementation, debugging, corrective fixes, `$accept-work`, exact-current-code smoke, manual merge after human confirmation, and automatic return at declared triggers.
@@ -49,7 +49,7 @@ One active orchestrator does not mean one eternal context. Name it `[ORCHESTRATO
 
 ## Activation
 
-The framework is active only when its kit is installed in the target product repository and the agent starts from that repository. The normal human interface is one request to the coding agent attached to the target repo:
+The framework kit is installed once in the target repository and reaches every participant through that shared repo. The normal human interface is one request to the coding agent attached to the target project, even when the project is still only an idea:
 
 ```text
 Connect Vydykhai to this project and start the orchestrator. Follow BOOTSTRAP.md end to end and ask me only for missing access or a decision: https://github.com/vonjor-lab/vydykhai-humans-as-agents
@@ -57,20 +57,20 @@ Connect Vydykhai to this project and start the orchestrator. Follow BOOTSTRAP.md
 
 Required launch path:
 
-1. The bootstrap agent identifies the target repo, preserves existing work, installs or updates the kit, and runs `doctor`.
-2. It reviews the diff, prepares the setup commit or PR, and keeps project rules outside managed files.
-3. It creates Project State and starts a personal Framework Orchestrator context from the target repo.
-4. `$project-launch` creates the Project Operating Brief, compass, first DOD, participant registry, Shared Sync Contract, and first route.
-5. After the setup change is accepted, every participant pulls it and confirms framework and sync access through their orchestrator.
+1. Bootstrap discovers or prepares the private project home, preserves existing work, installs or updates the kit, and inventories current project artifacts before creating new ones.
+2. `doctor` verifies only framework integrity; `$project-launch` proves live repo/tracker permissions, participants, inputs, first-DOD operations, course, and control loop.
+3. `$project-launch` shapes an unclear goal when needed, then creates the Operating Brief, Project State, compass, first DOD, Shared Sync Contract, tracker route, and safe operational pointers.
+4. Each participant pulls the accepted setup; their own orchestrator proves local `doctor` plus required repo/tracker/input access because one machine cannot certify another.
+5. The active orchestrator and Return Sync route are read back, then one Project Activation Receipt states the evidence, safe limits, first route, and next-best-action.
 
-The bootstrap request authorizes setup branch/PR and shared operating artifacts. It does not authorize merge, destructive overwrite, paid actions, production changes, or disclosure of private data. If tools or access are missing, the agent asks only for that capability instead of delegating setup commands to the human.
+The bootstrap request authorizes setup branch/PR and shared operating artifacts, not merge, destructive overwrite, paid action, production change, or private-data disclosure. Idea shaping may continue while a private home is prepared, but shared execution and team-alignment claims wait for relevant activation gates. Missing tools or access produce one exact human action.
 
-Bootstrap maps the current agent environment to project instructions, skill/rule invocation, separate resumable contexts, durable shared state, and execution/verification. If native skill discovery or context creation is unavailable, it creates one thin native adapter that points to the canonical files and records the mapping in Project State. It never copies the operating logic into environment-specific rules.
-
-### Shared Sync Contract
-Distributed Vydykhai requires one shared Git-backed project repo and one durable tracker. GitHub with Issues and PRs is the recommended and best-supported default, including for non-code work. An equivalent must provide stable links, history, participant-owned updates, access control, and agent read/write access.
-At launch, record and test the repo/tracker, each participant and orchestrator's required access, and the coordination-input route from meetings, recordings, transcripts, chat, docs, or manual notes. Fathom is the recommended meeting recorder when available; Read AI, tl;dv, or another accessible source is valid.
-A local notebook such as Obsidian is an input or view unless it is shared, versioned, and agent-accessible. Missing coverage is `SYNC_LIMITED`: name what is invisible, never claim full alignment, and keep overlapping work inside explicit cautions or wait.
+### Shared Sync Contract And Project Readiness
+Distributed Vydykhai requires one shared writable Git-backed repo and durable tracker. GitHub Repo + Issues/Projects/PRs is the recommended and best-supported default; an equivalent must provide stable links, history, permissions, participant-owned updates, and agent read/write access.
+Project launch records `PASS / LIMITED / BLOCKED / NOT_REQUIRED` for home/kit, shared sync, people, inputs, first-DOD operations, course, and control loop. The first real Project State write/readback proves tracker access; disposable probe artifacts are forbidden.
+Coordination input may be direct for each relevant orchestrator or pass through a named intake owner into an approved traceable delta. Fathom is recommended; another recorder, chat, docs, manual notes, or a shared agent-accessible notebook is valid by capability.
+Operational readiness covers only the current DOD: environment owners, current deployed baseline/revision, safe protected pointers, merge/deploy authority, non-destructive check, recovery route, and stop conditions. It never requests all credentials, stores secret values, or infers production authority.
+Only an evidence-backed receipt returns `PROJECT_READY`; non-critical gaps are `PROJECT_READY_WITH_LIMITS`, a real choice is `NEEDS_DECISION`, and access that blocks the first safe route is `BLOCKED_BY_ACCESS`. Missing participants block only overlapping work.
 
 ## Role-Routed Agent Profiles
 Use the latest available flagship model and spend reasoning where the work is decided:
@@ -106,7 +106,7 @@ A human may explicitly override the recommendation. Record the reason, limits, a
 
 ### 0. Launch
 
-Connect the repo, participants, coordination inputs, source of truth, privacy rules, compass, and first DOD. Register each active orchestrator context in Project State.
+Connect and prove the repo, participants, coordination-input route, first-DOD operations, source of truth, privacy rules, compass, and first DOD. Register each active orchestrator context and publish the Project Activation Receipt before first dispatch.
 
 ### 1. Shape
 
@@ -234,7 +234,7 @@ Keep one authoritative current dashboard snapshot and create linked artifacts on
 - Alignment Window: use when meeting, milestone, or local-work packets need reconciliation.
 - Project Memory Graph: one compact current graph of stable anchors, atomic invariants, decisions, lessons, future ideas, safe pointers, typed relations, and retrieval scenarios. Existing graphs, Idea Memory, and Intent Trail are migration inputs, not parallel active truth.
 
-The participant registry includes: participant, orchestrator context link, installed framework version, resolved orchestrator profile and check date, latest packet, active task, and status.
+The participant registry includes: participant and role/decision scope, backup or absence route, orchestrator context link, installed framework and `doctor` check, resolved profile, repo/tracker/input access, self-published readiness receipt, latest packet, active task, availability, and status. One machine never certifies another.
 
 Before dispatch or material resume on a shared surface, each participant's orchestrator checks its registry row and publishes a packet only when local or meeting state materially changed. Ordinary execution inside a current contract does not create a packet. Never invent another participant's uncommitted state.
 
@@ -242,7 +242,7 @@ The task issue body is its one current execution contract; comments are evidence
 At dispatch, material re-brief, blocker, acceptance, and close, update the task contract, Project State, and tracker projection together before announcing the new state. Routine progress does not rewrite dashboards or Alignment. When publishing a Team Alignment Delta or graph change, rebuild its affected current view in the same operation. Link history instead of retaining stale or conflicting sections and rotate an Alignment Window when it stops being quickly scannable.
 
 ## Meetings
-Meetings, recordings, transcripts, team chats, and notes are one coordination input layer. They are raw inputs until the orchestrator distills them into the shared tracker and a human approves changes to compass, scope, sequence, ownership, or DOD.
+Meetings, recordings, transcripts, team chats, and notes are one coordination input layer. They are raw until directly accessible orchestrators or one named intake owner distills them into a traceable shared delta and a human approves changes to compass, scope, sequence, ownership, or DOD.
 
 After a meeting, one short request such as `run daily alignment` should be enough. The orchestrator reads the available source, updates durable state, asks for missing packets only where they matter, and returns continue, continue with cautions, wait, or blocked.
 

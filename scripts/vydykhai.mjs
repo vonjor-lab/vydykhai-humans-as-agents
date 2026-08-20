@@ -341,6 +341,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
     sourceRevision: lock?.sourceRevision || (await sourceRevision(targetRoot)),
     agentProfilePolicy: manifest.defaultAgentProfile,
     agentRoutingPolicy: manifest.agentRoutingPolicy,
+    projectActivationPolicy: manifest.projectActivationPolicy,
     memoryPolicy: manifest.memoryPolicy,
     actionReceiptPolicy: manifest.actionReceiptPolicy,
     trackerPolicy: manifest.trackerPolicy,
@@ -367,6 +368,14 @@ function printDoctor(result, asJson) {
       `DISCOVERY=${routing.profiles.discovery.reasoningPolicy}; ` +
       `EXECUTION=${routing.profiles.execution.reasoningPolicy}`,
   );
+  if (result.projectActivationPolicy?.policy && Array.isArray(result.projectActivationPolicy.requiredChecks)) {
+    console.log(
+      `Project activation: ${result.projectActivationPolicy.policy}; ` +
+        `${result.projectActivationPolicy.requiredChecks.length} live checks via project-launch`,
+    );
+  } else {
+    console.log("Project activation: not declared by installed version");
+  }
   console.log(
     `Memory: ${result.memoryPolicy.policy} v${result.memoryPolicy.graphVersion}; task brief <= ${result.memoryPolicy.taskBriefMaxNodes} executable nodes`,
   );
