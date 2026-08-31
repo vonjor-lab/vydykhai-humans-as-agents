@@ -80,10 +80,58 @@ for (const result of ["project-ready", "project-ready-with-limits", "needs-decis
   }
 }
 if (manifest.defaultScopeFreshnessDays !== 7) fail("Default scope freshness must be 7 days");
+if (manifest.controlLoopPolicy?.policy !== "governor-audited-event-loop") {
+  fail("Control loop policy must use governor-audited-event-loop");
+}
+if (manifest.controlLoopPolicy?.projectStateVersion !== 2) fail("Project State schema must be version 2");
+for (const state of ["healthy", "repair", "rotate"]) {
+  if (!manifest.controlLoopPolicy?.states?.includes(state)) fail(`Control loop policy is missing state: ${state}`);
+}
+for (const check of [
+  "current-dod-line",
+  "execution-leases",
+  "pending-return-inbox",
+  "detour-return-gates",
+  "memory-coverage",
+  "orchestrator-health",
+]) {
+  if (!manifest.controlLoopPolicy?.requiredChecks?.includes(check)) {
+    fail(`Control loop policy is missing check: ${check}`);
+  }
+}
+if (manifest.executionLeasePolicy?.policy !== "one-work-one-owning-context") {
+  fail("Execution lease policy must use one-work-one-owning-context");
+}
+for (const state of ["prepared", "started", "working", "waiting", "returned", "closed", "outcome-unknown"]) {
+  if (!manifest.executionLeasePolicy?.states?.includes(state)) fail(`Execution lease policy is missing state: ${state}`);
+}
+for (const field of ["work-id", "owner-and-context", "project-and-repository", "worktree-and-branch", "baseline-and-candidate", "role-and-profile", "dod-contribution", "next-receipt-or-review-by", "return-route"]) {
+  if (!manifest.executionLeasePolicy?.requiredFields?.includes(field)) {
+    fail(`Execution lease policy is missing field: ${field}`);
+  }
+}
+if (manifest.taskReturnPolicy?.policy !== "durable-outbox-native-wakeup") {
+  fail("Task return policy must use durable-outbox-native-wakeup");
+}
+for (const state of ["written", "sent", "received", "consumed", "routed"]) {
+  if (!manifest.taskReturnPolicy?.states?.includes(state)) fail(`Task return policy is missing state: ${state}`);
+}
+for (const trigger of ["orchestrator-cold-path", "governor-check"]) {
+  if (!manifest.taskReturnPolicy?.reconcileOn?.includes(trigger)) fail(`Task return policy is missing reconciliation: ${trigger}`);
+}
+if (manifest.rotationPolicy?.policy !== "independent-health-gated") {
+  fail("Rotation policy must use independent-health-gated");
+}
+if (manifest.rotationPolicy?.maxCompactionsWithoutIndependentCheck !== 2) {
+  fail("Rotation policy must check independently after two compactions");
+}
+if (manifest.rotationPolicy?.sameClassFailureLimit !== 2 || manifest.rotationPolicy?.activeReviewHours !== 24) {
+  fail("Rotation policy failure or active-review threshold is invalid");
+}
 if (manifest.memoryPolicy?.policy !== "project-memory-graph") {
   fail("Memory policy must use the Project Memory Graph");
 }
-if (manifest.memoryPolicy?.graphVersion !== 2) fail("Project Memory Graph schema must be version 2");
+if (manifest.memoryPolicy?.graphVersion !== 3) fail("Project Memory Graph schema must be version 3");
 for (const kind of ["outcome", "actor", "entity", "surface", "contract", "data", "operation"]) {
   if (!manifest.memoryPolicy?.anchorKinds?.includes(kind)) fail(`Memory policy is missing anchor kind: ${kind}`);
 }
@@ -121,16 +169,19 @@ if (manifest.memoryPolicy?.taskBriefMaxNodes !== 7) fail("Task Memory Brief maxi
 if (manifest.actionReceiptPolicy?.policy !== "critical-transition-readback") {
   fail("Action Receipt policy must use critical-transition-readback");
 }
-for (const boundary of ["task-launch", "return-sync", "protected-access", "acceptance-and-live-action"]) {
+for (const boundary of ["task-launch", "task-resume", "return-sync", "memory-reflection-and-detour", "protected-access", "acceptance-and-live-action", "side-effect-reconciliation"]) {
   if (!manifest.actionReceiptPolicy?.boundaries?.includes(boundary)) {
     fail(`Action Receipt policy is missing boundary: ${boundary}`);
   }
 }
 for (const [boundary, owner] of Object.entries({
   "task-launch": "orchestrator",
+  "task-resume": "orchestrator",
   "return-sync": "orchestrator",
+  "memory-reflection-and-detour": "orchestrator",
   "protected-access": "acting-context",
   "acceptance-and-live-action": "owning-task",
+  "side-effect-reconciliation": "owning-task",
 })) {
   if (manifest.actionReceiptPolicy?.boundaryOwners?.[boundary] !== owner) {
     fail(`Action Receipt boundary ${boundary} must be owned by ${owner}`);
@@ -139,7 +190,7 @@ for (const [boundary, owner] of Object.entries({
 for (const field of ["trigger", "retrieved-rule", "expected-action", "observed-action", "evidence", "result"]) {
   if (!manifest.actionReceiptPolicy?.fields?.includes(field)) fail(`Action Receipt policy is missing field: ${field}`);
 }
-for (const result of ["pass", "mismatch", "unverified"]) {
+for (const result of ["pass", "mismatch", "unverified", "outcome-unknown"]) {
   if (!manifest.actionReceiptPolicy?.results?.includes(result)) fail(`Action Receipt policy is missing result: ${result}`);
 }
 if (manifest.trackerPolicy?.policy !== "task-contract-with-event-driven-projection") {
@@ -220,6 +271,20 @@ if (
 ) {
   fail("Core is missing control/execution ownership or the lightweight continue path");
 }
+if (
+  !coreEn.includes("Governor Check") ||
+  !coreRu.includes("Governor Check") ||
+  !coreEn.includes("DOD Control Line") ||
+  !coreRu.includes("DOD Control Line") ||
+  !coreEn.includes("Execution Lease") ||
+  !coreRu.includes("Execution Lease") ||
+  !coreEn.includes("durable task/tracker outbox") ||
+  !coreRu.includes("durable task/tracker outbox") ||
+  !coreEn.includes("EXECUTION_STALLED") ||
+  !coreRu.includes("EXECUTION_STALLED")
+) {
+  fail("Core is missing the independently checked DOD, lease, or durable-return loop");
+}
 if (!coreEn.includes("Scope Freshness") || !coreRu.includes("Актуальность scope")) {
   fail("Core is missing Scope Freshness");
 }
@@ -285,11 +350,30 @@ if (
 ) {
   fail("Core is missing executable memory retrieval or miss reflection");
 }
-if (!projectStateTemplate.includes("Project Memory Graph:")) fail("Project State is missing the memory graph pointer");
-if (!projectStateTemplate.includes("Last memory delta:")) fail("Project State is missing the memory delta pointer");
-if (!projectStateTemplate.includes("Tracker projection:")) fail("Project State is missing the tracker projection");
-if (!projectStateTemplate.includes("Operational sources:")) fail("Project State is missing safe operational-source pointers");
-if (!projectStateTemplate.includes("Shared Sync:")) fail("Project State is missing Shared Sync readiness");
+for (const value of [
+  "<!-- vydykhai:project-state v2 -->",
+  "Project Memory Graph:",
+  "Last memory delta:",
+  "Tracker projection:",
+  "Operational sources:",
+  "Shared Sync:",
+  "Governor:",
+  "Audited event:",
+  "Orchestrator health:",
+  "Last independent check:",
+  "DOD Control Line:",
+  "Memory coverage:",
+  "Agent routing:",
+  "Coordination inputs:",
+  "Environment adapter:",
+  "Orchestrator rotation:",
+  "Scope freshness:",
+  "## Execution Leases",
+  "## Pending Return Inbox",
+  "## Detours And Recall",
+]) {
+  if (!projectStateTemplate.includes(value)) fail(`Project State is missing control field: ${value}`);
+}
 if (!projectStateTemplate.includes("## Project Activation Receipt")) {
   fail("Project State is missing the Project Activation Receipt");
 }
@@ -301,7 +385,12 @@ if (
   fail("Project State is missing participant role or self-readiness evidence");
 }
 if (!projectStateTemplate.includes("Baseline -> Candidate")) fail("Project State is missing the Success Line pointer");
-if (!projectStateTemplate.includes("Task return mapping:")) fail("Project State is missing the task return mapping");
+if (!projectStateTemplate.includes("Task return mapping:") || !projectStateTemplate.includes("WRITTEN / SENT / RECEIVED / CONSUMED")) {
+  fail("Project State is missing durable task return state");
+}
+if (!projectStateTemplate.includes("PREPARED / STARTED / WORKING / WAITING / RETURNED / CLOSED / OUTCOME_UNKNOWN")) {
+  fail("Project State is missing execution lease states");
+}
 if (!projectStateTemplate.includes("Snapshot as of:") || !projectStateTemplate.includes("Rebuild its body atomically")) {
   fail("Project State is missing atomic current-snapshot hygiene");
 }
@@ -338,18 +427,19 @@ if (
   !projectMemoryGraphTemplate.includes("Apply:") ||
   !projectMemoryGraphTemplate.includes("Avoid:") ||
   !projectMemoryGraphTemplate.includes("Memory Reflection") ||
-  !projectMemoryGraphTemplate.includes("Representative Retrieval Scenarios") ||
+  !projectMemoryGraphTemplate.includes("Pending Memory Events") ||
+  !projectMemoryGraphTemplate.includes("Live Retrieval Probes") ||
+  !projectMemoryGraphTemplate.includes("CURRENT") ||
+  !projectMemoryGraphTemplate.includes("NEXT") ||
+  !projectMemoryGraphTemplate.includes("PRIOR_MISS") ||
   !projectMemoryGraphTemplate.includes("RETRIEVAL_MISS") ||
-  !projectMemoryGraphTemplate.includes("matching ids or self-report alone is insufficient") ||
   !projectMemoryGraphTemplate.includes("Watermark:") ||
   !projectMemoryGraphTemplate.includes("Legacy Source Map") ||
-  !projectMemoryGraphTemplate.includes("no more than seven nodes") ||
+  !projectMemoryGraphTemplate.includes("no more than seven executable") ||
   !projectMemoryGraphTemplate.includes("Protected pointer (POINTER only)") ||
   !projectMemoryGraphTemplate.includes("Owner gate:") ||
-  !projectMemoryGraphTemplate.includes("five fields") ||
-  !projectMemoryGraphTemplate.includes("complete id disposition or node counts alone do not prove semantic coverage") ||
   !projectMemoryGraphTemplate.includes("Raw trigger") ||
-  !projectMemoryGraphTemplate.includes("historical reconstruction may repair the node but is not a successful lookup") ||
+  !projectMemoryGraphTemplate.includes("Historical reconstruction may repair the node but is not a successful current-memory lookup") ||
   !projectMemoryGraphTemplate.includes("zero secret read") ||
   !projectMemoryGraphTemplate.includes("Never store credentials")
 ) {
@@ -365,6 +455,9 @@ if (
 }
 if (
   !bootstrap.includes("Project Activation Receipt") ||
+  !bootstrap.includes("Project State v2") ||
+  !bootstrap.includes("Project Memory Graph v3") ||
+  !bootstrap.includes("control-check") ||
   !bootstrap.includes("one machine cannot certify another") ||
   !projectLaunchWorkflow.includes("doctor` proves framework integrity only") ||
   !projectLaunchWorkflow.includes("Never create disposable probe issues") ||
@@ -382,6 +475,8 @@ if (
 if (
   !taskHandoffTemplate.includes("Role: EXECUTION") ||
   !taskHandoffTemplate.includes("Agent profile: EXECUTION") ||
+  !taskHandoffTemplate.includes("Execution Lease:") ||
+  !taskHandoffTemplate.includes("DOD Control Line contribution:") ||
   !taskHandoffTemplate.includes("Continue from:") ||
   !taskHandoffTemplate.includes("Applicable Memory Brief:") ||
   !taskHandoffTemplate.includes("Authority / safety envelope:") ||
@@ -392,6 +487,8 @@ if (
   !taskHandoffTemplate.includes("Memory candidates:") ||
   !taskHandoffTemplate.includes("Artifact disposition:") ||
   !taskHandoffTemplate.includes("Return receipt id:") ||
+  !taskHandoffTemplate.includes("Return lifecycle:") ||
+  !taskHandoffTemplate.includes("OUTCOME_UNKNOWN") ||
   !taskHandoffTemplate.includes("Boundary consultation:") ||
   !taskHandoffTemplate.includes("Progress continuity:") ||
   !taskHandoffTemplate.includes("Recipient proof:")
@@ -430,12 +527,29 @@ if (
   fail("Orchestrator workflow is missing hot-path continuity or targeted external-delta routing");
 }
 if (
+  !orchestratorWorkflow.includes("Governor Check") ||
+  !orchestratorWorkflow.includes("`HEALTHY`, `REPAIR`, or `ROTATE`") ||
+  !orchestratorWorkflow.includes("DOD Control Line") ||
+  !orchestratorWorkflow.includes("Execution Lease") ||
+  !orchestratorWorkflow.includes("`PREPARED` lease") ||
+  !orchestratorWorkflow.includes("first safe observable action") ||
+  !orchestratorWorkflow.includes("EXECUTION_STALLED") ||
+  !orchestratorWorkflow.includes("Pending Return Inbox") ||
+  !orchestratorWorkflow.includes("durable outbox receipt") ||
+  !orchestratorWorkflow.includes("WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED") ||
+  !orchestratorWorkflow.includes("OUTCOME_UNKNOWN") ||
+  !orchestratorWorkflow.includes("detour")
+) {
+  fail("Orchestrator workflow is missing the closed Governor, lease, DOD, detour, or return loop");
+}
+if (
   !orchestratorWorkflow.includes("derive a Touch Set") ||
   !orchestratorWorkflow.includes("Memory Brief") ||
   !orchestratorWorkflow.includes("graph watermark") ||
   !orchestratorWorkflow.includes("tracker projection") ||
   !orchestratorWorkflow.includes("representative current, upcoming, and prior-miss Touch Sets") ||
   !orchestratorWorkflow.includes("Memory Reflection") ||
+  !orchestratorWorkflow.includes("memory-reflection/detour receipts") ||
   !orchestratorWorkflow.includes("APPLICATION_MISS") ||
   !orchestratorWorkflow.includes("side-by-side read-only candidate") ||
   !orchestratorWorkflow.includes("non-destructive access check") ||
@@ -443,7 +557,8 @@ if (
   !orchestratorWorkflow.includes("MEMORY_COVERAGE_GAP / BLOCKED") ||
   !orchestratorWorkflow.includes("Action Receipt") ||
   !orchestratorWorkflow.includes("Only `PASS` closes the transition") ||
-  !orchestratorWorkflow.includes("canonical title plus actual link, role/profile, active start, and Return Sync route")
+  !orchestratorWorkflow.includes("stale healthy receipt cannot close a newer triggered transition") ||
+  !orchestratorWorkflow.includes("canonical title plus actual link, role/profile, base, and route")
 ) {
   fail("Orchestrator workflow is missing memory retrieval or rotation proof");
 }
@@ -517,6 +632,14 @@ if (
   !acceptWorkflow.includes("orchestrator decides parent closure")
 ) {
   fail("Acceptance does not preserve task-local proof and orchestrator-owned parent closure");
+}
+if (
+  !acceptWorkflow.includes("durable task/tracker outbox") ||
+  !acceptWorkflow.includes("RECEIVED -> CONSUMED -> ROUTED") ||
+  !acceptWorkflow.includes("OUTCOME_UNKNOWN") ||
+  !acceptWorkSkill.includes("durable task/tracker outbox")
+) {
+  fail("Acceptance is missing durable return or uncertain-side-effect handling");
 }
 if (!changelog.includes(`## ${manifest.version} -`)) fail("Changelog is missing current version");
 if (changelog.match(/^## (\d+\.\d+\.\d+) -/m)?.[1] !== manifest.version) {

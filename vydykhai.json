@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.20.0",
+  "version": "1.21.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -60,9 +60,92 @@
       "blocked-by-access"
     ]
   },
+  "controlLoopPolicy": {
+    "policy": "governor-audited-event-loop",
+    "projectStateVersion": 2,
+    "states": [
+      "healthy",
+      "repair",
+      "rotate"
+    ],
+    "requiredChecks": [
+      "current-dod-line",
+      "execution-leases",
+      "pending-return-inbox",
+      "detour-return-gates",
+      "memory-coverage",
+      "orchestrator-health"
+    ],
+    "triggers": [
+      "project-activation",
+      "task-dispatch-or-resume",
+      "return-sync",
+      "human-correction-or-detour",
+      "milestone-or-framework-update",
+      "context-compaction-or-loss",
+      "active-24-hours"
+    ]
+  },
+  "executionLeasePolicy": {
+    "policy": "one-work-one-owning-context",
+    "states": [
+      "prepared",
+      "started",
+      "working",
+      "waiting",
+      "returned",
+      "closed",
+      "outcome-unknown"
+    ],
+    "requiredFields": [
+      "work-id",
+      "owner-and-context",
+      "project-and-repository",
+      "worktree-and-branch",
+      "baseline-and-candidate",
+      "role-and-profile",
+      "dod-contribution",
+      "next-receipt-or-review-by",
+      "return-route"
+    ]
+  },
+  "taskReturnPolicy": {
+    "policy": "durable-outbox-native-wakeup",
+    "states": [
+      "written",
+      "sent",
+      "received",
+      "consumed",
+      "routed"
+    ],
+    "reconcileOn": [
+      "orchestrator-cold-path",
+      "governor-check"
+    ]
+  },
+  "rotationPolicy": {
+    "policy": "independent-health-gated",
+    "healthStates": [
+      "healthy",
+      "review",
+      "repair",
+      "rotate"
+    ],
+    "maxCompactionsWithoutIndependentCheck": 2,
+    "sameClassFailureLimit": 2,
+    "activeReviewHours": 24,
+    "hardSignals": [
+      "work-identity-mismatch",
+      "dod-reconstruction-failure",
+      "unconsumed-return-after-reconciliation",
+      "invalid-control-state",
+      "repeated-memory-application-miss",
+      "ambiguous-side-effect-outcome"
+    ]
+  },
   "memoryPolicy": {
     "policy": "project-memory-graph",
-    "graphVersion": 2,
+    "graphVersion": 3,
     "anchorKinds": [
       "outcome",
       "actor",
@@ -127,15 +210,21 @@
     "policy": "critical-transition-readback",
     "boundaries": [
       "task-launch",
+      "task-resume",
       "return-sync",
+      "memory-reflection-and-detour",
       "protected-access",
-      "acceptance-and-live-action"
+      "acceptance-and-live-action",
+      "side-effect-reconciliation"
     ],
     "boundaryOwners": {
       "task-launch": "orchestrator",
+      "task-resume": "orchestrator",
       "return-sync": "orchestrator",
+      "memory-reflection-and-detour": "orchestrator",
       "protected-access": "acting-context",
-      "acceptance-and-live-action": "owning-task"
+      "acceptance-and-live-action": "owning-task",
+      "side-effect-reconciliation": "owning-task"
     },
     "fields": [
       "trigger",
@@ -148,7 +237,8 @@
     "results": [
       "pass",
       "mismatch",
-      "unverified"
+      "unverified",
+      "outcome-unknown"
     ]
   },
   "trackerPolicy": {

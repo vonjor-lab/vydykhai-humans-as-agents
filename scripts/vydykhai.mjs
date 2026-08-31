@@ -35,13 +35,14 @@ function usage() {
 Usage:
   node scripts/vydykhai.mjs install <target-repo> [--force]
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--json]
+  node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--json]
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
 `;
 }
 
 function parseArgs(argv) {
   const positionals = [];
-  const flags = { force: false, offline: false, json: false, from: null };
+  const flags = { force: false, offline: false, json: false, from: null, state: null, graph: null };
 
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
@@ -52,6 +53,11 @@ function parseArgs(argv) {
       flags.from = argv[i + 1];
       i += 1;
       if (!flags.from) throw new Error("--from requires a framework repository path");
+    } else if (value === "--state" || value === "--graph") {
+      const key = value.slice(2);
+      flags[key] = argv[i + 1];
+      i += 1;
+      if (!flags[key]) throw new Error(`${value} requires a file path`);
     } else if (value.startsWith("--")) {
       throw new Error(`Unknown option: ${value}`);
     } else {
@@ -107,6 +113,22 @@ async function loadManifest(root) {
     routing?.profiles?.execution?.preferredEffortWhenAvailable !== "low"
   ) {
     throw new Error(`Invalid agent routing policy in ${file}`);
+  }
+  if (
+    manifest.controlLoopPolicy &&
+    (manifest.controlLoopPolicy.policy !== "governor-audited-event-loop" ||
+      manifest.controlLoopPolicy.projectStateVersion !== 2)
+  ) {
+    throw new Error(`Invalid control loop policy in ${file}`);
+  }
+  if (manifest.executionLeasePolicy?.policy && manifest.executionLeasePolicy.policy !== "one-work-one-owning-context") {
+    throw new Error(`Invalid execution lease policy in ${file}`);
+  }
+  if (manifest.taskReturnPolicy?.policy && manifest.taskReturnPolicy.policy !== "durable-outbox-native-wakeup") {
+    throw new Error(`Invalid task return policy in ${file}`);
+  }
+  if (manifest.rotationPolicy?.policy && manifest.rotationPolicy.policy !== "independent-health-gated") {
+    throw new Error(`Invalid rotation policy in ${file}`);
   }
   manifest.managedPaths = manifest.managedPaths.map(normalizeManagedPath);
   return manifest;
@@ -342,6 +364,10 @@ async function doctor(targetRoot, { offline = false } = {}) {
     agentProfilePolicy: manifest.defaultAgentProfile,
     agentRoutingPolicy: manifest.agentRoutingPolicy,
     projectActivationPolicy: manifest.projectActivationPolicy,
+    controlLoopPolicy: manifest.controlLoopPolicy,
+    executionLeasePolicy: manifest.executionLeasePolicy,
+    taskReturnPolicy: manifest.taskReturnPolicy,
+    rotationPolicy: manifest.rotationPolicy,
     memoryPolicy: manifest.memoryPolicy,
     actionReceiptPolicy: manifest.actionReceiptPolicy,
     trackerPolicy: manifest.trackerPolicy,
@@ -376,6 +402,31 @@ function printDoctor(result, asJson) {
   } else {
     console.log("Project activation: not declared by installed version");
   }
+  if (result.controlLoopPolicy?.policy) {
+    console.log(
+      `Control loop: ${result.controlLoopPolicy.policy}; Project State v${result.controlLoopPolicy.projectStateVersion}`,
+    );
+  } else {
+    console.log("Control loop: not declared by installed version");
+  }
+  if (result.executionLeasePolicy?.policy) {
+    console.log(`Execution leases: ${result.executionLeasePolicy.policy}`);
+  } else {
+    console.log("Execution leases: not declared by installed version");
+  }
+  if (result.taskReturnPolicy?.policy) {
+    console.log(`Task returns: ${result.taskReturnPolicy.policy}`);
+  } else {
+    console.log("Task returns: not declared by installed version");
+  }
+  if (result.rotationPolicy?.policy) {
+    console.log(
+      `Rotation: ${result.rotationPolicy.policy}; independent check after ` +
+        `${result.rotationPolicy.maxCompactionsWithoutIndependentCheck} compactions or ${result.rotationPolicy.activeReviewHours} active hours`,
+    );
+  } else {
+    console.log("Rotation: not declared by installed version");
+  }
   console.log(
     `Memory: ${result.memoryPolicy.policy} v${result.memoryPolicy.graphVersion}; task brief <= ${result.memoryPolicy.taskBriefMaxNodes} executable nodes`,
   );
@@ -396,6 +447,241 @@ function printDoctor(result, asJson) {
   if (result.missing.length) console.log(`Missing:\n- ${result.missing.join("\n- ")}`);
   if (result.modified.length) console.log(`Modified managed files:\n- ${result.modified.join("\n- ")}`);
   for (const warning of result.warnings) console.log(`Warning: ${warning}`);
+}
+
+function countExact(content, value) {
+  return content.split(value).length - 1;
+}
+
+function section(content, heading, nextHeadings) {
+  const start = content.indexOf(heading);
+  if (start === -1) return "";
+  const candidates = nextHeadings
+    .map((next) => content.indexOf(next, start + heading.length))
+    .filter((index) => index !== -1);
+  const end = candidates.length ? Math.min(...candidates) : content.length;
+  return content.slice(start + heading.length, end);
+}
+
+function tableFirstColumnValues(value) {
+  return value
+    .split("\n")
+    .filter((line) => /^\|/.test(line))
+    .map((line) => line.split("|")[1]?.trim())
+    .filter((cell) => cell && !/^[-: ]+$/.test(cell) && !/^(Work|Receipt|Task|Item|ID)$/i.test(cell));
+}
+
+function tableRows(value, headerPattern) {
+  return value
+    .split("\n")
+    .filter((line) => /^\|/.test(line))
+    .map((line) => line.split("|").slice(1, -1).map((cell) => cell.trim()))
+    .filter((cells) => cells.length && !cells.every((cell) => /^[-: ]+$/.test(cell)))
+    .filter((cells) => !headerPattern.test(cells[0] || ""))
+    .filter((cells) => !cells.every((cell) => /^<.*>$/.test(cell)));
+}
+
+function duplicateValues(values) {
+  const seen = new Set();
+  const duplicates = new Set();
+  for (const value of values) {
+    if (seen.has(value)) duplicates.add(value);
+    seen.add(value);
+  }
+  return [...duplicates];
+}
+
+function validateClosedArtifact(content, { label, startMarker, endMarker, requiredHeadings }) {
+  const issues = [];
+  if (countExact(content, startMarker) !== 1) issues.push(`${label}: expected exactly one ${startMarker}`);
+  if (countExact(content, endMarker) !== 1) issues.push(`${label}: expected exactly one ${endMarker}`);
+
+  const start = content.indexOf(startMarker);
+  const end = content.indexOf(endMarker);
+  if (start !== -1 && content.slice(0, start).trim()) issues.push(`${label}: content exists before start marker`);
+  if (end !== -1 && content.slice(end + endMarker.length).trim()) issues.push(`${label}: content exists after end marker`);
+  if (start !== -1 && end !== -1 && end < start) issues.push(`${label}: end marker precedes start marker`);
+
+  for (const heading of requiredHeadings) {
+    if (countExact(content, heading) !== 1) issues.push(`${label}: expected exactly one ${heading}`);
+  }
+  return issues;
+}
+
+function validateProjectState(content, manifest) {
+  const label = "Project State";
+  const issues = validateClosedArtifact(content, {
+    label,
+    startMarker: `<!-- vydykhai:project-state v${manifest.controlLoopPolicy.projectStateVersion} -->`,
+    endMarker: "<!-- vydykhai:project-state:end -->",
+    requiredHeadings: [
+      "## Control Snapshot",
+      "## Current DOD",
+      "## Execution Leases",
+      "## Pending Return Inbox",
+      "## Detours And Recall",
+      "## Active Work",
+      "## Next-Best-Action",
+    ],
+  });
+
+  for (const field of [
+    "Snapshot as of:",
+    "Governor:",
+    "Orchestrator health:",
+    "Last independent check:",
+    "DOD Control Line:",
+    "Memory coverage:",
+    "Agent routing:",
+    "Coordination inputs:",
+    "Environment adapter:",
+    "Orchestrator rotation:",
+    "Scope freshness:",
+  ]) {
+    if (!content.includes(field)) issues.push(`${label}: missing ${field}`);
+  }
+
+  const governorLine = content.match(/^Governor:.*$/m)?.[0] || "";
+  const governorState = governorLine.match(/^Governor:\s*(HEALTHY|REPAIR|ROTATE)\b/)?.[1];
+  if (!governorState) issues.push(`${label}: Governor state is missing or unresolved`);
+  else if (governorState !== "HEALTHY") issues.push(`${label}: Governor requires ${governorState}`);
+  const governorReceipt = governorLine.match(/\|\s*Receipt:\s*([^|]+)/)?.[1]?.trim();
+  const governorTrigger = governorLine.match(/\|\s*Trigger:\s*([^|]+)/)?.[1]?.trim();
+  if (!governorReceipt || /<.*>/.test(governorReceipt)) issues.push(`${label}: Governor receipt is missing or unresolved`);
+  if (!governorTrigger || /<.*>/.test(governorTrigger)) issues.push(`${label}: Governor trigger is missing or unresolved`);
+  const snapshotEvent = content.match(/^Snapshot as of:\s*(.+)$/m)?.[1]?.trim();
+  const auditedEvent = content.match(/^Governor:.*\|\s*Audited event:\s*([^|]+?)(?:\s*\||$)/m)?.[1]?.trim();
+  if (!snapshotEvent || /<.*>/.test(snapshotEvent)) issues.push(`${label}: snapshot event is missing or unresolved`);
+  if (!auditedEvent || /<.*>/.test(auditedEvent)) issues.push(`${label}: Governor audited event is missing or unresolved`);
+  else if (snapshotEvent && snapshotEvent !== auditedEvent) {
+    issues.push(`${label}: Governor audited ${auditedEvent} but current snapshot is ${snapshotEvent}`);
+  }
+  const orchestratorLine = content.match(/^Orchestrator health:.*$/m)?.[0] || "";
+  const orchestratorState = orchestratorLine.match(/^Orchestrator health:\s*(HEALTHY|REVIEW|REPAIR|ROTATE)\b/)?.[1];
+  if (!orchestratorState) issues.push(`${label}: orchestrator health is missing or unresolved`);
+  else if (orchestratorState !== "HEALTHY") issues.push(`${label}: orchestrator health requires ${orchestratorState}`);
+  const orchestratorProfile = orchestratorLine.match(/\|\s*Profile:\s*([^|]+)/)?.[1]?.trim();
+  if (!orchestratorProfile || !/\bORCHESTRATOR\b/i.test(orchestratorProfile) || !/\bmaximum\b/i.test(orchestratorProfile)) {
+    issues.push(`${label}: orchestrator profile is not explicitly ORCHESTRATOR / maximum`);
+  }
+  const compactionCount = Number(orchestratorLine.match(/Last compaction\/context-loss signal:\s*(\d+)/)?.[1]);
+  if (!Number.isFinite(compactionCount)) issues.push(`${label}: compaction/context-loss count is missing or unresolved`);
+  else if (compactionCount >= manifest.rotationPolicy.maxCompactionsWithoutIndependentCheck) {
+    issues.push(`${label}: independent check required after ${compactionCount} compaction/context-loss signals`);
+  }
+  const dodLine = content.match(/^DOD Control Line:\s*(.+)$/m)?.[1]?.trim();
+  if (!dodLine || /<.*>/.test(dodLine)) issues.push(`${label}: DOD Control Line is unresolved`);
+  const failureMatch = content.match(/Same-class failures since repair:\s*(\d+)/);
+  const failureCount = Number(failureMatch?.[1]);
+  if (!failureMatch) issues.push(`${label}: same-class failure count is missing or unresolved`);
+  else if (failureCount >= manifest.rotationPolicy.sameClassFailureLimit) {
+    issues.push(`${label}: same-class failure threshold reached (${failureCount})`);
+  }
+
+  const leaseSection = section(content, "## Execution Leases", ["## Pending Return Inbox"]);
+  const duplicateLeases = duplicateValues(tableFirstColumnValues(leaseSection));
+  if (duplicateLeases.length) issues.push(`${label}: duplicate execution lease ${duplicateLeases.join(", ")}`);
+  for (const row of tableRows(leaseSection, /^Work$/i)) {
+    const [work, state] = row;
+    if (!["PREPARED", "STARTED", "WORKING", "WAITING", "RETURNED", "CLOSED", "OUTCOME_UNKNOWN"].includes(state)) {
+      issues.push(`${label}: lease ${work} has invalid state ${state || "missing"}`);
+    } else if (["PREPARED", "RETURNED", "OUTCOME_UNKNOWN"].includes(state)) {
+      issues.push(`${label}: lease ${work} has unresolved transition ${state}`);
+    }
+  }
+
+  const returnSection = section(content, "## Pending Return Inbox", ["## Detours And Recall"]);
+  const duplicateReturns = duplicateValues(tableFirstColumnValues(returnSection));
+  if (duplicateReturns.length) issues.push(`${label}: duplicate pending return ${duplicateReturns.join(", ")}`);
+  for (const [receipt] of tableRows(returnSection, /^Receipt$/i)) {
+    issues.push(`${label}: pending return ${receipt} requires reconciliation`);
+  }
+
+  const detourSection = section(content, "## Detours And Recall", ["## Active Work"]);
+  for (const row of tableRows(detourSection, /^ID$/i)) {
+    if (row.at(-1) === "RETURN_DUE") issues.push(`${label}: detour ${row[0]} is due for return`);
+  }
+
+  return issues;
+}
+
+function validateMemoryGraph(content, manifest) {
+  const label = "Project Memory Graph";
+  const issues = validateClosedArtifact(content, {
+    label,
+    startMarker: `<!-- vydykhai:project-memory-graph v${manifest.memoryPolicy.graphVersion} -->`,
+    endMarker: "<!-- vydykhai:project-memory-graph:end -->",
+    requiredHeadings: [
+      "## Anchor Index",
+      "## Current Memory Nodes",
+      "## Pending Memory Events",
+      "## Live Retrieval Probes",
+      "## Legacy Source Map",
+    ],
+  });
+
+  for (const field of ["Watermark:", "Declared nodes:", "Last compaction:", "Last retrieval check:"]) {
+    if (!content.includes(field)) issues.push(`${label}: missing ${field}`);
+  }
+
+  const nodeSection = section(content, "## Current Memory Nodes", ["## Pending Memory Events"]);
+  const nodeIds = [...nodeSection.matchAll(/^### (MEM-[A-Za-z0-9_-]+)/gm)].map((match) => match[1]);
+  const declared = content.match(/^Declared nodes:\s*(\d+)\s*$/m);
+  if (!declared) issues.push(`${label}: declared node count is missing or unresolved`);
+  else if (Number(declared[1]) !== nodeIds.length) {
+    issues.push(`${label}: declared ${declared[1]} nodes but found ${nodeIds.length}`);
+  }
+  const duplicateNodes = duplicateValues(nodeIds);
+  if (duplicateNodes.length) issues.push(`${label}: duplicate memory node ${duplicateNodes.join(", ")}`);
+
+  const anchorSection = section(content, "## Anchor Index", ["## Current Memory Nodes"]);
+  const anchorIds = [...anchorSection.matchAll(/\|\s*(ENT-[A-Za-z0-9_-]+)\s*\|/g)].map((match) => match[1]);
+  const duplicateAnchors = duplicateValues(anchorIds);
+  if (duplicateAnchors.length) issues.push(`${label}: duplicate anchor ${duplicateAnchors.join(", ")}`);
+
+  const probes = section(content, "## Live Retrieval Probes", ["## Legacy Source Map"]);
+  for (const probe of ["CURRENT", "NEXT", "PRIOR_MISS"]) {
+    const line = probes.split("\n").find((candidate) => new RegExp(`\\|\\s*${probe}\\s*\\|`).test(candidate));
+    if (!line) issues.push(`${label}: missing ${probe} retrieval probe`);
+    else if (!/\bPASS\b/.test(line)) issues.push(`${label}: ${probe} retrieval probe has not passed`);
+  }
+
+  const pendingEvents = section(content, "## Pending Memory Events", ["## Live Retrieval Probes"]);
+  for (const row of tableRows(pendingEvents, /^Event$/i)) {
+    if (row.at(-1) === "PENDING") issues.push(`${label}: memory event ${row[0]} is still pending`);
+  }
+
+  return issues;
+}
+
+async function controlCheck(statePath, graphPath) {
+  const manifest = await loadManifest(SCRIPT_ROOT);
+  const state = await readFile(statePath, "utf8");
+  const graph = await readFile(graphPath, "utf8");
+  const stateIssues = validateProjectState(state, manifest);
+  const graphIssues = validateMemoryGraph(graph, manifest);
+  return {
+    ok: stateIssues.length === 0 && graphIssues.length === 0,
+    policy: manifest.controlLoopPolicy.policy,
+    projectStateVersion: manifest.controlLoopPolicy.projectStateVersion,
+    memoryGraphVersion: manifest.memoryPolicy.graphVersion,
+    statePath,
+    graphPath,
+    stateIssues,
+    graphIssues,
+  };
+}
+
+function printControlCheck(result, asJson) {
+  if (asJson) {
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+  console.log(`Control check: ${result.ok ? "PASS" : "MISMATCH"}`);
+  console.log(`Policy: ${result.policy}`);
+  console.log(`Project State: v${result.projectStateVersion}${result.stateIssues.length ? " / FAILED" : " / PASS"}`);
+  console.log(`Memory Graph: v${result.memoryGraphVersion}${result.graphIssues.length ? " / FAILED" : " / PASS"}`);
+  for (const issue of [...result.stateIssues, ...result.graphIssues]) console.log(`- ${issue}`);
 }
 
 async function cloneUpstream(upstream) {
@@ -435,6 +721,16 @@ async function main() {
     const target = path.resolve(positionals[0] || process.cwd());
     const result = await doctor(target, flags);
     printDoctor(result, flags.json);
+    if (!result.ok) process.exitCode = 1;
+    return;
+  }
+
+  if (command === "control-check") {
+    if (!flags.state || !flags.graph) throw new Error(`control-check requires --state and --graph\n\n${usage()}`);
+    const statePath = path.resolve(flags.state);
+    const graphPath = path.resolve(flags.graph);
+    const result = await controlCheck(statePath, graphPath);
+    printControlCheck(result, flags.json);
     if (!result.ok) process.exitCode = 1;
     return;
   }

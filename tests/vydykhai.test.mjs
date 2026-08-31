@@ -46,14 +46,14 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory candidates:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Artifact disposition:/);
     assert.match(await readFile(path.join(target, "docs/workflows/project-memory-graph-template.md"), "utf8"), /Legacy Source Map/);
-    assert.match(await readFile(path.join(target, "docs/workflows/project-memory-graph-template.md"), "utf8"), /Representative Retrieval Scenarios/);
+    assert.match(await readFile(path.join(target, "docs/workflows/project-memory-graph-template.md"), "utf8"), /Live Retrieval Probes/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Recipient proof:/);
     assert.match(await readFile(path.join(target, "docs/workflows/intent-trail-template.md"), "utf8"), /APPROACH_PIVOT/);
     assert.match(await readFile(path.join(target, "docs/workflows/project-state-template.md"), "utf8"), /Task return mapping:/);
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.20.0");
+    assert.equal(lock.installedVersion, "1.21.0");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -77,8 +77,12 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /DISCOVERY=deep-bounded/);
     assert.match(doctor.stdout, /EXECUTION=efficient-bounded/);
     assert.match(doctor.stdout, /Project activation: evidence-backed-project-activation; 8 live checks via project-launch/);
-    assert.match(doctor.stdout, /Memory: project-memory-graph v2; task brief <= 7 executable nodes/);
-    assert.match(doctor.stdout, /Action receipts: critical-transition-readback; 4 critical boundaries/);
+    assert.match(doctor.stdout, /Control loop: governor-audited-event-loop; Project State v2/);
+    assert.match(doctor.stdout, /Execution leases: one-work-one-owning-context/);
+    assert.match(doctor.stdout, /Task returns: durable-outbox-native-wakeup/);
+    assert.match(doctor.stdout, /Rotation: independent-health-gated; independent check after 2 compactions or 24 active hours/);
+    assert.match(doctor.stdout, /Memory: project-memory-graph v3; task brief <= 7 executable nodes/);
+    assert.match(doctor.stdout, /Action receipts: critical-transition-readback; 7 critical boundaries/);
     assert.match(doctor.stdout, /Tracker: task-contract-with-event-driven-projection/);
     assert.match(doctor.stdout, /Creator: Alexander Rozhnov \(@vonjor-lab\)/);
     assert.match(doctor.stdout, /License: PolyForm-Small-Business-1\.0\.0/);
@@ -87,6 +91,10 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const legacyManifest = JSON.parse(await readFile(legacyManifestPath, "utf8"));
     delete legacyManifest.actionReceiptPolicy;
     delete legacyManifest.projectActivationPolicy;
+    delete legacyManifest.controlLoopPolicy;
+    delete legacyManifest.executionLeasePolicy;
+    delete legacyManifest.taskReturnPolicy;
+    delete legacyManifest.rotationPolicy;
     legacyManifest.version = "1.18.0";
     const legacyManifestText = `${JSON.stringify(legacyManifest, null, 2)}\n`;
     await writeFile(legacyManifestPath, legacyManifestText);
@@ -100,6 +108,10 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.equal(legacyDoctor.status, 0, legacyDoctor.stderr);
     assert.match(legacyDoctor.stdout, /Vydykhai 1\.18\.0/);
     assert.match(legacyDoctor.stdout, /Project activation: not declared by installed version/);
+    assert.match(legacyDoctor.stdout, /Control loop: not declared by installed version/);
+    assert.match(legacyDoctor.stdout, /Execution leases: not declared by installed version/);
+    assert.match(legacyDoctor.stdout, /Task returns: not declared by installed version/);
+    assert.match(legacyDoctor.stdout, /Rotation: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Action receipts: not declared by installed version/);
 
     const corePath = path.join(target, "docs/FRAMEWORK.md");
@@ -115,7 +127,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.20\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.21\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -151,9 +163,30 @@ test("current manifest preserves updater compatibility fields", async () => {
     "needs-decision",
     "blocked-by-access",
   ]);
+  assert.equal(manifest.controlLoopPolicy.policy, "governor-audited-event-loop");
+  assert.equal(manifest.controlLoopPolicy.projectStateVersion, 2);
+  assert.deepEqual(manifest.controlLoopPolicy.states, ["healthy", "repair", "rotate"]);
+  assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("current-dod-line"));
+  assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("pending-return-inbox"));
+  assert.equal(manifest.executionLeasePolicy.policy, "one-work-one-owning-context");
+  assert.deepEqual(manifest.executionLeasePolicy.states, [
+    "prepared",
+    "started",
+    "working",
+    "waiting",
+    "returned",
+    "closed",
+    "outcome-unknown",
+  ]);
+  assert.equal(manifest.taskReturnPolicy.policy, "durable-outbox-native-wakeup");
+  assert.deepEqual(manifest.taskReturnPolicy.states, ["written", "sent", "received", "consumed", "routed"]);
+  assert.equal(manifest.rotationPolicy.policy, "independent-health-gated");
+  assert.equal(manifest.rotationPolicy.maxCompactionsWithoutIndependentCheck, 2);
+  assert.equal(manifest.rotationPolicy.sameClassFailureLimit, 2);
+  assert.equal(manifest.rotationPolicy.activeReviewHours, 24);
   assert.equal(manifest.defaultScopeFreshnessDays, 7);
   assert.equal(manifest.memoryPolicy.policy, "project-memory-graph");
-  assert.equal(manifest.memoryPolicy.graphVersion, 2);
+  assert.equal(manifest.memoryPolicy.graphVersion, 3);
   assert.ok(manifest.memoryPolicy.anchorKinds.includes("entity"));
   assert.ok(manifest.memoryPolicy.nodeTypes.includes("lesson"));
   assert.ok(manifest.memoryPolicy.relationTypes.includes("learned-from"));
@@ -177,18 +210,24 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.actionReceiptPolicy.policy, "critical-transition-readback");
   assert.deepEqual(manifest.actionReceiptPolicy.boundaries, [
     "task-launch",
+    "task-resume",
     "return-sync",
+    "memory-reflection-and-detour",
     "protected-access",
     "acceptance-and-live-action",
+    "side-effect-reconciliation",
   ]);
   assert.deepEqual(manifest.actionReceiptPolicy.boundaryOwners, {
     "task-launch": "orchestrator",
+    "task-resume": "orchestrator",
     "return-sync": "orchestrator",
+    "memory-reflection-and-detour": "orchestrator",
     "protected-access": "acting-context",
     "acceptance-and-live-action": "owning-task",
+    "side-effect-reconciliation": "owning-task",
   });
   assert.ok(manifest.actionReceiptPolicy.fields.includes("observed-action"));
-  assert.deepEqual(manifest.actionReceiptPolicy.results, ["pass", "mismatch", "unverified"]);
+  assert.deepEqual(manifest.actionReceiptPolicy.results, ["pass", "mismatch", "unverified", "outcome-unknown"]);
   assert.equal(manifest.trackerPolicy.policy, "task-contract-with-event-driven-projection");
   assert.ok(manifest.managedPaths.includes("docs/workflows"));
   assert.ok(!manifest.managedPaths.includes("docs/codex-workflows"));
@@ -216,18 +255,29 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /24 hours old/);
   assert.match(core, /Work Hygiene Check/);
   assert.match(core, /ACTIVE.*WAITING.*FINISH.*SALVAGE.*RETIRE/);
+  assert.match(core, /Governor Check/);
+  assert.match(core, /DOD Control Line/);
+  assert.match(core, /Execution Lease/);
+  assert.match(core, /durable task\/tracker outbox/);
+  assert.match(core, /EXECUTION_STALLED/);
   const projectState = await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8");
   assert.match(projectState, /Shared Sync:/);
   assert.match(projectState, /Project activation:/);
   assert.match(projectState, /## Project Activation Receipt/);
   assert.match(projectState, /Decision scope \/ backup/);
   assert.match(projectState, /Readiness receipt/);
-  assert.match(projectState, /Context visibility:/);
+  assert.match(projectState, /Governor:/);
+  assert.match(projectState, /Audited event:/);
+  assert.match(projectState, /Orchestrator health:/);
+  assert.match(projectState, /DOD Control Line:/);
+  assert.match(projectState, /## Execution Leases/);
+  assert.match(projectState, /## Pending Return Inbox/);
+  assert.match(projectState, /## Detours And Recall/);
   assert.match(projectState, /Project Memory Graph:/);
   assert.match(projectState, /Last memory delta:/);
   assert.match(projectState, /Tracker projection:/);
   assert.match(projectState, /Operational sources:/);
-  assert.match(projectState, /complete protected POINTER ids/);
+  assert.match(projectState, /CURRENT\/NEXT\/PRIOR_MISS/);
   assert.match(projectState, /Latest seen:/);
   assert.match(projectState, /Update:/);
   assert.match(projectState, /Snapshot as of:/);
@@ -236,11 +286,15 @@ test("current manifest preserves updater compatibility fields", async () => {
   const taskHandoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
   assert.match(taskHandoff, /Role: EXECUTION/);
   assert.match(taskHandoff, /Agent profile: EXECUTION/);
+  assert.match(taskHandoff, /Execution Lease:/);
+  assert.match(taskHandoff, /DOD Control Line contribution:/);
   assert.match(taskHandoff, /Continue from:/);
   assert.match(taskHandoff, /Applicable Memory Brief:/);
   assert.match(taskHandoff, /Memory Brief result:/);
   assert.match(taskHandoff, /Memory candidates:/);
   assert.match(taskHandoff, /Return receipt id:/);
+  assert.match(taskHandoff, /Return lifecycle:/);
+  assert.match(taskHandoff, /OUTCOME_UNKNOWN/);
   assert.match(taskHandoff, /Consult when:/);
   assert.match(taskHandoff, /Boundary consultation:/);
   assert.match(taskHandoff, /Progress continuity:/);
@@ -264,20 +318,23 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /non-destructive access check/);
   assert.match(orchestratorWorkflow, /last safe check time\/result\/source/);
   assert.match(orchestratorWorkflow, /before history search, human secret re-request, or live action/);
-  assert.match(orchestratorWorkflow, /canonical title plus actual link, role\/profile, active start, and Return Sync route/);
+  assert.match(orchestratorWorkflow, /canonical title plus actual link, role\/profile, base, and route/);
   assert.match(orchestratorWorkflow, /<work-id> \[<track>\] \[<mode>\] — <short outcome>/);
   assert.match(orchestratorWorkflow, /PR #<pr> → <canonical work reference>/);
   assert.match(orchestratorWorkflow, /Bare task, PR, and context numbers are not meaningful references/);
   assert.match(orchestratorWorkflow, /Action Receipt/);
   assert.match(orchestratorWorkflow, /Project Activation gates pass/);
   assert.match(orchestratorWorkflow, /Only `PASS` closes the transition/);
-  assert.match(orchestratorWorkflow, /owning task owns acceptance\/live receipts/);
+  assert.match(orchestratorWorkflow, /owning task owns acceptance\/live and side-effect receipts/);
   assert.match(orchestratorWorkflow, /graph watermark/);
   assert.match(orchestratorWorkflow, /tracker projection/);
   assert.match(orchestratorWorkflow, /Work Hygiene Check/);
   assert.match(orchestratorWorkflow, /one machine cannot certify the team/);
   assert.match(orchestratorWorkflow, /bounded read-only memory backfill/);
   assert.match(orchestratorWorkflow, /ordinary future-work queries/);
+  assert.match(orchestratorWorkflow, /Governor Check/);
+  assert.match(orchestratorWorkflow, /EXECUTION_STALLED/);
+  assert.match(orchestratorWorkflow, /WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED/);
   const projectLaunch = await readFile(path.join(root, "docs/workflows/project-launch.md"), "utf8");
   assert.match(projectLaunch, /bounded read-only memory backfill/);
   assert.match(projectLaunch, /Do not copy the full transcript or model narration/);
@@ -288,8 +345,10 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectLaunch, /PROJECT_READY_WITH_LIMITS/);
   const graphTemplate = await readFile(path.join(root, "docs/workflows/project-memory-graph-template.md"), "utf8");
   assert.match(graphTemplate, /Owner gate:/);
-  assert.match(graphTemplate, /five fields/);
-  assert.match(graphTemplate, /node counts alone do not prove semantic coverage/);
+  assert.match(graphTemplate, /Pending Memory Events/);
+  assert.match(graphTemplate, /Live Retrieval Probes/);
+  assert.match(graphTemplate, /CURRENT/);
+  assert.match(graphTemplate, /PRIOR_MISS/);
   const acceptWork = await readFile(path.join(root, "docs/workflows/accept-work.md"), "utf8");
   assert.match(acceptWork, /Unexpectedly changed/);
   assert.match(acceptWork, /recipient-side exact-artifact\/revision proof/);
@@ -300,6 +359,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(acceptWork, /complete protected pointer/);
   assert.match(acceptWork, /Artifact disposition/);
   assert.match(acceptWork, /Acceptance, merge, and deploy are separate authorities/);
+  assert.match(acceptWork, /durable task\/tracker outbox/);
+  assert.match(acceptWork, /OUTCOME_UNKNOWN/);
   const intentTrail = await readFile(path.join(root, "docs/workflows/intent-trail-template.md"), "utf8");
   assert.match(intentTrail, /protected reference without its value/);
   assert.match(intentTrail, /expiry or re-entry condition/);
@@ -316,7 +377,7 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   const alignmentWorkflow = await readFile(path.join(root, "docs/workflows/daily-alignment.md"), "utf8");
   const handoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
 
-  assert.match(orchestratorSkill, /Hot path:[\s\S]*Do not run Daily Alignment/);
+  assert.match(orchestratorSkill, /Hot path:[\s\S]*EXECUTION_STALLED/);
   assert.match(orchestratorSkill, /\[ORCHESTRATOR\] <project> — Vydykhai <version>/);
   assert.match(orchestratorSkill, /Never substitute a PR or context id for work identity/);
   assert.match(orchestratorSkill, /Never implement, debug, fix product code/);
@@ -337,7 +398,128 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   assert.doesNotMatch(startup, /Project State:/);
   assert.match(handoff, /Resolve ordinary implementation failures autonomously/);
   assert.match(handoff, /Do not run `\$project-launch`, `\$start-work`, `\$daily-alignment`, or `\$framework-orchestrator` here/);
-  assert.match(handoff, /Publish Return Sync automatically only at a declared trigger/);
+  assert.match(handoff, /first write the complete receipt to the durable task\/tracker outbox/);
+});
+
+test("control-check closes DOD, lease, return, detour, and memory transitions", async () => {
+  const target = await mkdtemp(path.join(tmpdir(), "vydykhai-control-"));
+  const statePath = path.join(target, "state.md");
+  const graphPath = path.join(target, "graph.md");
+  const healthyState = `<!-- vydykhai:project-state v2 -->
+# Project State: Example
+Snapshot as of: event-7
+## Control Snapshot
+Governor: HEALTHY | Receipt: gov-7 | Trigger: dispatch | Audited event: event-7 | Route: deterministic check
+Orchestrator health: HEALTHY | Context: current | Profile: ORCHESTRATOR / maximum / current | Last compaction/context-loss signal: 0 / none
+Last independent check: now / state+graph+tracker / PASS | Same-class failures since repair: 0
+DOD Control Line: accepted visible baseline -> close actor flow -> smoke -> continue
+Memory coverage: graph v3 / watermark event-6 / CURRENT+NEXT+PRIOR_MISS PASS
+Agent routing: latest flagship | Resolved: ORCHESTRATOR maximum / DISCOVERY deep / EXECUTION efficient | Checked: now | Fallback: none
+Coordination inputs: shared notes / PASS | Intake: direct | Active alignment / latest delta: none
+Environment adapter: native | Context mapping: task
+Orchestrator rotation: stable | Candidate / previous: none
+Scope freshness: 7 | Last project-level check: now / event-7 / PASS
+## Current DOD
+- Current DOD: actor completes the flow
+## Execution Leases
+| Work | State | Owner |
+| --- | --- | --- |
+| WORK-1 [DOD] — close actor flow | WORKING | task-one |
+## Pending Return Inbox
+| Receipt | Work / sender | State |
+| --- | --- | --- |
+## Detours And Recall
+| ID | Meaning | State |
+| --- | --- | --- |
+| DET-1 | revisit copy at review | OPEN |
+## Active Work
+| Task | State |
+| --- | --- |
+| WORK-1 [DOD] — close actor flow | In Progress |
+## Decisions And Blockers
+- none
+## Safe Continuation
+- task may continue
+## Next-Best-Action
+- consume the next durable event
+<!-- vydykhai:project-state:end -->
+`;
+  const healthyGraph = `<!-- vydykhai:project-memory-graph v3 -->
+# Project Memory Graph: Example
+Project State: state
+Watermark: event-6
+Declared nodes: 1
+Last compaction: none
+Last reflection: none
+Last retrieval check: probes-1 / fresh evaluator / PASS
+## Anchor Index
+| ID | Kind | Canonical name / real-world aliases | Scope | Source |
+| --- | --- | --- | --- | --- |
+| ENT-01 | OUTCOME | actor flow | project | brief |
+## Current Memory Nodes
+### MEM-01 — Preserve actor flow
+- Type / status: DECISION / ACTIVE
+- About: ENT-01
+- Recall when: actor flow
+- Because: accepted route
+- Apply: preserve it
+- Avoid: parallel route
+- Verify: actor completes it
+- Applies / exceptions: project / none
+- Owner gate: none
+- Protected pointer (POINTER only): none
+- Relations: about -> ENT-01
+- Source / checked: brief / now
+## Pending Memory Events
+| Event | Trigger | Before / Now / Why | Anchors | Miss | Action | Source | State |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+## Live Retrieval Probes
+| Slot | Raw trigger | Expected executable action or gate | Observed brief / evidence | Result / checked | Regression source |
+| --- | --- | --- | --- | --- | --- |
+| CURRENT | change actor flow | preserve route | brief | PASS now | task |
+| NEXT | accept actor flow | verify completion | brief | PASS now | task |
+| PRIOR_MISS | prior route drift | avoid parallel route | brief | PASS now | lesson |
+## Legacy Source Map
+| Previous id or artifact | Current node(s) | Coverage | Recall / action check |
+| --- | --- | --- | --- |
+<!-- vydykhai:project-memory-graph:end -->
+`;
+
+  try {
+    await writeFile(statePath, healthyState);
+    await writeFile(graphPath, healthyGraph);
+    const healthy = run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]);
+    assert.equal(healthy.status, 0, healthy.stderr);
+    assert.equal(JSON.parse(healthy.stdout).ok, true);
+
+    const mismatches = [
+      [healthyState.replace("| WORK-1 [DOD] — close actor flow | WORKING |", "| WORK-1 [DOD] — close actor flow | PREPARED |"), healthyGraph, /unresolved transition PREPARED/],
+      [healthyState.replace("Receipt: gov-7", "Receipt: <missing>"), healthyGraph, /Governor receipt is missing or unresolved/],
+      [healthyState.replace("Trigger: dispatch", "Trigger: <missing>"), healthyGraph, /Governor trigger is missing or unresolved/],
+      [healthyState.replace("Audited event: event-7", "Audited event: event-6"), healthyGraph, /Governor audited event-6 but current snapshot is event-7/],
+      [healthyState.replace("Profile: ORCHESTRATOR / maximum / current", "Profile: ORCHESTRATOR / medium / current"), healthyGraph, /orchestrator profile is not explicitly ORCHESTRATOR \/ maximum/],
+      [healthyState.replace("Last compaction/context-loss signal: 0 / none", "Last compaction/context-loss signal: 2 / now"), healthyGraph, /independent check required after 2 compaction\/context-loss signals/],
+      [healthyState.replace("Same-class failures since repair: 0", "Same-class failures since repair: <missing>"), healthyGraph, /same-class failure count is missing or unresolved/],
+      [healthyState.replace("DOD Control Line: accepted visible baseline -> close actor flow -> smoke -> continue", "DOD Control Line: <unresolved>"), healthyGraph, /DOD Control Line is unresolved/],
+      [healthyState.replace("| --- | --- | --- |\n## Detours", "| --- | --- | --- |\n| RET-9 | task-one | SENT |\n## Detours"), healthyGraph, /pending return RET-9 requires reconciliation/],
+      [healthyState.replace("| WORK-1 [DOD] — close actor flow | WORKING |", "| WORK-1 [DOD] — close actor flow | OUTCOME_UNKNOWN |"), healthyGraph, /unresolved transition OUTCOME_UNKNOWN/],
+      [healthyState.replace("| DET-1 | revisit copy at review | OPEN |", "| DET-1 | revisit copy at review | RETURN_DUE |"), healthyGraph, /detour DET-1 is due for return/],
+      [healthyState, healthyGraph.replace("| PRIOR_MISS | prior route drift | avoid parallel route | brief | PASS now | lesson |", "| PRIOR_MISS | prior route drift | avoid parallel route | brief | MISS now | lesson |"), /PRIOR_MISS retrieval probe has not passed/],
+      [healthyState, healthyGraph.replace("| --- | --- | --- | --- | --- | --- | --- | --- |\n## Live Retrieval Probes", "| --- | --- | --- | --- | --- | --- | --- | --- |\n| EVT-9 | remember this | old / new / why | ENT-01 | ABSENT | ADD | chat | PENDING |\n## Live Retrieval Probes"), /memory event EVT-9 is still pending/],
+      [`${healthyState}stale appended state\n`, healthyGraph, /content exists after end marker/],
+    ];
+
+    for (const [state, graph, expected] of mismatches) {
+      await writeFile(statePath, state);
+      await writeFile(graphPath, graph);
+      const result = run(["control-check", "--state", statePath, "--graph", graphPath]);
+      assert.equal(result.status, 1);
+      assert.match(result.stdout, /Control check: MISMATCH/);
+      assert.match(result.stdout, expected);
+    }
+  } finally {
+    await rm(target, { recursive: true, force: true });
+  }
 });
 
 test("update from a local canonical source preserves project files", async () => {
