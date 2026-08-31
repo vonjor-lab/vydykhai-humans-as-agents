@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.21.0",
+  "version": "1.21.1",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -74,6 +74,7 @@
       "pending-return-inbox",
       "detour-return-gates",
       "memory-coverage",
+      "actual-orchestrator-context",
       "orchestrator-health"
     ],
     "triggers": [

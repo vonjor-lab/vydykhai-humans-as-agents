@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.21.0 | Status: canonical operating core
+Version: 1.21.1 | Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
@@ -60,7 +60,7 @@ Required launch path:
 1. Bootstrap discovers or prepares the private project home, preserves existing work, installs or updates the kit, and inventories current project artifacts before creating new ones.
 2. `doctor` verifies only framework integrity; `$project-launch` proves live repo/tracker permissions, participants, inputs, first-DOD operations, course, and control loop.
 3. `$project-launch` shapes an unclear goal when needed, then creates the Operating Brief, atomic Project State v2, Project Memory Graph v3, first DOD Control Line, Shared Sync Contract, tracker route, and safe operational pointers.
-4. Each participant pulls the accepted setup; their own orchestrator proves local `doctor` plus required repo/tracker/input access because one machine cannot certify another.
+4. Each participant pulls the accepted setup; their own orchestrator proves local `doctor` plus required repo/tracker/input access because one machine cannot certify another. After an update, activation is proven only from the active orchestrator's own working directory at the accepted project revision, never from the update task or a temporary merged-source checkout. Its own live/offline `doctor`, updated core readback, title, and Project State must agree; otherwise Governor returns `REPAIR` or confirmed-path `ROTATE`.
 5. The active orchestrator, Governor baseline, Execution Lease route, and durable-outbox-plus-wakeup Return Sync are read back, then one Project Activation Receipt states the evidence, safe limits, first route, and next-best-action.
 
 The bootstrap request authorizes setup branch/PR and shared operating artifacts, not merge, destructive overwrite, paid action, production change, or private-data disclosure. Idea shaping may continue while a private home is prepared, but shared execution and team-alignment claims wait for relevant activation gates. Missing tools or access produce one exact human action.

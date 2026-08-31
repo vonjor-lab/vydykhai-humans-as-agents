@@ -53,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.21.0");
+    assert.equal(lock.installedVersion, "1.21.1");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -127,7 +127,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.21\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.21\.1/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -168,6 +168,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.deepEqual(manifest.controlLoopPolicy.states, ["healthy", "repair", "rotate"]);
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("current-dod-line"));
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("pending-return-inbox"));
+  assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("actual-orchestrator-context"));
   assert.equal(manifest.executionLeasePolicy.policy, "one-work-one-owning-context");
   assert.deepEqual(manifest.executionLeasePolicy.states, [
     "prepared",
@@ -260,6 +261,9 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /Execution Lease/);
   assert.match(core, /durable task\/tracker outbox/);
   assert.match(core, /EXECUTION_STALLED/);
+  const agentsCore = await readFile(path.join(root, "docs/AGENTS_CORE.md"), "utf8");
+  assert.match(agentsCore, /active orchestrator's own clean cwd/);
+  assert.match(agentsCore, /ACTUAL_CONTEXT_COHERENCE/);
   const projectState = await readFile(path.join(root, "docs/workflows/project-state-template.md"), "utf8");
   assert.match(projectState, /Shared Sync:/);
   assert.match(projectState, /Project activation:/);
@@ -280,6 +284,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectState, /CURRENT\/NEXT\/PRIOR_MISS/);
   assert.match(projectState, /Latest seen:/);
   assert.match(projectState, /Update:/);
+  assert.match(projectState, /Framework context readback:/);
   assert.match(projectState, /Snapshot as of:/);
   assert.match(projectState, /Work hygiene:/);
   assert.equal((projectState.match(/^## Next-Best-Action$/gm) || []).length, 1);
@@ -309,6 +314,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /installed < release <= latest/);
   assert.match(orchestratorWorkflow, /one concise delta per release/);
   assert.match(orchestratorWorkflow, /never omit a skipped release/);
+  assert.match(orchestratorWorkflow, /active orchestrator's own clean cwd/);
+  assert.match(orchestratorWorkflow, /maintenance task or a detached verification checkout proves the Candidate, not activation/);
   assert.match(orchestratorWorkflow, /newer than the last Return Sync/);
   assert.match(orchestratorWorkflow, /no context message, no-op trace, or model wake-up/);
   assert.match(orchestratorWorkflow, /representative current, upcoming, and prior-miss Touch Sets/);
@@ -381,6 +388,8 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   assert.match(orchestratorSkill, /\[ORCHESTRATOR\] <project> — Vydykhai <version>/);
   assert.match(orchestratorSkill, /Never substitute a PR or context id for work identity/);
   assert.match(orchestratorSkill, /Never implement, debug, fix product code/);
+  assert.match(orchestratorSkill, /active orchestrator's own working directory/);
+  assert.match(orchestratorSkill, /ACTUAL_CONTEXT_COHERENCE/);
   assert.match(alignmentSkill, /Do not use for task-local failures/);
   assert.match(acceptSkill, /owning execution context/);
   assert.match(acceptSkill, /do not perform project-wide orchestration/);

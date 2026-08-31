@@ -6,7 +6,7 @@ Vydykhai is a team autopilot for people working on one project, each with their 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.21.0`
+Current version: `1.21.1`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -21,6 +21,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - Новая или возобновленная задача считается начатой только после наблюдаемого действия. Если исполнитель снова отвечает планом вместо работы, оркестратор один раз исправляет запуск, а затем меняет маршрут вместо бесконечных напоминаний.
 - Результат задачи сначала сохраняется в общей системе, а затем будит оркестратор. Поэтому потерянное сообщение между агентами не теряет выполненную работу и не заставляет человека спрашивать «ну что там?».
 - Короткая независимая проверка следит, что оркестратор держит текущий DOD, возвраты, отложенные обещания и активные задачи. Она предлагает локальный ремонт или своевременную замену оркестратора, не вмешиваясь в само исполнение.
+- После обновления новая версия считается активной только когда собственное рабочее дерево оркестратора стоит на принятом commit и его собственный `doctor` видит новую версию. Название треда или проверка временной ветки больше не могут скрыть старые правила в работающем оркестраторе.
 - GitHub показывает реальное `сейчас / дальше / заблокировано / готово`; встречи и локальная работа меняют эту картину только при существенном событии.
 - Названия и ссылки на работу читаются без расшифровки: оркестратор всегда называет задачу по ее номеру и короткому результату, а PR показывает как артефакт этой задачи, а не как замену ее смысла.
 - Оркестратор время от времени проверяет рабочие хвосты: у каждой открытой задачи, PR, ветки или task context должна быть понятная роль и выход. Забытое не копится молча и не удаляется без проверки.
@@ -37,6 +38,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - A new or resumed task counts as started only after an observable action. If execution answers with another plan, the orchestrator repairs once and then changes route instead of repeating reminders.
 - A task result is written to shared durable state before it wakes the orchestrator. A lost agent message therefore cannot lose completed work or make a person poll for status.
 - A lightweight independent check verifies that the orchestrator still holds the current DOD, returns, deferred commitments, and active work. It routes bounded repair or timely rotation without entering execution.
+- After an update, the new version becomes active only when the orchestrator's own working tree is on the accepted commit and its own `doctor` sees that version. A renamed context or a check from a temporary update branch can no longer hide old rules in the active orchestrator.
 - The tracker reflects the real `now / next / blocked / done` picture and changes only on material work events.
 - Work names and references are self-explanatory: the orchestrator always names a task by its tracker id and short outcome, while a PR is shown as that task's artifact rather than a substitute for its meaning.
 - The orchestrator periodically checks unfinished work: every open task, PR, branch, or task context needs a clear purpose and exit. Forgotten work neither accumulates silently nor gets deleted without proof.
@@ -123,7 +125,7 @@ Give every person and agent only the access they need; never share credentials o
 
 During normal activity, each participant's orchestrator checks for a new Vydykhai version at most once every 24 hours. This is one small manifest request inside an already active session, not a background model run. When the version is current it stays silent. When a newer version exists, it reads every changelog entry after the installed version through the latest, oldest to newest. It reports `installed -> latest` and the number of releases, gives one concise product-impact line for every skipped release, then explains the combined effect here and puts the safest update window into next-best-action: now before the next dispatch or after a named task/checkpoint.
 
-The orchestrator records the plan in Project State so the team prepares one update rather than duplicate work. At the chosen window it prepares or reuses one update branch, runs `update` and `doctor`, opens or refreshes its PR, and reports the short delta. It never overwrites locally modified managed files, changes rules silently in the middle of active work, or merges outside the project's normal policy. A major migration or an update that affects current safety is raised explicitly; ordinary compatible updates do not force orchestrator rotation. If upstream cannot be reached, the check remains visibly pending without blocking otherwise safe work.
+The orchestrator records the plan in Project State so the team prepares one update rather than duplicate work. At the chosen window it prepares or reuses one update branch, runs `update` and `doctor`, opens or refreshes its PR, and reports the short delta. After merge, activation requires a clean exact readback from the active orchestrator's own working directory: accepted project revision, installed version and source revision, current schemas, integrity, and reread updated core. A temporary update or merged-source worktree cannot certify the active context. If the active context cannot move cleanly, Governor records `REPAIR` or enters confirmed rotation instead of changing the title or Project State early. The orchestrator never overwrites locally modified managed files, changes rules silently in the middle of active work, or merges outside the project's normal policy. A major migration or an update that affects current safety is raised explicitly; ordinary compatible updates do not force orchestrator rotation. If upstream cannot be reached, the check remains visibly pending without blocking otherwise safe work.
 
 ## Agent Profiles
 
