@@ -33,7 +33,7 @@ Load packet, delta, dashboard, and brief-patch templates only when writing them.
 - Intersect the delta with active, queued, and paused tasks. Do not wake an unaffected task. Send an affected active task only `what changed / applies to / preserved / action`: a compatible patch lets it continue, while an invalidating change pauses only the affected boundary for `PATCH_REQUIRED` or `REBRIEF_REQUIRED`. Tasks never process raw meeting or alignment inputs.
 - Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; do not mutate scope silently or treat age alone as a scope change.
 - Rotate and archive the Alignment Window after a milestone or when it is no longer quickly scannable.
-- Update Framework Orchestrator state, atomic Project Memory Graph candidates, executable Briefs, safe operational pointers, affected task contracts/tracker projection, and next-best-action. Keep task-local pivots in their task; re-read graph watermark/unseen events, rerun affected retrieval after integration, and rebuild current views atomically without secret values.
+- Update the DOD Control Line, affected Execution Leases and detour/recall return gates, tracker projection, and next-best-action. Put each material reusable delta or `NO_CHANGE` in Pending Memory Events before advancing the graph watermark; rerun affected retrieval and rebuild current views atomically without secret values.
 
 ## Finish
 

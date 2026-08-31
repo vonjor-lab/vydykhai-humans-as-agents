@@ -1,31 +1,35 @@
 # Project Memory Graph Template
 
-Use one compact shared graph per project or product stream. Project State is current working memory; this graph is reusable semantic and decision memory; linked meetings, messages, tasks, PRs, and rejected candidates are episodic evidence; each task receives only an executable Memory Brief. Never make chat history or a visualization another source of truth.
+Use one compact shared graph per project or product stream. Project State is current control memory; this graph is reusable semantic and decision memory; linked meetings, messages, tasks, PRs, and rejected candidates are episodic evidence. Rebuild the graph body atomically from integrated events. Never append current meaning after the end marker or make chat history or a visualization another source of truth.
 
 ```md
-<!-- vydykhai:project-memory-graph v2 -->
+<!-- vydykhai:project-memory-graph v3 -->
 
 # Project Memory Graph: <project or stream>
 
 Project State: <link>
 Watermark: <last integrated event id / revision / date>
-Last compaction: <date / trigger>
+Declared nodes: <current node count>
+Last compaction: <date / trigger / previous snapshot>
 Last reflection: <event / miss class / result>
-Last retrieval check: <scenario or task / evaluator / result>
+Last retrieval check: <CURRENT/NEXT/PRIOR_MISS receipt / evaluator / result>
 
 ## Anchor Index
 
-| ID | Kind | Canonical name / aliases | Scope | Source |
+| ID | Kind | Canonical name / real-world aliases | Scope | Source |
 | --- | --- | --- | --- | --- |
-| ENT-01 | <OUTCOME | ACTOR | ENTITY | SURFACE | CONTRACT | DATA | OPERATION> | <stable name; accepted aliases> | <project / stream / boundary> | <durable source> |
+| ENT-01 | <OUTCOME / ACTOR / ENTITY / SURFACE / CONTRACT / DATA / OPERATION> | <stable name; phrases people and tasks actually use> | <project / stream / boundary> | <durable source> |
 
 ## Current Memory Nodes
 
 ### MEM-01 — <short title>
-- Type / status: `<INVARIANT | DECISION | LESSON | IDEA | POINTER> / <ACTIVE | PROVISIONAL | CONFLICT>`
-- About: <anchor ids> | Recall when: <capability aliases plus event, condition, or trigger>
+- Type / status: `<INVARIANT / DECISION / LESSON / IDEA / POINTER> / <ACTIVE / PROVISIONAL / CONFLICT>`
+- About: <anchor ids>
+- Recall when: <capability aliases plus event, condition, task touch, or checkpoint>
+- Because: <why this meaning matters to the current course>
 - Apply: <one current executable statement>
 - Avoid: <rejected path or none>
+- Verify: <observable evidence that proves application>
 - Applies / exceptions: <scope and explicit exclusions>
 - Owner gate: <pending human question plus timing and plan/checkpoint relation, or none>
 - Protected pointer (POINTER only): <owner | protected reference, never value | environment and scope | allowed non-destructive route | last safe check time, result, and source | expiry or re-entry condition>
@@ -34,35 +38,41 @@ Last retrieval check: <scenario or task / evaluator / result>
 
 ## Pending Memory Events
 
+Every material task return, meeting decision, correction, detour, recall request, or acceptance produces one event or `NO_CHANGE`. Events remain pending until the graph watermark and affected control state are rebuilt and read back.
+
 | Event | Trigger | Before / Now / Why | Anchors | Miss | Action | Source | State |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| <id> | <task / meeting / acceptance / correction> | <compact delta> | <ENT ids / unresolved terms> | <NONE | ABSENT | RETRIEVAL_MISS | APPLICATION_MISS | VERIFICATION_MISS> | <ADD | REFINE | SUPERSEDE | RETIRE | CONFLICT | NO_CHANGE> | <durable link> | <pending | integrated | needs human> |
+| <id> | <task / meeting / acceptance / correction> | <compact delta> | <ENT ids / unresolved terms> | <NONE / ABSENT / RETRIEVAL_MISS / APPLICATION_MISS / VERIFICATION_MISS> | <ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT / NO_CHANGE> | <durable link> | <PENDING / INTEGRATED / NEEDS_HUMAN> |
 
-## Representative Retrieval Scenarios
+## Live Retrieval Probes
 
-| Raw trigger | Expected executable action or gate | Independent pass 1 | Independent pass 2 | Regression source |
-| --- | --- | --- | --- | --- |
-| <ordinary task language without node ids or prepared Touch Set> | <Apply / Avoid / Verify or BLOCKED expectation> | <observed action / evidence / pass or miss> | <observed action / evidence / pass or miss> | <source or none> |
+Coverage is current only when a fresh evaluator can reconstruct executable meaning from ordinary language. Keep exactly one current active-work probe, one immediate-next probe, and the latest proven miss; replace them as work changes and retain older receipts as linked evidence.
+
+| Slot | Raw trigger | Expected executable action or gate | Observed brief / evidence | Result / checked | Regression source |
+| --- | --- | --- | --- | --- | --- |
+| CURRENT | <ordinary language for current work> | <Apply / Avoid / Verify or BLOCKED> | <brief> | <PASS / MISS / date> | <source> |
+| NEXT | <ordinary language for immediate next work> | <...> | <...> | <...> | <...> |
+| PRIOR_MISS | <latest representative miss language> | <...> | <...> | <...> | <source> |
 
 ## Legacy Source Map
 
 | Previous id or artifact | Current node(s) | Coverage | Recall / action check |
 | --- | --- | --- | --- |
-| <Intent Trail / Idea Memory / task / decision source> | <MEM ids> | <covered | superseded | evidence only | ambiguous> | <ordinary future-work query and expected result/gate> |
+| <Intent Trail / Idea Memory / task / decision source> | <MEM ids> | <covered / superseded / evidence only / ambiguous> | <ordinary future-work query and expected result/gate> |
 
 <!-- vydykhai:project-memory-graph:end -->
 ```
 
 Rules:
 
-- Anchors give stable identity to outcomes, actors, product entities, surfaces, contracts, data, and operations. Reuse one anchor across synonyms; do not create a new memory node merely because later work uses different wording.
-- Keep one reusable meaning per memory node. `INVARIANT` is a durable boundary; `DECISION` is a current choice; `LESSON` is a reusable cause or failed-path learning; `IDEA` is valuable but outside the nearest DOD; `POINTER` locates protected operational knowledge without copying it.
-- Treat an explicit request to remember, revisit, or discuss something before later work as a recall commitment. It is complete only when current memory preserves five fields: current meaning; source; capability aliases and trigger; applicability, timing, and plan/checkpoint relation; and the pending human question. Never resolve uncertain timing on the human's behalf.
-- Current meaning and evidence stay separate. Update `Apply`, `Avoid`, scope, relations, and provenance; link chronology instead of copying it. Type every relation and use `supersedes` rather than leaving two competing current rules.
-- Every task, meeting delta, acceptance, or material human correction emits one compact event or `NO_CHANGE`. Task contexts never rewrite shared memory. Before integration, re-read the watermark and unseen events; recompute on concurrent change, merge semantic duplicates, and ask the human only when equal-authority meaning conflicts.
-- A correction or repeated owner explanation triggers Memory Reflection before apology or patch: derive `Before / Now / Why / scope`, resolve anchors, retrieve related nodes, and classify `ABSENT`, `RETRIEVAL_MISS`, `APPLICATION_MISS`, or `VERIFICATION_MISS`. Integrate the smallest correction, rerun retrieval, and intersect the delta with active and queued work.
-- For a cold-path query, resolve exact anchors and aliases first, intersect open recall commitments and checkpoints whose trigger or capability alias matches, add semantic candidates when wording differs, traverse relevant typed relations one or two hops, then filter by status, source precedence, scope, applicability, and supersession. A matching dormant item wakes for the decision; recency alone never overrides applicability.
-- Return no more than seven nodes and fewer when fewer apply, compiled as executable items: `Because <anchor>, apply <rule>, avoid <path>, verify <evidence>, source <link>`. Drop a node that changes neither action, boundary, guardrail, nor acceptance. Raise `MEMORY_COVERAGE_GAP` when required meaning cannot be proven.
-- Acceptance records each brief item as applied, missed, contradicted, or not exercised and returns any reusable delta. A miss becomes or updates a representative regression scenario. Coverage passes only when a fresh evaluator can reconstruct the expected executable brief and its acceptance implication; matching ids or self-report alone is insufficient.
-- Compact at a milestone, rotation, duplicate cluster, retrieval miss, or loss of scanability. Preserve stable ids, aliases, current meaning, applicability, typed relations, old-id mapping, and immutable evidence. A recall commitment survives only when an ordinary future-work query still returns its concrete meaning, source, return condition, and human gate; complete id disposition or node counts alone do not prove semantic coverage.
-- Never store credentials, tokens, private payloads, production data, or recovery values. A protected `POINTER` records owner, protected reference without its value, environment/scope, allowed non-destructive route, last safe check time/result/source, and expiry or re-entry condition. Retrieval must emit these fields directly or return `MEMORY_COVERAGE_GAP / BLOCKED`; historical reconstruction may repair the node but is not a successful lookup. Keep one raw two-pass regression for protected access and prove zero secret read.
+- Anchors give stable identity to outcomes, actors, product entities, surfaces, contracts, data, and operations. Their aliases are words a human or task will actually use, not only historical memory ids. Reuse one anchor across synonyms.
+- Keep one reusable current meaning per node. `INVARIANT` is a durable boundary; `DECISION` is a current choice; `LESSON` is reusable cause or failed-path learning; `IDEA` is valuable but outside the nearest DOD; `POINTER` locates protected operational knowledge without copying it.
+- A human request to remember, revisit, return after a detour, or discuss something before later work is a recall commitment. Preserve current meaning, source, capability aliases/trigger, applicability/timing/checkpoint, and the pending human question. Link its return gate in Project State; never resolve uncertain timing for the human.
+- Current meaning and evidence stay separate. Update `Apply`, `Avoid`, `Verify`, scope, relations, and provenance; link chronology instead of copying it. Use `supersedes` rather than leaving competing current rules.
+- Task contexts never rewrite shared memory. The orchestrator integrates unseen durable events after rereading the watermark, recomputes on concurrent change, and atomically rebuilds the body. Node count, watermark, pending events, probes, start marker, and end marker must agree before publication.
+- On cold-path work, resolve exact anchors and aliases, intersect open commitments/checkpoints first, traverse relevant relations one or two hops, and filter by authority, status, scope, applicability, and supersession. Return no more than seven executable `Because / Apply / Avoid / Verify / Source` items. Raise `MEMORY_COVERAGE_GAP` when required meaning is unproven.
+- A correction, repeated owner explanation, missed return condition, or forgotten prior direction triggers Memory Reflection before apology or patch: `Before / Now / Why / scope`, related anchors, `ABSENT / RETRIEVAL_MISS / APPLICATION_MISS / VERIFICATION_MISS`, smallest repair, retrieval replay, and impact on active/queued work.
+- Acceptance records every brief item as applied, missed, contradicted, or not exercised. A miss replaces `PRIOR_MISS`; dispatch replaces `CURRENT` and `NEXT`. Graph coverage expires when these slots do not represent current work, even if historical evaluations passed.
+- Compact at a milestone, rotation, duplicate cluster, retrieval miss, or loss of scanability. Preserve stable ids, aliases, current meaning, typed relations, old-id mapping, and immutable evidence. A recall commitment survives only when ordinary language returns its concrete meaning, source, return condition, and human gate.
+- Never store credentials, private payloads, production data, or recovery values. A protected `POINTER` records owner, protected reference without value, environment/scope, allowed non-destructive route, last safe check time/result/source, and expiry/re-entry condition. Otherwise return `MEMORY_COVERAGE_GAP / BLOCKED` before history search, secret request, or live action. Historical reconstruction may repair the node but is not a successful current-memory lookup; pointer probes require zero secret read.
+- Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before activation, schema cutover, Governor `HEALTHY`, or orchestrator rotation. Migrate from older schemas through a side-by-side read-only candidate, live probes, visible loss/conflict delta, human confirmation, and retained rollback source.

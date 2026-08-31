@@ -6,7 +6,7 @@ Vydykhai is a team autopilot for people working on one project, each with their 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.20.0`
+Current version: `1.21.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -14,11 +14,13 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 
 - Одной просьбы подключить Vydykhai достаточно, чтобы агент не просто установил файлы, а нашел или подготовил приватный репозиторий, проверил общую синхронизацию, подключил людей и их оркестраторы, уточнил первый DOD и показал доказанный статус запуска с одним следующим действием.
 - Вы можете сказать идею, уточнение или «давай по-другому» один раз. Оркестратор разберется, что именно изменилось, обновит общую память и проверит, какие текущие или будущие задачи это затрагивает.
-- Обещание «запомнить и вернуться к этому» сохраняется вместе с причиной и моментом возврата. При подключении к действующему проекту или после доказанного пропуска оркестратор может экономично сверить такие обещания с текущей памятью, не переписывая всю историю.
+- Обещание «запомнить и вернуться» и просьба временно отойти в сторону получают явное условие возврата. Оркестратор проверяет их при следующем подходящем планировании, а не оставляет человеку обязанность вспомнить.
 - Каждая новая задача получает короткие применимые указания: что делать, чего не повторять и как проверить результат. Исполнитель не перечитывает историю проекта и не получает только непонятные ссылки на память.
 - Принятые уроки одного участника становятся доступны оркестраторам остальных через общий репозиторий, а не остаются внутри личного чата.
 - Три уровня контекстов не смешиваются: канонический репозиторий развивает только универсальную формулу, проектный оркестратор только организует один проект, а вся работа выполняется в отдельных task, discovery, lab или maintenance contexts.
-- Команда или правильный план больше не считаются выполненным переходом сами по себе: оркестратор проверяет фактический запуск и возврат результата, а выполняющая task - свой защищенный доступ, приемку и live-действие. Следующий шаг не строится на неподтвержденном состоянии, и проверка не дублируется.
+- Новая или возобновленная задача считается начатой только после наблюдаемого действия. Если исполнитель снова отвечает планом вместо работы, оркестратор один раз исправляет запуск, а затем меняет маршрут вместо бесконечных напоминаний.
+- Результат задачи сначала сохраняется в общей системе, а затем будит оркестратор. Поэтому потерянное сообщение между агентами не теряет выполненную работу и не заставляет человека спрашивать «ну что там?».
+- Короткая независимая проверка следит, что оркестратор держит текущий DOD, возвраты, отложенные обещания и активные задачи. Она предлагает локальный ремонт или своевременную замену оркестратора, не вмешиваясь в само исполнение.
 - GitHub показывает реальное `сейчас / дальше / заблокировано / готово`; встречи и локальная работа меняют эту картину только при существенном событии.
 - Названия и ссылки на работу читаются без расшифровки: оркестратор всегда называет задачу по ее номеру и короткому результату, а PR показывает как артефакт этой задачи, а не как замену ее смысла.
 - Оркестратор время от времени проверяет рабочие хвосты: у каждой открытой задачи, PR, ветки или task context должна быть понятная роль и выход. Забытое не копится молча и не удаляется без проверки.
@@ -28,11 +30,13 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 
 - One request to connect Vydykhai now makes the agent do more than install files: it discovers or prepares the private project home, proves shared sync, connects people and their orchestrators, resolves the first DOD, and returns an evidence-backed launch status with one next action.
 - Say an idea, correction, or change of approach once. The orchestrator investigates what changed, updates shared memory, and checks which current or future tasks are affected.
-- A promise to remember and revisit something keeps both its reason and return condition. When joining an existing project or after a proven miss, the orchestrator can reconcile these promises with current memory without rebuilding the whole history.
+- A promise to remember and return, or a request to step aside temporarily, gets an explicit return condition. The orchestrator checks it at the next relevant planning touch instead of making a person remember.
 - Each task receives short applicable instructions: what to do, what not to repeat, and how to verify the result. Execution does not reread project history or receive opaque memory references.
 - One participant's accepted lessons become available to the other orchestrators through the shared repository instead of remaining trapped in a personal chat.
 - Three context layers stay separate: the canonical repository evolves only the universal formula, a project orchestrator only organizes one project, and all work happens in separate task, discovery, lab, or maintenance contexts.
-- A command or correct plan is no longer treated as a completed transition by itself: the orchestrator verifies actual launch and result return, while the executing task verifies its own protected access, acceptance, and live action. The next step never relies on unverified state, and verification is not duplicated.
+- A new or resumed task counts as started only after an observable action. If execution answers with another plan, the orchestrator repairs once and then changes route instead of repeating reminders.
+- A task result is written to shared durable state before it wakes the orchestrator. A lost agent message therefore cannot lose completed work or make a person poll for status.
+- A lightweight independent check verifies that the orchestrator still holds the current DOD, returns, deferred commitments, and active work. It routes bounded repair or timely rotation without entering execution.
 - The tracker reflects the real `now / next / blocked / done` picture and changes only on material work events.
 - Work names and references are self-explanatory: the orchestrator always names a task by its tracker id and short outcome, while a PR is shown as that task's artifact rather than a substitute for its meaning.
 - The orchestrator periodically checks unfinished work: every open task, PR, branch, or task context needs a clear purpose and exit. Forgotten work neither accumulates silently nor gets deleted without proof.
@@ -63,7 +67,7 @@ The human may still need to grant repository/network access or approve merge. Th
 - each current participant's role, orchestrator, framework check, and required access;
 - a usable route from meetings, transcripts, chat, docs, or approved manual notes into shared state;
 - only the environments, current deployed revision, protected pointers, merge/deploy authority, and recovery route needed by the first DOD;
-- the accepted goal, first DOD, tracker view, active orchestrator, Return Sync route, and exact next action.
+- the accepted goal, DOD Control Line, tracker view, active orchestrator, Governor baseline, Execution Lease and durable Return Sync routes, and exact next action.
 
 GitHub Repo + Issues/Projects/PRs and Fathom are the recommended, best-supported setup, not a vendor lock-in. Equivalent tools are valid when they provide the same durable linked state, permissions, history, and agent access. The framework is committed once into the project; every participant receives it through the shared repo, while their own orchestrator proves local `doctor` and access readiness. One machine never certifies another.
 
@@ -93,6 +97,7 @@ Historical snapshots remain available through Git releases and tags. Current ski
 - Meetings and asynchronous local work converge through shared Git-backed state. An absent participant blocks only overlapping work.
 - Before work starts, the orchestrator resolves stable product anchors, follows their current decision and lesson links, and gives the task an executable Memory Brief: apply, avoid, verify, and source.
 - A correction triggers a Memory Miss investigation instead of an apology-only patch. Each accepted result returns `NO_MEMORY_DELTA` or compact candidates; the orchestrator updates reusable meaning, affected work, the visible plan, and next-best-action.
+- A Governor Check independently verifies the DOD line, task leases, durable returns, detour gates, memory coverage, and orchestrator health at meaningful transitions; normal execution remains uninterrupted when the loop is healthy.
 
 People normally speak only to their orchestrator in natural language. Vydykhai uses native context creation, messaging, and UI controls when the harness supports them; otherwise it uses the shared tracker and gives one exact human action. It never treats a missing harness capability as completed automation.
 

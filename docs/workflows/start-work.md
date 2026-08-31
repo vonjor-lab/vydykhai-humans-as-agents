@@ -4,7 +4,7 @@ Goal: turn a raw or changed product topic into an approved epic brief and execut
 
 ## 1. Restore Intent
 
-Read:
+Read the current Project State control snapshot and `DOD Control Line` first, then:
 
 - latest explicit human decision;
 - product compass and DOD;
@@ -16,7 +16,7 @@ Apply source precedence. Classify new commentary as scope change, DOD gap, guard
 
 Before dispatching, re-briefing, or materially resuming a stale or paused task, compare it with current DOD/decisions, upstream results, affected entities/contracts, active work, memory, safe operational sources, and code. Identify the accepted existing mechanism the task continues; do not infer permission to create a parallel one. Record `UNCHANGED`, `PATCH_REQUIRED`, or `REBRIEF_REQUIRED`. Seven days is a re-read signal, not an automatic change. A patch, split, or re-brief maps earlier progress as `Preserved`, `Replaced`, `Added`, and `Remaining`. An ordinary continue inside a current active contract is not a re-brief or freshness event.
 
-If a future option is useful but unnecessary for the nearest DOD, recommend keeping it out of current work. After human confirmation, return an `IDEA / ADD or REFINE` candidate with its value, touch keys, source, and recall trigger.
+If a future option is useful but unnecessary for the nearest DOD, recommend keeping it out of current work. After human confirmation, return an `IDEA / ADD or REFINE` candidate with its value, touch keys, source, and recall trigger. If work deliberately steps aside, record the detour owner, target DOD/lease, return condition, and review-by before changing sequence.
 
 ## 2. Decide Whether To Discover
 
@@ -60,6 +60,7 @@ For each task, write only the execution contract. Project-wide reasoning stays w
 Title / outcome owner / backup / recipient:
 Role / profile: EXECUTION / <resolved efficient mapping>
 Goal and DOD impact:
+DOD Control Line contribution: <accepted proof -> gap closed -> remaining continuation>
 Scope / out of scope:
 Scope freshness / Accepted Baseline:
 Continue from: <accepted mechanism/reference>
@@ -73,6 +74,7 @@ Expected surface / first evidence: <only when expansion risk is material>
 Verification / completion route:
 Consult when: <undeclared scope/authority/shared-contract/safety boundary, impossible DOD, or repeated no-progress stop>
 Return to / triggers: <orchestrator or tracker / named human checkpoint, irreducible blocker, terminal result>
+Execution Lease / durable return: <PREPARED identity, review-by, outbox, native wakeup>
 Dependencies / parallel boundary:
 Progress continuity: <Preserved / Replaced / Added / Remaining when patched, split, or re-briefed>
 ```
@@ -81,12 +83,12 @@ Before dispatch, classify each item as `ORCHESTRATOR_WORK`, `DISCOVERY`, `EXECUT
 
 Also classify the work as product capability, technical enabler, maintenance, research, or future option. A technical enabler does not close its parent product loop; name the product continuation and owner. Pass the resolved role profile and make its environment mapping or fallback visible only in dispatch metadata.
 
-Keep one owning execution context and canonical Candidate per accepted increment. Before dispatching the next increment, show what closed, what remains before parent acceptance, and why the next slice is a DOD gap rather than polish. Do not stretch one task across the whole product route.
+Keep one owning execution context, Execution Lease, and canonical Candidate per accepted increment. Block duplicate launch while a lease remains unresolved. Before dispatching the next increment, show what closed, what remains before parent acceptance, and why the next slice is a DOD gap rather than polish.
 
 ## 6. Approve And Publish
 
 Show the brief, task map, sequence, ownership, checkpoints, Memory Brief, open decisions, and risks. Ask for human approval.
 
-After approval, create/update each task's one current contract, formal parent/dependencies where supported, and tracker projection together, then return the sequence to the Framework Orchestrator. Every implementation task starts in role `EXECUTION` on the efficient profile: it continues the accepted mechanism, resolves ordinary failures autonomously, consults only at a material undeclared boundary, never climbs effort levels mechanically, runs `$accept-work`, records each Memory Brief item as applied/missed/contradicted/not exercised, and publishes Return Sync with a unique receipt id plus `NO_MEMORY_DELTA` or compact candidates only at a named human checkpoint, irreducible blocker, or terminal result. Its title is `<work-id> [<track>] [<mode>] — <short outcome>` using the owning Issue or stable tracker key, never a PR; normal execution omits the mode. Before declaring launch, the orchestrator reads back and corrects the canonical title plus actual link, role/profile, active start, and Return Sync route. The task does not run orchestration or alignment workflows.
+After approval, create/update each task's one current contract, formal parent/dependencies where supported, and tracker projection together, then return the sequence to the Framework Orchestrator. Every implementation task starts in role `EXECUTION` on the efficient profile: it continues the accepted mechanism, performs the first safe observable action in the launch/resume turn, resolves ordinary failures autonomously, consults only at a material undeclared boundary, never climbs effort levels mechanically, and runs `$accept-work`. At a declared return trigger it writes the full unique-id Return Sync to the durable outbox before sending the same id as a native wakeup. Its title is `<work-id> [<track>] [<mode>] — <short outcome>` using the owning Issue or stable tracker key, never a PR; normal execution omits the mode. Before declaring launch, the orchestrator reads back title, actual link, role/profile, exact base, `PREPARED -> STARTED` lease evidence, and return route. The task does not run orchestration or alignment workflows.
 
 Do not implement in this workflow.

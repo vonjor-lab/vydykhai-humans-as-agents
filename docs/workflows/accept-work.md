@@ -20,6 +20,7 @@ Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory 
 - product loop or linked enabler;
 - progress continuity and, for an enabler, `Unlocks / Still missing / next product slice`;
 - reported parent DOD impact; the orchestrator decides parent closure and sequence;
+- Execution Lease identity/state and DOD Control Line contribution;
 - human checkpoint;
 - Lab/Peer Review contract when used;
 - current approach and why material pivots replaced earlier paths;
@@ -95,9 +96,12 @@ Keep fixes, smoke, and manual merge in the owning task context. After human conf
 - report `Memory Brief result` item by item as `applied / missed / contradicted / not exercised`; a miss is evidence for orchestrator-owned Memory Reflection and a representative regression scenario.
 - report boundary consultations and any deliberately changed or unexpected surfaces.
 - publish terminal Return Sync with learning/approach evidence plus `Memory candidates: NO_MEMORY_DELTA`, `task-local only`, or compact `ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT` candidates containing type, current value, touch keys, relations, and safe source. The orchestrator integrates reusable candidates into the graph; the task never edits shared memory and not every task note is promoted.
+- write that complete Return Sync to the durable task/tracker outbox first, then send the same receipt id as the native wakeup. Report only through `SENT`; the orchestrator owns `RECEIVED -> CONSUMED -> ROUTED` and lease closure. Native loss does not justify human polling or recreating an already durable result.
 - include `Artifact disposition` for the context, PR, branch, worktree, runtime, and monitor. Close or clean only what is proven safe to remove, with unique work incorporated or preserved. Preserve ambiguous evidence; mark useful stale work `SALVAGE` for transfer onto the current Accepted Baseline rather than reviving it wholesale, and give `WAITING` or `RETIRE` an owner plus re-entry or cleanup condition. The orchestrator consumes this result and routes any separate maintenance without performing it.
 
 Before merge, deploy, spend, or shared-state mutation, read back owning acceptance plus fresh exact actor, environment, revision, permitted mutation, and stop conditions as the Action Receipt. Acceptance, merge, and deploy are separate authorities; an absent, stale, or cross-environment receipt is `BLOCKED` for that action.
+
+If a timeout, empty response, transport loss, or context failure follows a possible paid/external/shared-state action, return `OUTCOME_UNKNOWN`, freeze replay, and reconcile exact provider/runtime/durable receipts. Do not infer failure or retry from missing chat output.
 
 For a rejected Candidate, human «do it differently», or statement that the direction was already known, record learning/approach and miss evidence and return a `DECISION` or `LESSON` candidate when reusable. Apply a clear task-local correction, but leave full graph retrieval, miss classification, and impact analysis to the orchestrator. Any successor starts from the Accepted Baseline plus refreshed Memory Brief, preserves proven parts, and rebuilds failed parts using those lessons.
 

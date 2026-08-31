@@ -25,8 +25,8 @@ The orchestrator selects the required skill and workflow.
 
 ## Durable Artifacts
 
-- `project-state-template.md`: compact current project/stream dashboard.
-- `project-memory-graph-template.md`: stable anchors, atomic reusable meaning, typed relations, executable retrieval, miss reflection, and regression scenarios in one shared graph.
+- `project-state-template.md`: compact current dashboard for the DOD line, execution leases, pending returns, detours, and next action.
+- `project-memory-graph-template.md`: stable anchors, reusable meaning, pending memory events, typed relations, and live current/next/prior-miss retrieval probes.
 - `idea-memory-template.md`: compatibility input for projects migrating older Idea Memory into the graph.
 - `intent-trail-template.md`: compatibility input for projects migrating an older Intent Trail into the graph.
 - `alignment-issue-template.md`: one meeting, milestone, or compact work window.
@@ -39,6 +39,7 @@ The orchestrator selects the required skill and workflow.
 
 ```text
 node scripts/vydykhai.mjs doctor
+node scripts/vydykhai.mjs control-check --state <project-state-body> --graph <memory-graph-body>
 node scripts/vydykhai.mjs update
 ```
 

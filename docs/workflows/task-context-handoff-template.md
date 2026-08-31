@@ -12,10 +12,12 @@ Agent profile: EXECUTION / <resolved efficient mapping and fallback if any>
 Title: <work-id> [<track>] [<mode>] — <short outcome; owning Issue/stable task key, never PR; omit mode for normal execution>
 Task / outcome owner / backup / recipient:
 Return to: <orchestrator context or stable shared-tracker event>
+Execution Lease: <PREPARED id / project / repo / worktree / branch / baseline / review-by / durable outbox + wakeup>
 
 ## Outcome
 
 Goal and nearest DOD impact:
+DOD Control Line contribution: <accepted proof -> exact gap this task closes -> remaining parent continuation>
 Product loop or linked enabler:
 For an enabler: Unlocks / Still missing / next product slice and owner:
 
@@ -48,6 +50,7 @@ Return triggers: <named human checkpoint | irreducible blocker | terminal result
 ## Execution Rules
 
 - Start implementation immediately; approved planning is not repeated in the task context.
+- On launch and every material resume, make the first safe observable action in the same turn. Commentary, future-tense intention, or a plan without action is `PLAN_ONLY`, not `STARTED`. Name a real blocker or request re-brief when no safe action exists.
 - Own local planning, implementation, debugging, corrective fixes, tests, exact-current-code smoke, and technical evidence.
 - Resolve ordinary implementation failures autonomously inside the contract and burn limit. Do not send routine progress or a Return Sync for a locally resolved failure, and do not change reasoning profile mechanically.
 - Do not run `$project-launch`, `$start-work`, `$daily-alignment`, or `$framework-orchestrator` here. Use implementation/domain skills as needed and run `$accept-work` before completion.
@@ -55,13 +58,17 @@ Return triggers: <named human checkpoint | irreducible blocker | terminal result
 - If a human says an instruction was already decided or the supplied brief contradicts known direction, follow the clear current instruction inside scope and send compact miss evidence through `CONSULT`; do not search the full graph or run project-wide reflection here.
 - Apply a targeted orchestrator instruction at the next safe operation boundary. Continue unaffected work unless the instruction or safety envelope says otherwise.
 - Keep corrective fixes, human smoke, and manual merge in this context because it owns the implementation evidence.
+- Before compaction, context handoff, risky external action, or after a human-accepted checkpoint, preserve the current Accepted Baseline/Candidate and next experiment as a commit or durable artifact. Accepted work may not exist only in chat or untracked files.
+- Empty output, timeout, transport failure, or lost context after a possible paid, external, or shared-state action is `OUTCOME_UNKNOWN`. Freeze replay and ask the owning task to reconcile durable/provider/runtime receipts; never infer that no action occurred.
 
 ## Return Sync
 
 ```md
-Status: <BLOCKED_BEFORE_START | NEEDS_REBRIEF | ACCEPT | ACCEPT_WITH_FOLLOWUPS | NEEDS_FIXES | BLOCKED>
+Status: <BLOCKED_BEFORE_START | NEEDS_REBRIEF | ACCEPT | ACCEPT_WITH_FOLLOWUPS | NEEDS_FIXES | BLOCKED | OUTCOME_UNKNOWN>
 Return receipt id: <unique event id>
+Return lifecycle: <WRITTEN durable outbox -> SENT wakeup -> RECEIVED -> CONSUMED -> ROUTED; task reports only through SENT>
 Task / context / PR / commit / artifact:
+Execution Lease result: <identity/state/readback; release only after consumption and artifact disposition>
 Agent profile used / fallback:
 Accepted Baseline -> Candidate result:
 DOD impact / enabler continuation:
@@ -78,4 +85,4 @@ Risks / required follow-ups / optional future candidates:
 Recommended orchestrator next action:
 ```
 
-A launch is incomplete when the task only writes a plan. It must start execution, name a real blocker, or request re-brief. Publish Return Sync automatically only at a declared trigger through native context messaging or the durable tracker; the orchestrator must read back the same receipt id, sender, recipient, evidence, consumption, and routed next action. Do not wait for human polling. A cross-person handoff remains incomplete until recipient proof is returned.
+A launch or resume is incomplete when the task only writes a plan. It must perform an observable action, name a real blocker, or request re-brief. At a declared return trigger, first write the complete receipt to the durable task/tracker outbox, then attempt the native wakeup with the same id. Native delivery is not the authority and its loss must not lose the result. The orchestrator reconciles unconsumed outbox events at every cold path and Governor Check, then reads back sender, evidence, receipt lifecycle, consumption, DOD route, and next action. Do not wait for human polling. A cross-person handoff remains incomplete until recipient proof is returned.
