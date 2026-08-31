@@ -18,6 +18,7 @@ The orchestrator selects the required skill and workflow.
 ## Workflows
 
 - `project-launch.md`: prove project readiness, connect shared sync and participants, then activate Project State, compass, and first DOD.
+- `project-guard.md`: run the project-owned event and schedule safety check outside the active orchestrator context.
 - `framework-orchestrator.md`: restore state, dispatch, supervise, recover, rotate, and choose next-best-action.
 - `start-work.md`: turn a raw or changed topic into an epic brief and minimum task contracts.
 - `daily-alignment.md`: reconcile meeting/event/local deltas across participants.
@@ -40,6 +41,7 @@ The orchestrator selects the required skill and workflow.
 ```text
 node scripts/vydykhai.mjs doctor
 node scripts/vydykhai.mjs control-check --state <project-state-body> --graph <memory-graph-body>
+node scripts/vydykhai.mjs guard-check --state <project-state-body> --graph <memory-graph-body>
 node scripts/vydykhai.mjs update
 ```
 

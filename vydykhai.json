@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.21.1",
+  "version": "1.22.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -85,6 +85,40 @@
       "milestone-or-framework-update",
       "context-compaction-or-loss",
       "active-24-hours"
+    ]
+  },
+  "projectGuardPolicy": {
+    "policy": "external-event-and-schedule",
+    "defaultIntervalMinutes": 30,
+    "healthyPath": "deterministic-no-model",
+    "anomalyProfile": "maximum-available",
+    "states": [
+      "active",
+      "limited",
+      "missing"
+    ],
+    "actions": [
+      "noop",
+      "wake",
+      "audit-required"
+    ],
+    "requiredCapabilities": [
+      "independent-trigger",
+      "durable-state-read",
+      "active-context-read",
+      "native-wakeup",
+      "fresh-context-start",
+      "idempotent-incident"
+    ],
+    "triggers": [
+      "project-activation",
+      "task-dispatch-or-resume",
+      "return-sync-written",
+      "human-correction-or-detour",
+      "lease-review-due",
+      "milestone-or-framework-update",
+      "context-compaction-or-loss",
+      "active-timer"
     ]
   },
   "executionLeasePolicy": {

@@ -53,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.21.1");
+    assert.equal(lock.installedVersion, "1.22.0");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -78,6 +78,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /EXECUTION=efficient-bounded/);
     assert.match(doctor.stdout, /Project activation: evidence-backed-project-activation; 8 live checks via project-launch/);
     assert.match(doctor.stdout, /Control loop: governor-audited-event-loop; Project State v2/);
+    assert.match(doctor.stdout, /Project Guard: external-event-and-schedule; healthy=deterministic-no-model; anomaly=maximum-available/);
     assert.match(doctor.stdout, /Execution leases: one-work-one-owning-context/);
     assert.match(doctor.stdout, /Task returns: durable-outbox-native-wakeup/);
     assert.match(doctor.stdout, /Rotation: independent-health-gated; independent check after 2 compactions or 24 active hours/);
@@ -92,6 +93,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     delete legacyManifest.actionReceiptPolicy;
     delete legacyManifest.projectActivationPolicy;
     delete legacyManifest.controlLoopPolicy;
+    delete legacyManifest.projectGuardPolicy;
     delete legacyManifest.executionLeasePolicy;
     delete legacyManifest.taskReturnPolicy;
     delete legacyManifest.rotationPolicy;
@@ -109,6 +111,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(legacyDoctor.stdout, /Vydykhai 1\.18\.0/);
     assert.match(legacyDoctor.stdout, /Project activation: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Control loop: not declared by installed version/);
+    assert.match(legacyDoctor.stdout, /Project Guard: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Execution leases: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Task returns: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Rotation: not declared by installed version/);
@@ -127,7 +130,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.21\.1/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.22\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -169,6 +172,13 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("current-dod-line"));
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("pending-return-inbox"));
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("actual-orchestrator-context"));
+  assert.equal(manifest.projectGuardPolicy.policy, "external-event-and-schedule");
+  assert.equal(manifest.projectGuardPolicy.defaultIntervalMinutes, 30);
+  assert.equal(manifest.projectGuardPolicy.healthyPath, "deterministic-no-model");
+  assert.equal(manifest.projectGuardPolicy.anomalyProfile, "maximum-available");
+  assert.deepEqual(manifest.projectGuardPolicy.actions, ["noop", "wake", "audit-required"]);
+  assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("independent-trigger"));
+  assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("idempotent-incident"));
   assert.equal(manifest.executionLeasePolicy.policy, "one-work-one-owning-context");
   assert.deepEqual(manifest.executionLeasePolicy.states, [
     "prepared",
@@ -419,6 +429,7 @@ test("control-check closes DOD, lease, return, detour, and memory transitions", 
 Snapshot as of: event-7
 ## Control Snapshot
 Governor: HEALTHY | Receipt: gov-7 | Trigger: dispatch | Audited event: event-7 | Route: deterministic check
+Project Guard: ACTIVE | Runner: local-scheduler/guard-example | Independent: YES | Event route: durable-outbox-and-context-watermark | Schedule: every-30-minutes | Last proof: now/PASS/scheduler | Wakeup: active-orchestrator-pointer | Incident: none
 Orchestrator health: HEALTHY | Context: current | Profile: ORCHESTRATOR / maximum / current | Last compaction/context-loss signal: 0 / none
 Last independent check: now / state+graph+tracker / PASS | Same-class failures since repair: 0
 DOD Control Line: accepted visible baseline -> close actor flow -> smoke -> continue
@@ -501,9 +512,43 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     assert.equal(healthy.status, 0, healthy.stderr);
     assert.equal(JSON.parse(healthy.stdout).ok, true);
 
+    const healthyGuard = run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]);
+    assert.equal(healthyGuard.status, 0, healthyGuard.stderr);
+    assert.equal(JSON.parse(healthyGuard.stdout).action, "NOOP");
+
+    const waitingReturn = healthyState.replace(
+      "| --- | --- | --- |\n## Detours",
+      "| --- | --- | --- |\n| RET-9 | task-one | SENT |\n## Detours",
+    );
+    await writeFile(statePath, waitingReturn);
+    const wakeGuard = run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]);
+    assert.equal(wakeGuard.status, 0, wakeGuard.stderr);
+    const wakeResult = JSON.parse(wakeGuard.stdout);
+    assert.equal(wakeResult.action, "WAKE");
+    assert.match(wakeResult.incidentId, /^guard-[a-f0-9]{16}$/);
+    const wakeAgain = JSON.parse(run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+    assert.equal(wakeAgain.incidentId, wakeResult.incidentId);
+    await writeFile(statePath, waitingReturn.replace("Incident: none", `Incident: ${wakeResult.incidentId}`));
+    const escalatedWake = JSON.parse(run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+    assert.equal(escalatedWake.action, "AUDIT_REQUIRED");
+    assert.equal(escalatedWake.incidentId, wakeResult.incidentId);
+
+    const brokenDod = healthyState.replace(
+      "DOD Control Line: accepted visible baseline -> close actor flow -> smoke -> continue",
+      "DOD Control Line: <unresolved>",
+    );
+    await writeFile(statePath, brokenDod);
+    const auditGuard = run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]);
+    assert.equal(auditGuard.status, 0, auditGuard.stderr);
+    assert.equal(JSON.parse(auditGuard.stdout).action, "AUDIT_REQUIRED");
+
+    await writeFile(statePath, healthyState);
+
     const mismatches = [
       [healthyState.replace("| WORK-1 [DOD] — close actor flow | WORKING |", "| WORK-1 [DOD] — close actor flow | PREPARED |"), healthyGraph, /unresolved transition PREPARED/],
       [healthyState.replace("Receipt: gov-7", "Receipt: <missing>"), healthyGraph, /Governor receipt is missing or unresolved/],
+      [healthyState.replace("Project Guard: ACTIVE", "Project Guard: LIMITED"), healthyGraph, /Project Guard requires LIMITED/],
+      [healthyState.replace("Independent: YES", "Independent: NO"), healthyGraph, /Project Guard is not independently triggered/],
       [healthyState.replace("Trigger: dispatch", "Trigger: <missing>"), healthyGraph, /Governor trigger is missing or unresolved/],
       [healthyState.replace("Audited event: event-7", "Audited event: event-6"), healthyGraph, /Governor audited event-6 but current snapshot is event-7/],
       [healthyState.replace("Profile: ORCHESTRATOR / maximum / current", "Profile: ORCHESTRATOR / medium / current"), healthyGraph, /orchestrator profile is not explicitly ORCHESTRATOR \/ maximum/],
