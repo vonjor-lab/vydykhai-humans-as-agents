@@ -18,6 +18,7 @@ DOD Control Line: <current DOD -> last accepted visible proof -> exact remaining
 Memory coverage: <graph/schema/watermark -> CURRENT/NEXT/PRIOR_MISS probes -> PASS, gap, or migration>
 Project Memory Graph: <current canonical link> | Last memory delta: <event id / NO_CHANGE / checked>
 Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current / pending / window / PR>
+Framework context readback: <active orchestrator own cwd> | HEAD: <accepted project revision> | Doctor: <installed/source/schema/integrity> | Core reread: <PASS / gap> | Result: <PASS / ACTUAL_CONTEXT_COHERENCE>
 Agent routing: <latest flagship policy> | Resolved: <ORCHESTRATOR / DISCOVERY / EXECUTION mappings> | Checked: <date/source> | Fallback: <none/pending/reason>
 Project activation: <PROJECT_READY | PROJECT_READY_WITH_LIMITS | NEEDS_DECISION | BLOCKED_BY_ACCESS> | Checked: <date/event>
 Shared Sync: Repo: <url> | Tracker: <url> | Readiness: <READY | SYNC_LIMITED with gaps>
@@ -104,4 +105,4 @@ Show only live work and the immediate next queue. Terminal history leaves this t
 <!-- vydykhai:project-state:end -->
 ```
 
-Update this body after activation, dispatch or resume, material re-brief, human detour/correction, blocker, Return Sync consumption, acceptance, merge, alignment, health review, framework/schema update, or rotation. Write the event to its owning task or tracker record, then atomically rebuild this current view. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before declaring activation, schema migration, Governor `HEALTHY`, or rotation cutover. A Governor receipt closes only the exact event named by both `Snapshot as of` and `Audited event`; an older healthy receipt never authorizes a newer transition.
+Update this body after activation, dispatch or resume, material re-brief, human detour/correction, blocker, Return Sync consumption, acceptance, merge, alignment, health review, framework/schema update, or rotation. Write the event to its owning task or tracker record, then atomically rebuild this current view. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before declaring activation, schema migration, Governor `HEALTHY`, or rotation cutover. Framework activation additionally requires the active orchestrator's own cwd/HEAD and live/offline doctor readback; a maintenance or verification worktree cannot satisfy it. A Governor receipt closes only the exact event named by both `Snapshot as of` and `Audited event`; an older healthy receipt never authorizes a newer transition.
