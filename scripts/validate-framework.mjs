@@ -99,6 +99,31 @@ for (const check of [
     fail(`Control loop policy is missing check: ${check}`);
   }
 }
+if (manifest.projectGuardPolicy?.policy !== "external-event-and-schedule") {
+  fail("Project Guard policy must use external-event-and-schedule");
+}
+if (
+  manifest.projectGuardPolicy?.defaultIntervalMinutes !== 30 ||
+  manifest.projectGuardPolicy?.healthyPath !== "deterministic-no-model" ||
+  manifest.projectGuardPolicy?.anomalyProfile !== "maximum-available"
+) {
+  fail("Project Guard cost or anomaly profile is invalid");
+}
+for (const action of ["noop", "wake", "audit-required"]) {
+  if (!manifest.projectGuardPolicy?.actions?.includes(action)) fail(`Project Guard is missing action: ${action}`);
+}
+for (const capability of [
+  "independent-trigger",
+  "durable-state-read",
+  "active-context-read",
+  "native-wakeup",
+  "fresh-context-start",
+  "idempotent-incident",
+]) {
+  if (!manifest.projectGuardPolicy?.requiredCapabilities?.includes(capability)) {
+    fail(`Project Guard is missing capability: ${capability}`);
+  }
+}
 if (manifest.executionLeasePolicy?.policy !== "one-work-one-owning-context") {
   fail("Execution lease policy must use one-work-one-owning-context");
 }
@@ -237,6 +262,7 @@ const projectMemoryGraphTemplate = await text("docs/workflows/project-memory-gra
 const ideaMemoryTemplate = await text("docs/workflows/idea-memory-template.md");
 const intentTrailTemplate = await text("docs/workflows/intent-trail-template.md");
 const orchestratorWorkflow = await text("docs/workflows/framework-orchestrator.md");
+const projectGuardWorkflow = await text("docs/workflows/project-guard.md");
 const projectLaunchWorkflow = await text("docs/workflows/project-launch.md");
 const dailyAlignmentWorkflow = await text("docs/workflows/daily-alignment.md");
 const taskHandoffTemplate = await text("docs/workflows/task-context-handoff-template.md");
@@ -358,6 +384,7 @@ for (const value of [
   "Operational sources:",
   "Shared Sync:",
   "Governor:",
+  "Project Guard:",
   "Audited event:",
   "Orchestrator health:",
   "Last independent check:",
@@ -458,6 +485,8 @@ if (
   !bootstrap.includes("Project State v2") ||
   !bootstrap.includes("Project Memory Graph v3") ||
   !bootstrap.includes("control-check") ||
+  !bootstrap.includes("guard-check") ||
+  !bootstrap.includes("Project Guard") ||
   !bootstrap.includes("one machine cannot certify another") ||
   !projectLaunchWorkflow.includes("doctor` proves framework integrity only") ||
   !projectLaunchWorkflow.includes("Never create disposable probe issues") ||
@@ -465,7 +494,10 @@ if (
   !projectLaunchWorkflow.includes("current deployed baseline or revision") ||
   !projectLaunchWorkflow.includes("never by leaving two active contexts") ||
   !projectLaunchWorkflow.includes("PROJECT_READY_WITH_LIMITS") ||
+  !projectLaunchWorkflow.includes("independent scheduler") ||
+  !projectLaunchWorkflow.includes("Project Guard") ||
   !projectLaunchSkill.includes("one machine cannot certify another") ||
+  !projectLaunchSkill.includes("Project Guard") ||
   !projectLaunchSkill.includes("never leave two active contexts") ||
   !orchestratorSkill.includes("Project Activation Receipt") ||
   !orchestratorWorkflow.includes("Project Activation gates pass")
@@ -543,6 +575,19 @@ if (
   fail("Orchestrator workflow is missing the closed Governor, lease, DOD, detour, or return loop");
 }
 if (
+  !projectGuardWorkflow.includes("operation, not a permanent agent or conversation") ||
+  !projectGuardWorkflow.includes("`NOOP`") ||
+  !projectGuardWorkflow.includes("`WAKE`") ||
+  !projectGuardWorkflow.includes("`AUDIT_REQUIRED`") ||
+  !projectGuardWorkflow.includes("fresh ephemeral evaluator") ||
+  !projectGuardWorkflow.includes("idempotent incident") ||
+  !projectGuardWorkflow.includes("newer human command with no observable action") ||
+  !orchestratorWorkflow.includes("external Project Guard") ||
+  !orchestratorSkill.includes("project-owned Project Guard")
+) {
+  fail("Project Guard is missing independent liveness, silent healthy path, or anomaly escalation");
+}
+if (
   !orchestratorWorkflow.includes("derive a Touch Set") ||
   !orchestratorWorkflow.includes("Memory Brief") ||
   !orchestratorWorkflow.includes("graph watermark") ||
@@ -571,6 +616,16 @@ if (
   !taskHandoffTemplate.includes("Title: <work-id> [<track>] [<mode>] — <short outcome")
 ) {
   fail("Context naming or human-facing reference contract is incomplete");
+}
+if (
+  !orchestratorWorkflow.includes("[FW 1.22.0] [SYSTEM] [MAINT] — Adopt") ||
+  !orchestratorWorkflow.includes("[GUARD <incident>] [SYSTEM] [MAINT] — Repair control loop") ||
+  !orchestratorWorkflow.includes("never reuse the Project State issue") ||
+  !projectGuardWorkflow.includes("Project-goal task titles remain") ||
+  !projectLaunchWorkflow.includes("Preserve this number-first format for every project-goal task") ||
+  !projectLaunchWorkflow.includes("Only service work that maintains the coordination system")
+) {
+  fail("Control-plane naming exception is missing or affects ordinary task titles");
 }
 if (
   !orchestratorWorkflow.includes("open recall commitments") ||

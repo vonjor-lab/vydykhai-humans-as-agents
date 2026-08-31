@@ -12,6 +12,7 @@ Snapshot as of: <latest durable event / revision / date>
 ## Control Snapshot
 
 Governor: <HEALTHY | REPAIR | ROTATE> | Receipt: <id/link> | Trigger: <event or active 24h> | Audited event: <exact Snapshot as of value> | Route: <deterministic check / fresh independent context>
+Project Guard: <ACTIVE | LIMITED | MISSING> | Runner: <project-owned external adapter/id> | Independent: <YES | NO> | Event route: <hook/outbox/activity watermark> | Schedule: <interval/native job> | Last proof: <time/result/source> | Wakeup: <active-context route> | Incident: <none/id>
 Orchestrator health: <HEALTHY | REVIEW | REPAIR | ROTATE> | Context: <canonical title/link> | Profile: ORCHESTRATOR / maximum / <resolved mapping> | Last compaction/context-loss signal: <numeric count / date or none>
 Last independent check: <date / exact sources / result> | Same-class failures since repair: <count>
 DOD Control Line: <current DOD -> last accepted visible proof -> exact remaining gap -> next-best-action>
@@ -50,7 +51,7 @@ Updated from durable event: <event/link/date>
 | Inputs | <...> | <direct access or intake route> | <...> |
 | Operations for current DOD | <...> | <environment/pointers/authority/recovery> | <...> |
 | Course | <...> | <accepted compass/current DOD/tracker route> | <...> |
-| Control loop | <...> | <Governor receipt/orchestrator/Return route/next action> | <...> |
+| Control loop | <...> | <Project Guard registration/Governor receipt/orchestrator/Return route/next action> | <...> |
 
 ## Participants
 
@@ -105,4 +106,4 @@ Show only live work and the immediate next queue. Terminal history leaves this t
 <!-- vydykhai:project-state:end -->
 ```
 
-Update this body after activation, dispatch or resume, material re-brief, human detour/correction, blocker, Return Sync consumption, acceptance, merge, alignment, health review, framework/schema update, or rotation. Write the event to its owning task or tracker record, then atomically rebuild this current view. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before declaring activation, schema migration, Governor `HEALTHY`, or rotation cutover. Framework activation additionally requires the active orchestrator's own cwd/HEAD and live/offline doctor readback; a maintenance or verification worktree cannot satisfy it. A Governor receipt closes only the exact event named by both `Snapshot as of` and `Audited event`; an older healthy receipt never authorizes a newer transition.
+Update this body after activation, dispatch or resume, material re-brief, human detour/correction, blocker, Return Sync consumption, acceptance, merge, alignment, health review, framework/schema update, or rotation. Write the event to its owning task or tracker record, then atomically rebuild this current view. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before declaring activation, schema migration, Governor `HEALTHY`, or rotation cutover; an external runner uses `guard-check` on events and schedule. Framework activation additionally requires the active orchestrator's own cwd/HEAD and live/offline doctor readback; a maintenance or verification worktree cannot satisfy it. A Governor receipt closes only the exact event named by both `Snapshot as of` and `Audited event`; an older healthy receipt never authorizes a newer transition.

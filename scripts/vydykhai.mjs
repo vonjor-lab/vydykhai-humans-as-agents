@@ -36,6 +36,7 @@ Usage:
   node scripts/vydykhai.mjs install <target-repo> [--force]
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--json]
   node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--json]
+  node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--json]
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
 `;
 }
@@ -120,6 +121,14 @@ async function loadManifest(root) {
       manifest.controlLoopPolicy.projectStateVersion !== 2)
   ) {
     throw new Error(`Invalid control loop policy in ${file}`);
+  }
+  if (
+    manifest.projectGuardPolicy &&
+    (manifest.projectGuardPolicy.policy !== "external-event-and-schedule" ||
+      manifest.projectGuardPolicy.healthyPath !== "deterministic-no-model" ||
+      manifest.projectGuardPolicy.anomalyProfile !== "maximum-available")
+  ) {
+    throw new Error(`Invalid project guard policy in ${file}`);
   }
   if (manifest.executionLeasePolicy?.policy && manifest.executionLeasePolicy.policy !== "one-work-one-owning-context") {
     throw new Error(`Invalid execution lease policy in ${file}`);
@@ -365,6 +374,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
     agentRoutingPolicy: manifest.agentRoutingPolicy,
     projectActivationPolicy: manifest.projectActivationPolicy,
     controlLoopPolicy: manifest.controlLoopPolicy,
+    projectGuardPolicy: manifest.projectGuardPolicy,
     executionLeasePolicy: manifest.executionLeasePolicy,
     taskReturnPolicy: manifest.taskReturnPolicy,
     rotationPolicy: manifest.rotationPolicy,
@@ -408,6 +418,14 @@ function printDoctor(result, asJson) {
     );
   } else {
     console.log("Control loop: not declared by installed version");
+  }
+  if (result.projectGuardPolicy?.policy) {
+    console.log(
+      `Project Guard: ${result.projectGuardPolicy.policy}; healthy=${result.projectGuardPolicy.healthyPath}; ` +
+        `anomaly=${result.projectGuardPolicy.anomalyProfile}`,
+    );
+  } else {
+    console.log("Project Guard: not declared by installed version");
   }
   if (result.executionLeasePolicy?.policy) {
     console.log(`Execution leases: ${result.executionLeasePolicy.policy}`);
@@ -528,6 +546,7 @@ function validateProjectState(content, manifest) {
   for (const field of [
     "Snapshot as of:",
     "Governor:",
+    "Project Guard:",
     "Orchestrator health:",
     "Last independent check:",
     "DOD Control Line:",
@@ -545,6 +564,27 @@ function validateProjectState(content, manifest) {
   const governorState = governorLine.match(/^Governor:\s*(HEALTHY|REPAIR|ROTATE)\b/)?.[1];
   if (!governorState) issues.push(`${label}: Governor state is missing or unresolved`);
   else if (governorState !== "HEALTHY") issues.push(`${label}: Governor requires ${governorState}`);
+  const guardLine = content.match(/^Project Guard:.*$/m)?.[0] || "";
+  const guardState = guardLine.match(/^Project Guard:\s*(ACTIVE|LIMITED|MISSING)\b/)?.[1];
+  if (!guardState) issues.push(`${label}: Project Guard state is missing or unresolved`);
+  else if (guardState !== "ACTIVE") issues.push(`${label}: Project Guard requires ${guardState}`);
+  for (const [field, pattern] of [
+    ["runner", /\|\s*Runner:\s*([^|]+)/],
+    ["event route", /\|\s*Event route:\s*([^|]+)/],
+    ["schedule", /\|\s*Schedule:\s*([^|]+)/],
+    ["last proof", /\|\s*Last proof:\s*([^|]+)/],
+    ["wakeup", /\|\s*Wakeup:\s*([^|]+)/],
+    ["incident", /\|\s*Incident:\s*([^|]+)/],
+  ]) {
+    const value = guardLine.match(pattern)?.[1]?.trim();
+    if (!value || /<.*>/.test(value)) issues.push(`${label}: Project Guard ${field} is missing or unresolved`);
+  }
+  const guardIndependent = guardLine.match(/\|\s*Independent:\s*(YES|NO)\b/)?.[1];
+  if (guardIndependent !== "YES") issues.push(`${label}: Project Guard is not independently triggered`);
+  const guardIncident = guardLine.match(/\|\s*Incident:\s*([^|]+)/)?.[1]?.trim();
+  if (guardIncident && guardIncident.toLowerCase() !== "none" && !/<.*>/.test(guardIncident)) {
+    issues.push(`${label}: Project Guard incident ${guardIncident} requires reconciliation`);
+  }
   const governorReceipt = governorLine.match(/\|\s*Receipt:\s*([^|]+)/)?.[1]?.trim();
   const governorTrigger = governorLine.match(/\|\s*Trigger:\s*([^|]+)/)?.[1]?.trim();
   if (!governorReceipt || /<.*>/.test(governorReceipt)) issues.push(`${label}: Governor receipt is missing or unresolved`);
@@ -672,6 +712,43 @@ async function controlCheck(statePath, graphPath) {
   };
 }
 
+function classifyGuard(result, stateContent) {
+  if (result.ok) return { action: "NOOP", incidentId: null };
+  const wakeOnly = [
+    /unresolved transition (PREPARED|RETURNED)/,
+    /pending return .* requires reconciliation/,
+    /detour .* is due for return/,
+    /memory event .* is still pending/,
+  ];
+  const issues = [...result.stateIssues, ...result.graphIssues];
+  const action = issues.length > 0 && issues.every((issue) => wakeOnly.some((pattern) => pattern.test(issue)))
+    ? "WAKE"
+    : "AUDIT_REQUIRED";
+  const snapshot = stateContent.match(/^Snapshot as of:\s*(.+)$/m)?.[1]?.trim() || "unknown";
+  const recordedIncident = stateContent.match(/^Project Guard:.*\|\s*Incident:\s*([^|\n]+)/m)?.[1]?.trim();
+  const incidentId = recordedIncident && recordedIncident.toLowerCase() !== "none" && !/<.*>/.test(recordedIncident)
+    ? recordedIncident
+    : `guard-${sha256(JSON.stringify({ snapshot, issues: [...issues].sort() })).slice(0, 16)}`;
+  return { action, incidentId };
+}
+
+async function guardCheck(statePath, graphPath) {
+  const stateContent = await readFile(statePath, "utf8");
+  const result = await controlCheck(statePath, graphPath);
+  return { ...result, ...classifyGuard(result, stateContent) };
+}
+
+function printGuardCheck(result, asJson) {
+  if (asJson) {
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+  console.log(`Project Guard action: ${result.action}`);
+  if (result.incidentId) console.log(`Incident: ${result.incidentId}`);
+  console.log(`Control check: ${result.ok ? "PASS" : "MISMATCH"}`);
+  for (const issue of [...result.stateIssues, ...result.graphIssues]) console.log(`- ${issue}`);
+}
+
 function printControlCheck(result, asJson) {
   if (asJson) {
     console.log(JSON.stringify(result, null, 2));
@@ -732,6 +809,15 @@ async function main() {
     const result = await controlCheck(statePath, graphPath);
     printControlCheck(result, flags.json);
     if (!result.ok) process.exitCode = 1;
+    return;
+  }
+
+  if (command === "guard-check") {
+    if (!flags.state || !flags.graph) throw new Error(`guard-check requires --state and --graph\n\n${usage()}`);
+    const statePath = path.resolve(flags.state);
+    const graphPath = path.resolve(flags.graph);
+    const result = await guardCheck(statePath, graphPath);
+    printGuardCheck(result, flags.json);
     return;
   }
 

@@ -2,7 +2,7 @@
 
 This file is for the coding agent, not the human. When a user asks to connect Vydykhai to the current project, own the technical setup end to end.
 
-The bootstrap request authorizes creation of a setup branch, framework install/update, validation, a setup commit or PR, Project State, and a dedicated Framework Orchestrator. When the user explicitly starts a project with no repository, it also authorizes preparation of a private Git-backed operating repo after owner/host confirmation. It does not authorize merge, public visibility, destructive overwrite, paid actions, production changes, or disclosure of private data.
+The bootstrap request authorizes creation of a setup branch, framework install/update, validation, a setup commit or PR, Project State, a dedicated Framework Orchestrator, and one read-only project-owned Project Guard schedule. When the user explicitly starts a project with no repository, it also authorizes preparation of a private Git-backed operating repo after owner/host confirmation. It does not authorize merge, public visibility, destructive overwrite, paid actions, production changes, or disclosure of private data.
 
 ## Preconditions
 
@@ -54,10 +54,11 @@ An explicit human decision may choose another profile for a named scope. Maximum
 8. Map only operational access required by the first DOD: environments/services, current deployed baseline or revision, merge and deploy authority, secret-system references, non-destructive access check, backup/rollback route, and stop conditions. Never request every credential up front, store a secret value, infer production authority, or treat merge as deploy. Missing future-only access is `NOT_REQUIRED`; a required incomplete protected pointer blocks only its dependent action.
 9. Test each current participant's required human and orchestrator access with individual least-privilege authentication. Record non-critical gaps as `SYNC_LIMITED`; do not claim complete alignment for affected work and do not block unrelated work.
 10. Reuse the registered organization-only Framework Orchestrator when current and healthy; create one only when absent. Read back its title/handle and maximum profile, then run a Governor baseline from durable sources. A replacement uses confirmed rotation rather than creating a second active context.
-11. Configure Return Sync as durable task/tracker outbox first and native cross-context wakeup second; use one monitor only when neither normal route exists. Verify one id through `WRITTEN / SENT / RECEIVED / CONSUMED / ROUTED` on the first real dispatch without a separate model run or human polling.
-12. If the environment cannot create resumable contexts, use the closest tracker-linked handle and explain the limitation once.
-13. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>`, publish and read back the Governor baseline and Project Activation Receipt, then use `PROJECT_READY`, `PROJECT_READY_WITH_LIMITS`, `NEEDS_DECISION`, or `BLOCKED_BY_ACCESS`; never collapse a gap into readiness.
-14. Tell other participants to pull the accepted setup change. Their orchestrators run `doctor`, prove their own Shared Sync/input readiness, and update their receipt when they next resume. Missing participants block only overlapping work.
+11. Install one Project Guard outside the orchestrator context with a native harness automation, OS scheduler plus agent CLI, CI scheduler, or equivalent. Require deterministic `guard-check`, actual-context read, native wakeup, fresh maximum evaluator, and idempotent incident handling; target the Project State pointer rather than one context id. Record `LIMITED` when independent scheduling is unavailable.
+12. Configure Return Sync as durable task/tracker outbox first and native cross-context wakeup second; use one monitor only when neither normal route exists. Verify one id through `WRITTEN / SENT / RECEIVED / CONSUMED / ROUTED` on the first real dispatch without a separate model run or human polling.
+13. If the environment cannot create resumable contexts, use the closest tracker-linked handle and explain the limitation once.
+14. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` and `guard-check` on the same snapshot, publish and read back Project Guard proof, the Governor baseline, and Project Activation Receipt, then use `PROJECT_READY`, `PROJECT_READY_WITH_LIMITS`, `NEEDS_DECISION`, or `BLOCKED_BY_ACCESS`; never collapse a gap into readiness.
+15. Tell other participants to pull the accepted setup change. Their orchestrators run `doctor`, prove their own Shared Sync/input readiness, and update their receipt when they next resume. Missing participants block only overlapping work.
 
 ## Return
 
@@ -68,7 +69,7 @@ Report only:
 - environment adapter and context mapping;
 - Project Activation Receipt and its evidence-backed status;
 - Shared Sync Contract, coordination-input route, safe operational source pointers, and access status;
-- DOD Control Line, Governor state, Execution Lease and task Return Sync mapping;
+- DOD Control Line, Project Guard registration, Governor state, Execution Lease and task Return Sync mapping;
 - setup change/PR or the exact access blocker;
 - Project State and orchestrator link/status;
 - resolved agent routing and last-check date;

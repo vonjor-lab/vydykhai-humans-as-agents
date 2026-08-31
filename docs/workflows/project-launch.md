@@ -13,6 +13,7 @@ Goal: turn one installation request into a proven shared operating project befor
 7. Resolve role-routed profiles on the latest available flagship: maximum available for `ORCHESTRATOR`, deep bounded for `DISCOVERY`, and efficient bounded for `EXECUTION`; record actual mappings, check source/date, and fallback.
 8. Configure each task to write Return Sync to a durable tracker outbox before sending the same id through native cross-context messaging. Native delivery is the wakeup; the outbox is authority. Record both routes and verify `WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED` on the first real dispatch without human polling.
 9. Reuse the registered active orchestrator when healthy and create one only when absent. Replace it only through confirmed rotation, never by leaving two active contexts. Name it `[ORCHESTRATOR] <project> — Vydykhai <version>`, read back its actual title and maximum profile, and pin or foreground exactly that one context when supported; Project State owns the current pointer.
+10. Install one project-owned Project Guard outside the active orchestrator context using the cheapest available independent scheduler. Prove event and timed routes, deterministic `guard-check`, actual-context read, native wakeup, fresh maximum evaluator, and idempotent incident handling. The runner targets the Project State pointer so it survives rotation; if no independent scheduler exists, report the exact `LIMITED` boundary instead of claiming background recovery.
 
 ## 2. Project Activation Gate
 
@@ -24,7 +25,7 @@ Record each gate as `PASS`, `LIMITED`, `BLOCKED`, or `NOT_REQUIRED`, with observ
 4. **Inputs:** an accessible route from meetings, recordings, transcripts, chat, docs, or approved manual notes into durable shared state. Prefer direct access for each relevant orchestrator; otherwise name one intake owner and a traceable approval route.
 5. **Operations for the first DOD:** only required environments/services, current deployed baseline or revision, protected pointers, merge/deploy authority, backup/rollback route, and stop conditions. Future-only access is `NOT_REQUIRED`; secret values never enter shared state.
 6. **Course:** accepted goal, users/actors, first useful outcome, nearest DOD, non-goals, initial `now / next / blocked / done` route, and named open decisions.
-7. **Control loop:** Project State v2, Project Memory Graph v3, active registered orchestrator, Governor baseline, DOD Control Line, tracker projection, Execution Lease and Return Sync mapping, and one exact next-best-action. First live Return Sync proof is recorded automatically when the first task returns.
+7. **Control loop:** Project State v2, Project Memory Graph v3, active registered orchestrator, external Project Guard, Governor baseline, DOD Control Line, tracker projection, Execution Lease and Return Sync mapping, and one exact next-best-action. First live Return Sync proof is recorded automatically when the first task returns.
 
 Use one overall result:
 
@@ -44,14 +45,14 @@ Capture only:
 - participants, role/decision scope, owner/backup convention, and availability;
 - coordination inputs, direct or intake-owner route, access evidence, and approval path;
 - safe operational sources for the first DOD: environment/service owner, current baseline/revision, protected references, runbooks, merge/deploy authority, recovery route, and last safe check, never secret values;
-- agent environment adapter, role mappings, context mapping, Return Sync route, and scope-freshness interval;
+- agent environment adapter, role mappings, context mapping, Return Sync route, Project Guard runner, and scope-freshness interval;
 - tracker projection, open decisions, immediate risks, and first next action.
 
 Treat coordination inputs as raw until distilled and approved. Fathom is the recommended meeting recorder when available; Read AI, tl;dv, another recorder, team chat, docs, or manual notes are valid by capability. A local notebook is an input/view unless it is shared, versioned, and agent-accessible.
 
 ## 4. Durable State
 
-Create or update one compact Project State using `project-state-template.md`. Store the activation receipt, DOD Control Line, Governor receipt, Execution Leases, Pending Return Inbox, detour/recall return gates, and participant readiness there. Rebuild its body atomically; do not append current state after the end marker.
+Create or update one compact Project State using `project-state-template.md`. Store the activation receipt, Project Guard registration, DOD Control Line, Governor receipt, Execution Leases, Pending Return Inbox, detour/recall return gates, and participant readiness there. Rebuild its body atomically; do not append current state after the end marker.
 
 Create one Project Memory Graph when the first reusable decision, idea, lesson, or safe operational pointer must survive its source context. Start stable anchors as relevant; keep one meaning per node and link operations to protected runbooks or secret systems.
 
@@ -61,7 +62,7 @@ For an old graph, build a side-by-side read-only v3 candidate, preserve ids/sour
 
 Configure one lightweight tracker projection. The task issue body is the current contract; Project State holds the route; the board or equivalent shows `Todo`, `Next`, `In Progress`, `In Review`, `Blocked`, `Done`, and `Parked`. Record owner, priority, formal parent/dependencies where supported, milestone or delivery window, checkpoint, and PR/artifact. Use fixed sprints only when the team needs them.
 
-Use one navigation grammar from the first task onward: `<work-id> [<track>] [<mode>] — <short outcome>`. GitHub uses the owning Issue, never a PR number; another tracker uses its stable key.
+Use one navigation grammar from the first task onward: `<work-id> [<track>] [<mode>] — <short outcome>`. GitHub uses the owning Issue, never a PR number; another tracker uses its stable key. Preserve this number-first format for every project-goal task. Only service work that maintains the coordination system instead of advancing a project goal puts a concise unique service id first, such as framework version, rotation generation, or Guard incident; never reuse the Project State issue as that work id.
 
 ## 5. Team Onboarding
 
@@ -84,4 +85,4 @@ Explain only the working loop:
 - Use `$framework-orchestrator` only after the first route is clear and its relevant activation gates pass.
 - Do not implement, deploy, smoke, or merge in the launch/orchestrator context.
 
-Publish and read back one Project Activation Receipt containing gate evidence, Project State, compass/DOD, participants, Shared Sync, operational readiness, active orchestrator, Governor `HEALTHY` receipt, first route, safe limits, and one exact next action. Return `PROJECT_READY`, `PROJECT_READY_WITH_LIMITS`, `NEEDS_DECISION`, or `BLOCKED_BY_ACCESS`; never stop at a setup summary without next-best-action.
+Publish and read back one Project Activation Receipt containing gate evidence, Project State, compass/DOD, participants, Shared Sync, operational readiness, active orchestrator, external Project Guard proof, Governor `HEALTHY` receipt, first route, safe limits, and one exact next action. Return `PROJECT_READY`, `PROJECT_READY_WITH_LIMITS`, `NEEDS_DECISION`, or `BLOCKED_BY_ACCESS`; never stop at a setup summary without next-best-action.
