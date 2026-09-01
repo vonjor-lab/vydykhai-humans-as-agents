@@ -5,9 +5,9 @@ title: "Vydykhai: Team Autopilot for People and AI"
 authors:
   - family-names: Rozhnov
     given-names: Alexander
-version: 1.23.0
+version: 1.23.1
 date-released: "2026-09-01"
 license: PolyForm-Small-Business-1.0.0
 repository-code: "https://github.com/vonjor-lab/vydykhai-humans-as-agents"
 url: "https://github.com/vonjor-lab/vydykhai-humans-as-agents"
-abstract: "A lightweight team-autopilot framework for people working on one project, each with their own AI across different computers, models, and agent environments. Vydykhai connects personal orchestrators through a shared brief, memory, tasks, and acceptance so work done separately converges into one result."
+abstract: "A lightweight team-autopilot framework for a solo builder or a team working across different AI tools, models, computers, and agent environments. Vydykhai connects personal orchestrators through shared goals, memory, tasks, acceptance, and bounded recovery so separate work converges into one result."

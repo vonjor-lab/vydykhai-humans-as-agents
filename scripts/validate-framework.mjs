@@ -653,7 +653,7 @@ if (
   fail("Context naming or human-facing reference contract is incomplete");
 }
 if (
-  !orchestratorWorkflow.includes("[FW 1.23.0] [SYSTEM] [MAINT] — Adopt") ||
+  !orchestratorWorkflow.includes("[FW 1.23.1] [SYSTEM] [MAINT] — Adopt") ||
   !orchestratorWorkflow.includes("[GUARD <incident>] [SYSTEM] [MAINT] — Repair control loop") ||
   !orchestratorWorkflow.includes("never reuse the Project State issue") ||
   !projectGuardWorkflow.includes("Project-goal task titles remain") ||
