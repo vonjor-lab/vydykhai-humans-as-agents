@@ -57,6 +57,32 @@ if (manifest.agentRoutingPolicy?.profiles?.execution?.preferredEffortWhenAvailab
   fail("Execution preferred effort mapping must be low");
 }
 if (manifest.agentRoutingPolicy?.refreshDays !== 7) fail("Agent routing refreshDays must be 7");
+if (manifest.orchestratorAdvisoryPolicy?.policy !== "control-only-advisory") {
+  fail("Orchestrator advisory policy must be control-only-advisory");
+}
+for (const field of [
+  "control-decision",
+  "available-sources",
+  "expected-orchestration-output",
+  "route-to-focused-context-when",
+]) {
+  if (!manifest.orchestratorAdvisoryPolicy?.requiredPromptFields?.includes(field)) {
+    fail(`Orchestrator advisory policy is missing prompt field: ${field}`);
+  }
+}
+for (const result of ["control-only", "route-to-focused-context"]) {
+  if (!manifest.orchestratorAdvisoryPolicy?.results?.includes(result)) {
+    fail(`Orchestrator advisory policy is missing result: ${result}`);
+  }
+}
+for (const source of ["human-decision", "durable-source", "focused-context-receipt"]) {
+  if (!manifest.orchestratorAdvisoryPolicy?.acceptedProjectEvidenceSources?.includes(source)) {
+    fail(`Orchestrator advisory policy is missing project evidence source: ${source}`);
+  }
+}
+if (manifest.orchestratorAdvisoryPolicy?.guardSignal !== "unowned-project-work") {
+  fail("Orchestrator advisory policy is missing the unowned-project-work Guard signal");
+}
 if (manifest.projectActivationPolicy?.policy !== "evidence-backed-project-activation") {
   fail("Project activation policy must be evidence-backed-project-activation");
 }
@@ -93,6 +119,8 @@ for (const check of [
   "pending-return-inbox",
   "detour-return-gates",
   "memory-coverage",
+  "actual-orchestrator-context",
+  "work-origin",
   "orchestrator-health",
 ]) {
   if (!manifest.controlLoopPolicy?.requiredChecks?.includes(check)) {
@@ -116,6 +144,7 @@ for (const capability of [
   "independent-trigger",
   "durable-state-read",
   "active-context-read",
+  "orchestrator-work-origin-read",
   "native-wakeup",
   "fresh-context-start",
   "idempotent-incident",
@@ -152,6 +181,9 @@ if (manifest.rotationPolicy?.maxCompactionsWithoutIndependentCheck !== 2) {
 }
 if (manifest.rotationPolicy?.sameClassFailureLimit !== 2 || manifest.rotationPolicy?.activeReviewHours !== 24) {
   fail("Rotation policy failure or active-review threshold is invalid");
+}
+if (!manifest.rotationPolicy?.hardSignals?.includes("unowned-project-work-after-repair")) {
+  fail("Rotation policy is missing repeated unowned-project-work");
 }
 if (manifest.memoryPolicy?.policy !== "project-memory-graph") {
   fail("Memory policy must use the Project Memory Graph");
@@ -267,6 +299,7 @@ const projectLaunchWorkflow = await text("docs/workflows/project-launch.md");
 const dailyAlignmentWorkflow = await text("docs/workflows/daily-alignment.md");
 const taskHandoffTemplate = await text("docs/workflows/task-context-handoff-template.md");
 const acceptWorkflow = await text("docs/workflows/accept-work.md");
+const agentsCore = await text("docs/AGENTS_CORE.md");
 const orchestratorSkill = await text(".agents/skills/framework-orchestrator/SKILL.md");
 const projectLaunchSkill = await text(".agents/skills/project-launch/SKILL.md");
 const dailyAlignmentSkill = await text(".agents/skills/daily-alignment/SKILL.md");
@@ -582,6 +615,8 @@ if (
   !projectGuardWorkflow.includes("fresh ephemeral evaluator") ||
   !projectGuardWorkflow.includes("idempotent incident") ||
   !projectGuardWorkflow.includes("newer human command with no observable action") ||
+  !projectGuardWorkflow.includes("UNOWNED_PROJECT_WORK") ||
+  !projectGuardWorkflow.includes("CONTROL_ONLY") ||
   !orchestratorWorkflow.includes("external Project Guard") ||
   !orchestratorSkill.includes("project-owned Project Guard")
 ) {
@@ -618,7 +653,7 @@ if (
   fail("Context naming or human-facing reference contract is incomplete");
 }
 if (
-  !orchestratorWorkflow.includes("[FW 1.22.0] [SYSTEM] [MAINT] — Adopt") ||
+  !orchestratorWorkflow.includes("[FW 1.23.0] [SYSTEM] [MAINT] — Adopt") ||
   !orchestratorWorkflow.includes("[GUARD <incident>] [SYSTEM] [MAINT] — Repair control loop") ||
   !orchestratorWorkflow.includes("never reuse the Project State issue") ||
   !projectGuardWorkflow.includes("Project-goal task titles remain") ||
@@ -626,6 +661,20 @@ if (
   !projectLaunchWorkflow.includes("Only service work that maintains the coordination system")
 ) {
   fail("Control-plane naming exception is missing or affects ordinary task titles");
+}
+if (
+  !coreEn.includes("Control decision / Available sources / Expected orchestration output / Route to focused context when") ||
+  !coreEn.includes("The boundary is the owned result") ||
+  !coreEn.includes("UNOWNED_PROJECT_WORK") ||
+  !coreRu.includes("Control decision / Available sources / Expected orchestration output / Route to focused context when") ||
+  !orchestratorWorkflow.includes("CONTROL_ONLY") ||
+  !orchestratorWorkflow.includes("ROUTE_TO_FOCUSED_CONTEXT") ||
+  !orchestratorWorkflow.includes("focused-context receipt") ||
+  !orchestratorSkill.includes("control cycle") ||
+  !agentsCore.includes("project evidence") ||
+  !projectStateTemplate.includes("Work origin:")
+) {
+  fail("Framework is missing the bounded orchestrator advisory or work-origin contract");
 }
 if (
   !orchestratorWorkflow.includes("open recall commitments") ||

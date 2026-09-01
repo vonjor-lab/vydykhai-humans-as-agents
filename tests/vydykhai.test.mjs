@@ -53,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.22.0");
+    assert.equal(lock.installedVersion, "1.23.0");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -76,6 +76,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /ORCHESTRATOR=maximum-available/);
     assert.match(doctor.stdout, /DISCOVERY=deep-bounded/);
     assert.match(doctor.stdout, /EXECUTION=efficient-bounded/);
+    assert.match(doctor.stdout, /Orchestrator advisory: control-only-advisory; guard=unowned-project-work/);
     assert.match(doctor.stdout, /Project activation: evidence-backed-project-activation; 8 live checks via project-launch/);
     assert.match(doctor.stdout, /Control loop: governor-audited-event-loop; Project State v2/);
     assert.match(doctor.stdout, /Project Guard: external-event-and-schedule; healthy=deterministic-no-model; anomaly=maximum-available/);
@@ -92,6 +93,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const legacyManifest = JSON.parse(await readFile(legacyManifestPath, "utf8"));
     delete legacyManifest.actionReceiptPolicy;
     delete legacyManifest.projectActivationPolicy;
+    delete legacyManifest.orchestratorAdvisoryPolicy;
     delete legacyManifest.controlLoopPolicy;
     delete legacyManifest.projectGuardPolicy;
     delete legacyManifest.executionLeasePolicy;
@@ -109,6 +111,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const legacyDoctor = run(["doctor", target, "--offline"]);
     assert.equal(legacyDoctor.status, 0, legacyDoctor.stderr);
     assert.match(legacyDoctor.stdout, /Vydykhai 1\.18\.0/);
+    assert.match(legacyDoctor.stdout, /Orchestrator advisory: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Project activation: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Control loop: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Project Guard: not declared by installed version/);
@@ -130,7 +133,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.22\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.23\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -149,6 +152,14 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.agentRoutingPolicy.profiles.discovery.preferredEffortWhenAvailable, "xhigh");
   assert.equal(manifest.agentRoutingPolicy.profiles.execution.reasoningPolicy, "efficient-bounded");
   assert.equal(manifest.agentRoutingPolicy.profiles.execution.preferredEffortWhenAvailable, "low");
+  assert.equal(manifest.orchestratorAdvisoryPolicy.policy, "control-only-advisory");
+  assert.deepEqual(manifest.orchestratorAdvisoryPolicy.results, ["control-only", "route-to-focused-context"]);
+  assert.deepEqual(manifest.orchestratorAdvisoryPolicy.acceptedProjectEvidenceSources, [
+    "human-decision",
+    "durable-source",
+    "focused-context-receipt",
+  ]);
+  assert.equal(manifest.orchestratorAdvisoryPolicy.guardSignal, "unowned-project-work");
   assert.equal(manifest.projectActivationPolicy.policy, "evidence-backed-project-activation");
   assert.deepEqual(manifest.projectActivationPolicy.requiredChecks, [
     "target-repository-and-framework",
@@ -172,6 +183,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("current-dod-line"));
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("pending-return-inbox"));
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("actual-orchestrator-context"));
+  assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("work-origin"));
   assert.equal(manifest.projectGuardPolicy.policy, "external-event-and-schedule");
   assert.equal(manifest.projectGuardPolicy.defaultIntervalMinutes, 30);
   assert.equal(manifest.projectGuardPolicy.healthyPath, "deterministic-no-model");
@@ -179,6 +191,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.deepEqual(manifest.projectGuardPolicy.actions, ["noop", "wake", "audit-required"]);
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("independent-trigger"));
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("idempotent-incident"));
+  assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("orchestrator-work-origin-read"));
   assert.equal(manifest.executionLeasePolicy.policy, "one-work-one-owning-context");
   assert.deepEqual(manifest.executionLeasePolicy.states, [
     "prepared",
@@ -195,6 +208,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.rotationPolicy.maxCompactionsWithoutIndependentCheck, 2);
   assert.equal(manifest.rotationPolicy.sameClassFailureLimit, 2);
   assert.equal(manifest.rotationPolicy.activeReviewHours, 24);
+  assert.ok(manifest.rotationPolicy.hardSignals.includes("unowned-project-work-after-repair"));
   assert.equal(manifest.defaultScopeFreshnessDays, 7);
   assert.equal(manifest.memoryPolicy.policy, "project-memory-graph");
   assert.equal(manifest.memoryPolicy.graphVersion, 3);
@@ -271,6 +285,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /Execution Lease/);
   assert.match(core, /durable task\/tracker outbox/);
   assert.match(core, /EXECUTION_STALLED/);
+  assert.match(core, /The boundary is the owned result/);
+  assert.match(core, /UNOWNED_PROJECT_WORK/);
   const agentsCore = await readFile(path.join(root, "docs/AGENTS_CORE.md"), "utf8");
   assert.match(agentsCore, /active orchestrator's own clean cwd/);
   assert.match(agentsCore, /ACTUAL_CONTEXT_COHERENCE/);
@@ -431,6 +447,7 @@ Snapshot as of: event-7
 Governor: HEALTHY | Receipt: gov-7 | Trigger: dispatch | Audited event: event-7 | Route: deterministic check
 Project Guard: ACTIVE | Runner: local-scheduler/guard-example | Independent: YES | Event route: durable-outbox-and-context-watermark | Schedule: every-30-minutes | Last proof: now/PASS/scheduler | Wakeup: active-orchestrator-pointer | Incident: none
 Orchestrator health: HEALTHY | Context: current | Profile: ORCHESTRATOR / maximum / current | Last compaction/context-loss signal: 0 / none
+Work origin: PASS | Advisory contract: CONTROL_ONLY | Accepted evidence owner: durable source | Last checked: event-7/now/adapter
 Last independent check: now / state+graph+tracker / PASS | Same-class failures since repair: 0
 DOD Control Line: accepted visible baseline -> close actor flow -> smoke -> continue
 Memory coverage: graph v3 / watermark event-6 / CURRENT+NEXT+PRIOR_MISS PASS
@@ -542,6 +559,12 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     assert.equal(auditGuard.status, 0, auditGuard.stderr);
     assert.equal(JSON.parse(auditGuard.stdout).action, "AUDIT_REQUIRED");
 
+    const unownedWork = healthyState.replace("Work origin: PASS", "Work origin: UNOWNED_PROJECT_WORK");
+    await writeFile(statePath, unownedWork);
+    const unownedGuard = run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]);
+    assert.equal(unownedGuard.status, 0, unownedGuard.stderr);
+    assert.equal(JSON.parse(unownedGuard.stdout).action, "AUDIT_REQUIRED");
+
     await writeFile(statePath, healthyState);
 
     const mismatches = [
@@ -553,6 +576,8 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
       [healthyState.replace("Audited event: event-7", "Audited event: event-6"), healthyGraph, /Governor audited event-6 but current snapshot is event-7/],
       [healthyState.replace("Profile: ORCHESTRATOR / maximum / current", "Profile: ORCHESTRATOR / medium / current"), healthyGraph, /orchestrator profile is not explicitly ORCHESTRATOR \/ maximum/],
       [healthyState.replace("Last compaction/context-loss signal: 0 / none", "Last compaction/context-loss signal: 2 / now"), healthyGraph, /independent check required after 2 compaction\/context-loss signals/],
+      [healthyState.replace("Work origin: PASS", "Work origin: UNOWNED_PROJECT_WORK"), healthyGraph, /work origin requires UNOWNED_PROJECT_WORK/],
+      [healthyState.replace("Accepted evidence owner: durable source", "Accepted evidence owner: <missing>"), healthyGraph, /work origin accepted evidence owner is missing or unresolved/],
       [healthyState.replace("Same-class failures since repair: 0", "Same-class failures since repair: <missing>"), healthyGraph, /same-class failure count is missing or unresolved/],
       [healthyState.replace("DOD Control Line: accepted visible baseline -> close actor flow -> smoke -> continue", "DOD Control Line: <unresolved>"), healthyGraph, /DOD Control Line is unresolved/],
       [healthyState.replace("| --- | --- | --- |\n## Detours", "| --- | --- | --- |\n| RET-9 | task-one | SENT |\n## Detours"), healthyGraph, /pending return RET-9 requires reconciliation/],

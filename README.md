@@ -6,7 +6,7 @@ Vydykhai is a team autopilot for people working on one project, each with their 
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.22.0`
+Current version: `1.23.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -18,6 +18,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - Каждая новая задача получает короткие применимые указания: что делать, чего не повторять и как проверить результат. Исполнитель не перечитывает историю проекта и не получает только непонятные ссылки на память.
 - Принятые уроки одного участника становятся доступны оркестраторам остальных через общий репозиторий, а не остаются внутри личного чата.
 - Три уровня контекстов не смешиваются: канонический репозиторий развивает только универсальную формулу, проектный оркестратор только организует один проект, а вся работа выполняется в отдельных task, discovery, lab или maintenance contexts.
+- Оркестратор может подключать внутренних advisory-субагентов, чтобы на максимальной модели лучше проверить DOD, память, риски и план. Они помогают только с управляющим решением: диагностика, решение, проверка и доказательство результата остаются у видимого рабочего треда. Guard проверяет скрытую подмену там, где agent environment показывает внутреннюю активность, а иначе честно отмечает это ограничение.
 - Новая или возобновленная задача считается начатой только после наблюдаемого действия. Если исполнитель снова отвечает планом вместо работы, оркестратор один раз исправляет запуск, а затем меняет маршрут вместо бесконечных напоминаний.
 - Результат задачи сначала сохраняется в общей системе, а затем будит оркестратор. Поэтому потерянное сообщение между агентами не теряет выполненную работу и не заставляет человека спрашивать «ну что там?».
 - Внешний Project Guard переживает сам тред оркестратора. События и таймер дешево проверяют DOD, возвраты и активную работу без модели; только реальный сбой запускает свежую умную проверку, ремонт или своевременную замену оркестратора.
@@ -35,6 +36,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - Each task receives short applicable instructions: what to do, what not to repeat, and how to verify the result. Execution does not reread project history or receive opaque memory references.
 - One participant's accepted lessons become available to the other orchestrators through the shared repository instead of remaining trapped in a personal chat.
 - Three context layers stay separate: the canonical repository evolves only the universal formula, a project orchestrator only organizes one project, and all work happens in separate task, discovery, lab, or maintenance contexts.
+- The orchestrator may use internal advisory subagents on its maximum profile to challenge the DOD, memory, risks, and plan. They support only the control decision: diagnosis, solution work, verification, and proof remain with a visible focused context. Guard checks for hidden takeover where the agent environment exposes internal activity and reports the limitation honestly where it does not.
 - A new or resumed task counts as started only after an observable action. If execution answers with another plan, the orchestrator repairs once and then changes route instead of repeating reminders.
 - A task result is written to shared durable state before it wakes the orchestrator. A lost agent message therefore cannot lose completed work or make a person poll for status.
 - An external Project Guard survives the orchestrator thread itself. Events and a timer check DOD, returns, and active work without a model; only a real mismatch launches a fresh intelligent audit, bounded repair, or timely rotation.

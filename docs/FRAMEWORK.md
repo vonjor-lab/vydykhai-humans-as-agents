@@ -1,6 +1,6 @@
 # Vydykhai Collaboration Framework
 
-Version: 1.22.0 | Status: canonical operating core
+Version: 1.23.0 | Status: canonical operating core
 
 Vydykhai is a framework for collaborative work between people and AI agents. It grew out of collaborative vibe coding, but extends to broader vibe work: helping a group turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while the AI orchestrator maintains the shared picture, sequence, alignment, acceptance, and next-best-action.
 
@@ -38,7 +38,7 @@ Vydykhai combines them: design the compass and task contract top-down, let agent
 - Research, lab, implementation, and project maintenance run in separate focused contexts. These are the only contexts that perform project work.
 - A shared Git-backed project repo carries the framework and project files. GitHub Repo + Issues/Projects/PRs is the recommended durable sync space; an equivalent tracker is valid only when every participant and orchestrator can reach the same linked state. Local copies and chat history are evidence, not the source of truth.
 - Project Memory Graph links stable product anchors to current decisions, reusable lessons, confirmed future ideas, and safe operational pointers in one compact shared view.
-- The orchestrator decides what, why, when, and who, and maintains the DOD Control Line, sequence, alignment, dispatch, human requests, shared memory, parent closure, and next-best-action. A project-owned external Project Guard survives the orchestrator context: events and a schedule run deterministic checks, while a fresh maximum-profile Governor evaluates only anomalies and routes bounded repair or rotation. Neither performs project work.
+- The orchestrator decides what, why, when, and who, and maintains the DOD Control Line, sequence, alignment, dispatch, human requests, shared memory, parent closure, and next-best-action. A project-owned external Project Guard survives the orchestrator context: events and a schedule run deterministic checks, while a fresh maximum-profile Governor evaluates only anomalies and routes bounded repair or rotation. Neither performs project work. The maximum-profile orchestrator may use bounded internal advisory agents to improve a control decision, but their analysis is disposable and cannot own a project result, create accepted project evidence, or replace a focused context.
 - Task contexts decide how to deliver and prove one accepted increment: local planning, implementation, debugging, corrective fixes, `$accept-work`, exact-current-code smoke, manual merge after human confirmation, and automatic return at declared triggers.
 - A task detects an execution boundary; the orchestrator decides the project response. Neither role silently takes over the other's work. Focused work and framework update tasks return only to the project orchestrator, which owns adoption without upstream supervision. A possible universal lesson goes upstream only as a separate explicit sanitized compatibility packet, never as project task state or next-best-action.
 - One accepted increment has one owning execution context, one Execution Lease, and one canonical Candidate unless the brief explicitly defines parallel-safe work. The orchestrator sequences later increments instead of stretching one task across the product route.
@@ -151,7 +151,7 @@ At each cold-path brief, re-brief, dispatch, consultation or sequence decision, 
 
 Choose the smallest useful context:
 
-- Orchestrator Work: project-wide synthesis, prioritization, sequencing, or an owner decision stays in the `ORCHESTRATOR` control context.
+- Orchestrator Work: project-wide synthesis, prioritization, sequencing, or an owner decision stays in the `ORCHESTRATOR` control context. Internal advisory agents are allowed when the durable result is only a control artifact and their notes can be discarded after synthesis. Give each one `Control decision / Available sources / Expected orchestration output / Route to focused context when`; it returns `CONTROL_ONLY` or `ROUTE_TO_FOCUSED_CONTEXT` in the same control cycle.
 - Research Context: a bounded product or technical question is not ready for a brief. Run it as `DISCOVERY`, make no product-code changes, return a short Decision Packet, and close or archive the context after incorporation.
 - Lab Mode: isolated implementation or experimentation reduces risk, cost, or time-to-feedback. Define the decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn limit, and promote/reject/re-brief route before starting. Exit through production transfer, tests, and risk-based real-flow smoke.
 - Task Context: the outcome and acceptance boundary are clear enough for `EXECUTION` in the real product path.
@@ -159,7 +159,7 @@ Choose the smallest useful context:
 
 Research reduces uncertainty. Lab reduces execution cost. A task delivers accepted product or enabling work.
 A Discovery Decision Packet names the chosen approach, material rejected options and lessons, affected entities or interfaces, acceptance or visual evidence, risks, and unresolved owner decisions. The orchestrator integrates it with the compass and memory before writing execution tasks. Discovery does not produce production implementation by default; a disposable lab artifact must be explicit.
-
+The boundary is the owned result, not the topic or the use of subagents. Advisory analysis may inspect existing durable product context, including a verified repository, only far enough to improve the control decision. Route to a focused context when the answer would establish a new diagnosis, product or technical solution, runtime/data fact, experiment, test, Candidate, acceptance proof, side effect, independently useful artifact, or work that outlives the current control cycle. Advisory output is never accepted project evidence; a material project claim must trace to a human decision, durable source, or focused-context receipt.
 ### One Success Line
 
 Build from success; learn from failure.
@@ -279,7 +279,7 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 ## Rules
 
 - On the first active orchestrator use after that participant's framework check becomes 24 hours old, compare the installed version with canonical upstream. Stay silent when current; when newer, read every release where `installed < release <= latest` from oldest to newest, report the range and one short delta per release, then record the combined impact, one shared update plan, and the safest window in next-best-action. Prepare or reuse one normal update change at that window; never omit an intermediate release, duplicate the update, overwrite conflicts, merge silently, or change active-task rules mid-flight. An unavailable check remains pending without blocking otherwise safe work.
-- Keep the orchestrator organization-only.
+- Keep the orchestrator organization-only: `ORCHESTRATOR_WORK` may use bounded advisory agents for control decisions, but every material project claim requires accepted work origin. `UNOWNED_PROJECT_WORK` receives one bounded repair; repetition after repair is a rotation signal.
 - Keep universal rules in the canonical framework and project rules in the product repo.
 - Keep human conversation product-focused; hide branch and worktree mechanics unless they affect a decision or risk.
 - Do not start implementation without a goal, boundary, DOD impact, human checkpoint, and verification route.
