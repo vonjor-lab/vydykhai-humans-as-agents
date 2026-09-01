@@ -64,9 +64,13 @@ Return triggers: <readiness result | named human checkpoint | irreducible blocke
 ## Return Sync
 
 ```md
+<!-- vydykhai:return-sync v1 -->
+
+# Return Sync
+
 Status: <BLOCKED_BEFORE_START | NEEDS_REBRIEF | CHECKPOINT_READY | ACCEPT | ACCEPT_WITH_FOLLOWUPS | NEEDS_FIXES | BLOCKED | OUTCOME_UNKNOWN>
 Return receipt id: <unique event id>
-Return lifecycle: <WRITTEN durable outbox -> SENT wakeup -> RECEIVED -> CONSUMED -> ROUTED; task reports only through SENT>
+Return lifecycle: <WRITTEN | WRITTEN -> SENT; task reports only through SENT>
 Task / context / PR / commit / artifact:
 Execution Lease result: <identity/state/readback; release only after consumption and artifact disposition>
 Agent profile used / fallback:
@@ -83,6 +87,8 @@ Recipient proof: <not applicable | exact artifact/revision, environment, schema/
 Artifact disposition: <context / PR / branch / worktree / runtime / monitor -> ACTIVE | WAITING | FINISH (cleaned/pending) | SALVAGE | RETIRE (cleaned/pending) | not applicable, with proof or re-entry>
 Risks / required follow-ups / optional future candidates:
 Recommended orchestrator next action:
+
+<!-- vydykhai:return-sync:end -->
 ```
 
-A launch or resume is incomplete when the task only writes a plan. It must perform an observable action, name a real blocker, or request re-brief. At every declared checkpoint, readiness, blocker, or terminal return trigger, first write the complete Return Sync to the durable task/tracker outbox, then attempt the native wakeup with the same id. An Action Receipt never substitutes for this Return Sync. Native delivery, final text, and task/thread reads are not authority and may be empty; their loss must not lose the result. The orchestrator reconciles unconsumed outbox events at every cold path and Governor Check, while Project Guard independently discovers an unrouted durable id and wakes once. Do not wait for human polling. A cross-person handoff remains incomplete until recipient proof is returned.
+A launch or resume is incomplete when the task only writes a plan. It must perform an observable action, name a real blocker, or request re-brief. At every declared checkpoint, readiness, blocker, or terminal return trigger, first write the complete marked Return Sync above to the durable task/tracker outbox, then attempt the native wakeup with the same id. An Action Receipt never substitutes for this Return Sync. Native delivery, final text, and task/thread reads are not authority and may be empty; their loss must not lose the result. The orchestrator reconciles unconsumed outbox events at every cold path and Governor Check, writes the matching marked Return Route receipt after consumption, and Project Guard compares the two exact formats independently. Do not wait for human polling. A cross-person handoff remains incomplete until recipient proof is returned.

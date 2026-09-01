@@ -53,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.24.1");
+    assert.equal(lock.installedVersion, "1.24.2");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -79,7 +79,8 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /Orchestrator advisory: control-only-advisory; guard=unowned-project-work/);
     assert.match(doctor.stdout, /Project activation: evidence-backed-project-activation; 8 live checks via project-launch/);
     assert.match(doctor.stdout, /Control loop: governor-audited-event-loop; Project State v2/);
-    assert.match(doctor.stdout, /Project Guard: external-event-and-schedule; healthy=deterministic-no-model; anomaly=maximum-available/);
+    assert.match(doctor.stdout, /Control state publication: validate-publish-readback-or-restore/);
+    assert.match(doctor.stdout, /Project Guard: external-event-and-schedule; healthy=deterministic-no-model; anomaly=maximum-available; incident=semantic-condition-set/);
     assert.match(doctor.stdout, /Human attention: durable-single-manager-attention; guard=silent; completion=restore-or-explicitly-supersede/);
     assert.match(doctor.stdout, /Execution leases: one-work-one-owning-context/);
     assert.match(doctor.stdout, /Task returns: durable-outbox-native-wakeup; terminal=return-sync; fallback=discover-unrouted-durable-return/);
@@ -96,6 +97,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     delete legacyManifest.projectActivationPolicy;
     delete legacyManifest.orchestratorAdvisoryPolicy;
     delete legacyManifest.controlLoopPolicy;
+    delete legacyManifest.controlStatePublicationPolicy;
     delete legacyManifest.projectGuardPolicy;
     delete legacyManifest.humanAttentionPolicy;
     delete legacyManifest.executionLeasePolicy;
@@ -116,6 +118,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(legacyDoctor.stdout, /Orchestrator advisory: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Project activation: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Control loop: not declared by installed version/);
+    assert.match(legacyDoctor.stdout, /Control state publication: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Project Guard: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Human attention: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Execution leases: not declared by installed version/);
@@ -136,7 +139,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.24\.1/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.24\.2/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -188,10 +191,23 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("actual-orchestrator-context"));
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("work-origin"));
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("human-attention-continuity"));
+  assert.equal(manifest.controlStatePublicationPolicy.policy, "validate-publish-readback-or-restore");
+  assert.deepEqual(manifest.controlStatePublicationPolicy.stages, [
+    "render-candidate",
+    "validate-candidate",
+    "publish-once",
+    "readback-exact",
+    "restore-last-accepted-on-mismatch",
+  ]);
+  assert.equal(manifest.controlStatePublicationPolicy.failedWriteState, "never-current");
   assert.equal(manifest.projectGuardPolicy.policy, "external-event-and-schedule");
   assert.equal(manifest.projectGuardPolicy.defaultIntervalMinutes, 30);
   assert.equal(manifest.projectGuardPolicy.healthyPath, "deterministic-no-model");
   assert.equal(manifest.projectGuardPolicy.anomalyProfile, "maximum-available");
+  assert.equal(manifest.projectGuardPolicy.incidentIdentity, "semantic-condition-set");
+  assert.equal(manifest.projectGuardPolicy.snapshotHashRole, "evidence-only");
+  assert.equal(manifest.projectGuardPolicy.acceptedSameIncidentAction, "silent-no-model");
+  assert.equal(manifest.projectGuardPolicy.changedConditionAction, "audit-required");
   assert.deepEqual(manifest.projectGuardPolicy.actions, ["noop", "wake", "audit-required"]);
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("independent-trigger"));
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("idempotent-incident"));
@@ -221,6 +237,13 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.taskReturnPolicy.nativeWakeup, "required-attempt");
   assert.equal(manifest.taskReturnPolicy.nativeThreadRead, "non-authoritative");
   assert.equal(manifest.taskReturnPolicy.guardFallback, "discover-unrouted-durable-return");
+  assert.equal(manifest.taskReturnPolicy.machineFormat, "marked-return-sync-and-route-v1");
+  assert.deepEqual(manifest.taskReturnPolicy.adapterAcceptance, [
+    "real-emitted-return-format",
+    "matching-route-receipt",
+    "scheduled-noop-after-routing",
+    "malformed-or-mismatched-route-audits",
+  ]);
   assert.deepEqual(manifest.taskReturnPolicy.states, ["written", "sent", "received", "consumed", "routed"]);
   assert.deepEqual(manifest.taskReturnPolicy.reconcileOn, ["return-sync-written", "orchestrator-cold-path", "governor-check", "active-timer"]);
   assert.equal(manifest.rotationPolicy.policy, "independent-health-gated");
@@ -332,6 +355,9 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectState, /Framework context readback:/);
   assert.match(projectState, /Snapshot as of:/);
   assert.match(projectState, /Work hygiene:/);
+  assert.match(projectState, /--expect-state-sha/);
+  assert.match(projectState, /restore and verify the exact last accepted body/);
+  assert.match(projectState, /<!-- vydykhai:return-route v1 -->/);
   assert.equal((projectState.match(/^## Next-Best-Action$/gm) || []).length, 1);
   const taskHandoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
   assert.match(taskHandoff, /Role: EXECUTION/);
@@ -353,6 +379,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(taskHandoff, /Recipient proof:/);
   assert.match(taskHandoff, /schema\/migration revision/);
   assert.match(taskHandoff, /Artifact disposition:/);
+  assert.match(taskHandoff, /<!-- vydykhai:return-sync v1 -->/);
+  assert.match(taskHandoff, /<!-- vydykhai:return-sync:end -->/);
   const orchestratorWorkflow = await readFile(path.join(root, "docs/workflows/framework-orchestrator.md"), "utf8");
   assert.match(orchestratorWorkflow, /THIS ORCHESTRATOR IS RETIRED - DO NOT CONTINUE HERE/);
   assert.match(orchestratorWorkflow, /ROTATION_CUTOVER_INCOMPLETE/);
@@ -390,9 +418,14 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /EXECUTION_STALLED/);
   assert.match(orchestratorWorkflow, /WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED/);
   assert.match(orchestratorWorkflow, /An Action Receipt never substitutes for terminal Return Sync/);
+  assert.match(orchestratorWorkflow, /paired marked Return Route receipt/);
+  assert.match(orchestratorWorkflow, /partial or failed write never becomes current truth/);
   const projectGuardWorkflow = await readFile(path.join(root, "docs/workflows/project-guard.md"), "utf8");
   assert.match(projectGuardWorkflow, /discover newly written Return Sync receipts directly from the durable outbox/);
   assert.match(projectGuardWorkflow, /native task or thread read is empty/);
+  assert.match(projectGuardWorkflow, /semantic incident id/);
+  assert.match(projectGuardWorkflow, /two real boundary tests/);
+  assert.match(projectGuardWorkflow, /no queued message, and no model call/);
   const projectLaunch = await readFile(path.join(root, "docs/workflows/project-launch.md"), "utf8");
   assert.match(projectLaunch, /bounded read-only memory backfill/);
   assert.match(projectLaunch, /Do not copy the full transcript or model narration/);
@@ -458,7 +491,7 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   assert.doesNotMatch(startup, /Project State:/);
   assert.match(handoff, /Resolve ordinary implementation failures autonomously/);
   assert.match(handoff, /Do not run `\$project-launch`, `\$start-work`, `\$daily-alignment`, or `\$framework-orchestrator` here/);
-  assert.match(handoff, /first write the complete Return Sync to the durable task\/tracker outbox/);
+  assert.match(handoff, /first write the complete marked Return Sync above to the durable task\/tracker outbox/);
   assert.match(handoff, /An Action Receipt never substitutes for this Return Sync/);
 });
 
@@ -466,6 +499,7 @@ test("control-check closes DOD, lease, return, detour, and memory transitions", 
   const target = await mkdtemp(path.join(tmpdir(), "vydykhai-control-"));
   const statePath = path.join(target, "state.md");
   const graphPath = path.join(target, "graph.md");
+  const outboxPath = path.join(target, "outbox.md");
   const healthyState = `<!-- vydykhai:project-state v2 -->
 # Project State: Example
 Snapshot as of: event-7
@@ -554,11 +588,173 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     await writeFile(graphPath, healthyGraph);
     const healthy = run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]);
     assert.equal(healthy.status, 0, healthy.stderr);
-    assert.equal(JSON.parse(healthy.stdout).ok, true);
+    const healthyResult = JSON.parse(healthy.stdout);
+    assert.equal(healthyResult.ok, true);
+    assert.match(healthyResult.stateSha256, /^[a-f0-9]{64}$/);
+    assert.match(healthyResult.graphSha256, /^[a-f0-9]{64}$/);
+    const exactReadback = run([
+      "control-check",
+      "--state",
+      statePath,
+      "--graph",
+      graphPath,
+      "--expect-state-sha",
+      healthyResult.stateSha256,
+      "--expect-graph-sha",
+      healthyResult.graphSha256,
+      "--json",
+    ]);
+    assert.equal(exactReadback.status, 0, exactReadback.stderr);
+    const wrongReadback = run([
+      "control-check",
+      "--state",
+      statePath,
+      "--graph",
+      graphPath,
+      "--expect-state-sha",
+      "0".repeat(64),
+    ]);
+    assert.equal(wrongReadback.status, 1);
+    assert.match(wrongReadback.stdout, /readback sha256 .* does not match expected/);
 
     const healthyGuard = run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]);
     assert.equal(healthyGuard.status, 0, healthyGuard.stderr);
     assert.equal(JSON.parse(healthyGuard.stdout).action, "NOOP");
+
+    const returnSync = `<!-- vydykhai:return-sync v1 -->
+# Return Sync
+Status: ACCEPT
+Return receipt id: RET-E2E-1
+Return lifecycle: WRITTEN -> SENT
+Task / context / PR / commit / artifact: WORK-1 / task-one / none / abc123 / result
+Memory candidates: NO_MEMORY_DELTA
+Artifact disposition: context -> FINISH / clean
+Recommended orchestrator next action: close the lease
+<!-- vydykhai:return-sync:end -->
+`;
+    const returnRoute = `<!-- vydykhai:return-route v1 -->
+# Return Route
+Return receipt id: RET-E2E-1
+Return lifecycle: RECEIVED -> CONSUMED -> ROUTED
+Consumer: active-orchestrator
+Routed next action: lease closed
+Evidence: state event-7
+<!-- vydykhai:return-route:end -->
+`;
+    await writeFile(outboxPath, returnSync);
+    const outboxWake = JSON.parse(
+      run(["guard-check", "--state", statePath, "--graph", graphPath, "--outbox", outboxPath, "--json"]).stdout,
+    );
+    assert.equal(outboxWake.action, "WAKE");
+    assert.match(outboxWake.outbox.issues.join("\n"), /return RET-E2E-1 requires routing/);
+
+    await writeFile(outboxPath, `${returnSync}\n${returnRoute}`);
+    const scheduledNoop = run([
+      "guard-check",
+      "--state",
+      statePath,
+      "--graph",
+      graphPath,
+      "--outbox",
+      outboxPath,
+      "--json",
+    ]);
+    assert.equal(scheduledNoop.status, 0, scheduledNoop.stderr);
+    const scheduledNoopResult = JSON.parse(scheduledNoop.stdout);
+    assert.equal(scheduledNoopResult.action, "NOOP");
+    assert.deepEqual(
+      [scheduledNoopResult.outbox.returnCount, scheduledNoopResult.outbox.routeCount, scheduledNoopResult.outbox.routedCount],
+      [1, 1, 1],
+    );
+    assert.deepEqual(scheduledNoopResult.outbox.issues, []);
+
+    await writeFile(outboxPath, `${returnSync}\n${returnRoute.replace("Evidence: state event-7", "Evidence: <missing>")}`);
+    const malformedRoute = JSON.parse(
+      run(["guard-check", "--state", statePath, "--graph", graphPath, "--outbox", outboxPath, "--json"]).stdout,
+    );
+    assert.equal(malformedRoute.action, "AUDIT_REQUIRED");
+    assert.match(malformedRoute.outbox.issues.join("\n"), /Return Route RET-E2E-1 lacks Evidence/);
+
+    await writeFile(outboxPath, `${returnSync}\n${returnRoute.replaceAll("RET-E2E-1", "RET-OTHER-1")}`);
+    const mismatchedRoute = JSON.parse(
+      run(["guard-check", "--state", statePath, "--graph", graphPath, "--outbox", outboxPath, "--json"]).stdout,
+    );
+    assert.equal(mismatchedRoute.action, "AUDIT_REQUIRED");
+    assert.match(mismatchedRoute.outbox.issues.join("\n"), /return RET-E2E-1 requires routing/);
+    assert.match(mismatchedRoute.outbox.issues.join("\n"), /Return Route RET-OTHER-1 has no matching Return Sync/);
+
+    await writeFile(outboxPath, "# Return Sync\nStatus: ACCEPT\nReturn receipt id: RET-LEGACY-1\n");
+    const unmarkedReturn = JSON.parse(
+      run(["guard-check", "--state", statePath, "--graph", graphPath, "--outbox", outboxPath, "--json"]).stdout,
+    );
+    assert.equal(unmarkedReturn.action, "AUDIT_REQUIRED");
+    assert.match(unmarkedReturn.outbox.issues.join("\n"), /unmarked Return Sync data requires canonical v1 framing/);
+
+    const limitedState = healthyState.replace("Project Guard: ACTIVE", "Project Guard: LIMITED");
+    await writeFile(statePath, limitedState);
+    const limitedFirst = JSON.parse(run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+    const acceptedLimitedFirst = JSON.parse(
+      run([
+        "guard-check",
+        "--state",
+        statePath,
+        "--graph",
+        graphPath,
+        "--accepted-incident",
+        limitedFirst.incidentId,
+        "--json",
+      ]).stdout,
+    );
+    assert.equal(acceptedLimitedFirst.action, "NOOP");
+    assert.equal(acceptedLimitedFirst.requiredAction, "AUDIT_REQUIRED");
+    assert.equal(acceptedLimitedFirst.deduplicated, true);
+    const limitedLaterState = limitedState.replaceAll("event-7", "event-8");
+    await writeFile(statePath, limitedLaterState);
+    const limitedLater = JSON.parse(
+      run([
+        "guard-check",
+        "--state",
+        statePath,
+        "--graph",
+        graphPath,
+        "--accepted-incident",
+        limitedFirst.incidentId,
+        "--json",
+      ]).stdout,
+    );
+    assert.notEqual(limitedFirst.stateSha256, limitedLater.stateSha256);
+    assert.equal(limitedFirst.incidentId, limitedLater.incidentId);
+    assert.equal(limitedLater.incidentIdentity, "semantic-condition-set");
+    assert.equal(limitedLater.action, "NOOP");
+    assert.equal(limitedLater.deduplicated, true);
+
+    const limitedWithExtraIssue = limitedLaterState.replace(
+      "Event route: durable-outbox-and-context-watermark",
+      "Event route: <missing>",
+    );
+    await writeFile(
+      statePath,
+      limitedWithExtraIssue.replace("Incident: none", `Incident: ${limitedLater.incidentId}`),
+    );
+    const changedIncident = JSON.parse(
+      run([
+        "guard-check",
+        "--state",
+        statePath,
+        "--graph",
+        graphPath,
+        "--accepted-incident",
+        limitedFirst.incidentId,
+        "--json",
+      ]).stdout,
+    );
+    assert.notEqual(changedIncident.incidentId, limitedLater.incidentId);
+    assert.equal(changedIncident.recordedIncidentId, limitedLater.incidentId);
+    assert.equal(changedIncident.incidentChanged, true);
+    assert.equal(changedIncident.action, "AUDIT_REQUIRED");
+    assert.equal(changedIncident.deduplicated, false);
+
+    await writeFile(statePath, healthyState);
 
     const pendingAttention = healthyState.replace(
       "Human attention: NONE",

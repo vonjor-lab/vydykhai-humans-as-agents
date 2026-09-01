@@ -128,6 +128,34 @@ for (const check of [
     fail(`Control loop policy is missing check: ${check}`);
   }
 }
+if (manifest.controlStatePublicationPolicy?.policy !== "validate-publish-readback-or-restore") {
+  fail("Control state publication must validate, publish, read back, or restore");
+}
+for (const stage of [
+  "render-candidate",
+  "validate-candidate",
+  "publish-once",
+  "readback-exact",
+  "restore-last-accepted-on-mismatch",
+]) {
+  if (!manifest.controlStatePublicationPolicy?.stages?.includes(stage)) {
+    fail(`Control state publication is missing stage: ${stage}`);
+  }
+}
+for (const evidence of [
+  "accepted-state-reference",
+  "candidate-state-sha256",
+  "candidate-validation",
+  "readback-state-sha256",
+  "readback-validation",
+]) {
+  if (!manifest.controlStatePublicationPolicy?.requiredEvidence?.includes(evidence)) {
+    fail(`Control state publication is missing evidence: ${evidence}`);
+  }
+}
+if (manifest.controlStatePublicationPolicy?.failedWriteState !== "never-current") {
+  fail("A failed control-state write must never become current");
+}
 if (manifest.projectGuardPolicy?.policy !== "external-event-and-schedule") {
   fail("Project Guard policy must use external-event-and-schedule");
 }
@@ -137,6 +165,14 @@ if (
   manifest.projectGuardPolicy?.anomalyProfile !== "maximum-available"
 ) {
   fail("Project Guard cost or anomaly profile is invalid");
+}
+if (
+  manifest.projectGuardPolicy?.incidentIdentity !== "semantic-condition-set" ||
+  manifest.projectGuardPolicy?.snapshotHashRole !== "evidence-only" ||
+  manifest.projectGuardPolicy?.acceptedSameIncidentAction !== "silent-no-model" ||
+  manifest.projectGuardPolicy?.changedConditionAction !== "audit-required"
+) {
+  fail("Project Guard incident identity or deduplication policy is invalid");
 }
 for (const action of ["noop", "wake", "audit-required"]) {
   if (!manifest.projectGuardPolicy?.actions?.includes(action)) fail(`Project Guard is missing action: ${action}`);
@@ -197,6 +233,19 @@ if (
   manifest.taskReturnPolicy?.guardFallback !== "discover-unrouted-durable-return"
 ) {
   fail("Task return terminal receipt or durable fallback is invalid");
+}
+if (manifest.taskReturnPolicy?.machineFormat !== "marked-return-sync-and-route-v1") {
+  fail("Task return machine format must pair marked Return Sync and Return Route receipts");
+}
+for (const check of [
+  "real-emitted-return-format",
+  "matching-route-receipt",
+  "scheduled-noop-after-routing",
+  "malformed-or-mismatched-route-audits",
+]) {
+  if (!manifest.taskReturnPolicy?.adapterAcceptance?.includes(check)) {
+    fail(`Task return adapter acceptance is missing: ${check}`);
+  }
 }
 for (const state of ["written", "sent", "received", "consumed", "routed"]) {
   if (!manifest.taskReturnPolicy?.states?.includes(state)) fail(`Task return policy is missing state: ${state}`);
@@ -486,8 +535,22 @@ if (!projectStateTemplate.includes("PREPARED / STARTED / WORKING / WAITING / RET
 if (!projectStateTemplate.includes("RESURFACE_DUE") || !projectStateTemplate.includes("explicitly supersede")) {
   fail("Project State is missing durable human attention continuity");
 }
-if (!projectStateTemplate.includes("Snapshot as of:") || !projectStateTemplate.includes("Rebuild its body atomically")) {
+if (
+  !projectStateTemplate.includes("Snapshot as of:") ||
+  !projectStateTemplate.includes("Rebuild its body atomically") ||
+  !projectStateTemplate.includes("Render and validate a complete Candidate") ||
+  !projectStateTemplate.includes("--expect-state-sha") ||
+  !projectStateTemplate.includes("restore and verify the exact last accepted body")
+) {
   fail("Project State is missing atomic current-snapshot hygiene");
+}
+if (
+  !projectStateTemplate.includes("<!-- vydykhai:return-route v1 -->") ||
+  !projectStateTemplate.includes("Return lifecycle: RECEIVED -> CONSUMED -> ROUTED") ||
+  !taskHandoffTemplate.includes("<!-- vydykhai:return-sync v1 -->") ||
+  !taskHandoffTemplate.includes("<!-- vydykhai:return-sync:end -->")
+) {
+  fail("Return Sync and Return Route machine-readable formats are incomplete");
 }
 if ((projectStateTemplate.match(/^## Next-Best-Action$/gm) || []).length !== 1) {
   fail("Project State must contain exactly one Next-Best-Action section");
@@ -635,7 +698,7 @@ if (
   !orchestratorWorkflow.includes("first safe observable action") ||
   !orchestratorWorkflow.includes("EXECUTION_STALLED") ||
   !orchestratorWorkflow.includes("Pending Return Inbox") ||
-  !orchestratorWorkflow.includes("write one terminal Return Sync to the durable outbox") ||
+  !orchestratorWorkflow.includes("write one marked terminal Return Sync to the durable outbox") ||
   !orchestratorWorkflow.includes("An Action Receipt never substitutes for terminal Return Sync") ||
   !orchestratorWorkflow.includes("WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED") ||
   !orchestratorWorkflow.includes("OUTCOME_UNKNOWN") ||
@@ -658,9 +721,16 @@ if (
   !projectGuardWorkflow.includes("must not wake the orchestrator") ||
   !projectGuardWorkflow.includes("discover newly written Return Sync receipts directly from the durable outbox") ||
   !projectGuardWorkflow.includes("native task or thread read is empty") ||
+  !projectGuardWorkflow.includes("semantic incident id") ||
+  !projectGuardWorkflow.includes("not the snapshot hash") ||
+  !projectGuardWorkflow.includes("two real boundary tests") ||
+  !projectGuardWorkflow.includes("no queued message, and no model call") ||
+  !projectGuardWorkflow.includes("focused service task") ||
   !orchestratorWorkflow.includes("external Project Guard") ||
   !orchestratorWorkflow.includes("release the orchestrator after observable dispatch") ||
   !orchestratorSkill.includes("project-owned Project Guard") ||
+  !orchestratorSkill.includes("semantic condition set") ||
+  !orchestratorSkill.includes("focused service task") ||
   !orchestratorSkill.includes("Pending Human Action")
 ) {
   fail("Project Guard is missing independent liveness, silent healthy path, attention continuity, or anomaly escalation");

@@ -1,6 +1,6 @@
 # Project State Template
 
-Use one compact issue or equivalent artifact per project or product stream. It is the current control snapshot, not an event archive. Rebuild its body atomically after each material transition, keep exactly one copy of every current section, and put history in linked comments or archived windows. Nothing except whitespace may appear before the start marker or after the end marker.
+Use one compact issue or equivalent artifact per project or product stream. It is the current control snapshot, not an event archive. Rebuild its body atomically after each material transition, keep exactly one copy of every current section, and put history in linked comments or archived windows. Render and validate a complete Candidate before touching the accepted body; publish it once with an exact-current-body guard when available, then read back the whole body and compare its SHA-256 and `control-check` result. On mismatch, restore and verify the exact last accepted body. A partial or failed write never becomes current truth. Nothing except whitespace may appear before the start marker or after the end marker.
 
 ```md
 <!-- vydykhai:project-state v2 -->
@@ -110,4 +110,22 @@ Show only live work and the immediate next queue. Terminal history leaves this t
 
 `Human attention` is `NONE` when no answer is due. Otherwise keep one stable user-facing request as `PENDING`; if a Guard, repair, rotation, or later system event has displaced it, use `RESURFACE_DUE` until the orchestrator shows it again. A new request must combine with, resolve, or explicitly supersede the prior one; it may not silently replace it.
 
-Update this body after activation, dispatch or resume, material re-brief, human detour/correction, blocker, Return Sync consumption, acceptance, merge, alignment, health review, framework/schema update, rotation, or a Human attention transition. Write the event to its owning task or tracker record, then atomically rebuild this current view. `Work origin` records the latest material control decision or independent adapter check; compliant advisory analysis remains control-only and creates no per-run history. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before declaring activation, schema migration, Governor `HEALTHY`, or rotation cutover; an external runner uses `guard-check` on events and schedule. Framework activation additionally requires the active orchestrator's own cwd/HEAD and live/offline doctor readback; a maintenance or verification worktree cannot satisfy it. A Governor receipt closes only the exact event named by both `Snapshot as of` and `Audited event`; an older healthy receipt never authorizes a newer transition.
+Update this body after activation, dispatch or resume, material re-brief, human detour/correction, blocker, Return Sync consumption, acceptance, merge, alignment, health review, framework/schema update, rotation, or a Human attention transition. Write the event to its owning task or tracker record, then apply the publication gate above. `control-check --json` returns the Candidate hashes; after publication export the body again and run `control-check --expect-state-sha <candidate-sha256>` before declaring it current. Keep the accepted body or immutable revision reference until readback passes. `Work origin` records the latest material control decision or independent adapter check; compliant advisory analysis remains control-only and creates no per-run history. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before declaring activation, schema migration, Governor `HEALTHY`, or rotation cutover; an external runner uses `guard-check` on events and schedule. Framework activation additionally requires the active orchestrator's own cwd/HEAD and live/offline doctor readback; a maintenance or verification worktree cannot satisfy it. A Governor receipt closes only the exact event named by both `Snapshot as of` and `Audited event`; an older healthy receipt never authorizes a newer transition.
+
+## Canonical Return Route Receipt
+
+After the orchestrator consumes and routes a marked Return Sync, append this paired receipt to the same durable outbox or its stable linked control record. It is the machine-readable proof Project Guard compares with the producer receipt.
+
+```md
+<!-- vydykhai:return-route v1 -->
+
+# Return Route
+
+Return receipt id: <same id as Return Sync>
+Return lifecycle: RECEIVED -> CONSUMED -> ROUTED
+Consumer: <active orchestrator / durable pointer>
+Routed next action: <closed lease / human checkpoint / next work / blocked gate>
+Evidence: <Project State event and stable source>
+
+<!-- vydykhai:return-route:end -->
+```

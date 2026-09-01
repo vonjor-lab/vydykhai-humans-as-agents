@@ -40,8 +40,8 @@ The orchestrator selects the required skill and workflow.
 
 ```text
 node scripts/vydykhai.mjs doctor
-node scripts/vydykhai.mjs control-check --state <project-state-body> --graph <memory-graph-body>
-node scripts/vydykhai.mjs guard-check --state <project-state-body> --graph <memory-graph-body>
+node scripts/vydykhai.mjs control-check --state <project-state-body> --graph <memory-graph-body> [--expect-state-sha <candidate-sha256>]
+node scripts/vydykhai.mjs guard-check --state <project-state-body> --graph <memory-graph-body> --outbox <durable-outbox-export> [--accepted-incident <semantic-id>]
 node scripts/vydykhai.mjs update
 ```
 
