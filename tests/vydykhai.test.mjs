@@ -53,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.24.0");
+    assert.equal(lock.installedVersion, "1.24.1");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -82,7 +82,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /Project Guard: external-event-and-schedule; healthy=deterministic-no-model; anomaly=maximum-available/);
     assert.match(doctor.stdout, /Human attention: durable-single-manager-attention; guard=silent; completion=restore-or-explicitly-supersede/);
     assert.match(doctor.stdout, /Execution leases: one-work-one-owning-context/);
-    assert.match(doctor.stdout, /Task returns: durable-outbox-native-wakeup/);
+    assert.match(doctor.stdout, /Task returns: durable-outbox-native-wakeup; terminal=return-sync; fallback=discover-unrouted-durable-return/);
     assert.match(doctor.stdout, /Rotation: independent-health-gated; independent check after 2 compactions or 24 active hours/);
     assert.match(doctor.stdout, /Memory: project-memory-graph v3; task brief <= 7 executable nodes/);
     assert.match(doctor.stdout, /Action receipts: critical-transition-readback; 7 critical boundaries/);
@@ -136,7 +136,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.24\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.24\.1/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -197,6 +197,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("idempotent-incident"));
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("orchestrator-work-origin-read"));
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("pending-human-action-read"));
+  assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("durable-outbox-discovery"));
   assert.equal(manifest.humanAttentionPolicy.policy, "durable-single-manager-attention");
   assert.deepEqual(manifest.humanAttentionPolicy.states, ["none", "pending", "resurface-due"]);
   assert.deepEqual(manifest.humanAttentionPolicy.requiredFields, ["id", "request", "source", "raised-at", "resume-after"]);
@@ -215,7 +216,13 @@ test("current manifest preserves updater compatibility fields", async () => {
     "outcome-unknown",
   ]);
   assert.equal(manifest.taskReturnPolicy.policy, "durable-outbox-native-wakeup");
+  assert.equal(manifest.taskReturnPolicy.terminalReceipt, "return-sync");
+  assert.equal(manifest.taskReturnPolicy.actionReceiptSubstitutes, false);
+  assert.equal(manifest.taskReturnPolicy.nativeWakeup, "required-attempt");
+  assert.equal(manifest.taskReturnPolicy.nativeThreadRead, "non-authoritative");
+  assert.equal(manifest.taskReturnPolicy.guardFallback, "discover-unrouted-durable-return");
   assert.deepEqual(manifest.taskReturnPolicy.states, ["written", "sent", "received", "consumed", "routed"]);
+  assert.deepEqual(manifest.taskReturnPolicy.reconcileOn, ["return-sync-written", "orchestrator-cold-path", "governor-check", "active-timer"]);
   assert.equal(manifest.rotationPolicy.policy, "independent-health-gated");
   assert.equal(manifest.rotationPolicy.maxCompactionsWithoutIndependentCheck, 2);
   assert.equal(manifest.rotationPolicy.sameClassFailureLimit, 2);
@@ -336,6 +343,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(taskHandoff, /Memory Brief result:/);
   assert.match(taskHandoff, /Memory candidates:/);
   assert.match(taskHandoff, /Return receipt id:/);
+  assert.match(taskHandoff, /CHECKPOINT_READY/);
+  assert.match(taskHandoff, /Return triggers: <readiness result/);
   assert.match(taskHandoff, /Return lifecycle:/);
   assert.match(taskHandoff, /OUTCOME_UNKNOWN/);
   assert.match(taskHandoff, /Consult when:/);
@@ -380,6 +389,10 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /Governor Check/);
   assert.match(orchestratorWorkflow, /EXECUTION_STALLED/);
   assert.match(orchestratorWorkflow, /WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED/);
+  assert.match(orchestratorWorkflow, /An Action Receipt never substitutes for terminal Return Sync/);
+  const projectGuardWorkflow = await readFile(path.join(root, "docs/workflows/project-guard.md"), "utf8");
+  assert.match(projectGuardWorkflow, /discover newly written Return Sync receipts directly from the durable outbox/);
+  assert.match(projectGuardWorkflow, /native task or thread read is empty/);
   const projectLaunch = await readFile(path.join(root, "docs/workflows/project-launch.md"), "utf8");
   assert.match(projectLaunch, /bounded read-only memory backfill/);
   assert.match(projectLaunch, /Do not copy the full transcript or model narration/);
@@ -445,7 +458,8 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   assert.doesNotMatch(startup, /Project State:/);
   assert.match(handoff, /Resolve ordinary implementation failures autonomously/);
   assert.match(handoff, /Do not run `\$project-launch`, `\$start-work`, `\$daily-alignment`, or `\$framework-orchestrator` here/);
-  assert.match(handoff, /first write the complete receipt to the durable task\/tracker outbox/);
+  assert.match(handoff, /first write the complete Return Sync to the durable task\/tracker outbox/);
+  assert.match(handoff, /An Action Receipt never substitutes for this Return Sync/);
 });
 
 test("control-check closes DOD, lease, return, detour, and memory transitions", async () => {
@@ -564,7 +578,7 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
 
     const waitingReturn = healthyState.replace(
       "| --- | --- | --- |\n## Detours",
-      "| --- | --- | --- |\n| RET-9 | task-one | SENT |\n## Detours",
+      "| --- | --- | --- |\n| RET-9 | task-one | WRITTEN |\n## Detours",
     );
     await writeFile(statePath, waitingReturn);
     const wakeGuard = run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]);

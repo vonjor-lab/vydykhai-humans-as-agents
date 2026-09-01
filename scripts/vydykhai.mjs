@@ -149,7 +149,15 @@ async function loadManifest(root) {
   if (manifest.executionLeasePolicy?.policy && manifest.executionLeasePolicy.policy !== "one-work-one-owning-context") {
     throw new Error(`Invalid execution lease policy in ${file}`);
   }
-  if (manifest.taskReturnPolicy?.policy && manifest.taskReturnPolicy.policy !== "durable-outbox-native-wakeup") {
+  if (
+    manifest.taskReturnPolicy?.policy &&
+    (manifest.taskReturnPolicy.policy !== "durable-outbox-native-wakeup" ||
+      manifest.taskReturnPolicy.terminalReceipt !== "return-sync" ||
+      manifest.taskReturnPolicy.actionReceiptSubstitutes !== false ||
+      manifest.taskReturnPolicy.nativeWakeup !== "required-attempt" ||
+      manifest.taskReturnPolicy.nativeThreadRead !== "non-authoritative" ||
+      manifest.taskReturnPolicy.guardFallback !== "discover-unrouted-durable-return")
+  ) {
     throw new Error(`Invalid task return policy in ${file}`);
   }
   if (manifest.rotationPolicy?.policy && manifest.rotationPolicy.policy !== "independent-health-gated") {
@@ -468,7 +476,11 @@ function printDoctor(result, asJson) {
     console.log("Execution leases: not declared by installed version");
   }
   if (result.taskReturnPolicy?.policy) {
-    console.log(`Task returns: ${result.taskReturnPolicy.policy}`);
+    console.log(
+      `Task returns: ${result.taskReturnPolicy.policy}; ` +
+        `terminal=${result.taskReturnPolicy.terminalReceipt}; ` +
+        `fallback=${result.taskReturnPolicy.guardFallback}`,
+    );
   } else {
     console.log("Task returns: not declared by installed version");
   }

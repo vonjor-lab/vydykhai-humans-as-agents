@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.24.0",
+  "version": "1.24.1",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -131,7 +131,8 @@
       "native-wakeup",
       "fresh-context-start",
       "idempotent-incident",
-      "pending-human-action-read"
+      "pending-human-action-read",
+      "durable-outbox-discovery"
     ],
     "triggers": [
       "project-activation",
@@ -189,6 +190,11 @@
   },
   "taskReturnPolicy": {
     "policy": "durable-outbox-native-wakeup",
+    "terminalReceipt": "return-sync",
+    "actionReceiptSubstitutes": false,
+    "nativeWakeup": "required-attempt",
+    "nativeThreadRead": "non-authoritative",
+    "guardFallback": "discover-unrouted-durable-return",
     "states": [
       "written",
       "sent",
@@ -197,8 +203,10 @@
       "routed"
     ],
     "reconcileOn": [
+      "return-sync-written",
       "orchestrator-cold-path",
-      "governor-check"
+      "governor-check",
+      "active-timer"
     ]
   },
   "rotationPolicy": {

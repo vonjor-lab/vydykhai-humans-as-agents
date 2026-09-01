@@ -39,6 +39,8 @@ Use the stable incident id returned by `guard-check`. One incident may have one 
 
 Before the first wakeup for a new incident, copy the exact current `Human attention` state into its receipt. `PENDING` means the request has already been shown and is waiting for the person, so a timer alone does not wake it. `RESURFACE_DUE` means a later system event displaced the request and produces one idempotent `WAKE`. Repeated checks of the same incident remain silent.
 
+The adapter must discover newly written Return Sync receipts directly from the durable outbox or tracker and compare their stable ids with Project State routing, even when native delivery was never attempted or the native task or thread read is empty. A new unrouted id is `WAKE`; the same id after one delivery or after `ROUTED` is silent. A terminal Action Receipt without its required Return Sync is a return-contract mismatch, not proof that no result exists. This discovery is deterministic and model-free; an adapter that cannot perform it reports `LIMITED`.
+
 The adapter also checks actual harness evidence that durable files cannot prove: a newer human command with no observable action, a terminal task result missing from the inbox, duplicate or indistinguishable live control contexts, wrong reasoning profile, completed contexts that remain active without an exit, and internal orchestrator agents that lack the `Control decision / Available sources / Expected orchestration output / Route to focused context when` contract or originate project work without a visible owning context. A compliant advisory result is only `CONTROL_ONLY` or `ROUTE_TO_FOCUSED_CONTEXT`; it never advances DOD or supplies accepted project evidence. A project claim, diagnosis, Candidate, verification, or side effect without a human decision, durable source, or focused-context receipt is `UNOWNED_PROJECT_WORK`.
 
 ## 4. Evaluate Only The Anomaly
@@ -57,7 +59,7 @@ Guard delivery is control-plane input, not a second conversation with the person
 
 ## 5. Keep Naming And Cleanup Observable
 
-Project-goal task titles remain `<work-id> [<track>] [<mode>] — <short outcome>`, with the work id first. Only service work that maintains the coordination system rather than achieving a project goal puts a concise unique service id first, for example `[FW 1.24.0] [SYSTEM] [MAINT] — Adopt`, `[ROT G4] [SYSTEM] [MAINT] — Replace orchestrator`, or `[GUARD <incident>] [SYSTEM] [MAINT] — Repair control loop`; do not reuse the Project State issue as its work id. Active and retired orchestrator titles keep their existing canonical format.
+Project-goal task titles remain `<work-id> [<track>] [<mode>] — <short outcome>`, with the work id first. Only service work that maintains the coordination system rather than achieving a project goal puts a concise unique service id first, for example `[FW <version>] [SYSTEM] [MAINT] — Adopt`, `[ROT G4] [SYSTEM] [MAINT] — Replace orchestrator`, or `[GUARD <incident>] [SYSTEM] [MAINT] — Repair control loop`; do not reuse the Project State issue as its work id. Active and retired orchestrator titles keep their existing canonical format.
 
 After a terminal receipt, verify artifact disposition, archive the completed focused context when supported, and retain only the durable reference. Do not mass-rename closed history.
 
