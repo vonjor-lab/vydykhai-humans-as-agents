@@ -116,6 +116,13 @@ async function loadManifest(root) {
     throw new Error(`Invalid agent routing policy in ${file}`);
   }
   if (
+    manifest.orchestratorAdvisoryPolicy &&
+    (manifest.orchestratorAdvisoryPolicy.policy !== "control-only-advisory" ||
+      manifest.orchestratorAdvisoryPolicy.guardSignal !== "unowned-project-work")
+  ) {
+    throw new Error(`Invalid orchestrator advisory policy in ${file}`);
+  }
+  if (
     manifest.controlLoopPolicy &&
     (manifest.controlLoopPolicy.policy !== "governor-audited-event-loop" ||
       manifest.controlLoopPolicy.projectStateVersion !== 2)
@@ -372,6 +379,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
     sourceRevision: lock?.sourceRevision || (await sourceRevision(targetRoot)),
     agentProfilePolicy: manifest.defaultAgentProfile,
     agentRoutingPolicy: manifest.agentRoutingPolicy,
+    orchestratorAdvisoryPolicy: manifest.orchestratorAdvisoryPolicy,
     projectActivationPolicy: manifest.projectActivationPolicy,
     controlLoopPolicy: manifest.controlLoopPolicy,
     projectGuardPolicy: manifest.projectGuardPolicy,
@@ -404,6 +412,14 @@ function printDoctor(result, asJson) {
       `DISCOVERY=${routing.profiles.discovery.reasoningPolicy}; ` +
       `EXECUTION=${routing.profiles.execution.reasoningPolicy}`,
   );
+  if (result.orchestratorAdvisoryPolicy?.policy) {
+    console.log(
+      `Orchestrator advisory: ${result.orchestratorAdvisoryPolicy.policy}; ` +
+        `guard=${result.orchestratorAdvisoryPolicy.guardSignal}`,
+    );
+  } else {
+    console.log("Orchestrator advisory: not declared by installed version");
+  }
   if (result.projectActivationPolicy?.policy && Array.isArray(result.projectActivationPolicy.requiredChecks)) {
     console.log(
       `Project activation: ${result.projectActivationPolicy.policy}; ` +
@@ -548,6 +564,7 @@ function validateProjectState(content, manifest) {
     "Governor:",
     "Project Guard:",
     "Orchestrator health:",
+    "Work origin:",
     "Last independent check:",
     "DOD Control Line:",
     "Memory coverage:",
@@ -608,6 +625,18 @@ function validateProjectState(content, manifest) {
   if (!Number.isFinite(compactionCount)) issues.push(`${label}: compaction/context-loss count is missing or unresolved`);
   else if (compactionCount >= manifest.rotationPolicy.maxCompactionsWithoutIndependentCheck) {
     issues.push(`${label}: independent check required after ${compactionCount} compaction/context-loss signals`);
+  }
+  const workOriginLine = content.match(/^Work origin:.*$/m)?.[0] || "";
+  const workOriginState = workOriginLine.match(/^Work origin:\s*(PASS|REVIEW|UNOWNED_PROJECT_WORK)\b/)?.[1];
+  if (!workOriginState) issues.push(`${label}: work origin is missing or unresolved`);
+  else if (workOriginState !== "PASS") issues.push(`${label}: work origin requires ${workOriginState}`);
+  for (const [field, pattern] of [
+    ["advisory contract", /\|\s*Advisory contract:\s*([^|]+)/],
+    ["accepted evidence owner", /\|\s*Accepted evidence owner:\s*([^|]+)/],
+    ["last checked", /\|\s*Last checked:\s*([^|]+)/],
+  ]) {
+    const value = workOriginLine.match(pattern)?.[1]?.trim();
+    if (!value || /<.*>/.test(value)) issues.push(`${label}: work origin ${field} is missing or unresolved`);
   }
   const dodLine = content.match(/^DOD Control Line:\s*(.+)$/m)?.[1]?.trim();
   if (!dodLine || /<.*>/.test(dodLine)) issues.push(`${label}: DOD Control Line is unresolved`);

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.22.0",
+  "version": "1.23.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -41,6 +41,25 @@
       }
     }
   },
+  "orchestratorAdvisoryPolicy": {
+    "policy": "control-only-advisory",
+    "requiredPromptFields": [
+      "control-decision",
+      "available-sources",
+      "expected-orchestration-output",
+      "route-to-focused-context-when"
+    ],
+    "results": [
+      "control-only",
+      "route-to-focused-context"
+    ],
+    "acceptedProjectEvidenceSources": [
+      "human-decision",
+      "durable-source",
+      "focused-context-receipt"
+    ],
+    "guardSignal": "unowned-project-work"
+  },
   "projectActivationPolicy": {
     "policy": "evidence-backed-project-activation",
     "requiredChecks": [
@@ -75,6 +94,7 @@
       "detour-return-gates",
       "memory-coverage",
       "actual-orchestrator-context",
+      "work-origin",
       "orchestrator-health"
     ],
     "triggers": [
@@ -106,6 +126,7 @@
       "independent-trigger",
       "durable-state-read",
       "active-context-read",
+      "orchestrator-work-origin-read",
       "native-wakeup",
       "fresh-context-start",
       "idempotent-incident"
@@ -118,6 +139,7 @@
       "lease-review-due",
       "milestone-or-framework-update",
       "context-compaction-or-loss",
+      "orchestrator-advisory-activity",
       "active-timer"
     ]
   },
@@ -175,7 +197,8 @@
       "unconsumed-return-after-reconciliation",
       "invalid-control-state",
       "repeated-memory-application-miss",
-      "ambiguous-side-effect-outcome"
+      "ambiguous-side-effect-outcome",
+      "unowned-project-work-after-repair"
     ]
   },
   "memoryPolicy": {

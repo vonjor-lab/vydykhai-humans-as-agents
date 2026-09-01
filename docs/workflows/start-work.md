@@ -79,7 +79,7 @@ Dependencies / parallel boundary:
 Progress continuity: <Preserved / Replaced / Added / Remaining when patched, split, or re-briefed>
 ```
 
-Before dispatch, classify each item as `ORCHESTRATOR_WORK`, `DISCOVERY`, `EXECUTION`, or `STALE_OR_REBRIEF`. An execution item is Low-ready only when it has one outcome and first action, no unresolved solution decision, explicit boundaries, objective acceptance, current baseline/data/access/environment, and compact material consult triggers. Otherwise resolve the gap, re-brief/split, or run Discovery.
+Before dispatch, classify each item as `ORCHESTRATOR_WORK`, `DISCOVERY`, `EXECUTION`, or `STALE_OR_REBRIEF`. Classify by who owns the durable result, not by topic, read-only status, tool, or subagent use. `ORCHESTRATOR_WORK` may use bounded disposable advisory analysis only to improve a control decision. A new diagnosis, solution, empirical fact, experiment, test, Candidate, acceptance proof, side effect, independently useful artifact, or work that outlives the control cycle requires a focused context. An execution item is Low-ready only when it has one outcome and first action, no unresolved solution decision, explicit boundaries, objective acceptance, current baseline/data/access/environment, and compact material consult triggers. Otherwise resolve the gap, re-brief/split, or run Discovery.
 
 Also classify the work as product capability, technical enabler, maintenance, research, or future option. A technical enabler does not close its parent product loop; name the product continuation and owner. Pass the resolved role profile and make its environment mapping or fallback visible only in dispatch metadata.
 
