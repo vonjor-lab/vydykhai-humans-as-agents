@@ -13,7 +13,7 @@ Goal: turn one installation request into a proven shared operating project befor
 7. Resolve role-routed profiles on the latest available flagship: maximum available for `ORCHESTRATOR`, deep bounded for `DISCOVERY`, and efficient bounded for `EXECUTION`; record actual mappings, check source/date, and fallback.
 8. Configure each task to write Return Sync to a durable tracker outbox before sending the same id through native cross-context messaging. Native delivery is the wakeup; the outbox is authority. Record both routes and verify `WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED` on the first real dispatch without human polling.
 9. Reuse the registered active orchestrator when healthy and create one only when absent. Replace it only through confirmed rotation, never by leaving two active contexts. Name it `[ORCHESTRATOR] <project> — Vydykhai <version>`, read back its actual title and maximum profile, and pin or foreground exactly that one context when supported; Project State owns the current pointer.
-10. Install one project-owned Project Guard outside the active orchestrator context using the cheapest available independent scheduler. Prove event and timed routes, deterministic `guard-check`, actual-context read, native wakeup, fresh maximum evaluator, and idempotent incident handling. The runner targets the Project State pointer so it survives rotation; if no independent scheduler exists, report the exact `LIMITED` boundary instead of claiming background recovery.
+10. Install one project-owned Project Guard outside the active orchestrator context using the cheapest available independent scheduler. Prove event and timed routes, deterministic `guard-check`, actual-context and `Human attention` read, native wakeup, fresh maximum evaluator, and idempotent incident handling. The runner targets the Project State pointer so it survives rotation; if no independent scheduler exists, report the exact `LIMITED` boundary instead of claiming background recovery.
 
 ## 2. Project Activation Gate
 
@@ -52,7 +52,7 @@ Treat coordination inputs as raw until distilled and approved. Fathom is the rec
 
 ## 4. Durable State
 
-Create or update one compact Project State using `project-state-template.md`. Store the activation receipt, Project Guard registration, DOD Control Line, Governor receipt, Execution Leases, Pending Return Inbox, detour/recall return gates, and participant readiness there. Rebuild its body atomically; do not append current state after the end marker.
+Create or update one compact Project State using `project-state-template.md`. Store the activation receipt, Project Guard registration, `Human attention: NONE`, DOD Control Line, Governor receipt, Execution Leases, Pending Return Inbox, detour/recall return gates, and participant readiness there. Rebuild its body atomically; do not append current state after the end marker.
 
 Create one Project Memory Graph when the first reusable decision, idea, lesson, or safe operational pointer must survive its source context. Start stable anchors as relevant; keep one meaning per node and link operations to protected runbooks or secret systems.
 

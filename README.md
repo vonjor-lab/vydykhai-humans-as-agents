@@ -10,7 +10,7 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.23.1`
+Current version: `1.24.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -55,8 +55,8 @@ The human may still need to grant repository/network access or approve merge. Th
 - Every focused context receives only the applicable goal, boundary, memory, verification, human checkpoint, and return route. It continues autonomously inside that contract and consults the orchestrator only at a real boundary.
 - Reasoning follows the role: the orchestrator uses the strongest available profile, unresolved solution work uses deep bounded discovery, and a ready execution task uses an efficient profile.
 - Accepted corrections and lessons update shared project memory and the affected plan. A participant's durable learning can therefore guide the other orchestrators instead of remaining inside one chat.
-- Results are written to durable shared state before the orchestrator is notified. Lost cross-context messages do not erase completed work or make a person poll for it.
-- Where an independent trigger is available, Project Guard checks meaningful events and a schedule without using a model while healthy. Only a real mismatch starts a fresh intelligent repair or confirmed rotation; otherwise activation states the exact limitation.
+- Results are written to durable shared state before the orchestrator is notified. After dispatch the orchestrator remains available instead of polling the task, and lost cross-context messages do not erase completed work or make a person poll for it.
+- Where an independent trigger is available, Project Guard checks meaningful events and a schedule without using a model while healthy. Unchanged checks stay silent; a real mismatch starts a fresh intelligent repair or confirmed rotation, and any question already awaiting the person returns to the foreground afterward.
 
 People normally speak only to their orchestrator in natural language. Vydykhai uses native context creation, messaging, and UI controls when the harness supports them; otherwise it uses the shared tracker and gives one exact human action. It never treats a missing harness capability as completed automation.
 

@@ -53,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.23.1");
+    assert.equal(lock.installedVersion, "1.24.0");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -80,6 +80,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /Project activation: evidence-backed-project-activation; 8 live checks via project-launch/);
     assert.match(doctor.stdout, /Control loop: governor-audited-event-loop; Project State v2/);
     assert.match(doctor.stdout, /Project Guard: external-event-and-schedule; healthy=deterministic-no-model; anomaly=maximum-available/);
+    assert.match(doctor.stdout, /Human attention: durable-single-manager-attention; guard=silent; completion=restore-or-explicitly-supersede/);
     assert.match(doctor.stdout, /Execution leases: one-work-one-owning-context/);
     assert.match(doctor.stdout, /Task returns: durable-outbox-native-wakeup/);
     assert.match(doctor.stdout, /Rotation: independent-health-gated; independent check after 2 compactions or 24 active hours/);
@@ -96,6 +97,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     delete legacyManifest.orchestratorAdvisoryPolicy;
     delete legacyManifest.controlLoopPolicy;
     delete legacyManifest.projectGuardPolicy;
+    delete legacyManifest.humanAttentionPolicy;
     delete legacyManifest.executionLeasePolicy;
     delete legacyManifest.taskReturnPolicy;
     delete legacyManifest.rotationPolicy;
@@ -115,6 +117,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(legacyDoctor.stdout, /Project activation: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Control loop: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Project Guard: not declared by installed version/);
+    assert.match(legacyDoctor.stdout, /Human attention: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Execution leases: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Task returns: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Rotation: not declared by installed version/);
@@ -133,7 +136,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.23\.1/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.24\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -184,6 +187,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("pending-return-inbox"));
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("actual-orchestrator-context"));
   assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("work-origin"));
+  assert.ok(manifest.controlLoopPolicy.requiredChecks.includes("human-attention-continuity"));
   assert.equal(manifest.projectGuardPolicy.policy, "external-event-and-schedule");
   assert.equal(manifest.projectGuardPolicy.defaultIntervalMinutes, 30);
   assert.equal(manifest.projectGuardPolicy.healthyPath, "deterministic-no-model");
@@ -192,6 +196,14 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("independent-trigger"));
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("idempotent-incident"));
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("orchestrator-work-origin-read"));
+  assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("pending-human-action-read"));
+  assert.equal(manifest.humanAttentionPolicy.policy, "durable-single-manager-attention");
+  assert.deepEqual(manifest.humanAttentionPolicy.states, ["none", "pending", "resurface-due"]);
+  assert.deepEqual(manifest.humanAttentionPolicy.requiredFields, ["id", "request", "source", "raised-at", "resume-after"]);
+  assert.equal(manifest.humanAttentionPolicy.unchangedGuardAction, "silent");
+  assert.equal(manifest.humanAttentionPolicy.incidentDelivery, "single-bounded-wakeup");
+  assert.equal(manifest.humanAttentionPolicy.completion, "restore-or-explicitly-supersede");
+  assert.equal(manifest.humanAttentionPolicy.orchestratorAvailability, "release-after-observable-dispatch");
   assert.equal(manifest.executionLeasePolicy.policy, "one-work-one-owning-context");
   assert.deepEqual(manifest.executionLeasePolicy.states, [
     "prepared",
@@ -446,6 +458,7 @@ Snapshot as of: event-7
 ## Control Snapshot
 Governor: HEALTHY | Receipt: gov-7 | Trigger: dispatch | Audited event: event-7 | Route: deterministic check
 Project Guard: ACTIVE | Runner: local-scheduler/guard-example | Independent: YES | Event route: durable-outbox-and-context-watermark | Schedule: every-30-minutes | Last proof: now/PASS/scheduler | Wakeup: active-orchestrator-pointer | Incident: none
+Human attention: NONE
 Orchestrator health: HEALTHY | Context: current | Profile: ORCHESTRATOR / maximum / current | Last compaction/context-loss signal: 0 / none
 Work origin: PASS | Advisory contract: CONTROL_ONLY | Accepted evidence owner: durable source | Last checked: event-7/now/adapter
 Last independent check: now / state+graph+tracker / PASS | Same-class failures since repair: 0
@@ -533,6 +546,22 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     assert.equal(healthyGuard.status, 0, healthyGuard.stderr);
     assert.equal(JSON.parse(healthyGuard.stdout).action, "NOOP");
 
+    const pendingAttention = healthyState.replace(
+      "Human attention: NONE",
+      "Human attention: PENDING | ID: HUMAN-7 | Request: Review the accepted demo | Source: task-7 | Raised: event-7 | Resume after: none",
+    );
+    await writeFile(statePath, pendingAttention);
+    const pendingAttentionGuard = run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]);
+    assert.equal(pendingAttentionGuard.status, 0, pendingAttentionGuard.stderr);
+    assert.equal(JSON.parse(pendingAttentionGuard.stdout).action, "NOOP");
+
+    const resurfaceAttention = pendingAttention.replace("Human attention: PENDING", "Human attention: RESURFACE_DUE");
+    await writeFile(statePath, resurfaceAttention);
+    const resurfaceGuard = run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]);
+    assert.equal(resurfaceGuard.status, 0, resurfaceGuard.stderr);
+    assert.equal(JSON.parse(resurfaceGuard.stdout).action, "WAKE");
+    assert.match(resurfaceGuard.stdout, /human attention HUMAN-7 requires resurfacing/);
+
     const waitingReturn = healthyState.replace(
       "| --- | --- | --- |\n## Detours",
       "| --- | --- | --- |\n| RET-9 | task-one | SENT |\n## Detours",
@@ -579,6 +608,7 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
       [healthyState.replace("Work origin: PASS", "Work origin: UNOWNED_PROJECT_WORK"), healthyGraph, /work origin requires UNOWNED_PROJECT_WORK/],
       [healthyState.replace("Accepted evidence owner: durable source", "Accepted evidence owner: <missing>"), healthyGraph, /work origin accepted evidence owner is missing or unresolved/],
       [healthyState.replace("Same-class failures since repair: 0", "Same-class failures since repair: <missing>"), healthyGraph, /same-class failure count is missing or unresolved/],
+      [healthyState.replace("Human attention: NONE", "Human attention: PENDING | ID: HUMAN-7 | Request: <missing> | Source: task-7 | Raised: event-7 | Resume after: none"), healthyGraph, /human attention request is missing or unresolved/],
       [healthyState.replace("DOD Control Line: accepted visible baseline -> close actor flow -> smoke -> continue", "DOD Control Line: <unresolved>"), healthyGraph, /DOD Control Line is unresolved/],
       [healthyState.replace("| --- | --- | --- |\n## Detours", "| --- | --- | --- |\n| RET-9 | task-one | SENT |\n## Detours"), healthyGraph, /pending return RET-9 requires reconciliation/],
       [healthyState.replace("| WORK-1 [DOD] — close actor flow | WORKING |", "| WORK-1 [DOD] — close actor flow | OUTCOME_UNKNOWN |"), healthyGraph, /unresolved transition OUTCOME_UNKNOWN/],

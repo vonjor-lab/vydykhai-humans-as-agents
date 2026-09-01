@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.23.1",
+  "version": "1.24.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -95,7 +95,8 @@
       "memory-coverage",
       "actual-orchestrator-context",
       "work-origin",
-      "orchestrator-health"
+      "orchestrator-health",
+      "human-attention-continuity"
     ],
     "triggers": [
       "project-activation",
@@ -129,7 +130,8 @@
       "orchestrator-work-origin-read",
       "native-wakeup",
       "fresh-context-start",
-      "idempotent-incident"
+      "idempotent-incident",
+      "pending-human-action-read"
     ],
     "triggers": [
       "project-activation",
@@ -142,6 +144,25 @@
       "orchestrator-advisory-activity",
       "active-timer"
     ]
+  },
+  "humanAttentionPolicy": {
+    "policy": "durable-single-manager-attention",
+    "states": [
+      "none",
+      "pending",
+      "resurface-due"
+    ],
+    "requiredFields": [
+      "id",
+      "request",
+      "source",
+      "raised-at",
+      "resume-after"
+    ],
+    "unchangedGuardAction": "silent",
+    "incidentDelivery": "single-bounded-wakeup",
+    "completion": "restore-or-explicitly-supersede",
+    "orchestratorAvailability": "release-after-observable-dispatch"
   },
   "executionLeasePolicy": {
     "policy": "one-work-one-owning-context",

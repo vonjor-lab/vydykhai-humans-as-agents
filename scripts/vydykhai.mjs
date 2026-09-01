@@ -137,6 +137,15 @@ async function loadManifest(root) {
   ) {
     throw new Error(`Invalid project guard policy in ${file}`);
   }
+  if (
+    manifest.humanAttentionPolicy &&
+    (manifest.humanAttentionPolicy.policy !== "durable-single-manager-attention" ||
+      manifest.humanAttentionPolicy.unchangedGuardAction !== "silent" ||
+      manifest.humanAttentionPolicy.completion !== "restore-or-explicitly-supersede" ||
+      manifest.humanAttentionPolicy.orchestratorAvailability !== "release-after-observable-dispatch")
+  ) {
+    throw new Error(`Invalid human attention policy in ${file}`);
+  }
   if (manifest.executionLeasePolicy?.policy && manifest.executionLeasePolicy.policy !== "one-work-one-owning-context") {
     throw new Error(`Invalid execution lease policy in ${file}`);
   }
@@ -383,6 +392,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
     projectActivationPolicy: manifest.projectActivationPolicy,
     controlLoopPolicy: manifest.controlLoopPolicy,
     projectGuardPolicy: manifest.projectGuardPolicy,
+    humanAttentionPolicy: manifest.humanAttentionPolicy,
     executionLeasePolicy: manifest.executionLeasePolicy,
     taskReturnPolicy: manifest.taskReturnPolicy,
     rotationPolicy: manifest.rotationPolicy,
@@ -442,6 +452,15 @@ function printDoctor(result, asJson) {
     );
   } else {
     console.log("Project Guard: not declared by installed version");
+  }
+  if (result.humanAttentionPolicy?.policy) {
+    console.log(
+      `Human attention: ${result.humanAttentionPolicy.policy}; ` +
+        `guard=${result.humanAttentionPolicy.unchangedGuardAction}; ` +
+        `completion=${result.humanAttentionPolicy.completion}`,
+    );
+  } else {
+    console.log("Human attention: not declared by installed version");
   }
   if (result.executionLeasePolicy?.policy) {
     console.log(`Execution leases: ${result.executionLeasePolicy.policy}`);
@@ -563,6 +582,7 @@ function validateProjectState(content, manifest) {
     "Snapshot as of:",
     "Governor:",
     "Project Guard:",
+    "Human attention:",
     "Orchestrator health:",
     "Work origin:",
     "Last independent check:",
@@ -601,6 +621,32 @@ function validateProjectState(content, manifest) {
   const guardIncident = guardLine.match(/\|\s*Incident:\s*([^|]+)/)?.[1]?.trim();
   if (guardIncident && guardIncident.toLowerCase() !== "none" && !/<.*>/.test(guardIncident)) {
     issues.push(`${label}: Project Guard incident ${guardIncident} requires reconciliation`);
+  }
+  const attentionLines = content.match(/^Human attention:.*$/gm) || [];
+  if (attentionLines.length !== 1) {
+    issues.push(`${label}: expected exactly one Human attention state`);
+  } else {
+    const attentionLine = attentionLines[0];
+    const attentionState = attentionLine.match(/^Human attention:\s*(NONE|PENDING|RESURFACE_DUE)\b/)?.[1];
+    if (!attentionState) {
+      issues.push(`${label}: human attention state is missing or unresolved`);
+    } else if (attentionState !== "NONE") {
+      const fields = [
+        ["id", /\|\s*ID:\s*([^|]+)/],
+        ["request", /\|\s*Request:\s*([^|]+)/],
+        ["source", /\|\s*Source:\s*([^|]+)/],
+        ["raised at", /\|\s*Raised:\s*([^|]+)/],
+        ["resume after", /\|\s*Resume after:\s*([^|]+)/],
+      ];
+      for (const [field, pattern] of fields) {
+        const value = attentionLine.match(pattern)?.[1]?.trim();
+        if (!value || /<.*>/.test(value)) issues.push(`${label}: human attention ${field} is missing or unresolved`);
+      }
+      const attentionId = attentionLine.match(/\|\s*ID:\s*([^|]+)/)?.[1]?.trim() || "unknown";
+      if (attentionState === "RESURFACE_DUE") {
+        issues.push(`${label}: human attention ${attentionId} requires resurfacing`);
+      }
+    }
   }
   const governorReceipt = governorLine.match(/\|\s*Receipt:\s*([^|]+)/)?.[1]?.trim();
   const governorTrigger = governorLine.match(/\|\s*Trigger:\s*([^|]+)/)?.[1]?.trim();
@@ -748,6 +794,7 @@ function classifyGuard(result, stateContent) {
     /pending return .* requires reconciliation/,
     /detour .* is due for return/,
     /memory event .* is still pending/,
+    /human attention .* requires resurfacing/,
   ];
   const issues = [...result.stateIssues, ...result.graphIssues];
   const action = issues.length > 0 && issues.every((issue) => wakeOnly.some((pattern) => pattern.test(issue)))
