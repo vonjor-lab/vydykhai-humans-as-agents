@@ -27,7 +27,7 @@ Project activation: <PROJECT_READY | PROJECT_READY_WITH_LIMITS | NEEDS_DECISION 
 Shared Sync: Repo: <url> | Tracker: <url> | Readiness: <READY | SYNC_LIMITED with gaps>
 Coordination inputs: <meeting/chat/docs/manual route + access> | Intake: <direct or named owner> | Active alignment / latest delta: <link/event or none>
 Environment adapter: <native / adapter path> | Context mapping: <thread/chat/session/run/workspace/tracker handle>
-Task return mapping: durable outbox <tracker event/hook> | Wakeup <native context message or fallback> | Last reconciled receipt: <id/date>
+Task return mapping: durable outbox <tracker event/hook> | Durable discovery <event plus timer / adapter> | Wakeup <native context message or fallback> | Last reconciled receipt: <id/date>
 Orchestrator rotation: <stable / repair / candidate / awaiting confirmation / cutover incomplete / complete> | Candidate / previous: <links or none>
 Tracker projection: <board/view> | Last reconciled: <event/date>
 Scope freshness: <policy days> | Last project-level check: <date/event/result>
@@ -71,7 +71,7 @@ One work id has one owning context and branch. `PREPARED` reserves identity but 
 
 ## Pending Return Inbox
 
-The durable outbox is authority; native delivery is only a wakeup. Keep only receipts not yet routed. Reconcile this table at every cold path and Governor Check.
+The durable outbox is authority; native delivery and native thread reads are only hints. Every checkpoint, readiness, blocker, or terminal outcome uses a Return Sync; an Action Receipt never replaces it. Keep only receipts not yet routed. Project Guard independently discovers new unrouted ids from the durable outbox on write events and timer, then wakes once. Reconcile this table at every cold path and Governor Check.
 
 | Receipt | Work / sender | State | Durable outbox | Native wakeup | Consumer / routed next action |
 | --- | --- | --- | --- | --- | --- |

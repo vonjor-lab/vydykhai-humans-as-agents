@@ -150,6 +150,7 @@ for (const capability of [
   "fresh-context-start",
   "idempotent-incident",
   "pending-human-action-read",
+  "durable-outbox-discovery",
 ]) {
   if (!manifest.projectGuardPolicy?.requiredCapabilities?.includes(capability)) {
     fail(`Project Guard is missing capability: ${capability}`);
@@ -188,10 +189,19 @@ for (const field of ["work-id", "owner-and-context", "project-and-repository", "
 if (manifest.taskReturnPolicy?.policy !== "durable-outbox-native-wakeup") {
   fail("Task return policy must use durable-outbox-native-wakeup");
 }
+if (
+  manifest.taskReturnPolicy?.terminalReceipt !== "return-sync" ||
+  manifest.taskReturnPolicy?.actionReceiptSubstitutes !== false ||
+  manifest.taskReturnPolicy?.nativeWakeup !== "required-attempt" ||
+  manifest.taskReturnPolicy?.nativeThreadRead !== "non-authoritative" ||
+  manifest.taskReturnPolicy?.guardFallback !== "discover-unrouted-durable-return"
+) {
+  fail("Task return terminal receipt or durable fallback is invalid");
+}
 for (const state of ["written", "sent", "received", "consumed", "routed"]) {
   if (!manifest.taskReturnPolicy?.states?.includes(state)) fail(`Task return policy is missing state: ${state}`);
 }
-for (const trigger of ["orchestrator-cold-path", "governor-check"]) {
+for (const trigger of ["return-sync-written", "orchestrator-cold-path", "governor-check", "active-timer"]) {
   if (!manifest.taskReturnPolicy?.reconcileOn?.includes(trigger)) fail(`Task return policy is missing reconciliation: ${trigger}`);
 }
 if (manifest.rotationPolicy?.policy !== "independent-health-gated") {
@@ -625,7 +635,8 @@ if (
   !orchestratorWorkflow.includes("first safe observable action") ||
   !orchestratorWorkflow.includes("EXECUTION_STALLED") ||
   !orchestratorWorkflow.includes("Pending Return Inbox") ||
-  !orchestratorWorkflow.includes("durable outbox receipt") ||
+  !orchestratorWorkflow.includes("write one terminal Return Sync to the durable outbox") ||
+  !orchestratorWorkflow.includes("An Action Receipt never substitutes for terminal Return Sync") ||
   !orchestratorWorkflow.includes("WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED") ||
   !orchestratorWorkflow.includes("OUTCOME_UNKNOWN") ||
   !orchestratorWorkflow.includes("detour")
@@ -645,6 +656,8 @@ if (
   !projectGuardWorkflow.includes("Pending Human Action") ||
   !projectGuardWorkflow.includes("restore or explicitly supersede") ||
   !projectGuardWorkflow.includes("must not wake the orchestrator") ||
+  !projectGuardWorkflow.includes("discover newly written Return Sync receipts directly from the durable outbox") ||
+  !projectGuardWorkflow.includes("native task or thread read is empty") ||
   !orchestratorWorkflow.includes("external Project Guard") ||
   !orchestratorWorkflow.includes("release the orchestrator after observable dispatch") ||
   !orchestratorSkill.includes("project-owned Project Guard") ||
@@ -683,7 +696,7 @@ if (
   fail("Context naming or human-facing reference contract is incomplete");
 }
 if (
-  !orchestratorWorkflow.includes("[FW 1.24.0] [SYSTEM] [MAINT] — Adopt") ||
+  !orchestratorWorkflow.includes("[FW <version>] [SYSTEM] [MAINT] — Adopt") ||
   !orchestratorWorkflow.includes("[GUARD <incident>] [SYSTEM] [MAINT] — Repair control loop") ||
   !orchestratorWorkflow.includes("never reuse the Project State issue") ||
   !projectGuardWorkflow.includes("Project-goal task titles remain") ||
