@@ -122,6 +122,7 @@ for (const check of [
   "actual-orchestrator-context",
   "work-origin",
   "orchestrator-health",
+  "human-attention-continuity",
 ]) {
   if (!manifest.controlLoopPolicy?.requiredChecks?.includes(check)) {
     fail(`Control loop policy is missing check: ${check}`);
@@ -148,10 +149,30 @@ for (const capability of [
   "native-wakeup",
   "fresh-context-start",
   "idempotent-incident",
+  "pending-human-action-read",
 ]) {
   if (!manifest.projectGuardPolicy?.requiredCapabilities?.includes(capability)) {
     fail(`Project Guard is missing capability: ${capability}`);
   }
+}
+if (manifest.humanAttentionPolicy?.policy !== "durable-single-manager-attention") {
+  fail("Human attention policy must use durable-single-manager-attention");
+}
+for (const state of ["none", "pending", "resurface-due"]) {
+  if (!manifest.humanAttentionPolicy?.states?.includes(state)) fail(`Human attention policy is missing state: ${state}`);
+}
+for (const field of ["id", "request", "source", "raised-at", "resume-after"]) {
+  if (!manifest.humanAttentionPolicy?.requiredFields?.includes(field)) {
+    fail(`Human attention policy is missing field: ${field}`);
+  }
+}
+if (
+  manifest.humanAttentionPolicy?.unchangedGuardAction !== "silent" ||
+  manifest.humanAttentionPolicy?.incidentDelivery !== "single-bounded-wakeup" ||
+  manifest.humanAttentionPolicy?.completion !== "restore-or-explicitly-supersede" ||
+  manifest.humanAttentionPolicy?.orchestratorAvailability !== "release-after-observable-dispatch"
+) {
+  fail("Human attention delivery or orchestrator availability policy is invalid");
 }
 if (manifest.executionLeasePolicy?.policy !== "one-work-one-owning-context") {
   fail("Execution lease policy must use one-work-one-owning-context");
@@ -418,6 +439,7 @@ for (const value of [
   "Shared Sync:",
   "Governor:",
   "Project Guard:",
+  "Human attention:",
   "Audited event:",
   "Orchestrator health:",
   "Last independent check:",
@@ -450,6 +472,9 @@ if (!projectStateTemplate.includes("Task return mapping:") || !projectStateTempl
 }
 if (!projectStateTemplate.includes("PREPARED / STARTED / WORKING / WAITING / RETURNED / CLOSED / OUTCOME_UNKNOWN")) {
   fail("Project State is missing execution lease states");
+}
+if (!projectStateTemplate.includes("RESURFACE_DUE") || !projectStateTemplate.includes("explicitly supersede")) {
+  fail("Project State is missing durable human attention continuity");
 }
 if (!projectStateTemplate.includes("Snapshot as of:") || !projectStateTemplate.includes("Rebuild its body atomically")) {
   fail("Project State is missing atomic current-snapshot hygiene");
@@ -617,10 +642,15 @@ if (
   !projectGuardWorkflow.includes("newer human command with no observable action") ||
   !projectGuardWorkflow.includes("UNOWNED_PROJECT_WORK") ||
   !projectGuardWorkflow.includes("CONTROL_ONLY") ||
+  !projectGuardWorkflow.includes("Pending Human Action") ||
+  !projectGuardWorkflow.includes("restore or explicitly supersede") ||
+  !projectGuardWorkflow.includes("must not wake the orchestrator") ||
   !orchestratorWorkflow.includes("external Project Guard") ||
-  !orchestratorSkill.includes("project-owned Project Guard")
+  !orchestratorWorkflow.includes("release the orchestrator after observable dispatch") ||
+  !orchestratorSkill.includes("project-owned Project Guard") ||
+  !orchestratorSkill.includes("Pending Human Action")
 ) {
-  fail("Project Guard is missing independent liveness, silent healthy path, or anomaly escalation");
+  fail("Project Guard is missing independent liveness, silent healthy path, attention continuity, or anomaly escalation");
 }
 if (
   !orchestratorWorkflow.includes("derive a Touch Set") ||
@@ -653,7 +683,7 @@ if (
   fail("Context naming or human-facing reference contract is incomplete");
 }
 if (
-  !orchestratorWorkflow.includes("[FW 1.23.1] [SYSTEM] [MAINT] — Adopt") ||
+  !orchestratorWorkflow.includes("[FW 1.24.0] [SYSTEM] [MAINT] — Adopt") ||
   !orchestratorWorkflow.includes("[GUARD <incident>] [SYSTEM] [MAINT] — Repair control loop") ||
   !orchestratorWorkflow.includes("never reuse the Project State issue") ||
   !projectGuardWorkflow.includes("Project-goal task titles remain") ||

@@ -11,6 +11,7 @@ During `$project-launch`, detect the cheapest independent scheduler available in
 The runner must be able to:
 
 - read current Project State, Project Memory Graph, durable task outbox, actual active-context metadata, and observable orchestrator advisory activity/work origin when the harness exposes it;
+- read the current `Human attention` state and carry any `Pending Human Action` through repair or rotation without interpreting the product decision for the person;
 - run `node scripts/vydykhai.mjs guard-check --state <export> --graph <export> --json` without a model;
 - wake the registered active orchestrator, start one fresh maximum-profile evaluator, and record one idempotent incident receipt;
 - perform only control-plane messaging, repair, and confirmed rotation. It may not implement project work, merge, deploy, spend, access secrets, or repeat an uncertain external action.
@@ -24,7 +25,7 @@ Use the same runner for both routes:
 - event route: activation, dispatch/material resume, Return Sync written, human correction/detour, lease review due, milestone/framework update, observable orchestrator advisory activity, or context-loss signal;
 - schedule route: every 30 minutes while active by default, with an inexpensive no-op when no work or incident is due.
 
-The schedule is a liveness fallback, not a second planning ritual. It targets the project pointer, never a hard-coded orchestrator context, so rotation does not orphan it.
+The schedule is a liveness fallback, not a second planning ritual. It targets the project pointer, never a hard-coded orchestrator context, so rotation does not orphan it. An unchanged healthy state or already delivered incident must not wake the orchestrator, start a model, append a visible message, or change the pending human request.
 
 ## 3. Decide Without Waking A Model
 
@@ -35,6 +36,8 @@ First compare durable state with actual context activity and run `guard-check`:
 - `AUDIT_REQUIRED`: identity, DOD, state, memory, work origin, side-effect, repeated-failure, runner, or context health is mismatched; or the same `WAKE` incident remains unresolved at the next check.
 
 Use the stable incident id returned by `guard-check`. One incident may have one active owner; another machine or harness observes the receipt and does not duplicate the wakeup or evaluator.
+
+Before the first wakeup for a new incident, copy the exact current `Human attention` state into its receipt. `PENDING` means the request has already been shown and is waiting for the person, so a timer alone does not wake it. `RESURFACE_DUE` means a later system event displaced the request and produces one idempotent `WAKE`. Repeated checks of the same incident remain silent.
 
 The adapter also checks actual harness evidence that durable files cannot prove: a newer human command with no observable action, a terminal task result missing from the inbox, duplicate or indistinguishable live control contexts, wrong reasoning profile, completed contexts that remain active without an exit, and internal orchestrator agents that lack the `Control decision / Available sources / Expected orchestration output / Route to focused context when` contract or originate project work without a visible owning context. A compliant advisory result is only `CONTROL_ONLY` or `ROUTE_TO_FOCUSED_CONTEXT`; it never advances DOD or supplies accepted project evidence. A project claim, diagnosis, Candidate, verification, or side effect without a human decision, durable source, or focused-context receipt is `UNOWNED_PROJECT_WORK`.
 
@@ -50,9 +53,11 @@ Return exactly one result:
 
 If the evaluator or wakeup itself produces no nonce-matched receipt, do not loop. Preserve the incident and escalate once to the configured fallback or human with one exact action.
 
+Guard delivery is control-plane input, not a second conversation with the person. The active orchestrator routes any repair to a focused maintenance context, releases its own turn after observable dispatch, and later presents one plain-language outcome. On completion it must restore or explicitly supersede the saved `Pending Human Action`; a replacement orchestrator inherits the same request before becoming active. The human speaks only to the orchestrator and never has to decode incident ids, evaluator receipts, scheduler state, or repair mechanics.
+
 ## 5. Keep Naming And Cleanup Observable
 
-Project-goal task titles remain `<work-id> [<track>] [<mode>] — <short outcome>`, with the work id first. Only service work that maintains the coordination system rather than achieving a project goal puts a concise unique service id first, for example `[FW 1.23.1] [SYSTEM] [MAINT] — Adopt`, `[ROT G4] [SYSTEM] [MAINT] — Replace orchestrator`, or `[GUARD <incident>] [SYSTEM] [MAINT] — Repair control loop`; do not reuse the Project State issue as its work id. Active and retired orchestrator titles keep their existing canonical format.
+Project-goal task titles remain `<work-id> [<track>] [<mode>] — <short outcome>`, with the work id first. Only service work that maintains the coordination system rather than achieving a project goal puts a concise unique service id first, for example `[FW 1.24.0] [SYSTEM] [MAINT] — Adopt`, `[ROT G4] [SYSTEM] [MAINT] — Replace orchestrator`, or `[GUARD <incident>] [SYSTEM] [MAINT] — Repair control loop`; do not reuse the Project State issue as its work id. Active and retired orchestrator titles keep their existing canonical format.
 
 After a terminal receipt, verify artifact disposition, archive the completed focused context when supported, and retain only the durable reference. Do not mass-rename closed history.
 
