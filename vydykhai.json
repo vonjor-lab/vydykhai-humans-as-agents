@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.24.1",
+  "version": "1.24.2",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -108,11 +108,33 @@
       "active-24-hours"
     ]
   },
+  "controlStatePublicationPolicy": {
+    "policy": "validate-publish-readback-or-restore",
+    "stages": [
+      "render-candidate",
+      "validate-candidate",
+      "publish-once",
+      "readback-exact",
+      "restore-last-accepted-on-mismatch"
+    ],
+    "requiredEvidence": [
+      "accepted-state-reference",
+      "candidate-state-sha256",
+      "candidate-validation",
+      "readback-state-sha256",
+      "readback-validation"
+    ],
+    "failedWriteState": "never-current"
+  },
   "projectGuardPolicy": {
     "policy": "external-event-and-schedule",
     "defaultIntervalMinutes": 30,
     "healthyPath": "deterministic-no-model",
     "anomalyProfile": "maximum-available",
+    "incidentIdentity": "semantic-condition-set",
+    "snapshotHashRole": "evidence-only",
+    "acceptedSameIncidentAction": "silent-no-model",
+    "changedConditionAction": "audit-required",
     "states": [
       "active",
       "limited",
@@ -195,6 +217,13 @@
     "nativeWakeup": "required-attempt",
     "nativeThreadRead": "non-authoritative",
     "guardFallback": "discover-unrouted-durable-return",
+    "machineFormat": "marked-return-sync-and-route-v1",
+    "adapterAcceptance": [
+      "real-emitted-return-format",
+      "matching-route-receipt",
+      "scheduled-noop-after-routing",
+      "malformed-or-mismatched-route-audits"
+    ],
     "states": [
       "written",
       "sent",

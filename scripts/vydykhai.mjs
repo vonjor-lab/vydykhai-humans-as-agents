@@ -35,15 +35,26 @@ function usage() {
 Usage:
   node scripts/vydykhai.mjs install <target-repo> [--force]
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--json]
-  node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--json]
-  node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--json]
+  node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--expect-state-sha <sha256>] [--expect-graph-sha <sha256>] [--json]
+  node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--accepted-incident <semantic-id>] [--json]
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
 `;
 }
 
 function parseArgs(argv) {
   const positionals = [];
-  const flags = { force: false, offline: false, json: false, from: null, state: null, graph: null };
+  const flags = {
+    force: false,
+    offline: false,
+    json: false,
+    from: null,
+    state: null,
+    graph: null,
+    outbox: null,
+    acceptedIncident: null,
+    expectStateSha: null,
+    expectGraphSha: null,
+  };
 
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
@@ -54,11 +65,22 @@ function parseArgs(argv) {
       flags.from = argv[i + 1];
       i += 1;
       if (!flags.from) throw new Error("--from requires a framework repository path");
-    } else if (value === "--state" || value === "--graph") {
-      const key = value.slice(2);
+    } else if (
+      ["--state", "--graph", "--outbox", "--accepted-incident", "--expect-state-sha", "--expect-graph-sha"].includes(
+        value,
+      )
+    ) {
+      const key = {
+        "--state": "state",
+        "--graph": "graph",
+        "--outbox": "outbox",
+        "--accepted-incident": "acceptedIncident",
+        "--expect-state-sha": "expectStateSha",
+        "--expect-graph-sha": "expectGraphSha",
+      }[value];
       flags[key] = argv[i + 1];
       i += 1;
-      if (!flags[key]) throw new Error(`${value} requires a file path`);
+      if (!flags[key]) throw new Error(`${value} requires a value`);
     } else if (value.startsWith("--")) {
       throw new Error(`Unknown option: ${value}`);
     } else {
@@ -130,10 +152,19 @@ async function loadManifest(root) {
     throw new Error(`Invalid control loop policy in ${file}`);
   }
   if (
+    manifest.controlStatePublicationPolicy &&
+    (manifest.controlStatePublicationPolicy.policy !== "validate-publish-readback-or-restore" ||
+      manifest.controlStatePublicationPolicy.failedWriteState !== "never-current")
+  ) {
+    throw new Error(`Invalid control state publication policy in ${file}`);
+  }
+  if (
     manifest.projectGuardPolicy &&
     (manifest.projectGuardPolicy.policy !== "external-event-and-schedule" ||
       manifest.projectGuardPolicy.healthyPath !== "deterministic-no-model" ||
-      manifest.projectGuardPolicy.anomalyProfile !== "maximum-available")
+      manifest.projectGuardPolicy.anomalyProfile !== "maximum-available" ||
+      (manifest.projectGuardPolicy.incidentIdentity &&
+        manifest.projectGuardPolicy.incidentIdentity !== "semantic-condition-set"))
   ) {
     throw new Error(`Invalid project guard policy in ${file}`);
   }
@@ -156,7 +187,9 @@ async function loadManifest(root) {
       manifest.taskReturnPolicy.actionReceiptSubstitutes !== false ||
       manifest.taskReturnPolicy.nativeWakeup !== "required-attempt" ||
       manifest.taskReturnPolicy.nativeThreadRead !== "non-authoritative" ||
-      manifest.taskReturnPolicy.guardFallback !== "discover-unrouted-durable-return")
+      manifest.taskReturnPolicy.guardFallback !== "discover-unrouted-durable-return" ||
+      (manifest.taskReturnPolicy.machineFormat &&
+        manifest.taskReturnPolicy.machineFormat !== "marked-return-sync-and-route-v1"))
   ) {
     throw new Error(`Invalid task return policy in ${file}`);
   }
@@ -399,6 +432,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
     orchestratorAdvisoryPolicy: manifest.orchestratorAdvisoryPolicy,
     projectActivationPolicy: manifest.projectActivationPolicy,
     controlLoopPolicy: manifest.controlLoopPolicy,
+    controlStatePublicationPolicy: manifest.controlStatePublicationPolicy,
     projectGuardPolicy: manifest.projectGuardPolicy,
     humanAttentionPolicy: manifest.humanAttentionPolicy,
     executionLeasePolicy: manifest.executionLeasePolicy,
@@ -453,10 +487,15 @@ function printDoctor(result, asJson) {
   } else {
     console.log("Control loop: not declared by installed version");
   }
+  if (result.controlStatePublicationPolicy?.policy) {
+    console.log(`Control state publication: ${result.controlStatePublicationPolicy.policy}`);
+  } else {
+    console.log("Control state publication: not declared by installed version");
+  }
   if (result.projectGuardPolicy?.policy) {
     console.log(
       `Project Guard: ${result.projectGuardPolicy.policy}; healthy=${result.projectGuardPolicy.healthyPath}; ` +
-        `anomaly=${result.projectGuardPolicy.anomalyProfile}`,
+        `anomaly=${result.projectGuardPolicy.anomalyProfile}; incident=${result.projectGuardPolicy.incidentIdentity || "legacy"}`,
     );
   } else {
     console.log("Project Guard: not declared by installed version");
@@ -554,6 +593,118 @@ function duplicateValues(values) {
     seen.add(value);
   }
   return [...duplicates];
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function markedBlocks(content, kind, label) {
+  const startMarker = `<!-- vydykhai:${kind} v1 -->`;
+  const endMarker = `<!-- vydykhai:${kind}:end -->`;
+  const issues = [];
+  const startCount = countExact(content, startMarker);
+  const endCount = countExact(content, endMarker);
+  if (startCount !== endCount) {
+    issues.push(`Durable outbox: ${label} marker count differs (${startCount} start / ${endCount} end)`);
+  }
+  const pattern = new RegExp(`${escapeRegExp(startMarker)}([\\s\\S]*?)${escapeRegExp(endMarker)}`, "g");
+  return {
+    blocks: [...content.matchAll(pattern)].map((match) => match[1]),
+    issues,
+  };
+}
+
+function blockField(block, name) {
+  return block.match(new RegExp(`^${escapeRegExp(name)}:\\s*(.+)$`, "m"))?.[1]?.trim() || "";
+}
+
+function validateDurableOutbox(content) {
+  const returnBlocks = markedBlocks(content, "return-sync", "Return Sync");
+  const routeBlocks = markedBlocks(content, "return-route", "Return Route");
+  const issues = [...returnBlocks.issues, ...routeBlocks.issues];
+  if (!returnBlocks.blocks.length && /(^|\n)(# Return Sync|Return receipt id:)/.test(content)) {
+    issues.push("Durable outbox: unmarked Return Sync data requires canonical v1 framing");
+  }
+  if (!routeBlocks.blocks.length && /(^|\n)(# Return Route|Return lifecycle:\s*RECEIVED)/.test(content)) {
+    issues.push("Durable outbox: unmarked Return Route data requires canonical v1 framing");
+  }
+  const returns = new Map();
+  const routes = new Map();
+
+  for (const block of returnBlocks.blocks) {
+    const id = blockField(block, "Return receipt id");
+    const status = blockField(block, "Status");
+    const lifecycle = blockField(block, "Return lifecycle");
+    const required = [
+      ["Status", status],
+      ["Return receipt id", id],
+      ["Return lifecycle", lifecycle],
+      ["Task / context / PR / commit / artifact", blockField(block, "Task / context / PR / commit / artifact")],
+      ["Memory candidates", blockField(block, "Memory candidates")],
+      ["Artifact disposition", blockField(block, "Artifact disposition")],
+      ["Recommended orchestrator next action", blockField(block, "Recommended orchestrator next action")],
+    ];
+    for (const [field, value] of required) {
+      if (!value || /<.*>/.test(value)) issues.push(`Durable outbox: Return Sync ${id || "<missing>"} lacks ${field}`);
+    }
+    if (
+      status &&
+      ![
+        "BLOCKED_BEFORE_START",
+        "NEEDS_REBRIEF",
+        "CHECKPOINT_READY",
+        "ACCEPT",
+        "ACCEPT_WITH_FOLLOWUPS",
+        "NEEDS_FIXES",
+        "BLOCKED",
+        "OUTCOME_UNKNOWN",
+      ].includes(status)
+    ) {
+      issues.push(`Durable outbox: Return Sync ${id || "<missing>"} has invalid status ${status}`);
+    }
+    if (lifecycle && !/^WRITTEN(?:\s*->\s*SENT)?$/.test(lifecycle)) {
+      issues.push(`Durable outbox: Return Sync ${id || "<missing>"} lifecycle must be WRITTEN or WRITTEN -> SENT`);
+    }
+    if (!id) continue;
+    if (returns.has(id)) issues.push(`Durable outbox: duplicate Return Sync ${id}`);
+    returns.set(id, block);
+  }
+
+  for (const block of routeBlocks.blocks) {
+    const id = blockField(block, "Return receipt id");
+    const lifecycle = blockField(block, "Return lifecycle");
+    const required = [
+      ["Return receipt id", id],
+      ["Return lifecycle", lifecycle],
+      ["Consumer", blockField(block, "Consumer")],
+      ["Routed next action", blockField(block, "Routed next action")],
+      ["Evidence", blockField(block, "Evidence")],
+    ];
+    for (const [field, value] of required) {
+      if (!value || /<.*>/.test(value)) issues.push(`Durable outbox: Return Route ${id || "<missing>"} lacks ${field}`);
+    }
+    if (lifecycle && !/^RECEIVED\s*->\s*CONSUMED\s*->\s*ROUTED$/.test(lifecycle)) {
+      issues.push(`Durable outbox: Return Route ${id || "<missing>"} lifecycle is not RECEIVED -> CONSUMED -> ROUTED`);
+    }
+    if (!id) continue;
+    if (routes.has(id)) issues.push(`Durable outbox: duplicate Return Route ${id}`);
+    routes.set(id, block);
+  }
+
+  for (const id of returns.keys()) {
+    if (!routes.has(id)) issues.push(`Durable outbox: return ${id} requires routing`);
+  }
+  for (const id of routes.keys()) {
+    if (!returns.has(id)) issues.push(`Durable outbox: Return Route ${id} has no matching Return Sync`);
+  }
+
+  return {
+    issues,
+    returnCount: returns.size,
+    routeCount: routes.size,
+    routedCount: [...returns.keys()].filter((id) => routes.has(id)).length,
+  };
 }
 
 function validateClosedArtifact(content, { label, startMarker, endMarker, requiredHeadings }) {
@@ -781,49 +932,110 @@ function validateMemoryGraph(content, manifest) {
   return issues;
 }
 
-async function controlCheck(statePath, graphPath) {
+async function controlCheck(
+  statePath,
+  graphPath,
+  { outboxPath = null, expectStateSha = null, expectGraphSha = null } = {},
+) {
   const manifest = await loadManifest(SCRIPT_ROOT);
   const state = await readFile(statePath, "utf8");
   const graph = await readFile(graphPath, "utf8");
   const stateIssues = validateProjectState(state, manifest);
   const graphIssues = validateMemoryGraph(graph, manifest);
+  const stateSha256 = sha256(state);
+  const graphSha256 = sha256(graph);
+  if (expectStateSha && stateSha256 !== expectStateSha) {
+    stateIssues.push(`Project State: readback sha256 ${stateSha256} does not match expected ${expectStateSha}`);
+  }
+  if (expectGraphSha && graphSha256 !== expectGraphSha) {
+    graphIssues.push(`Project Memory Graph: readback sha256 ${graphSha256} does not match expected ${expectGraphSha}`);
+  }
+  let outbox = null;
+  if (outboxPath) {
+    const outboxContent = await readFile(outboxPath, "utf8");
+    outbox = {
+      path: outboxPath,
+      sha256: sha256(outboxContent),
+      ...validateDurableOutbox(outboxContent),
+    };
+  }
   return {
-    ok: stateIssues.length === 0 && graphIssues.length === 0,
+    ok: stateIssues.length === 0 && graphIssues.length === 0 && (!outbox || outbox.issues.length === 0),
     policy: manifest.controlLoopPolicy.policy,
+    publicationPolicy: manifest.controlStatePublicationPolicy?.policy || null,
     projectStateVersion: manifest.controlLoopPolicy.projectStateVersion,
     memoryGraphVersion: manifest.memoryPolicy.graphVersion,
     statePath,
     graphPath,
+    stateSha256,
+    graphSha256,
+    outbox,
     stateIssues,
     graphIssues,
   };
 }
 
-function classifyGuard(result, stateContent) {
-  if (result.ok) return { action: "NOOP", incidentId: null };
+function semanticIssueKey(issue) {
+  if (/Project State: Project Guard incident .* requires reconciliation/.test(issue)) return null;
+  if (/Project State: Governor audited .* but current snapshot is .*/.test(issue)) {
+    return "Project State: Governor audited event differs from current snapshot";
+  }
+  if (/Project State: independent check required after \d+ compaction\/context-loss signals/.test(issue)) {
+    return "Project State: independent check required after compaction/context-loss threshold";
+  }
+  if (/Project State: same-class failure threshold reached \(\d+\)/.test(issue)) {
+    return "Project State: same-class failure threshold reached";
+  }
+  return issue;
+}
+
+function classifyGuard(result, stateContent, { acceptedIncidentId = null } = {}) {
+  if (result.ok) {
+    return {
+      action: "NOOP",
+      incidentId: null,
+      incidentIdentity: "semantic-condition-set",
+      recordedIncidentId: null,
+      incidentChanged: false,
+    };
+  }
   const wakeOnly = [
     /unresolved transition (PREPARED|RETURNED)/,
     /pending return .* requires reconciliation/,
+    /Durable outbox: return .* requires routing/,
     /detour .* is due for return/,
     /memory event .* is still pending/,
     /human attention .* requires resurfacing/,
   ];
-  const issues = [...result.stateIssues, ...result.graphIssues];
-  const action = issues.length > 0 && issues.every((issue) => wakeOnly.some((pattern) => pattern.test(issue)))
+  const issues = [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])];
+  const requiredAction = issues.length > 0 && issues.every((issue) => wakeOnly.some((pattern) => pattern.test(issue)))
     ? "WAKE"
     : "AUDIT_REQUIRED";
-  const snapshot = stateContent.match(/^Snapshot as of:\s*(.+)$/m)?.[1]?.trim() || "unknown";
   const recordedIncident = stateContent.match(/^Project Guard:.*\|\s*Incident:\s*([^|\n]+)/m)?.[1]?.trim();
-  const incidentId = recordedIncident && recordedIncident.toLowerCase() !== "none" && !/<.*>/.test(recordedIncident)
+  const recordedIncidentId = recordedIncident && recordedIncident.toLowerCase() !== "none" && !/<.*>/.test(recordedIncident)
     ? recordedIncident
-    : `guard-${sha256(JSON.stringify({ snapshot, issues: [...issues].sort() })).slice(0, 16)}`;
-  return { action, incidentId };
+    : null;
+  const semanticConditions = issues.map(semanticIssueKey).filter(Boolean).sort();
+  if (!semanticConditions.length) semanticConditions.push("Project State: recorded incident requires reconciliation");
+  const incidentId = `guard-${sha256(JSON.stringify({ semanticConditions })).slice(0, 16)}`;
+  const deduplicated = Boolean(acceptedIncidentId && acceptedIncidentId === incidentId && !recordedIncidentId);
+  return {
+    action: deduplicated ? "NOOP" : requiredAction,
+    requiredAction,
+    incidentId,
+    incidentIdentity: "semantic-condition-set",
+    semanticConditions,
+    recordedIncidentId,
+    incidentChanged: Boolean(recordedIncidentId && recordedIncidentId !== incidentId),
+    acceptedIncidentId,
+    deduplicated,
+  };
 }
 
-async function guardCheck(statePath, graphPath) {
+async function guardCheck(statePath, graphPath, options = {}) {
   const stateContent = await readFile(statePath, "utf8");
-  const result = await controlCheck(statePath, graphPath);
-  return { ...result, ...classifyGuard(result, stateContent) };
+  const result = await controlCheck(statePath, graphPath, options);
+  return { ...result, ...classifyGuard(result, stateContent, options) };
 }
 
 function printGuardCheck(result, asJson) {
@@ -834,7 +1046,7 @@ function printGuardCheck(result, asJson) {
   console.log(`Project Guard action: ${result.action}`);
   if (result.incidentId) console.log(`Incident: ${result.incidentId}`);
   console.log(`Control check: ${result.ok ? "PASS" : "MISMATCH"}`);
-  for (const issue of [...result.stateIssues, ...result.graphIssues]) console.log(`- ${issue}`);
+  for (const issue of [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])]) console.log(`- ${issue}`);
 }
 
 function printControlCheck(result, asJson) {
@@ -846,7 +1058,15 @@ function printControlCheck(result, asJson) {
   console.log(`Policy: ${result.policy}`);
   console.log(`Project State: v${result.projectStateVersion}${result.stateIssues.length ? " / FAILED" : " / PASS"}`);
   console.log(`Memory Graph: v${result.memoryGraphVersion}${result.graphIssues.length ? " / FAILED" : " / PASS"}`);
-  for (const issue of [...result.stateIssues, ...result.graphIssues]) console.log(`- ${issue}`);
+  console.log(`Project State sha256: ${result.stateSha256}`);
+  console.log(`Memory Graph sha256: ${result.graphSha256}`);
+  if (result.outbox) {
+    console.log(
+      `Durable outbox: ${result.outbox.returnCount} returns / ${result.outbox.routedCount} routed / ` +
+        `${result.outbox.issues.length ? "FAILED" : "PASS"}`,
+    );
+  }
+  for (const issue of [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])]) console.log(`- ${issue}`);
 }
 
 async function cloneUpstream(upstream) {
@@ -894,7 +1114,11 @@ async function main() {
     if (!flags.state || !flags.graph) throw new Error(`control-check requires --state and --graph\n\n${usage()}`);
     const statePath = path.resolve(flags.state);
     const graphPath = path.resolve(flags.graph);
-    const result = await controlCheck(statePath, graphPath);
+    const result = await controlCheck(statePath, graphPath, {
+      outboxPath: flags.outbox ? path.resolve(flags.outbox) : null,
+      expectStateSha: flags.expectStateSha,
+      expectGraphSha: flags.expectGraphSha,
+    });
     printControlCheck(result, flags.json);
     if (!result.ok) process.exitCode = 1;
     return;
@@ -904,7 +1128,10 @@ async function main() {
     if (!flags.state || !flags.graph) throw new Error(`guard-check requires --state and --graph\n\n${usage()}`);
     const statePath = path.resolve(flags.state);
     const graphPath = path.resolve(flags.graph);
-    const result = await guardCheck(statePath, graphPath);
+    const result = await guardCheck(statePath, graphPath, {
+      outboxPath: flags.outbox ? path.resolve(flags.outbox) : null,
+      acceptedIncidentId: flags.acceptedIncident,
+    });
     printGuardCheck(result, flags.json);
     return;
   }
