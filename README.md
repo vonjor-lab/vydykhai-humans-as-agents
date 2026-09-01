@@ -1,81 +1,82 @@
 # Vydykhai: Team Autopilot for People and AI
 
-«Выдыхай» - командный автопилот для людей, которые работают над одним проектом, каждый со своим AI. Участники могут использовать разные компьютеры, модели и агентные среды: Vydykhai связывает их личных оркестраторов общим брифом, памятью, задачами и приемкой. Работа, сделанная отдельно, сходится в один результат, а участники не ломают изменения друг друга. Люди задают цель и принимают смысловые решения; оркестраторы держат общий маршрут и следующий шаг.
+«Выдыхай» - командный автопилот для людей, которые работают над одним проектом, каждый со своим AI. Он связывает разные компьютеры, модели и агентные среды в один общий курс: цель, память, задачи и приемку. Работа, сделанная отдельно, сходится в один результат, а участники не ломают изменения друг друга.
 
-Vydykhai is a team autopilot for people working on one project, each with their own AI. Participants may use different computers, models, and agent environments: Vydykhai connects their personal orchestrators through a shared brief, memory, tasks, and acceptance process. Work done separately converges into one result without participants breaking one another's changes. People set the goal and make judgment calls; orchestrators maintain the shared route and next step.
+Vydykhai полезен и одному человеку, который ведет проект через несколько AI-сессий, и особенно команде, где у каждого свои инструменты. После подключения каждый участник общается со своим оркестратором обычным языком; оркестраторы сами поддерживают общий маршрут, организуют сфокусированную работу, собирают результаты и возвращают проект к ближайшему проверяемому результату (DOD), если работа остановилась или разошлась.
+
+Vydykhai is a team autopilot for people working on one project, each with their own AI. It connects different computers, models, and agent environments through one shared course: goal, memory, tasks, and acceptance. Work done separately converges into one result without participants breaking one another's changes.
+
+Vydykhai helps a solo builder working across several AI sessions and becomes especially valuable when each team member uses different tools. After setup, every participant speaks naturally to their own orchestrator; the orchestrators maintain the shared route, organize focused work, collect results, and return the project to its nearest verifiable outcome (DOD) when work stalls or diverges.
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.23.0`
+Current version: `1.23.1`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
-## Что изменится для вас
+## Что Vydykhai берет на себя
 
-- Одной просьбы подключить Vydykhai достаточно, чтобы агент не просто установил файлы, а нашел или подготовил приватный репозиторий, проверил общую синхронизацию, подключил людей и их оркестраторы, уточнил первый DOD и показал доказанный статус запуска с одним следующим действием.
-- Вы можете сказать идею, уточнение или «давай по-другому» один раз. Оркестратор разберется, что именно изменилось, обновит общую память и проверит, какие текущие или будущие задачи это затрагивает.
-- Обещание «запомнить и вернуться» и просьба временно отойти в сторону получают явное условие возврата. Оркестратор проверяет их при следующем подходящем планировании, а не оставляет человеку обязанность вспомнить.
-- Каждая новая задача получает короткие применимые указания: что делать, чего не повторять и как проверить результат. Исполнитель не перечитывает историю проекта и не получает только непонятные ссылки на память.
-- Принятые уроки одного участника становятся доступны оркестраторам остальных через общий репозиторий, а не остаются внутри личного чата.
-- Три уровня контекстов не смешиваются: канонический репозиторий развивает только универсальную формулу, проектный оркестратор только организует один проект, а вся работа выполняется в отдельных task, discovery, lab или maintenance contexts.
-- Оркестратор может подключать внутренних advisory-субагентов, чтобы на максимальной модели лучше проверить DOD, память, риски и план. Они помогают только с управляющим решением: диагностика, решение, проверка и доказательство результата остаются у видимого рабочего треда. Guard проверяет скрытую подмену там, где agent environment показывает внутреннюю активность, а иначе честно отмечает это ограничение.
-- Новая или возобновленная задача считается начатой только после наблюдаемого действия. Если исполнитель снова отвечает планом вместо работы, оркестратор один раз исправляет запуск, а затем меняет маршрут вместо бесконечных напоминаний.
-- Результат задачи сначала сохраняется в общей системе, а затем будит оркестратор. Поэтому потерянное сообщение между агентами не теряет выполненную работу и не заставляет человека спрашивать «ну что там?».
-- Внешний Project Guard переживает сам тред оркестратора. События и таймер дешево проверяют DOD, возвраты и активную работу без модели; только реальный сбой запускает свежую умную проверку, ремонт или своевременную замену оркестратора.
-- После обновления новая версия считается активной только когда собственное рабочее дерево оркестратора стоит на принятом commit и его собственный `doctor` видит новую версию. Название треда или проверка временной ветки больше не могут скрыть старые правила в работающем оркестраторе.
-- GitHub показывает реальное `сейчас / дальше / заблокировано / готово`; встречи и локальная работа меняют эту картину только при существенном событии.
-- Названия и ссылки на работу читаются без расшифровки: оркестратор всегда называет задачу по ее номеру и короткому результату, а PR показывает как артефакт этой задачи, а не как замену ее смысла.
-- Оркестратор время от времени проверяет рабочие хвосты: у каждой открытой задачи, PR, ветки или task context должна быть понятная роль и выход. Забытое не копится молча и не удаляется без проверки.
-- Человек занимается целью, оценкой результата и необходимыми решениями. Поддержание памяти, связей задач и следующего действия берет на себя оркестратор.
+- **Организует путь к результату.** Превращает сырую цель в общий бриф, ближайший DOD, ограниченные задачи и одно понятное следующее действие.
+- **Сводит людей и разные AI в одну работу.** Участники могут действовать асинхронно на своих компьютерах и в своих агентных средах; общий репозиторий связывает их планы, результаты и приемку.
+- **Включает людей как агентов смысла.** Оркестратор обращается к конкретному человеку только за его решением или проверкой, объясняет, что требуется и куда вернется результат; независимая работа тем временем продолжается.
+- **Помнит и применяет накопленный опыт.** Идеи, встречи, решения, «давай по-другому», ошибки и обещания вернуться сохраняются в общей памяти и поднимаются тогда, когда действительно влияют на работу.
+- **Восстанавливает движение.** Если работа остановилась, результат не вернулся или оркестратор потерял фокус, Vydykhai сверяется с общим состоянием, безопасно возобновляет поток или предлагает замену оркестратора. Если агентная среда не позволяет независимую проверку, это ограничение показывается явно.
 
-## What Changes for You
+## What Vydykhai Owns
 
-- One request to connect Vydykhai now makes the agent do more than install files: it discovers or prepares the private project home, proves shared sync, connects people and their orchestrators, resolves the first DOD, and returns an evidence-backed launch status with one next action.
-- Say an idea, correction, or change of approach once. The orchestrator investigates what changed, updates shared memory, and checks which current or future tasks are affected.
-- A promise to remember and return, or a request to step aside temporarily, gets an explicit return condition. The orchestrator checks it at the next relevant planning touch instead of making a person remember.
-- Each task receives short applicable instructions: what to do, what not to repeat, and how to verify the result. Execution does not reread project history or receive opaque memory references.
-- One participant's accepted lessons become available to the other orchestrators through the shared repository instead of remaining trapped in a personal chat.
-- Three context layers stay separate: the canonical repository evolves only the universal formula, a project orchestrator only organizes one project, and all work happens in separate task, discovery, lab, or maintenance contexts.
-- The orchestrator may use internal advisory subagents on its maximum profile to challenge the DOD, memory, risks, and plan. They support only the control decision: diagnosis, solution work, verification, and proof remain with a visible focused context. Guard checks for hidden takeover where the agent environment exposes internal activity and reports the limitation honestly where it does not.
-- A new or resumed task counts as started only after an observable action. If execution answers with another plan, the orchestrator repairs once and then changes route instead of repeating reminders.
-- A task result is written to shared durable state before it wakes the orchestrator. A lost agent message therefore cannot lose completed work or make a person poll for status.
-- An external Project Guard survives the orchestrator thread itself. Events and a timer check DOD, returns, and active work without a model; only a real mismatch launches a fresh intelligent audit, bounded repair, or timely rotation.
-- After an update, the new version becomes active only when the orchestrator's own working tree is on the accepted commit and its own `doctor` sees that version. A renamed context or a check from a temporary update branch can no longer hide old rules in the active orchestrator.
-- The tracker reflects the real `now / next / blocked / done` picture and changes only on material work events.
-- Work names and references are self-explanatory: the orchestrator always names a task by its tracker id and short outcome, while a PR is shown as that task's artifact rather than a substitute for its meaning.
-- The orchestrator periodically checks unfinished work: every open task, PR, branch, or task context needs a clear purpose and exit. Forgotten work neither accumulates silently nor gets deleted without proof.
-- People own the goal, judgment, and approvals; the orchestrator owns memory, task coherence, and the next action.
+- **Organizes the route to an outcome.** It turns a rough goal into a shared brief, the nearest DOD, bounded tasks, and one clear next action.
+- **Converges people and different AI tools.** Participants may work asynchronously across their own computers and agent environments while one shared repository connects plans, results, and acceptance.
+- **Includes people as agents of judgment.** The orchestrator asks a specific person only for the decision or review they own, explains what is needed and where the result returns, and keeps independent work moving.
+- **Remembers and applies accumulated experience.** Ideas, meetings, decisions, changes of approach, failures, and promises to return enter shared memory and resurface when they materially affect the work.
+- **Restores forward motion.** If work stalls, a result does not return, or the orchestrator loses focus, Vydykhai reconciles shared state, safely resumes the flow, or proposes orchestrator replacement. When an agent environment cannot support an independent check, the limitation stays explicit.
 
 ## Give This To Your Agent
 
-Open your coding agent in the project you want to build and send one message:
+Open your coding agent in the project you want to build and send either version as one message:
 
 ```text
 Подключи Vydykhai к этому проекту и запусти оркестратор. Сам определи возможности своей агентской среды и выполни BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents
 ```
 
-That is the normal installation path. The agent identifies the target repo, installs and validates the framework, connects the shared operating space, prepares Project State, and starts the dedicated orchestrator. A bare URL is not enough to express intent; the one sentence above is.
+```text
+Connect Vydykhai to this project and start the orchestrator. Determine the capabilities of your agent environment, follow BOOTSTRAP.md end to end, and ask me only for missing access or a decision: https://github.com/vonjor-lab/vydykhai-humans-as-agents
+```
+
+That is the normal installation path. The agent identifies the target repo, installs and validates the framework, connects the shared operating space, prepares Project State, and starts the dedicated orchestrator. A bare URL is not enough to express intent; either sentence above is.
 
 If the project is still only an idea and has no repository, send the same request. The agent asks only for unresolved host, owner, or visibility and prepares a private Git-backed operating repo when its tools allow.
 
 The human may still need to grant repository/network access or approve merge. They should not need to clone repositories, run installer commands, choose skills, or copy prompts.
 
+## How It Works
+
+- Start with a rough goal. Your orchestrator helps shape it into a shared compass, brief, nearest DOD, and visible plan.
+- Each participant keeps one personal project orchestrator. The orchestrators coordinate what, why, when, and who through shared Git-backed state; focused task, discovery, lab, and maintenance contexts own the actual work.
+- Every focused context receives only the applicable goal, boundary, memory, verification, human checkpoint, and return route. It continues autonomously inside that contract and consults the orchestrator only at a real boundary.
+- Reasoning follows the role: the orchestrator uses the strongest available profile, unresolved solution work uses deep bounded discovery, and a ready execution task uses an efficient profile.
+- Accepted corrections and lessons update shared project memory and the affected plan. A participant's durable learning can therefore guide the other orchestrators instead of remaining inside one chat.
+- Results are written to durable shared state before the orchestrator is notified. Lost cross-context messages do not erase completed work or make a person poll for it.
+- Where an independent trigger is available, Project Guard checks meaningful events and a schedule without using a model while healthy. Only a real mismatch starts a fresh intelligent repair or confirmed rotation; otherwise activation states the exact limitation.
+
+People normally speak only to their orchestrator in natural language. Vydykhai uses native context creation, messaging, and UI controls when the harness supports them; otherwise it uses the shared tracker and gives one exact human action. It never treats a missing harness capability as completed automation.
+
 ## Когда проект запущен / When The Project Is Ready
 
-Установка файлов еще не означает, что проект запущен. `doctor` проверяет только целостность комплекта, а `$project-launch` сам находит или готовит общее пространство, проверяет участников и их доступы, источник синков, безопасный путь к первому DOD, цель и первый план. Каждый участник подтверждается собственным оркестратором; результатом становится видимый статус готовности и одно следующее действие.
+Установка файлов еще не означает, что проект запущен. `doctor` проверяет целостность комплекта, а `$project-launch` доказывает, что общий рабочий контур действительно готов. Результатом становится видимый статус запуска и одно следующее действие.
 
-`doctor` proves only that the installed framework kit is current and intact. `$project-launch` owns live project activation and may report `PROJECT_READY` only after it has read back:
+The project is ready only after its activation receipt proves:
 
-- the target repository and installed kit;
-- one shared writable Git-backed repo and durable tracker;
-- each current participant's role, orchestrator, framework check, and required access;
-- a usable route from meetings, transcripts, chat, docs, or approved manual notes into shared state;
-- only the environments, current deployed revision, protected pointers, merge/deploy authority, and recovery route needed by the first DOD;
-- the accepted goal, DOD Control Line, tracker view, active orchestrator, external Project Guard, Governor baseline, Execution Lease and durable Return Sync routes, and exact next action.
+- the target repository and current framework kit;
+- one shared writable Git-backed repository and durable tracker;
+- each current participant's role, personal orchestrator, required access, and input route;
+- only the environments, safe protected references, authority, and recovery path needed by the first DOD;
+- the accepted goal, current DOD, visible plan, active orchestrator, result-return route, available recovery boundary, and exact next action.
 
-GitHub Repo + Issues/Projects/PRs and Fathom are the recommended, best-supported setup, not a vendor lock-in. Equivalent tools are valid when they provide the same durable linked state, permissions, history, and agent access. The framework is committed once into the project; every participant receives it through the shared repo, while their own orchestrator proves local `doctor` and access readiness. One machine never certifies another.
+GitHub Repo + Issues/Projects/PRs and Fathom are the recommended, best-supported setup, not a vendor lock-in. Equivalent tools are valid when they provide the same durable linked state, permissions, history, and agent access. The framework kit is committed once into the project; every participant receives it through the shared repo, while their own orchestrator proves local readiness. One machine never certifies another.
 
-Missing non-critical coverage produces `PROJECT_READY_WITH_LIMITS` with the exact safe boundary. Missing access that blocks the first route produces `BLOCKED_BY_ACCESS`; Vydykhai never claims team memory or alignment that it cannot observe.
+Missing non-critical coverage produces `PROJECT_READY_WITH_LIMITS` with the exact safe boundary. Missing access that blocks the first route produces `BLOCKED_BY_ACCESS`; Vydykhai never claims team memory, alignment, or background recovery that it cannot observe.
+
+The exact activation contract lives in [`docs/workflows/project-launch.md`](docs/workflows/project-launch.md).
 
 ## Start Here
 
@@ -90,20 +91,6 @@ Missing non-critical coverage produces `PROJECT_READY_WITH_LIMITS` with the exac
 - Agent bootstrap contract: [`BOOTSTRAP.md`](BOOTSTRAP.md)
 
 Historical snapshots remain available through Git releases and tags. Current skills load only the current operating core.
-
-## How It Works
-
-- Start with a rough goal. The orchestrator helps brainstorm it into a shared compass, brief, and nearest DOD.
-- The orchestrator turns approved direction into focused tasks while keeping implementation out of the coordination context.
-- The orchestrator decides what/why/when/who and what changed; a focused task decides how to implement and prove one accepted increment.
-- Reasoning follows the work: the orchestrator uses the strongest available profile, unresolved solution work uses a deep discovery profile, and a ready execution task uses the fast profile.
-- A task continues the accepted product mechanism, resolves ordinary failures itself, and consults only at an undeclared boundary. Research or Lab is used only when uncertainty, cost, or risk justifies it.
-- Meetings and asynchronous local work converge through shared Git-backed state. An absent participant blocks only overlapping work.
-- Before work starts, the orchestrator resolves stable product anchors, follows their current decision and lesson links, and gives the task an executable Memory Brief: apply, avoid, verify, and source.
-- A correction triggers a Memory Miss investigation instead of an apology-only patch. Each accepted result returns `NO_MEMORY_DELTA` or compact candidates; the orchestrator updates reusable meaning, affected work, the visible plan, and next-best-action.
-- A project-owned external Project Guard runs deterministic checks on meaningful events and schedule. Healthy checks are silent and model-free; only anomaly launches a fresh maximum-profile Governor for repair or rotation.
-
-People normally speak only to their orchestrator in natural language. Vydykhai uses native context creation, messaging, and UI controls when the harness supports them; otherwise it uses the shared tracker and gives one exact human action. It never treats a missing harness capability as completed automation.
 
 ## Install Into A Project
 

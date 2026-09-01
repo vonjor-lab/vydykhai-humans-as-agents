@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This repository is the canonical source for the universal Vydykhai collaboration framework. Keep it concise, reusable, safe to publish, and independent of any product repository or private thread.
+This repository is the canonical source for the universal Vydykhai team-autopilot framework. Keep it concise, reusable, safe to publish, and independent of any product repository or private thread.
 
 ## Maintenance Rules
 
