@@ -609,30 +609,42 @@ function markedBlocks(content, kind, label) {
     issues.push(`Durable outbox: ${label} marker count differs (${startCount} start / ${endCount} end)`);
   }
   const pattern = new RegExp(`${escapeRegExp(startMarker)}([\\s\\S]*?)${escapeRegExp(endMarker)}`, "g");
+  const blocks = [...content.matchAll(pattern)].map((match) => match[1]);
+  if (blocks.length !== startCount || blocks.some((block) => /<!-- vydykhai:return-(?:sync|route)(?: v1|:end) -->/.test(block))) {
+    issues.push(`Durable outbox: ${label} framing is incomplete or nested`);
+  }
   return {
-    blocks: [...content.matchAll(pattern)].map((match) => match[1]),
+    blocks,
     issues,
   };
 }
 
 function blockField(block, name) {
-  return block.match(new RegExp(`^${escapeRegExp(name)}:\\s*(.+)$`, "m"))?.[1]?.trim() || "";
+  return block.match(new RegExp(`^${escapeRegExp(name)}:[\\t ]*([^\\r\\n]*)$`, "m"))?.[1]?.trim() || "";
 }
 
-function validateDurableOutbox(content) {
+// Shared by the CLI and host adapters; only complete, unambiguous pairs close returns.
+export function validateDurableOutbox(content) {
   const returnBlocks = markedBlocks(content, "return-sync", "Return Sync");
   const routeBlocks = markedBlocks(content, "return-route", "Return Route");
   const issues = [...returnBlocks.issues, ...routeBlocks.issues];
-  if (!returnBlocks.blocks.length && /(^|\n)(# Return Sync|Return receipt id:)/.test(content)) {
+  const unframed = content
+    .replace(/<!-- vydykhai:return-sync v1 -->[\s\S]*?<!-- vydykhai:return-sync:end -->/g, "")
+    .replace(/<!-- vydykhai:return-route v1 -->[\s\S]*?<!-- vydykhai:return-route:end -->/g, "");
+  if (/(^|\n)Return receipt id:/.test(unframed)) {
     issues.push("Durable outbox: unmarked Return Sync data requires canonical v1 framing");
   }
-  if (!routeBlocks.blocks.length && /(^|\n)(# Return Route|Return lifecycle:\s*RECEIVED)/.test(content)) {
+  if (/(^|\n)Return lifecycle:[\t ]*RECEIVED/.test(unframed)) {
     issues.push("Durable outbox: unmarked Return Route data requires canonical v1 framing");
   }
   const returns = new Map();
   const routes = new Map();
+  const ambiguousReturns = new Set();
+  const ambiguousRoutes = new Set();
+  const framingValid = returnBlocks.issues.length === 0 && routeBlocks.issues.length === 0;
 
   for (const block of returnBlocks.blocks) {
+    const issueStart = issues.length;
     const id = blockField(block, "Return receipt id");
     const status = blockField(block, "Status");
     const lifecycle = blockField(block, "Return lifecycle");
@@ -647,6 +659,9 @@ function validateDurableOutbox(content) {
     ];
     for (const [field, value] of required) {
       if (!value || /<.*>/.test(value)) issues.push(`Durable outbox: Return Sync ${id || "<missing>"} lacks ${field}`);
+      if (countExact(block, new RegExp(`^${escapeRegExp(field)}:`, "gm")) > 1) {
+        issues.push(`Durable outbox: Return Sync ${id || "<missing>"} repeats ${field}`);
+      }
     }
     if (
       status &&
@@ -667,11 +682,15 @@ function validateDurableOutbox(content) {
       issues.push(`Durable outbox: Return Sync ${id || "<missing>"} lifecycle must be WRITTEN or WRITTEN -> SENT`);
     }
     if (!id) continue;
-    if (returns.has(id)) issues.push(`Durable outbox: duplicate Return Sync ${id}`);
-    returns.set(id, block);
+    if (returns.has(id)) {
+      issues.push(`Durable outbox: duplicate Return Sync ${id}`);
+      ambiguousReturns.add(id);
+    }
+    returns.set(id, { id, fields: Object.fromEntries(required), valid: framingValid && issues.length === issueStart });
   }
 
   for (const block of routeBlocks.blocks) {
+    const issueStart = issues.length;
     const id = blockField(block, "Return receipt id");
     const lifecycle = blockField(block, "Return lifecycle");
     const required = [
@@ -683,17 +702,28 @@ function validateDurableOutbox(content) {
     ];
     for (const [field, value] of required) {
       if (!value || /<.*>/.test(value)) issues.push(`Durable outbox: Return Route ${id || "<missing>"} lacks ${field}`);
+      if (countExact(block, new RegExp(`^${escapeRegExp(field)}:`, "gm")) > 1) {
+        issues.push(`Durable outbox: Return Route ${id || "<missing>"} repeats ${field}`);
+      }
     }
     if (lifecycle && !/^RECEIVED\s*->\s*CONSUMED\s*->\s*ROUTED$/.test(lifecycle)) {
       issues.push(`Durable outbox: Return Route ${id || "<missing>"} lifecycle is not RECEIVED -> CONSUMED -> ROUTED`);
     }
     if (!id) continue;
-    if (routes.has(id)) issues.push(`Durable outbox: duplicate Return Route ${id}`);
-    routes.set(id, block);
+    if (routes.has(id)) {
+      issues.push(`Durable outbox: duplicate Return Route ${id}`);
+      ambiguousRoutes.add(id);
+    }
+    routes.set(id, { id, fields: Object.fromEntries(required), valid: framingValid && issues.length === issueStart });
   }
 
+  for (const id of ambiguousReturns) returns.get(id).valid = false;
+  for (const id of ambiguousRoutes) routes.get(id).valid = false;
+  const routedReturnIds = [...returns.keys()].filter((id) => returns.get(id).valid && routes.get(id)?.valid);
+  const routedIds = new Set(routedReturnIds);
+  const pendingReturnIds = [...returns.keys()].filter((id) => !routedIds.has(id));
   for (const id of returns.keys()) {
-    if (!routes.has(id)) issues.push(`Durable outbox: return ${id} requires routing`);
+    if (!routedIds.has(id)) issues.push(`Durable outbox: return ${id} requires routing`);
   }
   for (const id of routes.keys()) {
     if (!returns.has(id)) issues.push(`Durable outbox: Return Route ${id} has no matching Return Sync`);
@@ -703,7 +733,11 @@ function validateDurableOutbox(content) {
     issues,
     returnCount: returns.size,
     routeCount: routes.size,
-    routedCount: [...returns.keys()].filter((id) => routes.has(id)).length,
+    routedCount: routedReturnIds.length,
+    pendingReturnIds,
+    routedReturnIds,
+    returns: [...returns.values()],
+    routes: [...routes.values()],
   };
 }
 
@@ -1157,7 +1191,10 @@ async function main() {
   throw new Error(`Unknown command: ${command}\n\n${usage()}`);
 }
 
-main().catch((error) => {
-  console.error(`Vydykhai: ${error.message}`);
-  process.exitCode = 1;
-});
+const entryPath = process.argv[1] ? await realpath(process.argv[1]).catch(() => null) : null;
+if (entryPath === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(`Vydykhai: ${error.message}`);
+    process.exitCode = 1;
+  });
+}

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.24.2",
+  "version": "1.24.3",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -218,11 +218,15 @@
     "nativeThreadRead": "non-authoritative",
     "guardFallback": "discover-unrouted-durable-return",
     "machineFormat": "marked-return-sync-and-route-v1",
+    "adapterParser": "scripts/vydykhai.mjs#validateDurableOutbox",
     "adapterAcceptance": [
       "real-emitted-return-format",
       "matching-route-receipt",
       "scheduled-noop-after-routing",
-      "malformed-or-mismatched-route-audits"
+      "malformed-or-mismatched-route-audits",
+      "older-pending-survives-newer-routed",
+      "bounded-source-refresh-preserves-edits-and-pending",
+      "pending-wakeup-survives-unrelated-change-and-recipient-handoff"
     ],
     "states": [
       "written",

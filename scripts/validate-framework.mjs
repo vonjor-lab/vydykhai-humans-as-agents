@@ -237,11 +237,17 @@ if (
 if (manifest.taskReturnPolicy?.machineFormat !== "marked-return-sync-and-route-v1") {
   fail("Task return machine format must pair marked Return Sync and Return Route receipts");
 }
+if (manifest.taskReturnPolicy?.adapterParser !== "scripts/vydykhai.mjs#validateDurableOutbox") {
+  fail("Task return adapters must reuse the canonical parser");
+}
 for (const check of [
   "real-emitted-return-format",
   "matching-route-receipt",
   "scheduled-noop-after-routing",
   "malformed-or-mismatched-route-audits",
+  "older-pending-survives-newer-routed",
+  "bounded-source-refresh-preserves-edits-and-pending",
+  "pending-wakeup-survives-unrelated-change-and-recipient-handoff",
 ]) {
   if (!manifest.taskReturnPolicy?.adapterAcceptance?.includes(check)) {
     fail(`Task return adapter acceptance is missing: ${check}`);

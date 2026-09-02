@@ -5,7 +5,7 @@ description: Turn a raw goal, meeting insight, broad product theme, changed comp
 
 # Start Work
 
-Shape large work before implementation begins.
+Shape large work before implementation begins. The first-action receipt proves execution has started; it does not add a pause or approval between already authorized steps.
 
 ## Read
 

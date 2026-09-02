@@ -84,7 +84,7 @@ When tools allow:
 1. Create the separate task/research context from current approved base.
 2. Name project-goal work `<work-id> [<track>] [<mode>] — <short outcome>` using the owning Issue or stable tracker key, one track such as `[DOD1]` or `[SYSTEM]`, and only `[DISCOVERY]`, `[LAB]`, `[MAINT]`, or `[REVIEW]` when normal execution is not the mode. Service work uses its concise unique service id first. Never use a PR number as the work id.
 3. Record a `PREPARED` lease with work identity, owner/context, exact base, profile, DOD Control Line, review-by, return route, and receipt id; read back the canonical title plus actual link, role/profile, base, and route.
-4. Require the first safe observable action in the same launch turn, record its evidence, and only then move the lease to `STARTED`; a prompt, plan, or acknowledgement is not active start.
+4. Require the first safe observable action in the same launch turn, record its evidence, and only then move the lease to `STARTED`; a prompt, plan, or acknowledgement is not active start. This proves start, not a new stop: the task continues to its agreed checkpoint without another approval.
 5. Keep it `WORKING` or `WAITING` until a durable return changes it to `RETURNED`; consume and route that return before `CLOSED`. Before later instruction, read newer task events and reconcile newer human direction. After the launch receipt, release the orchestrator after observable dispatch; do not poll or hold the control turn while a valid task works.
 
 Without native context creation, prepare the stable shared-tracker handle and startup packet, record both in Project State, and give one exact launch action. Do not implement in the orchestrator context.
