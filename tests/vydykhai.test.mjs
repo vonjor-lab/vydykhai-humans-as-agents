@@ -5,7 +5,7 @@ import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const cli = path.join(root, "scripts/vydykhai.mjs");
@@ -53,7 +53,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.24.2");
+    assert.equal(lock.installedVersion, "1.24.3");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -72,6 +72,18 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const doctor = run(["doctor", target, "--offline"]);
     assert.equal(doctor.status, 0, doctor.stderr);
     assert.match(doctor.stdout, /Integrity: OK/);
+    const installedCli = path.join(target, "scripts/vydykhai.mjs");
+    const imported = spawnSync(process.execPath, [
+      "--input-type=module", "--eval",
+      `const {validateDurableOutbox} = await import(${JSON.stringify(pathToFileURL(installedCli).href)}); console.log(JSON.stringify(validateDurableOutbox("# Return Sync\\nread-only note")));`,
+    ], { encoding: "utf8" });
+    assert.equal(imported.status, 0, imported.stderr);
+    assert.deepEqual(JSON.parse(imported.stdout).pendingReturnIds, []);
+    const cliLink = path.join(target, "cli-link.mjs");
+    await symlink(installedCli, cliLink);
+    const linkedDoctor = spawnSync(process.execPath, [cliLink, "doctor", target, "--offline"], { encoding: "utf8" });
+    assert.equal(linkedDoctor.status, 0, linkedDoctor.stderr);
+    assert.match(linkedDoctor.stdout, /Integrity: OK/);
     assert.match(doctor.stdout, /Agent routing: latest-available-flagship \/ role-routed/);
     assert.match(doctor.stdout, /ORCHESTRATOR=maximum-available/);
     assert.match(doctor.stdout, /DISCOVERY=deep-bounded/);
@@ -139,7 +151,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.24\.2/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.24\.3/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -238,11 +250,15 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.taskReturnPolicy.nativeThreadRead, "non-authoritative");
   assert.equal(manifest.taskReturnPolicy.guardFallback, "discover-unrouted-durable-return");
   assert.equal(manifest.taskReturnPolicy.machineFormat, "marked-return-sync-and-route-v1");
+  assert.equal(manifest.taskReturnPolicy.adapterParser, "scripts/vydykhai.mjs#validateDurableOutbox");
   assert.deepEqual(manifest.taskReturnPolicy.adapterAcceptance, [
     "real-emitted-return-format",
     "matching-route-receipt",
     "scheduled-noop-after-routing",
     "malformed-or-mismatched-route-audits",
+    "older-pending-survives-newer-routed",
+    "bounded-source-refresh-preserves-edits-and-pending",
+    "pending-wakeup-survives-unrelated-change-and-recipient-handoff",
   ]);
   assert.deepEqual(manifest.taskReturnPolicy.states, ["written", "sent", "received", "consumed", "routed"]);
   assert.deepEqual(manifest.taskReturnPolicy.reconcileOn, ["return-sync-written", "orchestrator-cold-path", "governor-check", "active-timer"]);
@@ -674,6 +690,8 @@ Evidence: state event-7
     );
     assert.equal(malformedRoute.action, "AUDIT_REQUIRED");
     assert.match(malformedRoute.outbox.issues.join("\n"), /Return Route RET-E2E-1 lacks Evidence/);
+    assert.equal(malformedRoute.outbox.routedCount, 0);
+    assert.deepEqual(malformedRoute.outbox.pendingReturnIds, ["RET-E2E-1"]);
 
     await writeFile(outboxPath, `${returnSync}\n${returnRoute.replaceAll("RET-E2E-1", "RET-OTHER-1")}`);
     const mismatchedRoute = JSON.parse(

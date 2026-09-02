@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 1.24.2 | Status: canonical operating core
+Version: 1.24.3 | Status: canonical operating core
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 
@@ -197,6 +197,8 @@ Do not mechanically escalate a struggling task through reasoning levels. First d
 
 At a declared return trigger, including a readiness result or human checkpoint, the task first writes one marked Return Sync with a unique receipt id and `NO_MEMORY_DELTA`, task-local evidence, or reusable candidates to the durable task/tracker outbox, then attempts to send the same id as a native wakeup. An Action Receipt may prove an action but never substitutes for terminal Return Sync. A native final, thread read, or delivery status is non-authoritative and may be empty even when the task journal contains a result. On every cold path and Governor Check, the orchestrator reconciles `WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED` and appends the paired marked Return Route receipt. Project Guard compares those real producer/consumer records on the write event and active timer. Therefore lost native delivery cannot lose the result or require human polling. It verifies sender, evidence, DOD route, and next action before closing the lease. Cross-person delivery still requires exact artifact/revision, environment, reproducible safe data when relevant, recipient access, and the agreed check. A monitor is only fallback when neither normal route exists.
 
+Guard adapters reuse the canonical outbox parser, refresh durable sources incrementally, and recheck the exact pending return and current recipient before delivery. Unrelated memory changes do not erase waiting work; incomplete routing does not close it. Adapter adoption is proven through the installed event and schedule routes, not kit version alone. See `workflows/project-guard.md`. The first-action receipt is proof of start, not an extra approval; pending background checks block only the affected capability, not unrelated safe work.
+
 ### 5. Align
 
 Use `$daily-alignment` only in an orchestrator after a meaningful meeting or external event that materially changes another participant's safe next action. Task-local debugging, routine progress, urgency, a locally resolved blocker, and ordinary continue are not alignment events.
@@ -309,12 +311,10 @@ Canonical repo-scoped skills:
 
 The `SKILL.md` contracts own behavior. Environments may expose them as `$skills`, commands, rules, or automatic routes; optional interface metadata does not change their meaning.
 
-People should not need to select skills manually. In the orchestrator context, natural requests are enough:
+The orchestrator selects and applies the skill; people use natural requests:
 
 - `Start this project.`
 - `Continue this stream.`
 - `Process the latest meeting.`
 - `Check the work and continue.`
 - `What else could we do here?`
-
-The orchestrator chooses and applies the required skill.
