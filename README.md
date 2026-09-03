@@ -10,7 +10,7 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.26.1`
+Current version: `1.27.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -117,6 +117,8 @@ Give every person and agent only the access they need; never share credentials o
 During normal activity, each participant's orchestrator checks for a new Vydykhai version at most once every 24 hours. This is one small manifest request inside an already active session, not a background model run. When the version is current it stays silent. When a newer version exists, it reads every changelog entry after the installed version through the latest, oldest to newest. It reports `installed -> latest` and the number of releases, gives one concise product-impact line for every skipped release, then explains the combined effect here and puts the safest update window into next-best-action: now before the next dispatch or after a named task/checkpoint.
 
 The orchestrator records the plan in Project State so the team prepares one update rather than duplicate work. At the chosen window it prepares or reuses one update branch, runs `update` and `doctor`, opens or refreshes its PR, and reports the short delta. After merge, activation requires a clean exact readback from the active orchestrator's own working directory: accepted project revision, installed version and source revision, current schemas, integrity, and reread updated core. A temporary update or merged-source worktree cannot certify the active context. If the active context cannot move cleanly, Governor records `REPAIR` or enters confirmed rotation instead of changing the title or Project State early. The orchestrator never overwrites locally modified managed files, changes rules silently in the middle of active work, or merges outside the project's normal policy. A major migration or an update that affects current safety is raised explicitly; ordinary compatible updates do not force orchestrator rotation. If upstream cannot be reached, the check remains visibly pending without blocking otherwise safe work.
+
+Routine coordination is deliberately cheap. Current control facts live once in Project State, while boards and summaries are views; ordinary start, return, pause, and resume use deterministic checks rather than a new AI audit. Project Guard calls a maximum-reasoning evaluator only for a real anomaly, permits one bounded repair, and then stops visibly instead of repeating service work. Memory changes are tried first on a few ordinary unhinted tasks, so an incomplete route is found before a broad evaluation consumes time and tokens.
 
 ## Agent Profiles
 

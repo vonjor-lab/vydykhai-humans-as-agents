@@ -38,7 +38,7 @@ Last retrieval check: <CURRENT/NEXT/PRIOR_MISS receipt / evaluator / result>
 
 ## Pending Memory Events
 
-Every material task return, meeting decision, correction, detour, recall request, or acceptance produces one event or `NO_CHANGE`. Events remain pending until the graph watermark and affected control state are rebuilt and read back.
+Every material task return, meeting decision, correction, detour, recall request, or acceptance is classified as one semantic event or `NO_CHANGE`. Only a semantic event enters Pending Memory Events and advances the graph watermark; `NO_CHANGE` remains a source receipt and routine control events never rewrite Graph. Events remain pending until the graph and affected owning control records are rebuilt and read back.
 
 | Event | Trigger | Before / Now / Why | Anchors | Miss | Action | Source | State |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -46,7 +46,7 @@ Every material task return, meeting decision, correction, detour, recall request
 
 ## Live Retrieval Probes
 
-Coverage is current only when a fresh evaluator can reconstruct executable meaning from ordinary language. Keep exactly one current active-work probe, one immediate-next probe, and the latest proven miss; replace them as work changes and retain older receipts as linked evidence.
+Coverage is current only when fresh actors can reconstruct executable meaning from ordinary language. Start a candidate with 3-4 cheap unhinted real-task probes before any broad evaluation; a miss blocks promotion and becomes the targeted regression. Keep exactly one current active-work probe, one immediate-next probe, and the latest proven miss; replace them as work changes and retain older receipts as linked evidence.
 
 | Slot | Raw trigger | Expected executable action or gate | Observed brief / evidence | Result / checked | Regression source |
 | --- | --- | --- | --- | --- | --- |
@@ -76,4 +76,4 @@ Rules (structural checks do not prove semantic coverage):
 - Acceptance records every brief item as applied, missed, contradicted, or not exercised. A miss replaces `PRIOR_MISS`; dispatch replaces `CURRENT` and `NEXT`. Graph coverage expires when these slots do not represent current work, even if historical evaluations passed.
 - Compact at a milestone, rotation, duplicate cluster, retrieval miss, or loss of scanability. Preserve stable ids, aliases, current meaning, typed relations, old-id mapping, and immutable evidence. A recall commitment survives only when ordinary language returns its concrete meaning, source, return condition, and human gate.
 - Never store credentials, private payloads, production data, or recovery values. A protected `POINTER` records owner, protected reference without value, environment/scope, allowed non-destructive route, last safe check time/result/source, and expiry/re-entry condition. Otherwise return `MEMORY_COVERAGE_GAP / BLOCKED` before history search, secret request, or live action. Historical reconstruction may repair the node but is not a successful current-memory lookup; pointer probes require zero secret read.
-- Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before activation, schema cutover, Governor `HEALTHY`, or orchestrator rotation. Migrate from older schemas through a side-by-side read-only candidate, live probes, visible loss/conflict delta, human confirmation, and retained rollback source.
+- Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before activation, schema cutover, or orchestrator rotation. Migrate from older schemas through a side-by-side read-only candidate, natural-first probes, targeted regression, visible loss/conflict delta, human confirmation, and retained rollback source.

@@ -4,7 +4,7 @@ Goal: a service interruption must not make the person say "continue" again when 
 
 ## One Next Action
 
-Use the existing `Next-Best-Action` section in Project State, not a second plan or memory node. Keep one JSON record there. It points to the current productive step and its existing work/lease; other concurrent work remains in Execution Leases and Safe Continuation.
+Use the existing `Next-Best-Action` section in Project State, not a second plan or memory node. Keep one JSON record there. It points to the current productive step and its existing work/lease; other concurrent work remains in `Execution Leases`.
 
 ```json
 {
@@ -20,7 +20,7 @@ Use the existing `Next-Best-Action` section in Project State, not a second plan 
 
 - `READY`: the active orchestrator owns a safe management step. Its matching `PREPARED` lease may be published before dispatch; structural validity does not prove execution. Perform the step in the current control turn; a plan or promise is not a dispatch. Reconcile an existing lease before any launch.
 - `WORKING`: the named task context has performed its first action; its matching lease is `STARTED` or `WORKING`. Record the launch/action receipt, not the prompt. The orchestrator remains available without polling.
-- `WAITING`: record the actual gate in `evidence` and a concrete `resumeWhen`. It may be a human decision, dependency, safety repair, or next goal after accepted completion. Do not invent a wait to excuse an idle task. Check Safe Continuation for independent ready work first.
+- `WAITING`: record the actual gate in `evidence` and a concrete `resumeWhen`. It may be a human decision, dependency, safety repair, or next goal after accepted completion. Do not invent a wait to excuse an idle task. Check the other canonical leases for independent ready work first.
 
 Use the exact current context handle from `Orchestrator health` or the matching lease's `Owner / context` cell. A work reference is its stable key, not a PR number. Evidence is a safe reference, never a secret. Change the record only on a material action, owner, gate, or human-intent transition, not on every tool call or timer tick. Keep the action id stable until that step is completed or explicitly superseded with a source and reason; a service report does neither.
 

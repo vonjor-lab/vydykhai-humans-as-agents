@@ -36,7 +36,7 @@ Usage:
   node scripts/vydykhai.mjs install <target-repo> [--force]
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--json]
   node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--expect-state-sha <sha256>] [--expect-graph-sha <sha256>] [--json]
-  node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--json]
+  node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--woken-incident <semantic-id>] [--repair-incident <semantic-id> --repair-attempts <count>] [--json]
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
 `;
 }
@@ -53,6 +53,9 @@ function parseArgs(argv) {
     outbox: null,
     activity: null,
     acceptedIncident: null,
+    wokenIncident: null,
+    repairIncident: null,
+    repairAttempts: null,
     expectStateSha: null,
     expectGraphSha: null,
   };
@@ -67,7 +70,7 @@ function parseArgs(argv) {
       i += 1;
       if (!flags.from) throw new Error("--from requires a framework repository path");
     } else if (
-      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--expect-state-sha", "--expect-graph-sha"].includes(
+      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--woken-incident", "--repair-incident", "--repair-attempts", "--expect-state-sha", "--expect-graph-sha"].includes(
         value,
       )
     ) {
@@ -77,6 +80,9 @@ function parseArgs(argv) {
         "--outbox": "outbox",
         "--activity": "activity",
         "--accepted-incident": "acceptedIncident",
+        "--woken-incident": "wokenIncident",
+        "--repair-incident": "repairIncident",
+        "--repair-attempts": "repairAttempts",
         "--expect-state-sha": "expectStateSha",
         "--expect-graph-sha": "expectGraphSha",
       }[value];
@@ -148,8 +154,10 @@ async function loadManifest(root) {
   }
   if (
     manifest.controlLoopPolicy &&
-    (manifest.controlLoopPolicy.policy !== "governor-audited-event-loop" ||
-      manifest.controlLoopPolicy.projectStateVersion !== 2)
+    (manifest.controlLoopPolicy.policy !== "single-ledger-anomaly-escalation" ||
+      manifest.controlLoopPolicy.projectStateVersion !== 2 ||
+      manifest.controlLoopPolicy.routineTransition !== "deterministic-validate-publish-readback" ||
+      manifest.controlLoopPolicy.governorScope !== "semantic-anomalies-only")
   ) {
     throw new Error(`Invalid control loop policy in ${file}`);
   }
@@ -165,6 +173,8 @@ async function loadManifest(root) {
     (manifest.projectGuardPolicy.policy !== "external-event-and-schedule" ||
       manifest.projectGuardPolicy.healthyPath !== "deterministic-no-model" ||
       manifest.projectGuardPolicy.anomalyProfile !== "maximum-available" ||
+      manifest.projectGuardPolicy.maxAutomaticRepairsPerIncident !== 1 ||
+      manifest.projectGuardPolicy.repeatedRepairAction !== "control-degraded" ||
       (manifest.projectGuardPolicy.incidentIdentity &&
         manifest.projectGuardPolicy.incidentIdentity !== "semantic-condition-set"))
   ) {
@@ -492,6 +502,12 @@ function printDoctor(result, asJson) {
     console.log(
       `Control loop: ${result.controlLoopPolicy.policy}; Project State v${result.controlLoopPolicy.projectStateVersion}`,
     );
+    if (result.controlLoopPolicy.routineTransition && result.controlLoopPolicy.governorScope) {
+      console.log(
+        `Control fast path: ${result.controlLoopPolicy.routineTransition}; ` +
+          `Governor=${result.controlLoopPolicy.governorScope}; Graph=${result.controlLoopPolicy.graphUpdate}`,
+      );
+    }
   } else {
     console.log("Control loop: not declared by installed version");
   }
@@ -505,6 +521,12 @@ function printDoctor(result, asJson) {
       `Project Guard: ${result.projectGuardPolicy.policy}; healthy=${result.projectGuardPolicy.healthyPath}; ` +
         `anomaly=${result.projectGuardPolicy.anomalyProfile}; incident=${result.projectGuardPolicy.incidentIdentity || "legacy"}`,
     );
+    if (Number.isInteger(result.projectGuardPolicy.maxAutomaticRepairsPerIncident)) {
+      console.log(
+        `Guard repair: ${result.projectGuardPolicy.maxAutomaticRepairsPerIncident} per incident; ` +
+          `repeat=${result.projectGuardPolicy.repeatedRepairAction}`,
+      );
+    }
   } else {
     console.log("Project Guard: not declared by installed version");
   }
@@ -543,6 +565,9 @@ function printDoctor(result, asJson) {
   console.log(
     `Memory: ${result.memoryPolicy.policy} v${result.memoryPolicy.graphVersion}; ${result.memoryPolicy.contextRoutingPolicy ? "complete goal-to-evidence context; no fixed node cap" : `task brief <= ${result.memoryPolicy.taskBriefMaxNodes} executable nodes`}`,
   );
+  if (Array.isArray(result.memoryPolicy.acceptanceOrder)) {
+    console.log(`Memory acceptance: ${result.memoryPolicy.acceptanceOrder.join(" -> ")}`);
+  }
   if (result.actionReceiptPolicy?.policy && Array.isArray(result.actionReceiptPolicy.boundaries)) {
     console.log(
       `Action receipts: ${result.actionReceiptPolicy.policy}; ${result.actionReceiptPolicy.boundaries.length} critical boundaries`,
@@ -779,7 +804,6 @@ function validateProjectState(content, manifest) {
       "## Execution Leases",
       "## Pending Return Inbox",
       "## Detours And Recall",
-      "## Active Work",
       "## Next-Best-Action",
     ],
   });
@@ -824,10 +848,6 @@ function validateProjectState(content, manifest) {
   }
   const guardIndependent = guardLine.match(/\|\s*Independent:\s*(YES|NO)\b/)?.[1];
   if (guardIndependent !== "YES") issues.push(`${label}: Project Guard is not independently triggered`);
-  const guardIncident = guardLine.match(/\|\s*Incident:\s*([^|]+)/)?.[1]?.trim();
-  if (guardIncident && guardIncident.toLowerCase() !== "none" && !/<.*>/.test(guardIncident)) {
-    issues.push(`${label}: Project Guard incident ${guardIncident} requires reconciliation`);
-  }
   const attentionLines = content.match(/^Human attention:.*$/gm) || [];
   if (attentionLines.length !== 1) {
     issues.push(`${label}: expected exactly one Human attention state`);
@@ -859,12 +879,9 @@ function validateProjectState(content, manifest) {
   if (!governorReceipt || /<.*>/.test(governorReceipt)) issues.push(`${label}: Governor receipt is missing or unresolved`);
   if (!governorTrigger || /<.*>/.test(governorTrigger)) issues.push(`${label}: Governor trigger is missing or unresolved`);
   const snapshotEvent = content.match(/^Snapshot as of:\s*(.+)$/m)?.[1]?.trim();
-  const auditedEvent = content.match(/^Governor:.*\|\s*Audited event:\s*([^|]+?)(?:\s*\||$)/m)?.[1]?.trim();
+  const auditedEvent = content.match(/^Governor:.*\|\s*(?:Audited incident|Audited event):\s*([^|]+?)(?:\s*\||$)/m)?.[1]?.trim();
   if (!snapshotEvent || /<.*>/.test(snapshotEvent)) issues.push(`${label}: snapshot event is missing or unresolved`);
-  if (!auditedEvent || /<.*>/.test(auditedEvent)) issues.push(`${label}: Governor audited event is missing or unresolved`);
-  else if (snapshotEvent && snapshotEvent !== auditedEvent) {
-    issues.push(`${label}: Governor audited ${auditedEvent} but current snapshot is ${snapshotEvent}`);
-  }
+  if (!auditedEvent || /<.*>/.test(auditedEvent)) issues.push(`${label}: Governor audit reference is missing or unresolved`);
   const orchestratorLine = content.match(/^Orchestrator health:.*$/m)?.[0] || "";
   const orchestratorState = orchestratorLine.match(/^Orchestrator health:\s*(HEALTHY|REVIEW|REPAIR|ROTATE)\b/)?.[1];
   if (!orchestratorState) issues.push(`${label}: orchestrator health is missing or unresolved`);
@@ -924,7 +941,12 @@ function validateProjectState(content, manifest) {
     issues.push(`${label}: pending return ${receipt} requires reconciliation`);
   }
 
-  const detourSection = section(content, "## Detours And Recall", ["## Active Work"]);
+  const detourSection = section(content, "## Detours And Recall", [
+    "## Active Work",
+    "## Decisions And Blockers",
+    "## Safe Continuation",
+    "## Next-Best-Action",
+  ]);
   for (const row of tableRows(detourSection, /^ID$/i)) {
     if (row.at(-1) === "RETURN_DUE") issues.push(`${label}: detour ${row[0]} is due for return`);
   }
@@ -1257,10 +1279,6 @@ async function controlCheck(
 }
 
 function semanticIssueKey(issue) {
-  if (/Project State: Project Guard incident .* requires reconciliation/.test(issue)) return null;
-  if (/Project State: Governor audited .* but current snapshot is .*/.test(issue)) {
-    return "Project State: Governor audited event differs from current snapshot";
-  }
   if (/Project State: independent check required after \d+ compaction\/context-loss signals/.test(issue)) {
     return "Project State: independent check required after compaction/context-loss threshold";
   }
@@ -1270,7 +1288,17 @@ function semanticIssueKey(issue) {
   return issue;
 }
 
-export function classifyGuard(result, stateContent, { acceptedIncidentId = null } = {}) {
+export function classifyGuard(
+  result,
+  stateContent,
+  {
+    acceptedIncidentId = null,
+    wokenIncidentId = null,
+    repairIncidentId = null,
+    repairAttempts = 0,
+    maxAutomaticRepairs = 1,
+  } = {},
+) {
   if (result.ok) {
     return {
       action: "NOOP",
@@ -1278,6 +1306,8 @@ export function classifyGuard(result, stateContent, { acceptedIncidentId = null 
       incidentIdentity: "semantic-condition-set",
       recordedIncidentId: null,
       incidentChanged: false,
+      repairAttempts: 0,
+      circuitBroken: false,
     };
   }
   const wakeOnly = [
@@ -1291,7 +1321,7 @@ export function classifyGuard(result, stateContent, { acceptedIncidentId = null 
     /^Lease activity: .* requires routing/,
   ];
   const issues = [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])];
-  const requiredAction = issues.length > 0 && issues.every((issue) => wakeOnly.some((pattern) => pattern.test(issue)))
+  const initialRequiredAction = issues.length > 0 && issues.every((issue) => wakeOnly.some((pattern) => pattern.test(issue)))
     ? "WAKE"
     : "AUDIT_REQUIRED";
   const recordedIncident = stateContent.match(/^Project Guard:.*\|\s*Incident:\s*([^|\n]+)/m)?.[1]?.trim();
@@ -1301,11 +1331,16 @@ export function classifyGuard(result, stateContent, { acceptedIncidentId = null 
   const semanticConditions = issues.map(semanticIssueKey).filter(Boolean).sort();
   if (!semanticConditions.length) semanticConditions.push("Project State: recorded incident requires reconciliation");
   const incidentId = `guard-${sha256(JSON.stringify({ semanticConditions })).slice(0, 16)}`;
-  const deduplicated = Boolean(acceptedIncidentId && acceptedIncidentId === incidentId && !recordedIncidentId &&
+  const unresolvedWake = initialRequiredAction === "WAKE" && wokenIncidentId === incidentId;
+  const requiredAction = unresolvedWake ? "AUDIT_REQUIRED" : initialRequiredAction;
+  const deduplicated = Boolean(acceptedIncidentId && acceptedIncidentId === incidentId &&
     !result.continuation?.signal && !result.leaseActivity?.signal);
   const deferred = requiredAction === "WAKE" && result.continuation?.orchestratorActive === true;
+  const parsedRepairAttempts = Number(repairAttempts);
+  const repeatedRepair = requiredAction === "AUDIT_REQUIRED" && repairIncidentId === incidentId &&
+    Number.isInteger(parsedRepairAttempts) && parsedRepairAttempts >= maxAutomaticRepairs;
   return {
-    action: deduplicated || deferred ? "NOOP" : requiredAction,
+    action: repeatedRepair ? "CONTROL_DEGRADED" : deduplicated || deferred ? "NOOP" : requiredAction,
     requiredAction,
     incidentId,
     incidentIdentity: "semantic-condition-set",
@@ -1315,6 +1350,11 @@ export function classifyGuard(result, stateContent, { acceptedIncidentId = null 
     acceptedIncidentId,
     deduplicated,
     deferred,
+    repairIncidentId,
+    repairAttempts: Number.isInteger(parsedRepairAttempts) ? parsedRepairAttempts : 0,
+    circuitBroken: repeatedRepair,
+    wokenIncidentId,
+    unresolvedWake,
   };
 }
 
@@ -1342,6 +1382,7 @@ function printGuardCheck(result, asJson) {
   }
   console.log(`Project Guard action: ${result.action}`);
   if (result.incidentId) console.log(`Incident: ${result.incidentId}`);
+  if (result.circuitBroken) console.log(`Circuit breaker: CONTROL_DEGRADED after ${result.repairAttempts} bounded repair`);
   console.log(`Control check: ${result.ok ? "PASS" : "MISMATCH"}`);
   if (result.continuation) console.log(`Production continuation: ${result.continuation.coverage}`);
   if (result.leaseActivity) console.log(`Lease activity: ${result.leaseActivity.coverage}`);
@@ -1425,11 +1466,20 @@ async function main() {
 
   if (command === "guard-check") {
     if (!flags.state || !flags.graph) throw new Error(`guard-check requires --state and --graph\n\n${usage()}`);
+    if ((flags.repairIncident == null) !== (flags.repairAttempts == null)) {
+      throw new Error("guard-check requires --repair-incident and --repair-attempts together");
+    }
+    if (flags.repairAttempts != null && !/^\d+$/.test(flags.repairAttempts)) {
+      throw new Error("--repair-attempts must be a non-negative integer");
+    }
     const statePath = path.resolve(flags.state);
     const graphPath = path.resolve(flags.graph);
     const result = await guardCheck(statePath, graphPath, {
       outboxPath: flags.outbox ? path.resolve(flags.outbox) : null,
       acceptedIncidentId: flags.acceptedIncident,
+      wokenIncidentId: flags.wokenIncident,
+      repairIncidentId: flags.repairIncident,
+      repairAttempts: flags.repairAttempts == null ? 0 : Number(flags.repairAttempts),
       activityPath: flags.activity ? path.resolve(flags.activity) : null,
     });
     printGuardCheck(result, flags.json);
