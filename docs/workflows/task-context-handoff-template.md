@@ -57,7 +57,7 @@ Return triggers: <readiness result | named human checkpoint | irreducible blocke
 - Detect an undeclared boundary, stale upstream state, unresolved solution choice, or evidence that the acceptance contract is insufficient, but do not redesign project scope, sequence, ownership, shared contracts, or model routing. Send one compact `CONSULT`: `Boundary / Evidence / Proposed move / Safe continuation`, then pause only that boundary.
 - If a human says an instruction was already decided or the supplied brief contradicts known direction, follow the clear current instruction inside scope and send compact miss evidence through `CONSULT`; do not search the full graph or run project-wide reflection here.
 - Apply a targeted orchestrator instruction at the next safe operation boundary. Continue unaffected work unless the instruction or safety envelope says otherwise.
-- Keep corrective fixes, human smoke, and manual merge in this context because it owns the implementation evidence.
+- Keep corrective fixes, human smoke, and manual merge in this context because it owns the implementation evidence. A side answer or service exchange does not complete this contract: continue within scope or return the actual checkpoint/blocker through Return Sync.
 - Before compaction, context handoff, risky external action, or after a human-accepted checkpoint, preserve the current Accepted Baseline/Candidate and next experiment as a commit or durable artifact. Accepted work may not exist only in chat or untracked files.
 - Empty output, timeout, transport failure, or lost context after a possible paid, external, or shared-state action is `OUTCOME_UNKNOWN`. Freeze replay and ask the owning task to reconcile durable/provider/runtime receipts; never infer that no action occurred.
 

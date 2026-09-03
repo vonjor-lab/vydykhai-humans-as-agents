@@ -2,7 +2,7 @@
 
 Use one compact issue or equivalent artifact per project or product stream. It is the current control snapshot, not an event archive. Rebuild its body atomically after each material transition, keep exactly one copy of every current section, and put history in linked comments or archived windows. Render and validate a complete Candidate before touching the accepted body; publish it once with an exact-current-body guard when available, then read back the whole body and compare its SHA-256 and `control-check` result. On mismatch, restore and verify the exact last accepted body. A partial or failed write never becomes current truth. Nothing except whitespace may appear before the start marker or after the end marker.
 
-```md
+````md
 <!-- vydykhai:project-state v2 -->
 
 # Project State: <project or stream>
@@ -103,10 +103,14 @@ Show only live work and the immediate next queue. Terminal history leaves this t
 
 ## Next-Best-Action
 
-- <one exact action>
+```json
+{"schemaVersion":1,"id":"<stable action id>","work":"<existing work key>","action":"<one productive step>","owner":"<exact current context>","state":"READY","evidence":"<accepted brief or action/gate reference>"}
+```
 
 <!-- vydykhai:project-state:end -->
-```
+````
+
+The existing next action follows [Production Continuation](production-continuation.md): `READY`, `WORKING`, or `WAITING` with a concrete `resumeWhen`. Preserve it across service events; only completion or an explicit sourced decision supersedes it. `control-check` validates the record; `guard-check --activity` separately requires fresh adapter evidence before claiming liveness coverage.
 
 `Human attention` is `NONE` when no answer is due. Otherwise keep one stable user-facing request as `PENDING`; if a Guard, repair, rotation, or later system event has displaced it, use `RESURFACE_DUE` until the orchestrator shows it again. A new request must combine with, resolve, or explicitly supersede the prior one; it may not silently replace it.
 

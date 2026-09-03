@@ -12,7 +12,7 @@ The runner must be able to:
 
 - read current Project State, Project Memory Graph, durable task outbox, actual active-context metadata, and observable orchestrator advisory activity/work origin when the harness exposes it;
 - read the current `Human attention` state and carry any `Pending Human Action` through repair or rotation without interpreting the product decision for the person;
-- run `node scripts/vydykhai.mjs guard-check --state <export> --graph <export> --outbox <export> --accepted-incident <last accepted semantic id when any> --json` without a model;
+- run `node scripts/vydykhai.mjs guard-check --state <export> --graph <export> --outbox <export> --activity <fresh-observation.json> --accepted-incident <last accepted semantic id when any> --json` without a model;
 - wake the registered active orchestrator, start one fresh maximum-profile evaluator, and record one idempotent incident receipt;
 - perform only control-plane messaging, repair, and confirmed rotation. It may not implement project work, merge, deploy, spend, access secrets, or repeat an uncertain external action.
 
@@ -31,7 +31,7 @@ The schedule is a liveness fallback, not a second planning ritual. It targets th
 
 ## 3. Decide Without Waking A Model
 
-First compare durable state with actual context activity and run `guard-check`:
+First compare durable state with actual context activity and run `guard-check`. Apply [Production Continuation](production-continuation.md) to the existing next action: fresh owner evidence distinguishes productive execution, legitimate waiting, and an idle continuation; missing visibility is `LIMITED`. A known active manager defers wake-only input without consuming it; safety mismatches still audit:
 
 - `NOOP`: state, active-context identity, DOD, leases, returns, detours, memory probes, work origin, and hygiene agree. Write no message, issue comment, or model trace.
 - `WAKE`: durable work is waiting for orchestration, such as a written Return Sync, due detour, returned lease, or pending memory event. Send one nonce-bound wakeup to the current orchestrator.
@@ -65,7 +65,7 @@ Return exactly one result:
 
 If the evaluator or wakeup itself produces no nonce-matched receipt, do not loop. Preserve the incident and escalate once to the configured fallback or human with one exact action.
 
-Guard delivery is control-plane input, not a second conversation with the person. The active orchestrator routes any repair to a focused maintenance context, releases its own turn after observable dispatch, and later presents one plain-language outcome. On completion it must restore or explicitly supersede the saved `Pending Human Action`; a replacement orchestrator inherits the same request before becoming active. The human speaks only to the orchestrator and never has to decode incident ids, evaluator receipts, scheduler state, or repair mechanics.
+Guard delivery is control-plane input, not a second conversation with the person. The active orchestrator routes repair to a focused maintenance context and resumes the saved productive step immediately when independent, or records the exact blocking gate and continues other safe work. Maintenance dispatch alone is not permission to abandon ready management work. Release the control turn once the productive route has observable execution or a real wait; after repair restore or explicitly supersede both the next action and `Pending Human Action`. A replacement orchestrator inherits both. Present one plain-language outcome; the human speaks only to the orchestrator and never has to decode incident ids, evaluator receipts, scheduler state, or repair mechanics.
 
 ## 5. Keep Naming And Cleanup Observable
 

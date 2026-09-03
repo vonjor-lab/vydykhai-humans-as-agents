@@ -5,17 +5,19 @@ import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { readProductionContinuation } from "../scripts/vydykhai.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const cli = path.join(root, "scripts/vydykhai.mjs");
 
-function run(args, cwd = root) {
+function runCli(args, cwd = root) {
   return spawnSync(process.execPath, [cli, ...args], {
     cwd,
     encoding: "utf8",
   });
 }
+const run = runCli;
 
 test("install, doctor, conflict protection, and forced repair", async () => {
   const target = await mkdtemp(path.join(tmpdir(), "vydykhai-target-"));
@@ -53,7 +55,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.24.3");
+    assert.equal(lock.installedVersion, "1.25.0");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -112,6 +114,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     delete legacyManifest.controlStatePublicationPolicy;
     delete legacyManifest.projectGuardPolicy;
     delete legacyManifest.humanAttentionPolicy;
+    delete legacyManifest.continuationPolicy;
     delete legacyManifest.executionLeasePolicy;
     delete legacyManifest.taskReturnPolicy;
     delete legacyManifest.rotationPolicy;
@@ -125,6 +128,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await writeFile(legacyLockPath, `${JSON.stringify(legacyLock, null, 2)}\n`);
 
     const legacyDoctor = run(["doctor", target, "--offline"]);
+    assert.match(legacyDoctor.stdout, /Production continuation: not declared by installed version/);
     assert.equal(legacyDoctor.status, 0, legacyDoctor.stderr);
     assert.match(legacyDoctor.stdout, /Vydykhai 1\.18\.0/);
     assert.match(legacyDoctor.stdout, /Orchestrator advisory: not declared by installed version/);
@@ -151,7 +155,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.24\.3/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.25\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -233,6 +237,9 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.humanAttentionPolicy.incidentDelivery, "single-bounded-wakeup");
   assert.equal(manifest.humanAttentionPolicy.completion, "restore-or-explicitly-supersede");
   assert.equal(manifest.humanAttentionPolicy.orchestratorAvailability, "release-after-observable-dispatch");
+  assert.equal(manifest.continuationPolicy.turnRelease, "productive-handoff-or-concrete-wait");
+  assert.equal(manifest.continuationPolicy.policy, "evidence-backed-next-action");
+  assert.equal(manifest.continuationPolicy.activityMaxAgeSeconds, 300);
   assert.equal(manifest.executionLeasePolicy.policy, "one-work-one-owning-context");
   assert.deepEqual(manifest.executionLeasePolicy.states, [
     "prepared",
@@ -516,6 +523,8 @@ test("control-check closes DOD, lease, return, detour, and memory transitions", 
   const statePath = path.join(target, "state.md");
   const graphPath = path.join(target, "graph.md");
   const outboxPath = path.join(target, "outbox.md");
+  const activityPath = path.join(target, "activity.json");
+  const run = (args) => runCli(args[0] === "guard-check" ? [...args, "--activity", activityPath] : args);
   const healthyState = `<!-- vydykhai:project-state v2 -->
 # Project State: Example
 Snapshot as of: event-7
@@ -555,7 +564,9 @@ Scope freshness: 7 | Last project-level check: now / event-7 / PASS
 ## Safe Continuation
 - task may continue
 ## Next-Best-Action
-- consume the next durable event
+\`\`\`json
+{"schemaVersion":1,"id":"NEXT-7","work":"WORK-1","action":"Finish the accepted actor flow","owner":"task-one","state":"WORKING","evidence":"launch-7"}
+\`\`\`
 <!-- vydykhai:project-state:end -->
 `;
   const healthyGraph = `<!-- vydykhai:project-memory-graph v3 -->
@@ -602,6 +613,11 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
   try {
     await writeFile(statePath, healthyState);
     await writeFile(graphPath, healthyGraph);
+    await writeFile(activityPath, JSON.stringify({ schemaVersion: 1,
+      continuationKey: readProductionContinuation(healthyState).key, observedAt: new Date().toISOString(),
+      orchestrator: { context: "current", status: "IDLE", evidence: "native-control-state" },
+      owner: { context: "task-one", status: "ACTIVE", evidence: "native-task-state" },
+    }));
     const healthy = run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]);
     assert.equal(healthy.status, 0, healthy.stderr);
     const healthyResult = JSON.parse(healthy.stdout);
@@ -636,6 +652,27 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     const healthyGuard = run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]);
     assert.equal(healthyGuard.status, 0, healthyGuard.stderr);
     assert.equal(JSON.parse(healthyGuard.stdout).action, "NOOP");
+    const noActivity = JSON.parse(runCli(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+    assert.equal(noActivity.action, "AUDIT_REQUIRED");
+    assert.equal(noActivity.continuation.coverage, "LIMITED");
+
+    const readyRecord = { ...readProductionContinuation(healthyState).value, state: "READY", owner: "current",
+      action: "Dispatch the accepted actor flow", evidence: "accepted-brief-7" };
+    const preparedState = healthyState.replace("| WORKING | task-one |", "| PREPARED | task-one |")
+      .replace(/```json\n[\s\S]*?\n```/, `\`\`\`json\n${JSON.stringify(readyRecord)}\n\`\`\``);
+    await writeFile(statePath, preparedState);
+    const preparedCheck = run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]);
+    assert.equal(preparedCheck.status, 0, preparedCheck.stdout);
+    const preparedActivityPath = path.join(target, "prepared-activity.json");
+    await writeFile(preparedActivityPath, JSON.stringify({ schemaVersion: 1,
+      continuationKey: readProductionContinuation(preparedState).key, observedAt: new Date().toISOString(),
+      orchestrator: { context: "current", status: "IDLE", evidence: "native-idle-7" },
+    }));
+    const preparedGuard = JSON.parse(runCli(["guard-check", "--state", statePath, "--graph", graphPath,
+      "--activity", preparedActivityPath, "--json"]).stdout);
+    assert.equal(preparedGuard.action, "WAKE");
+    assert.equal(preparedGuard.continuation.coverage, "COVERED");
+    await writeFile(statePath, healthyState);
 
     const returnSync = `<!-- vydykhai:return-sync v1 -->
 # Return Sync
