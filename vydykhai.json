@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.24.3",
+  "version": "1.25.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -167,6 +167,15 @@
       "orchestrator-advisory-activity",
       "active-timer"
     ]
+  },
+  "continuationPolicy": {
+    "policy": "evidence-backed-next-action",
+    "states": ["ready", "working", "waiting"],
+    "activityMaxAgeSeconds": 300,
+    "interruption": "resume-or-explicitly-supersede",
+    "turnRelease": "productive-handoff-or-concrete-wait",
+    "unknownActivity": "limited-not-stopped",
+    "wakeup": "reconcile-existing-owner-never-duplicate"
   },
   "humanAttentionPolicy": {
     "policy": "durable-single-manager-attention",

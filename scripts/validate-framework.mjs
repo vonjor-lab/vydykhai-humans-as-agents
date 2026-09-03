@@ -211,6 +211,15 @@ if (
 ) {
   fail("Human attention delivery or orchestrator availability policy is invalid");
 }
+if (manifest.continuationPolicy?.policy !== "evidence-backed-next-action" ||
+    JSON.stringify(manifest.continuationPolicy.states) !== JSON.stringify(["ready", "working", "waiting"]) ||
+    manifest.continuationPolicy.activityMaxAgeSeconds !== 300 ||
+    manifest.continuationPolicy.interruption !== "resume-or-explicitly-supersede" ||
+    manifest.continuationPolicy.turnRelease !== "productive-handoff-or-concrete-wait" ||
+    manifest.continuationPolicy.unknownActivity !== "limited-not-stopped" ||
+    manifest.continuationPolicy.wakeup !== "reconcile-existing-owner-never-duplicate") {
+  fail("Production continuation must retain the next action and use bounded fresh activity without duplicate work");
+}
 if (manifest.executionLeasePolicy?.policy !== "one-work-one-owning-context") {
   fail("Execution lease policy must use one-work-one-owning-context");
 }
@@ -733,7 +742,9 @@ if (
   !projectGuardWorkflow.includes("no queued message, and no model call") ||
   !projectGuardWorkflow.includes("focused service task") ||
   !orchestratorWorkflow.includes("external Project Guard") ||
-  !orchestratorWorkflow.includes("release the orchestrator after observable dispatch") ||
+  !orchestratorWorkflow.includes("productive handoff or concrete wait") ||
+  !projectGuardWorkflow.includes("--activity") ||
+  !orchestratorSkill.includes("production-continuation.md") ||
   !orchestratorSkill.includes("project-owned Project Guard") ||
   !orchestratorSkill.includes("semantic condition set") ||
   !orchestratorSkill.includes("focused service task") ||

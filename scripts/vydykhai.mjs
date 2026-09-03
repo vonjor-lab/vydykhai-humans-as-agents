@@ -36,7 +36,7 @@ Usage:
   node scripts/vydykhai.mjs install <target-repo> [--force]
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--json]
   node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--expect-state-sha <sha256>] [--expect-graph-sha <sha256>] [--json]
-  node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--accepted-incident <semantic-id>] [--json]
+  node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--json]
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
 `;
 }
@@ -51,6 +51,7 @@ function parseArgs(argv) {
     state: null,
     graph: null,
     outbox: null,
+    activity: null,
     acceptedIncident: null,
     expectStateSha: null,
     expectGraphSha: null,
@@ -66,7 +67,7 @@ function parseArgs(argv) {
       i += 1;
       if (!flags.from) throw new Error("--from requires a framework repository path");
     } else if (
-      ["--state", "--graph", "--outbox", "--accepted-incident", "--expect-state-sha", "--expect-graph-sha"].includes(
+      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--expect-state-sha", "--expect-graph-sha"].includes(
         value,
       )
     ) {
@@ -74,6 +75,7 @@ function parseArgs(argv) {
         "--state": "state",
         "--graph": "graph",
         "--outbox": "outbox",
+        "--activity": "activity",
         "--accepted-incident": "acceptedIncident",
         "--expect-state-sha": "expectStateSha",
         "--expect-graph-sha": "expectGraphSha",
@@ -179,6 +181,11 @@ async function loadManifest(root) {
   }
   if (manifest.executionLeasePolicy?.policy && manifest.executionLeasePolicy.policy !== "one-work-one-owning-context") {
     throw new Error(`Invalid execution lease policy in ${file}`);
+  }
+  if (manifest.continuationPolicy &&
+      (manifest.continuationPolicy.policy !== "evidence-backed-next-action" ||
+       manifest.continuationPolicy.activityMaxAgeSeconds !== 300)) {
+    throw new Error(`Invalid continuation policy in ${file}`);
   }
   if (
     manifest.taskReturnPolicy?.policy &&
@@ -435,6 +442,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
     controlStatePublicationPolicy: manifest.controlStatePublicationPolicy,
     projectGuardPolicy: manifest.projectGuardPolicy,
     humanAttentionPolicy: manifest.humanAttentionPolicy,
+    continuationPolicy: manifest.continuationPolicy,
     executionLeasePolicy: manifest.executionLeasePolicy,
     taskReturnPolicy: manifest.taskReturnPolicy,
     rotationPolicy: manifest.rotationPolicy,
@@ -509,6 +517,7 @@ function printDoctor(result, asJson) {
   } else {
     console.log("Human attention: not declared by installed version");
   }
+  console.log(`Production continuation: ${result.continuationPolicy?.policy || "not declared by installed version"}`);
   if (result.executionLeasePolicy?.policy) {
     console.log(`Execution leases: ${result.executionLeasePolicy.policy}`);
   } else {
@@ -883,6 +892,8 @@ function validateProjectState(content, manifest) {
   }
   const dodLine = content.match(/^DOD Control Line:\s*(.+)$/m)?.[1]?.trim();
   if (!dodLine || /<.*>/.test(dodLine)) issues.push(`${label}: DOD Control Line is unresolved`);
+  const continuation = manifest.continuationPolicy ? readProductionContinuation(content) : null;
+  if (continuation) issues.push(...continuation.issues);
   const failureMatch = content.match(/Same-class failures since repair:\s*(\d+)/);
   const failureCount = Number(failureMatch?.[1]);
   if (!failureMatch) issues.push(`${label}: same-class failure count is missing or unresolved`);
@@ -895,6 +906,10 @@ function validateProjectState(content, manifest) {
   if (duplicateLeases.length) issues.push(`${label}: duplicate execution lease ${duplicateLeases.join(", ")}`);
   for (const row of tableRows(leaseSection, /^Work$/i)) {
     const [work, state] = row;
+    // A durable prepared lease is valid before dispatch; fresh activity decides whether it stalled.
+    const ready = continuation?.issues.length === 0 && continuation.value.state === "READY" &&
+      (work === continuation.value.work || work.startsWith(`${continuation.value.work} `));
+    if (state === "PREPARED" && ready) continue;
     if (!["PREPARED", "STARTED", "WORKING", "WAITING", "RETURNED", "CLOSED", "OUTCOME_UNKNOWN"].includes(state)) {
       issues.push(`${label}: lease ${work} has invalid state ${state || "missing"}`);
     } else if (["PREPARED", "RETURNED", "OUTCOME_UNKNOWN"].includes(state)) {
@@ -915,6 +930,82 @@ function validateProjectState(content, manifest) {
   }
 
   return issues;
+}
+
+function concreteLine(value) {
+  return typeof value === "string" && Boolean(value.trim()) && !/[\r\n]/.test(value) &&
+    !/<[^>]*>/.test(value) && value.trim().toLowerCase() !== "none";
+}
+
+// Bind observations to the next action and its owner, not unrelated graph/state edits.
+export function readProductionContinuation(content) {
+  const issues = [];
+  const fail = (reason) => issues.push(`Production continuation: ${reason}`);
+  const body = section(content, "## Next-Best-Action", ["<!-- vydykhai:project-state:end -->"]);
+  const blocks = [...body.matchAll(/^```json\s*\n([\s\S]*?)^```\s*$/gm)];
+  let value;
+  try {
+    if (blocks.length !== 1) throw new Error("one JSON record required");
+    value = JSON.parse(blocks[0][1]);
+    if (!value || Array.isArray(value) || typeof value !== "object") throw new Error("object required");
+  } catch {
+    fail("Next-Best-Action needs one valid JSON record");
+    return { value: null, key: null, issues };
+  }
+  for (const field of ["id", "work", "action", "owner", "state", "evidence"]) {
+    if (!concreteLine(value[field])) fail(`${field} is missing or unresolved`);
+  }
+  if (value.schemaVersion !== 1) fail("schemaVersion must be 1");
+  if (!["READY", "WORKING", "WAITING"].includes(value.state)) fail("state must be READY, WORKING, or WAITING");
+  if (value.state === "WAITING" && !concreteLine(value.resumeWhen)) fail("WAITING needs a concrete resumeWhen");
+  const orchestrator = content.match(/^Orchestrator health:.*\|\s*Context:\s*([^|\n]+)/m)?.[1]?.trim();
+  if (!concreteLine(orchestrator)) fail("current orchestrator context is unresolved");
+  if (value.state === "READY" && value.owner !== orchestrator) fail("READY must belong to the current orchestrator");
+  const leases = tableRows(section(content, "## Execution Leases", ["## Pending Return Inbox"]), /^Work$/i);
+  const matches = leases.filter(([work]) => work === value.work || work.startsWith(`${value.work} `));
+  if (matches.length > 1) fail("work resolves to more than one lease");
+  const lease = matches[0];
+  const taskOwner = lease?.[2]?.split(/\s+\/\s+/).includes(value.owner);
+  if (value.state === "WORKING" &&
+      (!lease || !["STARTED", "WORKING"].includes(lease[1]) ||
+       !taskOwner || value.owner === orchestrator)) {
+    fail("WORKING needs its matching started task lease and context");
+  }
+  if (value.state === "WAITING" && value.owner !== orchestrator && !taskOwner) {
+    fail("WAITING needs the current orchestrator or its matching task owner");
+  }
+  if (lease?.[1] === "OUTCOME_UNKNOWN") fail("uncertain work needs reconciliation before continuation");
+  const record = Object.fromEntries(["schemaVersion", "id", "work", "action", "owner", "state", "evidence", "resumeWhen"]
+    .map((field) => [field, value[field] ?? null]));
+  return { value: record, orchestrator, issues,
+    key: issues.length ? null : sha256(JSON.stringify({ record, orchestrator, lease: lease?.slice(0, 3) ?? null })) };
+}
+
+export function evaluateProductionContinuation(content, activity, { now = Date.now(), maxAgeSeconds = 300 } = {}) {
+  const record = readProductionContinuation(content);
+  const limited = (reason) => ({ ...record, coverage: "LIMITED", signal: null, orchestratorActive: false,
+    issues: [...record.issues, `Production continuation: activity LIMITED (${reason})`] });
+  if (record.issues.length) return limited("invalid next action");
+  if (!activity || activity.schemaVersion !== 1 || activity.continuationKey !== record.key) return limited("missing or stale action binding");
+  const observed = typeof activity.observedAt === "string" ? Date.parse(activity.observedAt) : NaN;
+  if (!Number.isFinite(observed) || observed > now + 5000 || now - observed > maxAgeSeconds * 1000) return limited("observation is not fresh");
+  const known = (view, context) => view?.context === context && ["ACTIVE", "IDLE"].includes(view.status) &&
+    concreteLine(view.evidence);
+  if (!known(activity.orchestrator, record.orchestrator)) return limited("orchestrator activity unavailable");
+  const orchestratorActive = activity.orchestrator.status === "ACTIVE";
+  let signal = null;
+  if (record.value.state === "READY" && !orchestratorActive) signal = "ready step has no active coordinator";
+  if (record.value.state === "WORKING") {
+    if (!known(activity.owner, record.value.owner)) return limited("task activity unavailable");
+    if (activity.owner.status === "IDLE") signal = "task is idle without a routed continuation";
+  }
+  if (record.value.state === "WAITING") {
+    if (!["PENDING", "CHANGED"].includes(activity.wait?.status) ||
+        !concreteLine(activity.wait.evidence)) return limited("wait condition unavailable");
+    if (activity.wait.status === "CHANGED") signal = "wait condition changed";
+  }
+  return { ...record, coverage: "COVERED", signal, orchestratorActive,
+    issues: signal ? [`Production continuation: ${record.value.id} requires routing (${signal})`] : [] };
 }
 
 function validateMemoryGraph(content, manifest) {
@@ -969,10 +1060,10 @@ function validateMemoryGraph(content, manifest) {
 async function controlCheck(
   statePath,
   graphPath,
-  { outboxPath = null, expectStateSha = null, expectGraphSha = null } = {},
+  { outboxPath = null, expectStateSha = null, expectGraphSha = null, stateContent = null } = {},
 ) {
   const manifest = await loadManifest(SCRIPT_ROOT);
-  const state = await readFile(statePath, "utf8");
+  const state = stateContent ?? await readFile(statePath, "utf8");
   const graph = await readFile(graphPath, "utf8");
   const stateIssues = validateProjectState(state, manifest);
   const graphIssues = validateMemoryGraph(graph, manifest);
@@ -997,6 +1088,7 @@ async function controlCheck(
     ok: stateIssues.length === 0 && graphIssues.length === 0 && (!outbox || outbox.issues.length === 0),
     policy: manifest.controlLoopPolicy.policy,
     publicationPolicy: manifest.controlStatePublicationPolicy?.policy || null,
+    continuationPolicy: manifest.continuationPolicy || null,
     projectStateVersion: manifest.controlLoopPolicy.projectStateVersion,
     memoryGraphVersion: manifest.memoryPolicy.graphVersion,
     statePath,
@@ -1023,7 +1115,7 @@ function semanticIssueKey(issue) {
   return issue;
 }
 
-function classifyGuard(result, stateContent, { acceptedIncidentId = null } = {}) {
+export function classifyGuard(result, stateContent, { acceptedIncidentId = null } = {}) {
   if (result.ok) {
     return {
       action: "NOOP",
@@ -1040,6 +1132,7 @@ function classifyGuard(result, stateContent, { acceptedIncidentId = null } = {})
     /detour .* is due for return/,
     /memory event .* is still pending/,
     /human attention .* requires resurfacing/,
+    /^Production continuation: .* requires routing/,
   ];
   const issues = [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])];
   const requiredAction = issues.length > 0 && issues.every((issue) => wakeOnly.some((pattern) => pattern.test(issue)))
@@ -1052,9 +1145,11 @@ function classifyGuard(result, stateContent, { acceptedIncidentId = null } = {})
   const semanticConditions = issues.map(semanticIssueKey).filter(Boolean).sort();
   if (!semanticConditions.length) semanticConditions.push("Project State: recorded incident requires reconciliation");
   const incidentId = `guard-${sha256(JSON.stringify({ semanticConditions })).slice(0, 16)}`;
-  const deduplicated = Boolean(acceptedIncidentId && acceptedIncidentId === incidentId && !recordedIncidentId);
+  const deduplicated = Boolean(acceptedIncidentId && acceptedIncidentId === incidentId && !recordedIncidentId &&
+    !result.continuation?.signal);
+  const deferred = requiredAction === "WAKE" && result.continuation?.orchestratorActive === true;
   return {
-    action: deduplicated ? "NOOP" : requiredAction,
+    action: deduplicated || deferred ? "NOOP" : requiredAction,
     requiredAction,
     incidentId,
     incidentIdentity: "semantic-condition-set",
@@ -1063,12 +1158,21 @@ function classifyGuard(result, stateContent, { acceptedIncidentId = null } = {})
     incidentChanged: Boolean(recordedIncidentId && recordedIncidentId !== incidentId),
     acceptedIncidentId,
     deduplicated,
+    deferred,
   };
 }
 
 async function guardCheck(statePath, graphPath, options = {}) {
   const stateContent = await readFile(statePath, "utf8");
-  const result = await controlCheck(statePath, graphPath, options);
+  const result = await controlCheck(statePath, graphPath, { ...options, stateContent });
+  if (result.continuationPolicy) {
+    const activity = options.activityPath ? await readJson(options.activityPath).catch(() => null) : null;
+    result.continuation = evaluateProductionContinuation(stateContent, activity, {
+      maxAgeSeconds: result.continuationPolicy.activityMaxAgeSeconds,
+    });
+    result.stateIssues = [...new Set([...result.stateIssues, ...result.continuation.issues])];
+    result.ok = result.ok && result.continuation.issues.length === 0;
+  }
   return { ...result, ...classifyGuard(result, stateContent, options) };
 }
 
@@ -1080,6 +1184,7 @@ function printGuardCheck(result, asJson) {
   console.log(`Project Guard action: ${result.action}`);
   if (result.incidentId) console.log(`Incident: ${result.incidentId}`);
   console.log(`Control check: ${result.ok ? "PASS" : "MISMATCH"}`);
+  if (result.continuation) console.log(`Production continuation: ${result.continuation.coverage}`);
   for (const issue of [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])]) console.log(`- ${issue}`);
 }
 
@@ -1165,6 +1270,7 @@ async function main() {
     const result = await guardCheck(statePath, graphPath, {
       outboxPath: flags.outbox ? path.resolve(flags.outbox) : null,
       acceptedIncidentId: flags.acceptedIncident,
+      activityPath: flags.activity ? path.resolve(flags.activity) : null,
     });
     printGuardCheck(result, flags.json);
     return;

@@ -10,7 +10,7 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.24.3`
+Current version: `1.25.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -20,7 +20,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - **Сводит людей и разные AI в одну работу.** Участники могут действовать асинхронно на своих компьютерах и в своих агентных средах; общий репозиторий связывает их планы, результаты и приемку.
 - **Включает людей как агентов смысла.** Оркестратор обращается к конкретному человеку только за его решением или проверкой, объясняет, что требуется и куда вернется результат; независимая работа тем временем продолжается.
 - **Помнит и применяет накопленный опыт.** Идеи, встречи, решения, «давай по-другому», ошибки и обещания вернуться сохраняются в общей памяти и поднимаются тогда, когда действительно влияют на работу.
-- **Восстанавливает движение.** Если работа остановилась, результат не вернулся или оркестратор потерял фокус, Vydykhai сверяется с общим состоянием, безопасно возобновляет поток или предлагает замену оркестратора. Если агентная среда не позволяет независимую проверку, это ограничение показывается явно.
+- **Восстанавливает движение.** Если работа остановилась, результат не вернулся или оркестратор потерял фокус, Vydykhai сверяется с общим состоянием и возвращает работу к следующему шагу. Служебный ремонт не заменяет цель: после него нужно продолжить работу или вернуть человеку ожидающий вопрос. Если агентная среда не позволяет независимую проверку, это ограничение показывается явно.
 
 ## What Vydykhai Owns
 
@@ -28,7 +28,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - **Converges people and different AI tools.** Participants may work asynchronously across their own computers and agent environments while one shared repository connects plans, results, and acceptance.
 - **Includes people as agents of judgment.** The orchestrator asks a specific person only for the decision or review they own, explains what is needed and where the result returns, and keeps independent work moving.
 - **Remembers and applies accumulated experience.** Ideas, meetings, decisions, changes of approach, failures, and promises to return enter shared memory and resurface when they materially affect the work.
-- **Restores forward motion.** If work stalls, a result does not return, or the orchestrator loses focus, Vydykhai reconciles shared state, safely resumes the flow, or proposes orchestrator replacement. When an agent environment cannot support an independent check, the limitation stays explicit.
+- **Restores forward motion.** If work stalls, a result does not return, or the orchestrator loses focus, Vydykhai reconciles shared state and returns to the next step. Service repair does not replace the goal: afterward, resume work or restore the question awaiting the person. When an agent environment cannot support an independent check, the limitation stays explicit.
 
 ## Give This To Your Agent
 
@@ -55,7 +55,7 @@ The human may still need to grant repository/network access or approve merge. Th
 - Every focused context receives only the applicable goal, boundary, memory, verification, human checkpoint, and return route. It continues autonomously inside that contract and consults the orchestrator only at a real boundary.
 - Reasoning follows the role: the orchestrator uses the strongest available profile, unresolved solution work uses deep bounded discovery, and a ready execution task uses an efficient profile.
 - Accepted corrections and lessons update shared project memory and the affected plan. A participant's durable learning can therefore guide the other orchestrators instead of remaining inside one chat.
-- Results are written to durable shared state before the orchestrator is notified. After dispatch the orchestrator remains available instead of polling the task. Newer results and unrelated memory updates do not hide pending work; lost cross-context messages do not make a person recover or resend it.
+- Results are written to durable shared state before the orchestrator is notified. After productive handoff or a real wait, the orchestrator remains available instead of polling; a service interruption does not discard its next working step. Newer results and unrelated memory updates do not hide pending work; lost cross-context messages do not make a person recover or resend it.
 - Where an independent trigger is available, Project Guard checks meaningful events and a schedule without using a model while healthy. Routine checks read changes rather than the entire history. Unchanged checks stay silent; a real mismatch starts a bounded repair or confirmed rotation without stopping unrelated safe work, and any question already awaiting the person returns to the foreground afterward.
 
 People normally speak only to their orchestrator in natural language. Vydykhai uses native context creation, messaging, and UI controls when the harness supports them; otherwise it uses the shared tracker and gives one exact human action. It never treats a missing harness capability as completed automation.
