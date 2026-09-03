@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 1.26.0 | Status: canonical operating core
+Version: 1.26.1 | Status: canonical operating core
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 

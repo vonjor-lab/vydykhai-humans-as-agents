@@ -107,3 +107,47 @@ test("consumer links and multiple parent anchors remain valid without requiring 
   assert.deepEqual(validateMemoryGraph(legacy, manifest), []);
   assert.match(validateMemoryGraph(legacy.replace("about -> ENT-OUTCOME, ENT-OTHER", "about -> ENT-OUTCOME, ENT-MISSING"), manifest).join("\n"), /unknown relation target ENT-MISSING/);
 });
+
+test("Markdown emphasis on canonical field labels preserves their identity", () => {
+  for (const replacement of ["- **$1:** ", "- **$1**: "]) {
+    const graph = graphFixture().replace(/^- ([^:\n]+): /gm, replacement);
+    assert.deepEqual(validateMemoryGraph(graph, manifest), []);
+    assert.deepEqual(validateMemoryGraph(graph.replace(/\n/g, "\r\n"), manifest), []);
+  }
+});
+
+test("mixed emphasized and plain labels cannot hide duplicates or empty meaning", () => {
+  const graph = graphFixture().replace("- Apply: preserve accepted state and downstream consumers",
+    "- Apply: preserve accepted state and downstream consumers\n- **Apply:** replace the journey");
+  assert.match(validateMemoryGraph(graph, manifest).join("\n"), /duplicate field Apply/);
+  const empty = graphFixture().replace("- Because: partial success must not break the whole journey", "- **Because**: <missing>");
+  assert.match(validateMemoryGraph(empty, manifest).join("\n"), /missing Because/);
+});
+
+test("legacy meaning labels require reconciliation, not inferred canonical fields or lost-memory claims", () => {
+  const graph = graphFixture()
+    .replace(/^- (Type \/ status|About|Applies \/ exceptions):.*\n/gm, "")
+    .replace("- Because:", "- Why / change:")
+    .replace("- Source / checked:", "- Sources / aliases:")
+    .replace("- Apply:", "- Current meaning: preserve the accepted journey\n- Apply:")
+    .replace(/^- ([^:\n]+): /gm, "- **$1:** ");
+  const issues = validateMemoryGraph(graph, manifest);
+  assert.equal(issues.length, 1);
+  assert.match(issues[0], /legacy field layout requires reconciliation/);
+  for (const missing of ["Type / status", "About", "Because", "Applies / exceptions", "Source / checked"]) {
+    assert.ok(issues[0].includes(missing), missing);
+  }
+  assert.doesNotMatch(issues[0], /missing Apply|invalid Type|unknown anchor|lost|deleted/);
+});
+
+test("emphasis does not weaken type, reference or retrieval-result checks", () => {
+  const graph = graphFixture().replace(/^- ([^:\n]+): /gm, "- **$1:** ");
+  for (const [from, to, expected] of [
+    ["INVARIANT / ACTIVE", "INVARIANT / GUESS", /invalid Type \/ status/],
+    ["about -> ENT-OUTCOME", "requires -> MEM-MISSING", /unknown relation target MEM-MISSING/],
+    ["about -> ENT-OUTCOME", "requires -> OLD-1", /invalid relation/],
+    ["brief / review-1 | PASS / review-1", "old PASS / review-1 | MISS / review-2", /CURRENT retrieval probe has not passed/],
+  ]) {
+    assert.match(validateMemoryGraph(graph.replace(from, to), manifest).join("\n"), expected);
+  }
+});
