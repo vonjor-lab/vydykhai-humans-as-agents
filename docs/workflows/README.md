@@ -21,6 +21,7 @@ The orchestrator selects the required skill and workflow.
 - `project-guard.md`: run the project-owned event and schedule safety check outside the active orchestrator context.
 - `framework-orchestrator.md`: restore state, dispatch, supervise, recover, rotate, and choose next-best-action.
 - `start-work.md`: turn a raw or changed topic into an epic brief and minimum task contracts.
+- `context-route.md`: connect goals, inherited decisions and affected consumers to each task; inventory existing memory without losing evidence.
 - `daily-alignment.md`: reconcile meeting/event/local deltas across participants.
 - `accept-work.md`: accept work against current intent and exact-current-code evidence.
 

@@ -12,7 +12,7 @@ Use source precedence:
 4. agent plan or handoff;
 5. inference.
 
-Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory Brief, material task-local pivots, targeted orchestrator patches, and any `Rejected Candidate` used as evidence. Do not reconstruct unrelated Project State, raw meeting history, or the full Project Memory Graph. Summarize:
+Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory Brief and [Context Route](context-route.md), material task-local pivots, targeted orchestrator patches, and any `Rejected Candidate` used as evidence. Compare actual scope with the inherited constraints and affected consumers; local green tests do not prove an unexercised cross-boundary outcome. Do not reconstruct unrelated Project State, raw meeting history, or the full Project Memory Graph. Summarize:
 
 - goal and DOD impact;
 - scope/out of scope;

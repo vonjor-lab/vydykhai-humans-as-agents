@@ -1,0 +1,81 @@
+# Context Route
+
+Goal: each increment understands why its part exists, preserves applicable prior decisions and leaves verified understanding for later work. Completeness comes before context length. A narrow execution responsibility does not mean shallow product understanding.
+
+## One Map, Existing Sources
+
+Use the existing Project Memory Graph to navigate the accepted goal/brief, product scenarios, architecture/contracts, entities, decisions, accepted artifacts and verification. Do not create another source of truth or copy every source into every level. Each node has stable `About` anchors, applicability, rationale, typed relations and a checked source. Use canonical ids in current relations; retain old ids in the Legacy Source Map.
+
+A part may serve several outcomes. Preserve its applicable parent requirements and affected upstream/downstream consumers; do not force all dependencies into one tree. `requires` and `constrains` express obligations, not mere topic similarity. Sources remain authoritative within their scope; a recent local experiment does not silently replace an accepted product-wide decision. Distinguish accepted meaning, provisional inference, bounded exception, future intent and superseded history.
+
+## Three Routes
+
+1. **Execution:** resolve the changed entity/capability, ascend to its purpose and applicable brief/architecture constraints, then inspect related consumers, prior decisions, rejected approaches and accepted artifacts. Reuse what exists before proposing a replacement.
+2. **Discovery:** start at the desired actor outcome and descend through scenarios, responsibilities and affected entities. Compare candidate choices with the accepted architecture and prior rationale; return the decision and impact, not an implicitly authorized implementation.
+3. **Correction and acceptance:** locate the level where understanding changed; compare intended and actual touched entities, preserve or explicitly supersede decisions, inspect affected tasks/consumers, and connect observed results back to the original outcome. Preserve why a rejected attempt failed without making it the next baseline.
+
+Intersect open recall commitments and return checkpoints on every route. Follow applicable obligations until coverage is complete, not until a fixed hop or node count is reached. Filter unrelated and superseded material, but do not drop an obligation merely because it ranks below a topical match. If evidence is unavailable or applicability conflicts, record the exact `MEMORY_COVERAGE_GAP`; do not invent a parent, claim that all history was reviewed, or stop unrelated authorized work.
+
+An empty local view does not establish that an accepted capability or its data never existed. Before requesting replacement input or proposing a rebuild, distinguish not found here, inaccessible source, incompatible projection/consumer, and verified loss. Trace accepted artifacts and safe source/version/environment references through current consumers; recovery preserves existing meaning and identifiers unless a separate change is authorized. Historical access is not live-action authority.
+
+## Choose Preparation Depth
+
+At shaping, material re-brief or a Discovery return, the orchestrator chooses preparation; the person need not know the modes. Ordinary continuation does not repeat this choice.
+
+- **Direct execution:** the relevant route, accepted baseline and verification are current and the solution is Low-ready.
+- **Bounded Discovery:** missing or contradictory history, changed dependencies, repeated correction, or an unproven existing mechanism prevents a sound brief. Recover the necessary understanding once, then return it. Age, file count or task length alone never requires research.
+- **Discovery with a bounded lead:** several execution tasks share one accepted outcome and decisions must remain coherent as their results arrive. Name the concrete cross-task obligation that a one-time brief cannot cover. A fresh large change can qualify; an old small task need not. If this need is uncertain, let bounded Discovery establish it first.
+
+Use existing scope, dependencies, decision owner, burn/stop, checkpoint and Return Sync fields. No new role, permanent department, graph or scheduler is introduced. A lead uses the existing deep `DISCOVERY` profile and a normal work-id-first Discovery title; implementation remains efficient `EXECUTION`. Record the lead assignment and covered work in the parent brief and Active Work, not a separate registry.
+
+## Lead One Bounded Change
+
+The lead owns the solution's coherence, not project management. Its Discovery brief names the parent outcome, preserved obligations, covered tasks, allowed design decisions, integration evidence, review limit and exit; project-wide orchestration/alignment instructions and executor-only startup steps do not become its duties. It prepares a source-backed Decision Packet and task-map proposal, answers material content questions, and reviews the combined result. It may resolve design details inside delegated scope; changed shared contracts, priorities, acceptance promises, spending and safety authority return to the orchestrator or named human owner. It never launches implementers, edits shared Project State/memory, implements product code, or becomes the implementation acceptance owner.
+
+The orchestrator alone dispatches, changes active task contracts and integrates accepted memory. Each executor keeps one owning context and the same durable return route to its orchestrator; a lead is a named consultation/review recipient, not an extra mandatory relay for every result. Route only results that change its solution or satisfy a named integration checkpoint. Concrete tests, lab work and technical acceptance remain in their owning focused tasks; the lead assesses their implications rather than repeating them.
+
+A Decision Packet is a checkpoint, not completion of a lead's parent outcome. Return it with `CHECKPOINT_READY`, evidence and the next dependency; after consumption keep the existing lead lease `WAITING` with a concrete return condition and review-by. Resume that context only for an actionable question, material correction or integration result, with a first-action receipt. Available for consultation does not mean continuously `WORKING`. A consultation assigns a next action to the lead while the requester waits only at the affected boundary; do not leave both waiting on each other. One failed bounded consultation returns the unresolved choice to the orchestrator for re-brief, another focused opinion or a real human decision, not repeated reminders.
+
+Use the existing [Production Continuation](production-continuation.md) whole-lease observation before claiming protected leading mode: it covers the lead and executors, detects idle work and circular waits, and distinguishes them from real human/dependency waits. If the adapter cannot establish that coverage, use bounded Discovery plus ordinary tasks, explain the limitation once, and do not simulate a supervised lead. Respect harness creation, messaging, approval and visibility limits; when a separate-task launch requires a human action, give that action instead of claiming launch or substituting hidden workers.
+
+Before compaction, replacement or an accepted design checkpoint, preserve sources, rationale, decision status and remaining obligations durably. Repeated correction, missing rationale or unexplained drift routes a fresh focused review; the lead cannot certify its own recovered understanding. Guard/Governor retain their existing control roles and do not acquire domain leadership. During orchestrator rotation, retarget lead and executor returns together and retain pending consultations and human questions. A stalled lead is repaired or replaced from evidence through the existing task path, not kept alive indefinitely.
+
+Close the assignment when the parent is accepted, explicitly deferred or no longer needs cross-task coherence. Return final coverage, remaining obligations with owners, memory candidates and artifact disposition; the orchestrator consumes them, closes the lease and archives the context when supported. Ending a research phase, receiving a child result or merging one task does not close the parent. An optional improvement remains an idea rather than a reason to prolong leadership.
+
+## Explain The Work
+
+At a meaningful transition, explain the goal, why this preparation is needed, the next observable result and whether the person needs to act. Use ordinary product language and existing task names; do not narrate leases, receipts or internal slicing. Explain once at launch, then report decisions, verified progress, changed expectations or real blockers, not recurring no-op status.
+
+- Discovery: "I will first recover the earlier decisions for this area so we preserve what already works. Then I will propose the smallest change."
+- Lead: "This change spans several user journeys. I will assign one person or agent to keep the solution consistent across the work; the first checkpoint is the agreed scenario map."
+- Progress: "The existing behavior is preserved in these paths. This remaining path needs a decision before we can finish; the other work can continue."
+
+The orchestrator remains the person's primary contact. Direct discussion with a lead is optional; read newer human direction before sending instructions, preserve its scope and source, and reconcile affected work before claiming agreement. Keep one foreground Pending Human Action; other unresolved questions remain attached to their tasks and are not silently discarded. After a service event or rotation, restore the unanswered request or explicitly supersede it using the newer human decision. Do not make the person relay agent messages or decode technical identifiers.
+
+## Existing Brief And Return
+
+The orchestrator records the route inside the existing Memory Brief: goal/brief -> affected scenario/contracts/entities -> prior decisions and accepted artifacts -> verification, with source revisions or checked evidence and explicit remaining gaps. Include actual meaning and rationale, not ids or links alone. Consult original dialogue or artifacts when a summary cannot establish a material qualification. The task receives and reads the complete relevant context and source excerpts; unrelated history and orchestration deliberation stay outside it.
+
+Completion means that purpose, inherited constraints, dependent consumers, existing implementation and material conflicts have been examined. There is no seven-node or two-hop ceiling. If the full relevant context cannot be processed reliably, stage its preparation or rebrief at a meaningful boundary while preserving obligations; never silently truncate them. Ordinary continuation reuses the current route. Relevant source/contract changes invalidate affected portions, not the entire project.
+
+The owning task verifies the changed boundary and affected consumers against its contract. A fixture, source repair or isolated component test is not evidence for unexercised data, runtime, recipient or end-to-end behavior. Return item-level applied/missed/contradicted/not-exercised results, actual scope delta, observed evidence, and a memory candidate or `NO_CHANGE`. The orchestrator integrates accepted meaning and impacts into the graph and affected work; it does not repeat execution. Safety, authority, protected-pointer and human-acceptance gates remain unchanged.
+
+## Separate Three Checks
+
+- **Structure:** `control-check` rejects missing node meaning, missing anchors, dangling or untyped relations, duplicate fields and invalid retrieval-result columns. It cannot certify that prose is true, complete or correctly applied.
+- **Meaning:** before first use of a materially changed shared contract, migration or rotation, a fresh evaluator reconstructs the relevant route from original sources and ordinary task language, without being given the expected node list. Compare expected obligations with the brief; missing relevant intent is a miss even when all links resolve. A recorded `PASS` without this evidence is not semantic coverage.
+- **Behavior:** the owning task proves actual changed behavior and preservation of relevant existing behavior. Independent source review cannot replace these tests, and green local tests cannot replace a missing cross-boundary check. Reuse current evidence where its source and scope still match.
+
+The orchestrator owns preparation and integration; focused tasks own discovery, implementation, tests and substantive memory reconstruction. Guard checks current control evidence and routes anomalies; it does not reread product architecture on every timer. No new permanent agent, watcher or user ritual is required.
+
+## Existing-Project Inventory
+
+1. Retain the exact current graph, source ledger, decisions and accepted artifacts. First audit the existing index for goal-to-entity routes and reverse consumer links; do not begin with a full-history replay.
+2. Compare current and next work plus representative prior misses with the map. Invite each relevant participant's orchestrator through the agreed shared sync route to reconcile its task-local decisions, human corrections, deferred insights and accepted artifacts against the same baseline. Each publishes its own source-backed delta or explicit no-change/coverage gap; one machine cannot certify another's private history. Revisit original discussions only for missing, ambiguous or conflicting meaning, within source permissions. Share approved meaning and safe references, not private transcripts or secrets.
+3. In a separately scoped focused task, build a side-by-side candidate: repair anchors/relations, clarify mixed scopes, connect existing meaning and resolve supersession. Show preserved/added/refined/superseded/unresolved meaning and provenance, not just changed node counts. Do not delete historical evidence or read secret values.
+4. Replay the same ordinary-language cases before and after, including a multi-consumer change, a transactional flow and a justified safety stop. Use independently established expected obligations and negative controls with a removed parent, missing decision or stale artifact. Measure missed obligations and false readiness first; context size and latency are secondary. Label structural tests, source-backed review and live behavioral proof separately.
+5. Switch only after reviewed coverage and the existing human-confirmed migration gate, with current-watermark readback and a retained rollback source. Keep the active Guard on its accepted checker/snapshot while testing the candidate; coordinate the graph/checker cutover so stricter validation is not enabled against unreconciled old records. Missing or unreadable old records require targeted repair, not an automatic schema rewrite, global pause, duplicated tasks or forced orchestrator rotation.
+
+Name one integration owner for this migration. Collect participant deltas into the same candidate rather than concurrently replacing the shared graph. Resolve conflicting scope/chronology explicitly with the decision owner; a more recent local experiment does not silently override a shared accepted constraint. Include cross-domain retrieval cases contributed by participants, then ask each available orchestrator to read back the accepted watermark and retrieve the shared meaning relevant to its next work. This is bidirectional consolidation, not merely sending an update announcement. Record missing participants/sources and limit only affected coverage claims or unsafe work; do not claim whole-team coverage or stop independent work while waiting. A late delta is reconciled against the then-current watermark, not written over the accepted candidate.
+
+Keep Graph v3 and Project State v2. Existing complete records remain usable; old malformed records that previously passed the shallow checker need the bounded inventory above before new coverage is claimed. Updating framework files alone does not reorganize project memory or prove adoption.

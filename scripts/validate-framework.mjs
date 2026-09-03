@@ -317,7 +317,12 @@ for (const field of [
     fail(`Memory policy is missing recall commitment field: ${field}`);
   }
 }
-if (manifest.memoryPolicy?.taskBriefMaxNodes !== 7) fail("Task Memory Brief maximum must be 7 nodes");
+if (manifest.memoryPolicy?.taskBriefMaxNodes !== null || manifest.memoryPolicy?.contextRoutingPolicy !== "goal-to-evidence-completeness") {
+  fail("Task Memory Brief must preserve complete applicable context without a fixed node cap");
+}
+for (const route of ["execution", "discovery", "correction-and-acceptance"]) {
+  if (!manifest.memoryPolicy?.contextRoutes?.includes(route)) fail(`Memory context route is missing: ${route}`);
+}
 if (manifest.actionReceiptPolicy?.policy !== "critical-transition-readback") {
   fail("Action Receipt policy must use critical-transition-readback");
 }
@@ -608,7 +613,8 @@ if (
   !projectMemoryGraphTemplate.includes("RETRIEVAL_MISS") ||
   !projectMemoryGraphTemplate.includes("Watermark:") ||
   !projectMemoryGraphTemplate.includes("Legacy Source Map") ||
-  !projectMemoryGraphTemplate.includes("no more than seven executable") ||
+  !projectMemoryGraphTemplate.includes("complete applicable") ||
+  !projectMemoryGraphTemplate.includes("context-route.md") ||
   !projectMemoryGraphTemplate.includes("Protected pointer (POINTER only)") ||
   !projectMemoryGraphTemplate.includes("Owner gate:") ||
   !projectMemoryGraphTemplate.includes("Raw trigger") ||
@@ -713,8 +719,8 @@ if (
   !orchestratorWorkflow.includes("first safe observable action") ||
   !orchestratorWorkflow.includes("EXECUTION_STALLED") ||
   !orchestratorWorkflow.includes("Pending Return Inbox") ||
-  !orchestratorWorkflow.includes("write one marked terminal Return Sync to the durable outbox") ||
-  !orchestratorWorkflow.includes("An Action Receipt never substitutes for terminal Return Sync") ||
+  !orchestratorWorkflow.includes("write one marked Return Sync to the durable outbox") ||
+  !orchestratorWorkflow.includes("An Action Receipt never substitutes for Return Sync") ||
   !orchestratorWorkflow.includes("WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED") ||
   !orchestratorWorkflow.includes("OUTCOME_UNKNOWN") ||
   !orchestratorWorkflow.includes("detour")

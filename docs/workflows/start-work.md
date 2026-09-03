@@ -1,6 +1,6 @@
 # Start Work Workflow
 
-Goal: turn a raw or changed product topic into an approved epic brief and executable task map.
+Goal: turn a raw or changed product topic into an approved epic brief and executable task map. Use [Context Route](context-route.md) to connect the goal, accepted architecture, decisions, existing artifacts and verification; completeness takes priority over context length.
 
 ## 1. Restore Intent
 
@@ -20,9 +20,9 @@ If a future option is useful but unnecessary for the nearest DOD, recommend keep
 
 ## 2. Decide Whether To Discover
 
-Use role `DISCOVERY` when one bounded question prevents a useful brief: source of truth, option comparison, product model, architecture, unresolved UX/UI or visual direction, foundation, or affected contract. Use Research Context when product code is unnecessary; use a disposable Lab only when a working proof materially improves the decision.
+Use [Context Route](context-route.md#choose-preparation-depth) to choose direct execution, bounded `DISCOVERY`, or Discovery with a bounded lead. Recover missing/stale/conflicting understanding before replacement work; age alone is not a trigger. A lead is justified by ongoing cross-task coherence that a one-time brief cannot cover, not task size. Use Research Context when product code is unnecessary; use a disposable Lab only when a working proof materially improves the decision.
 
-Give it one question, sources, non-goals, stop condition, and expected Decision Packet: chosen approach, material rejected options and lessons, affected entities/interfaces, acceptance or visual evidence, risks, and unresolved owner decisions. Do not create production implementation. Incorporate the packet and close or archive the context before resuming the brief.
+Give it one question, sources, non-goals, stop condition, and expected Decision Packet: chosen approach, material rejected options and lessons, affected entities/interfaces, acceptance or visual evidence, risks, and unresolved owner decisions. Do not create production implementation. Incorporate the packet and close ordinary Discovery; for an explicit bounded lead, retain only its named consultation/integration obligations and follow the checkpoint/wait/exit contract in Context Route. Explain the preparation and next user-visible result briefly.
 
 ## 3. Draft The Epic Brief
 
@@ -35,15 +35,15 @@ Include:
 - affected entities, surfaces, data, APIs, permissions, and integrations;
 - dependencies, risks, decision owner, DOD, and acceptance.
 
-If it cannot be explained compactly, split the topic before tasking.
+If its outcome or ownership remains ambiguous, resolve the decision or split at a meaningful responsibility boundary before tasking; length alone is not a reason to fragment coherent work.
 
 ## 4. Check Coherence
 
 Compare with active epics, shared contracts, deltas, and known lessons. Surface overlap in code or intended outcome, duplicated work, conflicting assumptions, and unsafe parallel edits. A support, demo, review, or transport task stays separate from the product task's DOD and burn even when its files are isolated.
 
-Derive a `Touch Set` from the proposed outcome, actors, entities, surfaces, contracts/authorities, and data/operational realms. Resolve stable graph anchors and aliases, add semantic candidates when wording differs, traverse relevant typed relations one or two hops, then filter by source precedence, status, scope, applicability, and supersession.
+Derive a `Touch Set` from the proposed outcome, actors, entities, surfaces, contracts/authorities, and data/operational realms. Resolve stable graph anchors and aliases, add semantic candidates when wording differs, traverse relevant typed relations until the applicable goal, contract, decision and consumer context is complete, then filter by source precedence, status, scope, applicability, and supersession.
 
-Record the smallest complete `Memory Brief`, no more than seven nodes and fewer when fewer apply. Each item must say `Because <anchor>, apply <rule>, avoid <path>, verify <evidence>, source <link>` and may expose a conflict or `MEMORY_COVERAGE_GAP`; ids alone are invalid. Drop an item that changes neither first action, boundary, guardrail, nor acceptance. Keep the Touch Set and retrieval reasoning in the orchestrator.
+Record the complete applicable `Memory Brief` without a fixed node cap. Each item must say `Because <anchor>, apply <rule>, avoid <path>, verify <evidence>, source <link>` and may expose a conflict or `MEMORY_COVERAGE_GAP`; ids alone are invalid. Preserve rationale that explains purpose, existing choices and material qualifications even when it does not alter the first action. Remove unrelated repetition, not inherited obligations. Keep the Touch Set and retrieval reasoning in the orchestrator.
 
 Propose:
 
@@ -64,7 +64,8 @@ DOD Control Line contribution: <accepted proof -> gap closed -> remaining contin
 Scope / out of scope:
 Scope freshness / Accepted Baseline:
 Continue from: <accepted mechanism/reference>
-Applicable Memory Brief: <maximum 7 executable Because / Apply / Avoid / Verify / Source items with node ids, or MEMORY_COVERAGE_GAP / none>
+Applicable Memory Brief: <complete applicable Because / Apply / Avoid / Verify / Source items with node ids, or MEMORY_COVERAGE_GAP / none>
+Context route: <goal/brief -> affected scenario/contracts/entities -> decisions and existing artifacts -> verification; checked sources and any gaps>
 Product loop or linked enabler:
 For enabler: Unlocks / Still missing / next product slice:
 Authority / safety envelope:

@@ -10,12 +10,19 @@ Contributors must have the right to submit all material they provide and must di
 
 ## Framework Evolution Gate
 
-Before adding a universal rule, skill, workflow, artifact, or public term, confirm all of the following:
+Apply this gate when shaping every framework update and again before release, including fixes and wording changes. Before adding a universal rule, skill, workflow, artifact, or public term, confirm all of the following:
 
 - it addresses a repeated collaboration failure, not one project's local preference;
+- its user benefit can be stated as a concrete before/after, with evidence proportionate to the change; distinguish a hypothesis, simulation, automated test, and observed real use;
 - it maps into the existing compass-to-next-action cycle and has a clear trigger and exit;
 - it reuses existing roles, artifacts, routes, and plain language unless they cannot express the case;
 - it remains useful across agent environments or states the smallest capability fallback;
 - it stays invisible to the human until relevant and replaces or removes any wording it makes redundant.
+
+Compare the proposal with existing mechanisms and prior releases. If the behavior is already covered, first distinguish a missing implementation or adoption from a missing rule; do not rewrite the same intent as a new feature. Check that roles, continuation, Guard behavior, and human communication remain coherent at the affected boundaries.
+
+Weigh the benefit against added concepts, context, model calls, coordination steps, user decisions, and upkeep. Prefer the simplest adequate option, including improving or removing an existing mechanism. Added complexity is justified only by a clear benefit; simplification must not discard necessary safety or meaning. Initial agreement is not evidence: challenge weak assumptions and recommend simplifying, deferring, or not releasing when warranted.
+
+Give one short review in the existing PR or change discussion: **Benefit / Evidence and limits / Complexity tradeoff / Verdict** (`ship`, `simplify`, `defer`, or `no release`). Explain the user outcome in ordinary language, not internal procedure names. Scale the review to the change and reuse current evidence; do not create a separate audit artifact, agent, scheduler, or runtime ritual. A passing structural test or a new version number is not proof of user value.
 
 A lesson that fails this gate belongs in project instructions, an issue for further evidence, or an existing mechanism's example rather than the universal runtime.
