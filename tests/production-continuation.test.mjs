@@ -67,8 +67,8 @@ test("an active coordinator is not interrupted, but unresolved work is not accep
   assert.equal(returned.deferred, true);
   const idle = check(content);
   assert.equal(check(content, observation(content), [], { acceptedIncidentId: idle.incidentId }).action, "WAKE");
-  assert.equal(check(content.replace("Incident: none", `Incident: ${idle.incidentId}`), observation(content),
-    [`Project State: Project Guard incident ${idle.incidentId} requires reconciliation`]).action, "AUDIT_REQUIRED");
+  assert.equal(check(content.replace("Incident: none", `Incident: ${idle.incidentId}`), observation(content)).action, "WAKE");
+  assert.equal(check(content, observation(content), [], { wokenIncidentId: idle.incidentId }).action, "AUDIT_REQUIRED");
 });
 
 test("a terminal side answer cannot satisfy a WORKING lease", () => {

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.26.1",
+  "version": "1.27.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -80,8 +80,28 @@
     ]
   },
   "controlLoopPolicy": {
-    "policy": "governor-audited-event-loop",
+    "policy": "single-ledger-anomaly-escalation",
     "projectStateVersion": 2,
+    "routineTransition": "deterministic-validate-publish-readback",
+    "governorScope": "semantic-anomalies-only",
+    "authoritativeSections": [
+      "control-snapshot",
+      "current-dod",
+      "execution-leases",
+      "pending-return-inbox",
+      "detours-and-recall",
+      "next-best-action"
+    ],
+    "nonAuthoritativeViews": [
+      "project-activation-receipt",
+      "active-work",
+      "decisions-and-blockers",
+      "safe-continuation",
+      "tracker-projection",
+      "graph-control-summary"
+    ],
+    "viewDriftAction": "regenerate-no-model-no-control-event",
+    "graphUpdate": "memory-delta-only",
     "states": [
       "healthy",
       "repair",
@@ -135,6 +155,9 @@
     "snapshotHashRole": "evidence-only",
     "acceptedSameIncidentAction": "silent-no-model",
     "changedConditionAction": "audit-required",
+    "settleWindowSeconds": 30,
+    "maxAutomaticRepairsPerIncident": 1,
+    "repeatedRepairAction": "control-degraded",
     "states": [
       "active",
       "limited",
@@ -143,7 +166,8 @@
     "actions": [
       "noop",
       "wake",
-      "audit-required"
+      "audit-required",
+      "control-degraded"
     ],
     "requiredCapabilities": [
       "independent-trigger",
@@ -153,6 +177,7 @@
       "native-wakeup",
       "fresh-context-start",
       "idempotent-incident",
+      "external-incident-ledger",
       "pending-human-action-read",
       "durable-outbox-discovery"
     ],
@@ -332,6 +357,14 @@
     "taskBriefMaxNodes": null,
     "contextRoutingPolicy": "goal-to-evidence-completeness",
     "contextRoutes": ["execution", "discovery", "correction-and-acceptance"],
+    "acceptanceOrder": [
+      "ordinary-unhinted-real-task-probes",
+      "targeted-regression",
+      "atomic-shadow-integration",
+      "human-confirmed-cutover"
+    ],
+    "naturalProbeRange": [3, 4],
+    "naturalProbeFailureAction": "stop-before-broad-evaluation",
     "legacyInputs": [
       "intent-trail",
       "idea-memory"

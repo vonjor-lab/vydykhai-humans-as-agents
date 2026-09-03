@@ -106,10 +106,30 @@ for (const result of ["project-ready", "project-ready-with-limits", "needs-decis
   }
 }
 if (manifest.defaultScopeFreshnessDays !== 7) fail("Default scope freshness must be 7 days");
-if (manifest.controlLoopPolicy?.policy !== "governor-audited-event-loop") {
-  fail("Control loop policy must use governor-audited-event-loop");
+if (manifest.controlLoopPolicy?.policy !== "single-ledger-anomaly-escalation") {
+  fail("Control loop policy must use single-ledger-anomaly-escalation");
 }
 if (manifest.controlLoopPolicy?.projectStateVersion !== 2) fail("Project State schema must be version 2");
+if (
+  manifest.controlLoopPolicy?.routineTransition !== "deterministic-validate-publish-readback" ||
+  manifest.controlLoopPolicy?.governorScope !== "semantic-anomalies-only" ||
+  manifest.controlLoopPolicy?.viewDriftAction !== "regenerate-no-model-no-control-event" ||
+  manifest.controlLoopPolicy?.graphUpdate !== "memory-delta-only"
+) {
+  fail("Control loop must keep routine transitions deterministic and reserve Governor for semantic anomalies");
+}
+for (const section of [
+  "control-snapshot",
+  "current-dod",
+  "execution-leases",
+  "pending-return-inbox",
+  "detours-and-recall",
+  "next-best-action",
+]) {
+  if (!manifest.controlLoopPolicy?.authoritativeSections?.includes(section)) {
+    fail(`Control loop is missing authoritative section: ${section}`);
+  }
+}
 for (const state of ["healthy", "repair", "rotate"]) {
   if (!manifest.controlLoopPolicy?.states?.includes(state)) fail(`Control loop policy is missing state: ${state}`);
 }
@@ -170,12 +190,27 @@ if (
   manifest.projectGuardPolicy?.incidentIdentity !== "semantic-condition-set" ||
   manifest.projectGuardPolicy?.snapshotHashRole !== "evidence-only" ||
   manifest.projectGuardPolicy?.acceptedSameIncidentAction !== "silent-no-model" ||
-  manifest.projectGuardPolicy?.changedConditionAction !== "audit-required"
+  manifest.projectGuardPolicy?.changedConditionAction !== "audit-required" ||
+  manifest.projectGuardPolicy?.settleWindowSeconds !== 30 ||
+  manifest.projectGuardPolicy?.maxAutomaticRepairsPerIncident !== 1 ||
+  manifest.projectGuardPolicy?.repeatedRepairAction !== "control-degraded"
 ) {
-  fail("Project Guard incident identity or deduplication policy is invalid");
+  fail("Project Guard incident identity, cost, or circuit-breaker policy is invalid");
 }
-for (const action of ["noop", "wake", "audit-required"]) {
+for (const action of ["noop", "wake", "audit-required", "control-degraded"]) {
   if (!manifest.projectGuardPolicy?.actions?.includes(action)) fail(`Project Guard is missing action: ${action}`);
+}
+if (
+  JSON.stringify(manifest.memoryPolicy?.acceptanceOrder) !== JSON.stringify([
+    "ordinary-unhinted-real-task-probes",
+    "targeted-regression",
+    "atomic-shadow-integration",
+    "human-confirmed-cutover",
+  ]) ||
+  JSON.stringify(manifest.memoryPolicy?.naturalProbeRange) !== JSON.stringify([3, 4]) ||
+  manifest.memoryPolicy?.naturalProbeFailureAction !== "stop-before-broad-evaluation"
+) {
+  fail("Memory acceptance must run cheap ordinary probes before broad regression");
 }
 for (const capability of [
   "independent-trigger",
@@ -185,6 +220,7 @@ for (const capability of [
   "native-wakeup",
   "fresh-context-start",
   "idempotent-incident",
+  "external-incident-ledger",
   "pending-human-action-read",
   "durable-outbox-discovery",
 ]) {
@@ -504,8 +540,8 @@ if (
   !coreRu.includes("Because / Apply / Avoid / Verify / Source") ||
   !coreEn.includes("recall commitment") ||
   !coreRu.includes("обязательством памяти") ||
-  !coreEn.includes("complete id mapping is not semantic coverage") ||
-  !coreRu.includes("полная карта id не доказывает semantic coverage")
+  !coreEn.includes("opaque ids alone are invalid") ||
+  !coreRu.includes("одних id недостаточно")
 ) {
   fail("Core is missing executable memory retrieval or miss reflection");
 }
@@ -519,7 +555,7 @@ for (const value of [
   "Governor:",
   "Project Guard:",
   "Human attention:",
-  "Audited event:",
+  "Audited incident:",
   "Orchestrator health:",
   "Last independent check:",
   "DOD Control Line:",
@@ -557,7 +593,7 @@ if (!projectStateTemplate.includes("RESURFACE_DUE") || !projectStateTemplate.inc
 }
 if (
   !projectStateTemplate.includes("Snapshot as of:") ||
-  !projectStateTemplate.includes("Rebuild its body atomically") ||
+  !projectStateTemplate.includes("Rebuild the authoritative body atomically") ||
   !projectStateTemplate.includes("Render and validate a complete Candidate") ||
   !projectStateTemplate.includes("--expect-state-sha") ||
   !projectStateTemplate.includes("restore and verify the exact last accepted body")
@@ -628,7 +664,7 @@ if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow i
 if (
   !projectLaunchWorkflow.includes("bounded read-only memory backfill") ||
   !projectLaunchSkill.includes("bounded read-only memory backfill") ||
-  !projectLaunchWorkflow.includes("ordinary future-work questions")
+  !projectLaunchWorkflow.includes("ordinary unhinted real-task questions")
 ) {
   fail("Existing-project launch is missing economical historical memory reconciliation");
 }
@@ -767,7 +803,7 @@ if (
   !orchestratorWorkflow.includes("Memory Reflection") ||
   !orchestratorWorkflow.includes("memory-reflection/detour receipts") ||
   !orchestratorWorkflow.includes("APPLICATION_MISS") ||
-  !orchestratorWorkflow.includes("side-by-side read-only candidate") ||
+  !orchestratorWorkflow.includes("compare a side-by-side candidate with current memory") ||
   !orchestratorWorkflow.includes("non-destructive access check") ||
   !orchestratorWorkflow.includes("last safe check time/result/source") ||
   !orchestratorWorkflow.includes("MEMORY_COVERAGE_GAP / BLOCKED") ||
@@ -815,9 +851,9 @@ if (
 if (
   !orchestratorWorkflow.includes("open recall commitments") ||
   !orchestratorWorkflow.includes("bounded read-only memory backfill") ||
-  !orchestratorWorkflow.includes("id counts and mapping completeness alone are insufficient") ||
+  !orchestratorWorkflow.includes("id counts and synthetic PASS alone are insufficient") ||
   !orchestratorSkill.includes("open recall commitments") ||
-  !orchestratorSkill.includes("ordinary future-work queries")
+  !orchestratorSkill.includes("ordinary unhinted real-task queries")
 ) {
   fail("Orchestrator is missing recall-commitment retrieval or semantic backfill proof");
 }
