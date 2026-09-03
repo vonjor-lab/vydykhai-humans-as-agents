@@ -10,24 +10,26 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.25.0`
+Current version: `1.26.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
 ## Что Vydykhai берет на себя
 
 - **Организует путь к результату.** Превращает сырую цель в общий бриф, ближайший DOD, ограниченные задачи и одно понятное следующее действие.
+- **Готовит сложные изменения без лишних церемоний.** Простую задачу можно сразу выполнять; перед возвращением к запутанной теме AI восстанавливает прежние решения. Когда несколько задач должны сложиться в одно изменение, при доступном контроле назначается временный ведущий по его согласованности. Пользователю объясняют зачем и какой результат он увидит следующим.
 - **Сводит людей и разные AI в одну работу.** Участники могут действовать асинхронно на своих компьютерах и в своих агентных средах; общий репозиторий связывает их планы, результаты и приемку.
 - **Включает людей как агентов смысла.** Оркестратор обращается к конкретному человеку только за его решением или проверкой, объясняет, что требуется и куда вернется результат; независимая работа тем временем продолжается.
-- **Помнит и применяет накопленный опыт.** Идеи, встречи, решения, «давай по-другому», ошибки и обещания вернуться сохраняются в общей памяти и поднимаются тогда, когда действительно влияют на работу.
+- **Сохраняет смысл по мере роста проекта.** Задачи получают связанные цели, прежние решения и причины выбора, чтобы локальное улучшение не теряло общий замысел. Идеи, уроки и обещания вернуться поднимаются при следующей подходящей работе; важные оговорки не обрезаются ради краткости.
 - **Восстанавливает движение.** Если работа остановилась, результат не вернулся или оркестратор потерял фокус, Vydykhai сверяется с общим состоянием и возвращает работу к следующему шагу. Служебный ремонт не заменяет цель: после него нужно продолжить работу или вернуть человеку ожидающий вопрос. Если агентная среда не позволяет независимую проверку, это ограничение показывается явно.
 
 ## What Vydykhai Owns
 
 - **Organizes the route to an outcome.** It turns a rough goal into a shared brief, the nearest DOD, bounded tasks, and one clear next action.
+- **Prepares complex changes proportionately.** Clear tasks go straight to execution; uncertain areas first recover prior decisions. When several tasks must form one coherent change, a temporary lead can follow the solution if the environment supports the required supervision. The person hears why and what result to expect next.
 - **Converges people and different AI tools.** Participants may work asynchronously across their own computers and agent environments while one shared repository connects plans, results, and acceptance.
 - **Includes people as agents of judgment.** The orchestrator asks a specific person only for the decision or review they own, explains what is needed and where the result returns, and keeps independent work moving.
-- **Remembers and applies accumulated experience.** Ideas, meetings, decisions, changes of approach, failures, and promises to return enter shared memory and resurface when they materially affect the work.
+- **Preserves understanding as the project grows.** Tasks receive linked goals, prior decisions and their rationale so a local improvement keeps the overall intent. Ideas, lessons and promises to return resurface at the next relevant task; important qualifications are not dropped for brevity.
 - **Restores forward motion.** If work stalls, a result does not return, or the orchestrator loses focus, Vydykhai reconciles shared state and returns to the next step. Service repair does not replace the goal: afterward, resume work or restore the question awaiting the person. When an agent environment cannot support an independent check, the limitation stays explicit.
 
 ## Give This To Your Agent

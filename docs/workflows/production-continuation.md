@@ -60,6 +60,27 @@ The key binds the action, current orchestrator, and matching lease identity/stat
 - Keep one delivery owner per semantic incident. While delivery is in flight, do not enqueue another message. At the next check reconcile actual progress; one unresolved wake goes to the existing bounded audit/repair path, not endless reminders. An accepted incident id alone cannot erase an observed unfinished continuation.
 - After repair, restore or explicitly supersede the human request as well as the productive step. The person sees the result, next decision, or real blocker from their orchestrator, not Guard mechanics.
 
+## Whole-Lease Coverage When Needed
+
+Before enabling a bounded Discovery lead, extend the same fresh `--activity` observation with `leaseKey` from `readLeaseActivityScope(state)` and a `leases` array for every `STARTED`, `WORKING` or `WAITING` row. This is transient adapter input, not a new shared artifact, model call or timer. Reuse bounded native status and durable dependency/checkpoint metadata; do not reload discussion history. The existing CLI calls `evaluateLeaseActivity` and returns `leaseActivity.coverage` separately from the next-action check.
+
+```json
+{
+  "leaseKey": "hash-returned-by-readLeaseActivityScope",
+  "leases": [
+    {"work":"LEAD-1","context":"lead-context","status":"IDLE","evidence":"native-lead-status",
+     "wait":{"status":"PENDING","resumeWhen":"Implementation evidence arrives","dependsOn":["WORK-1"],"evidence":"current-task-dependency"}},
+    {"work":"WORK-1","context":"worker-context","status":"ACTIVE","evidence":"native-worker-status"}
+  ]
+}
+```
+
+Merge these fields into the normal observation, retaining `schemaVersion`, `observedAt`, `continuationKey` and orchestrator/next-owner evidence. Use exact work keys and context handles from the current leases. `wait.dependsOn` lists local work dependencies; use an empty list for a genuine human or external gate and supply its actual condition/evidence. Derive waits from current task contracts and observed events, never from silence. A whole-lease observation is complete only when every live owner and wait is visible; unavailable participant machines remain `LIMITED`, not inferred idle.
+
+Missing, stale, duplicate, unknown-owner, incomplete or ambiguous supplied observations are `LIMITED`. A working owner observed idle or a changed/closed dependency produces one existing `WAKE`; a circular pending wait produces `AUDIT_REQUIRED`. A waiting lead with an unchanged actual gate stays silent. These are routing decisions, never permission to retry an external action, duplicate a worker or close a parent. Reconcile an in-flight incident before delivery; an accepted incident cannot erase still-unfinished observed work. The existing active-manager deferral and human-attention preservation still apply.
+
+Absent `leases` yields `NOT_REQUESTED` and preserves legacy adapter behavior; it does not certify leading mode. Test the candidate adapter on a waiting lead, active parallel worker, changed dependency, mutual wait, lost return, rotation and the quiet follow-up schedule before enabling that mode. Without such proof use bounded Discovery and ordinary tasks. A checker verifies supplied relationships and activity, not the truth or completeness of product understanding; semantic checks remain with the orchestrator and focused reviewers.
+
 ## Adoption And Proof
 
 This is an additive contract inside Project State v2; the graph schema and roles are unchanged. `continuationPolicy.turnRelease` defines the productive release condition; the older `humanAttentionPolicy.orchestratorAvailability` value remains for updater compatibility, not an exception for service dispatch. A focused update task converts the current next action from durable evidence, prepares the adapter Candidate, and uses the existing guarded switch. Do not silently infer `WORKING` or a wait when evidence is absent. Older free-text state remains available as the migration source; it cannot pass the new continuation check until converted.

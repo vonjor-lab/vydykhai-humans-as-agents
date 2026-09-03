@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.25.0",
+  "version": "1.26.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -329,7 +329,9 @@
       "applicability-timing-and-checkpoint",
       "pending-human-question"
     ],
-    "taskBriefMaxNodes": 7,
+    "taskBriefMaxNodes": null,
+    "contextRoutingPolicy": "goal-to-evidence-completeness",
+    "contextRoutes": ["execution", "discovery", "correction-and-acceptance"],
     "legacyInputs": [
       "intent-trail",
       "idea-memory"

@@ -26,7 +26,8 @@ For an enabler: Unlocks / Still missing / next product slice and owner:
 Freshness: <UNCHANGED | PATCH_REQUIRED | REBRIEF_REQUIRED> | Checked: <date/evidence>
 Accepted Baseline: <commit, artifact, or proven behavior>
 Continue from: <accepted mechanism/reference>
-Applicable Memory Brief: <up to 7 executable items: node id / Because / Apply / Avoid / Verify / Source, or MEMORY_COVERAGE_GAP / none>
+Applicable Memory Brief: <complete applicable items: node id / Because / Apply / Avoid / Verify / Source, or MEMORY_COVERAGE_GAP / none>
+Context route: <goal/brief -> affected scenario/contracts/entities -> decisions and existing artifacts -> verification; checked sources and gaps, per context-route.md>
 Progress continuity: <UNCHANGED | Preserved / Replaced / Added / Remaining>
 
 In scope:
@@ -37,6 +38,9 @@ Out of scope:
 
 Authority / safety envelope: <allowed actions and named approval boundaries>
 Dependency / recipient boundary: <only what this execution must preserve or deliver>
+Design consultation recipient, when assigned: <bounded lead and parent outcome; send material CONSULT through the existing orchestrator return route, not a second supervisor>
+
+Read the supplied relevant meaning, rationale and source excerpts before changing behavior. Narrow responsibility does not remove inherited constraints. Consult if a material link is missing; do not reconstruct unrelated project history or silently drop context to meet a length target.
 
 ## Completion
 
@@ -91,4 +95,4 @@ Recommended orchestrator next action:
 <!-- vydykhai:return-sync:end -->
 ```
 
-A launch or resume is incomplete when the task only writes a plan. It must perform an observable action, name a real blocker, or request re-brief. At every declared checkpoint, readiness, blocker, or terminal return trigger, first write the complete marked Return Sync above to the durable task/tracker outbox, then attempt the native wakeup with the same id. An Action Receipt never substitutes for this Return Sync. Native delivery, final text, and task/thread reads are not authority and may be empty; their loss must not lose the result. The orchestrator reconciles unconsumed outbox events at every cold path and Governor Check, writes the matching marked Return Route receipt after consumption, and Project Guard compares the two exact formats independently. Do not wait for human polling. A cross-person handoff remains incomplete until recipient proof is returned.
+A launch or resume is incomplete when the task only writes a plan. It must perform an observable action, name a real blocker, or request re-brief. At every declared checkpoint, readiness, blocker, or terminal return trigger, first write the complete marked Return Sync above to the durable task/tracker outbox, then attempt the native wakeup with the same id. An Action Receipt never substitutes for this Return Sync. Native delivery, final text, and task/thread reads are not authority and may be empty; their loss must not lose the result. The orchestrator reconciles unconsumed outbox events at every cold path and Governor Check, writes the matching marked Return Route receipt after consumption, and Project Guard compares the two exact formats independently. A routed checkpoint retains its next action or concrete wait; it does not close the parent or an unfinished lead assignment. Do not wait for human polling. A cross-person handoff remains incomplete until recipient proof is returned.

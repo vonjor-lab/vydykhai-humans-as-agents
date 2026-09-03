@@ -1,6 +1,6 @@
 # Project Launch Workflow
 
-Goal: turn one installation request into a proven shared operating project before implementation starts.
+Goal: turn one installation request into a proven shared operating project before implementation starts. Use [Context Route](context-route.md) to check goal-to-entity and reverse consumer coverage; existing-project inventory preserves the accepted map and repairs proven gaps side by side.
 
 ## 1. Discover Before Asking
 
@@ -58,7 +58,7 @@ Create one Project Memory Graph when the first reusable decision, idea, lesson, 
 
 For an existing project with meaningful history, route an early bounded read-only memory backfill without blocking safe current work. Start from the accepted brief or earliest reliable baseline; inventory high-signal human corrections, meeting decisions, accepted pivots, open recall commitments, checkpoints, and accepted lessons; cluster by stable anchors; let later evidence supersede earlier meaning; and deeply inspect only missing, ambiguous, or conflicting clusters. A fresh evaluator uses ordinary future-work questions to recover concrete meaning, source, return condition, and human gate before confirmed integration. Do not copy the full transcript or model narration.
 
-For an old graph, build a side-by-side read-only v3 candidate, preserve ids/sources, compare `CURRENT / NEXT / PRIOR_MISS` practical retrieval, show loss/conflict/delta, and switch only after human confirmation. Map old Idea Memory and Intent Trail before making them read-only evidence. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before activation or schema cutover.
+For an old graph, follow the participant consolidation in `context-route.md`: each relevant orchestrator contributes its own source-backed delta or coverage gap, one integration owner builds the side-by-side v3 candidate, and each available participant retrieves the accepted shared meaning after cutover. Preserve ids/sources, compare `CURRENT / NEXT / PRIOR_MISS` including cross-domain cases, show loss/conflict/delta, and switch only after human confirmation. Map old Idea Memory and Intent Trail before making them read-only evidence. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before activation or schema cutover. Missing participants limit affected coverage, not unrelated work.
 
 Configure one lightweight tracker projection. The task issue body is the current contract; Project State holds the route; the board or equivalent shows `Todo`, `Next`, `In Progress`, `In Review`, `Blocked`, `Done`, and `Parked`. Record owner, priority, formal parent/dependencies where supported, milestone or delivery window, checkpoint, and PR/artifact. Use fixed sprints only when the team needs them.
 

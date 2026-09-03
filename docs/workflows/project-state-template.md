@@ -63,7 +63,7 @@ Updated from durable event: <event/link/date>
 
 ## Execution Leases
 
-One work id has one owning context and branch. `PREPARED` reserves identity but is not execution; `STARTED` requires readback of the actual context, profile, base and first observable action. A lease stays until its Return Sync is consumed and its artifacts receive a disposition.
+One work id has one owning context and branch. `PREPARED` reserves identity but is not execution; `STARTED` requires readback of the actual context, profile, base and first observable action. A lease stays until its terminal Return Sync is consumed and its artifacts receive a disposition. A bounded Discovery lead uses this same table; after a research checkpoint it is `WAITING` on a named dependency/review-by, not continuously `WORKING` or prematurely `CLOSED`. Link its parent and covered work through the existing Active Work/brief. Consultation must give one owner an actionable next step rather than mutual waiting.
 
 | Work | State | Owner / context | Project / repo / worktree / branch | Baseline -> Candidate / profile | DOD contribution | Next receipt or review-by | Return route |
 | --- | --- | --- | --- | --- | --- | --- | --- |

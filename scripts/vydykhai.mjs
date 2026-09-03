@@ -541,7 +541,7 @@ function printDoctor(result, asJson) {
     console.log("Rotation: not declared by installed version");
   }
   console.log(
-    `Memory: ${result.memoryPolicy.policy} v${result.memoryPolicy.graphVersion}; task brief <= ${result.memoryPolicy.taskBriefMaxNodes} executable nodes`,
+    `Memory: ${result.memoryPolicy.policy} v${result.memoryPolicy.graphVersion}; ${result.memoryPolicy.contextRoutingPolicy ? "complete goal-to-evidence context; no fixed node cap" : `task brief <= ${result.memoryPolicy.taskBriefMaxNodes} executable nodes`}`,
   );
   if (result.actionReceiptPolicy?.policy && Array.isArray(result.actionReceiptPolicy.boundaries)) {
     console.log(
@@ -1008,7 +1008,91 @@ export function evaluateProductionContinuation(content, activity, { now = Date.n
     issues: signal ? [`Production continuation: ${record.value.id} requires routing (${signal})`] : [] };
 }
 
-function validateMemoryGraph(content, manifest) {
+export function readLeaseActivityScope(content) {
+  const orchestrator = content.match(/^Orchestrator health:.*\|\s*Context:\s*([^|\n]+)/m)?.[1]?.trim();
+  const rows = tableRows(section(content, "## Execution Leases", ["## Pending Return Inbox"]), /^Work$/i);
+  return { key: sha256(JSON.stringify({ orchestrator, rows })),
+    leases: rows.map(([work, state, owner]) => ({ work, state, owner })) };
+}
+
+// Optional whole-lease observation uses the existing timer, not a second control loop.
+export function evaluateLeaseActivity(content, activity, { now = Date.now(), maxAgeSeconds = 300 } = {}) {
+  const scope = readLeaseActivityScope(content);
+  const result = (coverage, issues = []) => ({ key: scope.key, coverage, issues,
+    signal: coverage === "COVERED" && issues.length > 0 });
+  if (!activity || !Object.hasOwn(activity, "leases")) return result("NOT_REQUESTED");
+  const limited = (reason) => result("LIMITED", [`Lease activity: LIMITED (${reason})`]);
+  const observed = typeof activity.observedAt === "string" ? Date.parse(activity.observedAt) : NaN;
+  if (activity.schemaVersion !== 1 || activity.leaseKey !== scope.key) return limited("missing or stale lease binding");
+  if (!Number.isFinite(observed) || observed > now + 5000 || now - observed > maxAgeSeconds * 1000) {
+    return limited("observation is not fresh");
+  }
+  if (!Array.isArray(activity.leases)) return limited("leases must be an array");
+  const live = scope.leases.filter((lease) => ["STARTED", "WORKING", "WAITING"].includes(lease.state));
+  const resolve = (work) => concreteLine(work)
+    ? scope.leases.filter((lease) => lease.work === work || lease.work.startsWith(`${work} `)) : [];
+  const entries = new Map();
+  for (const view of activity.leases) {
+    const matches = resolve(view?.work);
+    if (matches.length !== 1 || !live.includes(matches[0])) return limited("unknown or inactive lease");
+    const lease = matches[0];
+    if (entries.has(lease.work)) return limited("duplicate lease observation");
+    if (!concreteLine(view.context) || !lease.owner?.split(/\s+\/\s+/).includes(view.context) ||
+        !["ACTIVE", "IDLE"].includes(view.status) || !concreteLine(view.evidence)) {
+      return limited(`activity unavailable for ${lease.work}`);
+    }
+    if (activity.owner?.context === view.context && activity.owner.status !== view.status) {
+      return limited(`conflicting activity for ${lease.work}`);
+    }
+    const dependencies = [];
+    if (lease.state === "WAITING") {
+      if (!["PENDING", "CHANGED"].includes(view.wait?.status) || !concreteLine(view.wait.evidence) ||
+          !concreteLine(view.wait.resumeWhen) || !Array.isArray(view.wait.dependsOn)) {
+        return limited(`wait condition unavailable for ${lease.work}`);
+      }
+      for (const dependency of view.wait.dependsOn) {
+        const targets = resolve(dependency);
+        if (targets.length !== 1 || dependencies.includes(targets[0].work)) {
+          return limited(`ambiguous wait dependency for ${lease.work}`);
+        }
+        dependencies.push(targets[0].work);
+      }
+    }
+    entries.set(lease.work, { lease, view, dependencies });
+  }
+  if (entries.size !== live.length) return limited("not all live leases were observed");
+  const issues = [];
+  for (const { lease, view, dependencies } of entries.values()) {
+    if (lease.state !== "WAITING" && view.status === "IDLE") {
+      issues.push(`Lease activity: ${lease.work} requires routing (idle without a wait)`);
+    } else if (lease.state === "WAITING" && (view.wait.status === "CHANGED" || dependencies.some((work) =>
+      scope.leases.some((target) => target.work === work && target.state === "CLOSED")))) {
+      issues.push(`Lease activity: ${lease.work} requires routing (wait condition changed)`);
+    }
+  }
+  const visiting = new Set();
+  const visited = new Set();
+  const cycles = new Set();
+  function visit(work, path = []) {
+    if (visiting.has(work)) {
+      cycles.add(path.slice(path.indexOf(work)).sort().join(" / "));
+      return;
+    }
+    if (visited.has(work)) return;
+    visiting.add(work);
+    const entry = entries.get(work);
+    if (entry?.lease.state === "WAITING" && entry.view.wait.status === "PENDING") {
+      for (const dependency of [...entry.dependencies].sort()) visit(dependency, [...path, work]);
+    }
+    visiting.delete(work);
+    visited.add(work);
+  }
+  for (const work of [...entries.keys()].sort()) visit(work);
+  for (const cycle of [...cycles].sort()) issues.push(`Lease activity: circular wait ${cycle}`);
+  return result("COVERED", issues);
+}
+
+export function validateMemoryGraph(content, manifest) {
   const label = "Project Memory Graph";
   const issues = validateClosedArtifact(content, {
     label,
@@ -1038,15 +1122,77 @@ function validateMemoryGraph(content, manifest) {
   if (duplicateNodes.length) issues.push(`${label}: duplicate memory node ${duplicateNodes.join(", ")}`);
 
   const anchorSection = section(content, "## Anchor Index", ["## Current Memory Nodes"]);
-  const anchorIds = [...anchorSection.matchAll(/\|\s*(ENT-[A-Za-z0-9_-]+)\s*\|/g)].map((match) => match[1]);
+  const anchorRows = tableRows(anchorSection, /^ID$/i);
+  const anchorIds = anchorRows.map((row) => row[0]);
   const duplicateAnchors = duplicateValues(anchorIds);
   if (duplicateAnchors.length) issues.push(`${label}: duplicate anchor ${duplicateAnchors.join(", ")}`);
 
+  const present = (value) => Boolean(value?.trim()) && !/^<[^>]*>$/.test(value.trim());
+  for (const row of anchorRows) {
+    if (!/^ENT-[A-Za-z0-9_-]+$/.test(row[0]) || row.length !== 5 || row.some((value) => !present(value))) {
+      issues.push(`${label}: incomplete anchor row ${row[0] || "(unnamed)"}`);
+    } else if (!manifest.memoryPolicy.anchorKinds.includes(row[1].toLowerCase())) {
+      issues.push(`${label}: unknown anchor kind ${row[1]}`);
+    }
+  }
+
+  // This checks records and references, not whether their meaning is correct.
+  const knownIds = new Set([...anchorIds, ...nodeIds]);
+  for (const record of nodeSection.split(/^### /m).slice(1)) {
+    const [heading, ...lines] = record.split("\n");
+    const id = heading.match(/^(MEM-[A-Za-z0-9_-]+)(?:\s|$)/)?.[1];
+    if (!id) {
+      issues.push(`${label}: invalid node heading ${heading}`);
+      continue;
+    }
+    const fields = new Map();
+    for (const line of lines) {
+      const field = line.match(/^- ([^:]+):[ \t]*(.*)$/);
+      if (!field) continue;
+      const key = field[1].trim();
+      if (fields.has(key)) issues.push(`${label}: ${id} duplicate field ${key}`);
+      fields.set(key, field[2].trim().replace(/^`|`$/g, ""));
+    }
+    for (const name of ["Type / status", "About", "Because", "Apply", "Avoid", "Verify", "Applies / exceptions", "Relations", "Source / checked"]) {
+      if (!present(fields.get(name))) issues.push(`${label}: ${id} missing ${name}`);
+    }
+    for (const name of ["Because", "Apply", "Verify", "Source / checked"]) {
+      if (/^(none|tbd|unknown)$/i.test(fields.get(name) || "")) issues.push(`${label}: ${id} unresolved ${name}`);
+    }
+    const [type, status, ...extra] = (fields.get("Type / status") || "").split(/\s*\/\s*/);
+    if (!manifest.memoryPolicy.nodeTypes.includes(type.toLowerCase()) || extra.length ||
+        !["ACTIVE", "PROVISIONAL", "CONFLICT", "DORMANT", "SUPERSEDED", "RETIRED"].includes(status)) {
+      issues.push(`${label}: ${id} invalid Type / status`);
+    }
+    const about = (fields.get("About") || "").split(/\s*[,;]\s*/);
+    for (const anchor of about) {
+      if (!anchorIds.includes(anchor)) issues.push(`${label}: ${id} unknown anchor ${anchor || "(missing)"}`);
+    }
+    const relations = fields.get("Relations");
+    if (relations && relations !== "none") {
+      for (const relation of relations.split(/\s*;\s*/)) {
+        const parsed = relation.match(/^([a-z-]+)\s*(?:->|\u2192)\s*((?:MEM|ENT)-[A-Za-z0-9_-]+(?:\s*,\s*(?:MEM|ENT)-[A-Za-z0-9_-]+)*)$/);
+        if (!parsed || !manifest.memoryPolicy.relationTypes.includes(parsed[1])) {
+          issues.push(`${label}: ${id} invalid relation ${relation}`);
+        } else {
+          for (const target of parsed[2].split(/\s*,\s*/)) {
+            if (!knownIds.has(target)) issues.push(`${label}: ${id} unknown relation target ${target}`);
+            else if (target === id) issues.push(`${label}: ${id} self-referencing relation ${parsed[1]}`);
+          }
+        }
+      }
+    }
+  }
+
   const probes = section(content, "## Live Retrieval Probes", ["## Legacy Source Map"]);
   for (const probe of ["CURRENT", "NEXT", "PRIOR_MISS"]) {
-    const line = probes.split("\n").find((candidate) => new RegExp(`\\|\\s*${probe}\\s*\\|`).test(candidate));
-    if (!line) issues.push(`${label}: missing ${probe} retrieval probe`);
-    else if (!/\bPASS\b/.test(line)) issues.push(`${label}: ${probe} retrieval probe has not passed`);
+    const rows = tableRows(probes, /^Slot$/i).filter((row) => row[0] === probe);
+    if (!rows.length) issues.push(`${label}: missing ${probe} retrieval probe`);
+    else if (rows.length > 1) issues.push(`${label}: duplicate ${probe} retrieval probe`);
+    else if (!/^PASS(?:\s|$)/.test(rows[0][4] || "")) issues.push(`${label}: ${probe} retrieval probe has not passed`);
+    if (rows.some((row) => row.length !== 6 || row.some((value) => !present(value)))) {
+      issues.push(`${label}: incomplete ${probe} retrieval probe`);
+    }
   }
 
   const pendingEvents = section(content, "## Pending Memory Events", ["## Live Retrieval Probes"]);
@@ -1091,6 +1237,7 @@ async function controlCheck(
     continuationPolicy: manifest.continuationPolicy || null,
     projectStateVersion: manifest.controlLoopPolicy.projectStateVersion,
     memoryGraphVersion: manifest.memoryPolicy.graphVersion,
+    memoryValidationScope: "structure-and-references-only",
     statePath,
     graphPath,
     stateSha256,
@@ -1133,6 +1280,7 @@ export function classifyGuard(result, stateContent, { acceptedIncidentId = null 
     /memory event .* is still pending/,
     /human attention .* requires resurfacing/,
     /^Production continuation: .* requires routing/,
+    /^Lease activity: .* requires routing/,
   ];
   const issues = [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])];
   const requiredAction = issues.length > 0 && issues.every((issue) => wakeOnly.some((pattern) => pattern.test(issue)))
@@ -1146,7 +1294,7 @@ export function classifyGuard(result, stateContent, { acceptedIncidentId = null 
   if (!semanticConditions.length) semanticConditions.push("Project State: recorded incident requires reconciliation");
   const incidentId = `guard-${sha256(JSON.stringify({ semanticConditions })).slice(0, 16)}`;
   const deduplicated = Boolean(acceptedIncidentId && acceptedIncidentId === incidentId && !recordedIncidentId &&
-    !result.continuation?.signal);
+    !result.continuation?.signal && !result.leaseActivity?.signal);
   const deferred = requiredAction === "WAKE" && result.continuation?.orchestratorActive === true;
   return {
     action: deduplicated || deferred ? "NOOP" : requiredAction,
@@ -1170,8 +1318,11 @@ async function guardCheck(statePath, graphPath, options = {}) {
     result.continuation = evaluateProductionContinuation(stateContent, activity, {
       maxAgeSeconds: result.continuationPolicy.activityMaxAgeSeconds,
     });
-    result.stateIssues = [...new Set([...result.stateIssues, ...result.continuation.issues])];
-    result.ok = result.ok && result.continuation.issues.length === 0;
+    result.leaseActivity = evaluateLeaseActivity(stateContent, activity, {
+      maxAgeSeconds: result.continuationPolicy.activityMaxAgeSeconds,
+    });
+    result.stateIssues = [...new Set([...result.stateIssues, ...result.continuation.issues, ...result.leaseActivity.issues])];
+    result.ok = result.ok && result.continuation.issues.length === 0 && result.leaseActivity.issues.length === 0;
   }
   return { ...result, ...classifyGuard(result, stateContent, options) };
 }
@@ -1185,6 +1336,7 @@ function printGuardCheck(result, asJson) {
   if (result.incidentId) console.log(`Incident: ${result.incidentId}`);
   console.log(`Control check: ${result.ok ? "PASS" : "MISMATCH"}`);
   if (result.continuation) console.log(`Production continuation: ${result.continuation.coverage}`);
+  if (result.leaseActivity) console.log(`Lease activity: ${result.leaseActivity.coverage}`);
   for (const issue of [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])]) console.log(`- ${issue}`);
 }
 
@@ -1196,7 +1348,7 @@ function printControlCheck(result, asJson) {
   console.log(`Control check: ${result.ok ? "PASS" : "MISMATCH"}`);
   console.log(`Policy: ${result.policy}`);
   console.log(`Project State: v${result.projectStateVersion}${result.stateIssues.length ? " / FAILED" : " / PASS"}`);
-  console.log(`Memory Graph: v${result.memoryGraphVersion}${result.graphIssues.length ? " / FAILED" : " / PASS"}`);
+  console.log(`Memory Graph: v${result.memoryGraphVersion}${result.graphIssues.length ? " / FAILED" : " / PASS"} (structure and references only; semantic coverage requires reviewed retrieval evidence)`);
   console.log(`Project State sha256: ${result.stateSha256}`);
   console.log(`Memory Graph sha256: ${result.graphSha256}`);
   if (result.outbox) {

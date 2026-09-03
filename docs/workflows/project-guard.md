@@ -51,6 +51,8 @@ Accept an adapter only after two real boundary tests, not a parser-only unit fix
 
 The adapter also checks actual harness evidence that durable files cannot prove: a newer human command with no observable action, a terminal task result missing from the inbox, duplicate or indistinguishable live control contexts, wrong reasoning profile, completed contexts that remain active without an exit, and internal orchestrator agents that lack the `Control decision / Available sources / Expected orchestration output / Route to focused context when` contract or originate project work without a visible owning context. A compliant advisory result is only `CONTROL_ONLY` or `ROUTE_TO_FOCUSED_CONTEXT`; it never advances DOD or supplies accepted project evidence. A project claim, diagnosis, Candidate, verification, or side effect without a human decision, durable source, or focused-context receipt is `UNOWNED_PROJECT_WORK`.
 
+A bounded Discovery lead remains a focused work owner, not a second Guard or orchestrator. Before enabling it, prove the optional whole-lease observation in `production-continuation.md`: actual waits stay quiet, a busy executor cannot hide an idle lead, circular waits audit, and checkpoint delivery does not close the parent. Use the same runner/incident route; no per-lead timer. Missing capability leaves leading mode unavailable, not a new repair loop or a stop for independent execution.
+
 ## 4. Evaluate Only The Anomaly
 
 An empty native context view means observation is unavailable, not that execution stopped. Check durable receipts and available action metadata/journal pointers before classifying a stall; if neither proves activity, report the observation gap instead of inventing a failure or launching duplicate work.

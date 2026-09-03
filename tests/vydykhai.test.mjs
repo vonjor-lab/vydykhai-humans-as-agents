@@ -5,7 +5,7 @@ import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { readProductionContinuation } from "../scripts/vydykhai.mjs";
+import { readLeaseActivityScope, readProductionContinuation } from "../scripts/vydykhai.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -55,7 +55,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.25.0");
+    assert.equal(lock.installedVersion, "1.26.0");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -99,7 +99,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /Execution leases: one-work-one-owning-context/);
     assert.match(doctor.stdout, /Task returns: durable-outbox-native-wakeup; terminal=return-sync; fallback=discover-unrouted-durable-return/);
     assert.match(doctor.stdout, /Rotation: independent-health-gated; independent check after 2 compactions or 24 active hours/);
-    assert.match(doctor.stdout, /Memory: project-memory-graph v3; task brief <= 7 executable nodes/);
+    assert.match(doctor.stdout, /Memory: project-memory-graph v3; complete goal-to-evidence context; no fixed node cap/);
     assert.match(doctor.stdout, /Action receipts: critical-transition-readback; 7 critical boundaries/);
     assert.match(doctor.stdout, /Tracker: task-contract-with-event-driven-projection/);
     assert.match(doctor.stdout, /Creator: Alexander Rozhnov \(@vonjor-lab\)/);
@@ -108,6 +108,9 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const legacyManifestPath = path.join(target, "vydykhai.json");
     const legacyManifest = JSON.parse(await readFile(legacyManifestPath, "utf8"));
     delete legacyManifest.actionReceiptPolicy;
+    delete legacyManifest.memoryPolicy.contextRoutingPolicy;
+    delete legacyManifest.memoryPolicy.contextRoutes;
+    legacyManifest.memoryPolicy.taskBriefMaxNodes = 7;
     delete legacyManifest.projectActivationPolicy;
     delete legacyManifest.orchestratorAdvisoryPolicy;
     delete legacyManifest.controlLoopPolicy;
@@ -131,6 +134,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(legacyDoctor.stdout, /Production continuation: not declared by installed version/);
     assert.equal(legacyDoctor.status, 0, legacyDoctor.stderr);
     assert.match(legacyDoctor.stdout, /Vydykhai 1\.18\.0/);
+    assert.match(legacyDoctor.stdout, /Memory: project-memory-graph v3; task brief <= 7 executable nodes/);
     assert.match(legacyDoctor.stdout, /Orchestrator advisory: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Project activation: not declared by installed version/);
     assert.match(legacyDoctor.stdout, /Control loop: not declared by installed version/);
@@ -155,7 +159,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.25\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.26\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -296,7 +300,9 @@ test("current manifest preserves updater compatibility fields", async () => {
     "applicability-timing-and-checkpoint",
     "pending-human-question",
   ]);
-  assert.equal(manifest.memoryPolicy.taskBriefMaxNodes, 7);
+  assert.equal(manifest.memoryPolicy.taskBriefMaxNodes, null);
+  assert.equal(manifest.memoryPolicy.contextRoutingPolicy, "goal-to-evidence-completeness");
+  assert.deepEqual(manifest.memoryPolicy.contextRoutes, ["execution", "discovery", "correction-and-acceptance"]);
   assert.equal(manifest.actionReceiptPolicy.policy, "critical-transition-readback");
   assert.deepEqual(manifest.actionReceiptPolicy.boundaries, [
     "task-launch",
@@ -440,7 +446,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /Governor Check/);
   assert.match(orchestratorWorkflow, /EXECUTION_STALLED/);
   assert.match(orchestratorWorkflow, /WRITTEN -> SENT -> RECEIVED -> CONSUMED -> ROUTED/);
-  assert.match(orchestratorWorkflow, /An Action Receipt never substitutes for terminal Return Sync/);
+  assert.match(orchestratorWorkflow, /An Action Receipt never substitutes for Return Sync/);
   assert.match(orchestratorWorkflow, /paired marked Return Route receipt/);
   assert.match(orchestratorWorkflow, /partial or failed write never becomes current truth/);
   const projectGuardWorkflow = await readFile(path.join(root, "docs/workflows/project-guard.md"), "utf8");
@@ -624,6 +630,7 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     assert.equal(healthyResult.ok, true);
     assert.match(healthyResult.stateSha256, /^[a-f0-9]{64}$/);
     assert.match(healthyResult.graphSha256, /^[a-f0-9]{64}$/);
+    assert.equal(healthyResult.memoryValidationScope, "structure-and-references-only");
     const exactReadback = run([
       "control-check",
       "--state",
@@ -652,6 +659,20 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     const healthyGuard = run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]);
     assert.equal(healthyGuard.status, 0, healthyGuard.stderr);
     assert.equal(JSON.parse(healthyGuard.stdout).action, "NOOP");
+    assert.equal(JSON.parse(healthyGuard.stdout).leaseActivity.coverage, "NOT_REQUESTED");
+    const baseActivity = JSON.parse(await readFile(activityPath, "utf8"));
+    const wholeActivity = { ...baseActivity, leaseKey: readLeaseActivityScope(healthyState).key,
+      owner: { ...baseActivity.owner, status: "IDLE" },
+      leases: [{ work: "WORK-1", context: "task-one", status: "IDLE", evidence: "native-idle-owner" }] };
+    await writeFile(activityPath, JSON.stringify(wholeActivity));
+    const wholeGuard = JSON.parse(run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+    assert.equal(wholeGuard.leaseActivity.coverage, "COVERED");
+    assert.equal(wholeGuard.action, "WAKE");
+    wholeActivity.leases[0].status = "ACTIVE";
+    wholeActivity.owner.status = "ACTIVE";
+    await writeFile(activityPath, JSON.stringify(wholeActivity));
+    assert.equal(JSON.parse(run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout).action, "NOOP");
+    await writeFile(activityPath, JSON.stringify(baseActivity));
     const noActivity = JSON.parse(runCli(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
     assert.equal(noActivity.action, "AUDIT_REQUIRED");
     assert.equal(noActivity.continuation.coverage, "LIMITED");

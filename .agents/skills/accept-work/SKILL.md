@@ -17,7 +17,7 @@ Load the task contract, current PR/diff or artifact, direct human corrections in
 
 ## Contract
 
-- Reconstruct the Accepted Baseline, Candidate, executable Memory Brief, and task-local approach lineage using source precedence. Do not let an old issue, plan, or Rejected Candidate override a later proven state, direct human correction, or targeted orchestrator patch.
+- Reconstruct the Accepted Baseline, Candidate, executable Memory Brief, its goal-to-evidence Context Route and task-local approach lineage using source precedence. Compare actual scope and affected consumers with the supplied constraints; apply `docs/workflows/context-route.md` without rebuilding unrelated memory. Do not let an old issue, plan, or Rejected Candidate override a later proven state, direct human correction, or targeted orchestrator patch.
 - Compare delivered behavior with goal/DOD, scope, declared continuation basis/invariants, product loop or linked enabler, progress continuity, human checkpoint, material burn, and verification route. An enabler must state `Unlocks`, `Still missing`, and the next product slice. Classify material deltas as `Inherited`, `Deliberately changed`, or `Unexpectedly changed`; unexplained unexpected change is `NEEDS_FIXES`.
 - Keep accepted sub-slices distinct from parent closure. Report DOD impact; the orchestrator decides parent closure, cross-person impact, and next-best-action.
 - Verify the task's Execution Lease identity and report its DOD Control Line contribution; the orchestrator alone closes the lease after consuming and routing the durable return.

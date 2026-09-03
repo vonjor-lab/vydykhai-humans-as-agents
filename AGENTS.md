@@ -21,7 +21,7 @@ This repository is the canonical source for the universal Vydykhai team-autopilo
 - Do not merge substantive external contributions until the contributor agreement described in `CONTRIBUTING.md` has been executed.
 - Product-specific rules stay outside framework-managed files in the target repo.
 - Do not add product names, customer data, meeting transcripts, credentials, proprietary prompts, internal thread ids, or implementation details from another repository.
-- Prefer deleting duplication over adding another rule or skill.
+- Apply the Framework Evolution Gate in `CONTRIBUTING.md` when shaping every update and before release. Give the user its short benefit/evidence/complexity/verdict summary in the existing change review. Challenge unnecessary scope even after initial agreement; prefer deleting duplication over adding another rule or skill, and recommend deferral or no release when the increment is not justified. This is maintenance discipline, not another installed workflow or scheduled audit.
 - The Framework Orchestrator is the control plane: what/why/when/who and what changed. Task contexts are the execution plane: how to implement and prove one accepted increment, including corrective fixes, `$accept-work`, exact-current-code smoke, and manual merge after human confirmation. Tasks detect wider boundaries; the orchestrator decides the project response.
 - Preserve source precedence, explicit human checkpoints, asynchronous participant visibility, dashboard freshness, Work Hygiene Check, monitor cleanup, and orchestrator rotation.
 - Treat orchestrator rotation as a memory migration: previous packet, independent candidate coverage, visible delta, human-confirmed switch, and retained history context.

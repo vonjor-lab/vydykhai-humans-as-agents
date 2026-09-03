@@ -1,6 +1,6 @@
 # Project Memory Graph Template
 
-Use one compact shared graph per project or product stream. Project State is current control memory; this graph is reusable semantic and decision memory; linked meetings, messages, tasks, PRs, and rejected candidates are episodic evidence. Rebuild the graph body atomically from integrated events. Never append current meaning after the end marker or make chat history or a visualization another source of truth.
+Use one shared graph per project or product stream. Project State is current control memory; this graph is reusable semantic and decision memory; linked meetings, messages, tasks, PRs, and rejected candidates are episodic evidence. Use [Context Route](context-route.md) for goal-to-evidence navigation, complete relevant context and side-by-side inventory. Rebuild the graph body atomically from integrated events. Never append current meaning after the end marker or make chat history or a visualization another source of truth.
 
 ```md
 <!-- vydykhai:project-memory-graph v3 -->
@@ -24,7 +24,7 @@ Last retrieval check: <CURRENT/NEXT/PRIOR_MISS receipt / evaluator / result>
 
 ### MEM-01 — <short title>
 - Type / status: `<INVARIANT / DECISION / LESSON / IDEA / POINTER> / <ACTIVE / PROVISIONAL / CONFLICT>`
-- About: <anchor ids>
+- About: <canonical ENT anchor ids, comma-separated>
 - Recall when: <capability aliases plus event, condition, task touch, or checkpoint>
 - Because: <why this meaning matters to the current course>
 - Apply: <one current executable statement>
@@ -33,7 +33,7 @@ Last retrieval check: <CURRENT/NEXT/PRIOR_MISS receipt / evaluator / result>
 - Applies / exceptions: <scope and explicit exclusions>
 - Owner gate: <pending human question plus timing and plan/checkpoint relation, or none>
 - Protected pointer (POINTER only): <owner | protected reference, never value | environment and scope | allowed non-destructive route | last safe check time, result, and source | expiry or re-entry condition>
-- Relations: <about / requires / constrains / supersedes / conflicts / learned-from / verified-by -> ids, or none>
+- Relations: <type -> one canonical ENT or MEM id; type -> another id, or none>
 - Source / checked: <durable evidence link / date or result>
 
 ## Pending Memory Events
@@ -63,14 +63,14 @@ Coverage is current only when a fresh evaluator can reconstruct executable meani
 <!-- vydykhai:project-memory-graph:end -->
 ```
 
-Rules:
+Rules (structural checks do not prove semantic coverage):
 
 - Anchors give stable identity to outcomes, actors, product entities, surfaces, contracts, data, and operations. Their aliases are words a human or task will actually use, not only historical memory ids. Reuse one anchor across synonyms.
 - Keep one reusable current meaning per node. `INVARIANT` is a durable boundary; `DECISION` is a current choice; `LESSON` is reusable cause or failed-path learning; `IDEA` is valuable but outside the nearest DOD; `POINTER` locates protected operational knowledge without copying it.
 - A human request to remember, revisit, return after a detour, or discuss something before later work is a recall commitment. Preserve current meaning, source, capability aliases/trigger, applicability/timing/checkpoint, and the pending human question. Link its return gate in Project State; never resolve uncertain timing for the human.
-- Current meaning and evidence stay separate. Update `Apply`, `Avoid`, `Verify`, scope, relations, and provenance; link chronology instead of copying it. Use `supersedes` rather than leaving competing current rules.
+- Current meaning and evidence stay separate. Update `Apply`, `Avoid`, `Verify`, scope, relations, and provenance; link chronology instead of copying it. Use `supersedes` rather than leaving competing current rules. Prefer one typed relation per semicolon-delimited item; existing comma-separated target lists remain valid when every target resolves.
 - Task contexts never rewrite shared memory. The orchestrator integrates unseen durable events after rereading the watermark, recomputes on concurrent change, and atomically rebuilds the body. Node count, watermark, pending events, probes, start marker, and end marker must agree before publication.
-- On cold-path work, resolve exact anchors and aliases, intersect open commitments/checkpoints first, traverse relevant relations one or two hops, and filter by authority, status, scope, applicability, and supersession. Return no more than seven executable `Because / Apply / Avoid / Verify / Source` items. Raise `MEMORY_COVERAGE_GAP` when required meaning is unproven.
+- On cold-path work, resolve exact anchors and aliases, intersect open commitments/checkpoints first, traverse relevant relations until the applicable goal, contract, decision and consumer context is complete, and filter by authority, status, scope, applicability, and supersession. Return complete applicable `Because / Apply / Avoid / Verify / Source` items. Raise `MEMORY_COVERAGE_GAP` when required meaning is unproven.
 - A correction, repeated owner explanation, missed return condition, or forgotten prior direction triggers Memory Reflection before apology or patch: `Before / Now / Why / scope`, related anchors, `ABSENT / RETRIEVAL_MISS / APPLICATION_MISS / VERIFICATION_MISS`, smallest repair, retrieval replay, and impact on active/queued work.
 - Acceptance records every brief item as applied, missed, contradicted, or not exercised. A miss replaces `PRIOR_MISS`; dispatch replaces `CURRENT` and `NEXT`. Graph coverage expires when these slots do not represent current work, even if historical evaluations passed.
 - Compact at a milestone, rotation, duplicate cluster, retrieval miss, or loss of scanability. Preserve stable ids, aliases, current meaning, typed relations, old-id mapping, and immutable evidence. A recall commitment survives only when ordinary language returns its concrete meaning, source, return condition, and human gate.
