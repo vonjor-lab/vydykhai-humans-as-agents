@@ -65,6 +65,7 @@ Coverage is current only when a fresh evaluator can reconstruct executable meani
 
 Rules (structural checks do not prove semantic coverage):
 
+- Canonical labels may be plain, `**Apply:**` or `**Apply**:`; emphasis does not create a different field or hide duplicates. Legacy labels such as `Current meaning` need reviewed reconciliation into the canonical fields, not guessed aliases or automatic rewriting. Fixing presentation alone does not establish semantic coverage.
 - Anchors give stable identity to outcomes, actors, product entities, surfaces, contracts, data, and operations. Their aliases are words a human or task will actually use, not only historical memory ids. Reuse one anchor across synonyms.
 - Keep one reusable current meaning per node. `INVARIANT` is a durable boundary; `DECISION` is a current choice; `LESSON` is reusable cause or failed-path learning; `IDEA` is valuable but outside the nearest DOD; `POINTER` locates protected operational knowledge without copying it.
 - A human request to remember, revisit, return after a detour, or discuss something before later work is a recall commitment. Preserve current meaning, source, capability aliases/trigger, applicability/timing/checkpoint, and the pending human question. Link its return gate in Project State; never resolve uncertain timing for the human.

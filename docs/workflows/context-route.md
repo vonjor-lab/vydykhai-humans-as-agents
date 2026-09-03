@@ -62,7 +62,7 @@ The owning task verifies the changed boundary and affected consumers against its
 
 ## Separate Three Checks
 
-- **Structure:** `control-check` rejects missing node meaning, missing anchors, dangling or untyped relations, duplicate fields and invalid retrieval-result columns. It cannot certify that prose is true, complete or correctly applied.
+- **Structure:** `control-check` rejects missing node meaning, missing anchors, dangling or untyped relations, duplicate fields and invalid retrieval-result columns. Plain or bold canonical labels have the same identity. A legacy field layout needs source-backed reconciliation, not a claim of lost knowledge or guessed types, scopes and links. Formatting compatibility does not complete the inventory below. The checker cannot certify that prose is true, complete or correctly applied.
 - **Meaning:** before first use of a materially changed shared contract, migration or rotation, a fresh evaluator reconstructs the relevant route from original sources and ordinary task language, without being given the expected node list. Compare expected obligations with the brief; missing relevant intent is a miss even when all links resolve. A recorded `PASS` without this evidence is not semantic coverage.
 - **Behavior:** the owning task proves actual changed behavior and preservation of relevant existing behavior. Independent source review cannot replace these tests, and green local tests cannot replace a missing cross-boundary check. Reuse current evidence where its source and scope still match.
 

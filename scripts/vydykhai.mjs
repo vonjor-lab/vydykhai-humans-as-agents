@@ -1139,7 +1139,7 @@ export function validateMemoryGraph(content, manifest) {
   // This checks records and references, not whether their meaning is correct.
   const knownIds = new Set([...anchorIds, ...nodeIds]);
   for (const record of nodeSection.split(/^### /m).slice(1)) {
-    const [heading, ...lines] = record.split("\n");
+    const [heading, ...lines] = record.split(/\r?\n/);
     const id = heading.match(/^(MEM-[A-Za-z0-9_-]+)(?:\s|$)/)?.[1];
     if (!id) {
       issues.push(`${label}: invalid node heading ${heading}`);
@@ -1147,24 +1147,32 @@ export function validateMemoryGraph(content, manifest) {
     }
     const fields = new Map();
     for (const line of lines) {
-      const field = line.match(/^- ([^:]+):[ \t]*(.*)$/);
+      // Emphasis changes presentation, not field identity; values remain untouched.
+      const plainLabel = line.replace(/^- \*\*([^*:\r\n]+):\*\*/, "- $1:")
+        .replace(/^- \*\*([^*:\r\n]+)\*\*:/, "- $1:");
+      const field = plainLabel.match(/^- ([^:]+):[ \t]*(.*)$/);
       if (!field) continue;
       const key = field[1].trim();
       if (fields.has(key)) issues.push(`${label}: ${id} duplicate field ${key}`);
       fields.set(key, field[2].trim().replace(/^`|`$/g, ""));
     }
-    for (const name of ["Type / status", "About", "Because", "Apply", "Avoid", "Verify", "Applies / exceptions", "Relations", "Source / checked"]) {
-      if (!present(fields.get(name))) issues.push(`${label}: ${id} missing ${name}`);
+    const missing = ["Type / status", "About", "Because", "Apply", "Avoid", "Verify", "Applies / exceptions", "Relations", "Source / checked"]
+      .filter((name) => !present(fields.get(name)));
+    const legacyLayout = fields.has("Current meaning") && (fields.has("Why / change") || fields.has("Sources / aliases"));
+    if (legacyLayout && missing.length) {
+      issues.push(`${label}: ${id} legacy field layout requires reconciliation; missing canonical fields: ${missing.join(", ")}`);
+    } else {
+      for (const name of missing) issues.push(`${label}: ${id} missing ${name}`);
     }
     for (const name of ["Because", "Apply", "Verify", "Source / checked"]) {
       if (/^(none|tbd|unknown)$/i.test(fields.get(name) || "")) issues.push(`${label}: ${id} unresolved ${name}`);
     }
     const [type, status, ...extra] = (fields.get("Type / status") || "").split(/\s*\/\s*/);
-    if (!manifest.memoryPolicy.nodeTypes.includes(type.toLowerCase()) || extra.length ||
-        !["ACTIVE", "PROVISIONAL", "CONFLICT", "DORMANT", "SUPERSEDED", "RETIRED"].includes(status)) {
+    if (present(fields.get("Type / status")) && (!manifest.memoryPolicy.nodeTypes.includes(type.toLowerCase()) || extra.length ||
+        !["ACTIVE", "PROVISIONAL", "CONFLICT", "DORMANT", "SUPERSEDED", "RETIRED"].includes(status))) {
       issues.push(`${label}: ${id} invalid Type / status`);
     }
-    const about = (fields.get("About") || "").split(/\s*[,;]\s*/);
+    const about = present(fields.get("About")) ? fields.get("About").split(/\s*[,;]\s*/) : [];
     for (const anchor of about) {
       if (!anchorIds.includes(anchor)) issues.push(`${label}: ${id} unknown anchor ${anchor || "(missing)"}`);
     }
