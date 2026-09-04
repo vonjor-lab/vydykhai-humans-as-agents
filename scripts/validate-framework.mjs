@@ -334,13 +334,21 @@ if (!manifest.rotationPolicy?.hardSignals?.includes("unowned-project-work-after-
 if (manifest.memoryPolicy?.policy !== "project-memory-graph") {
   fail("Memory policy must use the Project Memory Graph");
 }
-if (manifest.memoryPolicy?.graphVersion !== 3) fail("Project Memory Graph schema must be version 3");
-for (const kind of ["outcome", "actor", "entity", "surface", "contract", "data", "operation"]) {
+if (manifest.memoryPolicy?.graphVersion !== 4) fail("Project Memory Graph target schema must be version 4");
+if (JSON.stringify(manifest.memoryPolicy?.compatibleGraphVersions) !== JSON.stringify([3, 4])) {
+  fail("Project Memory Graph must keep v3 readable during v4 migration");
+}
+for (const kind of ["outcome", "actor", "journey", "module", "capability", "entity", "surface", "contract", "data", "artifact", "system", "operation"]) {
   if (!manifest.memoryPolicy?.anchorKinds?.includes(kind)) fail(`Memory policy is missing anchor kind: ${kind}`);
 }
-if (!manifest.memoryPolicy?.nodeTypes?.includes("lesson")) fail("Memory policy is missing LESSON nodes");
-for (const relation of ["about", "requires", "constrains", "supersedes", "conflicts", "learned-from", "verified-by"]) {
+for (const type of ["invariant", "requirement", "decision", "lesson", "commitment", "idea", "pointer"]) {
+  if (!manifest.memoryPolicy?.nodeTypes?.includes(type)) fail(`Memory policy is missing node type: ${type}`);
+}
+for (const relation of ["about", "part-of", "serves", "produces", "consumes", "depends-on", "stored-in", "requires", "constrains", "supersedes", "conflicts", "learned-from", "verified-by"]) {
   if (!manifest.memoryPolicy?.relationTypes?.includes(relation)) fail(`Memory policy is missing relation: ${relation}`);
+}
+for (const relation of ["part-of", "serves", "produces", "consumes", "depends-on", "stored-in", "constrains"]) {
+  if (!manifest.memoryPolicy?.entityRouteTypes?.includes(relation)) fail(`Memory policy is missing entity route: ${relation}`);
 }
 for (const miss of ["absent", "retrieval-miss", "application-miss", "verification-miss"]) {
   if (!manifest.memoryPolicy?.memoryMissTypes?.includes(miss)) fail(`Memory policy is missing miss type: ${miss}`);
@@ -363,10 +371,30 @@ for (const field of [
   "capability-aliases-and-trigger",
   "applicability-timing-and-checkpoint",
   "pending-human-question",
+  "owner",
+  "return-or-close-condition",
 ]) {
   if (!manifest.memoryPolicy?.recallCommitmentRequiredFields?.includes(field)) {
     fail(`Memory policy is missing recall commitment field: ${field}`);
   }
+}
+if (
+  manifest.memoryPolicy?.entityDocumentationPolicy?.policy !== "module-contract-before-code" ||
+  JSON.stringify(manifest.memoryPolicy?.entityDocumentationPolicy?.requiredForAnchorKinds) !== JSON.stringify(["module", "capability"]) ||
+  manifest.memoryPolicy?.entityDocumentationPolicy?.template !== "docs/workflows/module-contract-template.md" ||
+  JSON.stringify(manifest.memoryPolicy?.entityDocumentationPolicy?.anchorReferenceFields) !== JSON.stringify(["contract", "implementation"]) ||
+  JSON.stringify(manifest.memoryPolicy?.entityDocumentationPolicy?.taskReadOrder) !== JSON.stringify(["memory-route", "module-contracts", "current-code"]) ||
+  manifest.memoryPolicy?.entityDocumentationPolicy?.updateOwner !== "owning-task-same-candidate" ||
+  manifest.memoryPolicy?.entityDocumentationPolicy?.orchestratorAction !== "verify-and-integrate-shared-memory-only" ||
+  manifest.memoryPolicy?.entityDocumentationPolicy?.staleAction !== "memory-coverage-gap-or-bounded-discovery"
+) {
+  fail("Memory policy must require current Module Contracts before code and keep their updates in the owning task Candidate");
+}
+if (manifest.memoryPolicy?.sourceCoveragePolicy !== "single-pass-source-ledger-with-explicit-supersession") {
+  fail("Memory policy must use one source coverage ledger with explicit supersession");
+}
+for (const stage of ["source", "entity-route", "memory-node", "retrieval", "task-brief", "task-application", "acceptance-and-return", "memory-update"]) {
+  if (!manifest.memoryPolicy?.endToEndStages?.includes(stage)) fail(`Memory end-to-end policy is missing stage: ${stage}`);
 }
 if (manifest.memoryPolicy?.taskBriefMaxNodes !== null || manifest.memoryPolicy?.contextRoutingPolicy !== "goal-to-evidence-completeness") {
   fail("Task Memory Brief must preserve complete applicable context without a fixed node cap");
@@ -458,6 +486,7 @@ const compatibilityEn = await text("docs/COLLABORATION_FRAMEWORK_2026-06-10.md")
 const compatibilityRu = await text("docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md");
 const projectStateTemplate = await text("docs/workflows/project-state-template.md");
 const projectMemoryGraphTemplate = await text("docs/workflows/project-memory-graph-template.md");
+const moduleContractTemplate = await text("docs/workflows/module-contract-template.md");
 const memoryBriefEnvelopeWorkflow = await text("docs/workflows/memory-brief-envelope.md");
 const ideaMemoryTemplate = await text("docs/workflows/idea-memory-template.md");
 const intentTrailTemplate = await text("docs/workflows/intent-trail-template.md");
@@ -570,8 +599,8 @@ if (
   !coreRu.includes("RETRIEVAL_MISS") ||
   !coreEn.includes("Because / Apply / Avoid / Verify / Source") ||
   !coreRu.includes("Because / Apply / Avoid / Verify / Source") ||
-  !coreEn.includes("recall commitment") ||
-  !coreRu.includes("обязательством памяти") ||
+  !coreEn.includes("first-class `COMMITMENT`") ||
+  !coreRu.includes("узлом `COMMITMENT`") ||
   !coreEn.includes("opaque ids alone are invalid") ||
   !coreRu.includes("одних id недостаточно")
 ) {
@@ -665,11 +694,15 @@ if (
 }
 if (
   !projectMemoryGraphTemplate.includes("INVARIANT") ||
+  !projectMemoryGraphTemplate.includes("REQUIREMENT") ||
   !projectMemoryGraphTemplate.includes("DECISION") ||
   !projectMemoryGraphTemplate.includes("LESSON") ||
+  !projectMemoryGraphTemplate.includes("COMMITMENT") ||
   !projectMemoryGraphTemplate.includes("IDEA") ||
   !projectMemoryGraphTemplate.includes("POINTER") ||
   !projectMemoryGraphTemplate.includes("Anchor Index") ||
+  !projectMemoryGraphTemplate.includes("Entity Routes") ||
+  !projectMemoryGraphTemplate.includes("Source Coverage Ledger") ||
   !projectMemoryGraphTemplate.includes("Apply:") ||
   !projectMemoryGraphTemplate.includes("Avoid:") ||
   !projectMemoryGraphTemplate.includes("Memory Reflection") ||
@@ -677,6 +710,7 @@ if (
   !projectMemoryGraphTemplate.includes("Live Retrieval Probes") ||
   !projectMemoryGraphTemplate.includes("CURRENT") ||
   !projectMemoryGraphTemplate.includes("NEXT") ||
+  !projectMemoryGraphTemplate.includes("CROSS_DOMAIN") ||
   !projectMemoryGraphTemplate.includes("PRIOR_MISS") ||
   !projectMemoryGraphTemplate.includes("RETRIEVAL_MISS") ||
   !projectMemoryGraphTemplate.includes("Watermark:") ||
@@ -685,12 +719,29 @@ if (
   !projectMemoryGraphTemplate.includes("context-route.md") ||
   !projectMemoryGraphTemplate.includes("Protected pointer (POINTER only)") ||
   !projectMemoryGraphTemplate.includes("Owner gate:") ||
+  !projectMemoryGraphTemplate.includes("Return / close when:") ||
   !projectMemoryGraphTemplate.includes("Raw trigger") ||
-  !projectMemoryGraphTemplate.includes("Historical reconstruction may repair the node but is not a successful current-memory lookup") ||
-  !projectMemoryGraphTemplate.includes("zero secret read") ||
+  !projectMemoryGraphTemplate.includes("Graph v3 remains compatible evidence during migration") ||
   !projectMemoryGraphTemplate.includes("Never store credentials")
 ) {
   fail("Project Memory Graph is missing anchors, atomic nodes, reflection, executable retrieval, evaluation, lineage, or secret-safety rules");
+}
+if (
+  !moduleContractTemplate.includes("Purpose And Boundary") ||
+  !moduleContractTemplate.includes("Inputs And Authority") ||
+  !moduleContractTemplate.includes("Algorithm And Invariants") ||
+  !moduleContractTemplate.includes("Outputs And Consumers") ||
+  !moduleContractTemplate.includes("Accepted Decisions And Lessons") ||
+  !moduleContractTemplate.includes("Open Commitments") ||
+  !moduleContractTemplate.includes("Documentation impact: NONE") ||
+  !moduleContractTemplate.includes("graph route -> Module Contract -> current code") ||
+  !moduleContractTemplate.includes("same Candidate") ||
+  !moduleContractTemplate.includes("never edits product code or module documentation itself") ||
+  !projectMemoryGraphTemplate.includes("atomically rebuilds only the shared graph") ||
+  !orchestratorSkill.includes("never edits product code or module documentation itself") ||
+  !acceptWorkflow.includes("Missing required documentation is `NEEDS_FIXES`")
+) {
+  fail("Module Contract is missing purpose, interfaces, algorithm, consumers, commitments, or task-owned update rules");
 }
 if (
   !memoryBriefEnvelopeWorkflow.includes("non-factorable obligations") ||
@@ -704,16 +755,16 @@ if (
 }
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
 if (
-  !projectLaunchWorkflow.includes("bounded read-only memory backfill") ||
-  !projectLaunchSkill.includes("bounded read-only memory backfill") ||
+  !projectLaunchWorkflow.includes("Source Coverage Ledger") ||
+  !projectLaunchSkill.includes("Source Coverage Ledger") ||
   !projectLaunchWorkflow.includes("ordinary unhinted real-task questions")
 ) {
-  fail("Existing-project launch is missing economical historical memory reconciliation");
+  fail("Existing-project launch is missing source-bounded historical memory reconciliation");
 }
 if (
   !bootstrap.includes("Project Activation Receipt") ||
   !bootstrap.includes("Project State v2") ||
-  !bootstrap.includes("Project Memory Graph v3") ||
+  !bootstrap.includes("Project Memory Graph v4") ||
   !bootstrap.includes("control-check") ||
   !bootstrap.includes("guard-check") ||
   !bootstrap.includes("Project Guard") ||
@@ -846,12 +897,12 @@ if (
   !orchestratorWorkflow.includes("Memory Brief") ||
   !orchestratorWorkflow.includes("graph watermark") ||
   !orchestratorWorkflow.includes("tracker projection") ||
-  !orchestratorWorkflow.includes("representative current, upcoming, and prior-miss Touch Sets") ||
+  !orchestratorWorkflow.includes("representative current, upcoming, cross-domain, and prior-miss Touch Sets") ||
   !orchestratorWorkflow.includes("Memory Reflection") ||
   !orchestratorWorkflow.includes("Executable Memory Brief") ||
   !orchestratorWorkflow.includes("memory-reflection/detour receipts") ||
   !orchestratorWorkflow.includes("APPLICATION_MISS") ||
-  !orchestratorWorkflow.includes("compare a side-by-side candidate with current memory") ||
+  !orchestratorWorkflow.includes("Source Coverage Ledger") ||
   !orchestratorWorkflow.includes("non-destructive access check") ||
   !orchestratorWorkflow.includes("last safe check time/result/source") ||
   !orchestratorWorkflow.includes("MEMORY_COVERAGE_GAP / BLOCKED") ||
@@ -897,10 +948,10 @@ if (
   fail("Framework is missing the bounded orchestrator advisory or work-origin contract");
 }
 if (
-  !orchestratorWorkflow.includes("open recall commitments") ||
-  !orchestratorWorkflow.includes("bounded read-only memory backfill") ||
+  !orchestratorWorkflow.includes("open commitment") ||
+  !orchestratorWorkflow.includes("process each bounded source range once") ||
   !orchestratorWorkflow.includes("id counts and synthetic PASS alone are insufficient") ||
-  !orchestratorSkill.includes("open recall commitments") ||
+  !orchestratorSkill.includes("first-class `COMMITMENT`") ||
   !orchestratorSkill.includes("memory-brief-envelope.md") ||
   !orchestratorSkill.includes("ordinary unhinted real-task queries")
 ) {

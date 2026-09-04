@@ -46,8 +46,124 @@ Last retrieval check: review-1
 `;
 }
 
+function graphV4Fixture() {
+  return `<!-- vydykhai:project-memory-graph v4 -->
+# Project Memory Graph: Example
+Project State: shared-state
+Operating Brief: accepted-brief/rev-1
+Source ledger: this graph
+Watermark: event-2
+Declared anchors: 4
+Declared routes: 3
+Declared nodes: 2
+Last compaction: none
+Last reflection: event-2 / NONE / PASS
+Last retrieval check: probes-2 / independent reviewer / PASS
+## Anchor Index
+| ID | Kind | Canonical name / real-world aliases | Scope / identity | Documentation / implementation | Source / checked |
+| --- | --- | --- | --- | --- | --- |
+| ENT-OUTCOME | OUTCOME | coherent user journey | accepted product outcome | NOT_REQUIRED: outcome | accepted brief / rev-1 |
+| ENT-MODULE | MODULE | planning module | durable planning behavior | contract: docs/modules/planning.md; implementation: src/planning/ | accepted design / rev-2 |
+| ENT-CAPABILITY | CAPABILITY | arrangement generation | layout capability inside planning | contract: docs/modules/arrangement.md; implementation: src/arrangement/ | accepted design / rev-2 |
+| ENT-ARTIFACT | ARTIFACT | accepted layout | reusable planning result | accepted artifact revision 2 | accepted task / rev-2 |
+## Entity Routes
+| From | Relation | To | Applies / qualification | Source / checked |
+| --- | --- | --- | --- | --- |
+| ENT-MODULE | serves | ENT-OUTCOME | module exists for this outcome | accepted brief / rev-1 |
+| ENT-CAPABILITY | part-of | ENT-MODULE | capability belongs to planning | accepted design / rev-2 |
+| ENT-CAPABILITY | produces | ENT-ARTIFACT | accepted result only | accepted task / rev-2 |
+## Current Memory Nodes
+### MEM-REQUIREMENT - Preserve consumer-ready output
+- Type / status: REQUIREMENT / ACTIVE
+- About: ENT-CAPABILITY
+- Recall when: change arrangement generation or accepted layout
+- Because: downstream work consumes the accepted layout
+- Apply: preserve the accepted artifact contract
+- Avoid: treating an isolated preview as final output
+- Verify: exercise the capability and its artifact consumer
+- Applies / exceptions: current planning route only
+- Owner gate: none
+- Return / close when: NOT_REQUIRED
+- Protected pointer (POINTER only): none
+- Relations: about -> ENT-CAPABILITY; verified-by -> ENT-ARTIFACT
+- Source / checked: accepted brief and task / rev-2
+### MEM-COMMITMENT - Revisit placement reuse
+- Type / status: COMMITMENT / ACTIVE
+- About: ENT-MODULE, ENT-CAPABILITY
+- Recall when: plan placement or extend the planning module
+- Because: the accepted algorithm may support another placement path
+- Apply: return the reuse decision before extending placement behavior
+- Avoid: silently duplicating the algorithm
+- Verify: owner records a decision and affected consumers
+- Applies / exceptions: next placement planning checkpoint
+- Owner gate: product owner
+- Return / close when: planning checkpoint produces an accepted decision or explicit retirement
+- Protected pointer (POINTER only): none
+- Relations: about -> ENT-CAPABILITY; requires -> ENT-MODULE
+- Source / checked: user decision / rev-2
+## Source Coverage Ledger
+| Source / participant | Range / revision | Anchors | Current nodes | Coverage | Gap / supersession | Checked |
+| --- | --- | --- | --- | --- | --- | --- |
+| accepted brief | rev-1 | ENT-OUTCOME, ENT-MODULE, ENT-CAPABILITY, ENT-ARTIFACT | MEM-REQUIREMENT | COVERED | none | reviewer / 2026-09-04 / receipt-1 |
+| user decision | rev-2 | ENT-MODULE, ENT-CAPABILITY | MEM-COMMITMENT | COVERED | none | reviewer / 2026-09-04 / receipt-2 |
+## Pending Memory Events
+| Event | Trigger | Before / Now / Why | Anchors | Miss | Action | Source | State |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+## Live Retrieval Probes
+| Slot | Raw trigger | Expected route and executable action or gate | Observed brief / application evidence | Result / checked | Regression source |
+| --- | --- | --- | --- | --- | --- |
+| CURRENT | change arrangement output | goal through capability to artifact and requirement | brief plus task receipt | PASS / 2026-09-04 | accepted task |
+| NEXT | extend placement behavior | module contract plus open commitment | brief plus owner gate | PASS / 2026-09-04 | user decision |
+| CROSS_DOMAIN | use accepted layout downstream | producing capability plus artifact consumers | route plus application receipt | PASS / 2026-09-04 | accepted brief |
+| PRIOR_MISS | avoid rebuilding known planning logic | prior decision and current implementation | brief plus code receipt | PASS / 2026-09-04 | reviewed miss |
+## Legacy Source Map
+| Previous id or artifact | Current anchor/node(s) | Coverage | Recall / action check |
+| --- | --- | --- | --- |
+| graph v3 | ENT-MODULE, MEM-REQUIREMENT | covered | ordinary arrangement change retrieves the route |
+<!-- vydykhai:project-memory-graph:end -->
+`;
+}
+
 test("a complete memory record passes structural validation without claiming semantic proof", () => {
   assert.deepEqual(validateMemoryGraph(graphFixture(), manifest), []);
+});
+
+test("a complete v4 graph connects outcomes, modules, artifacts, commitments and source coverage", () => {
+  assert.deepEqual(validateMemoryGraph(graphV4Fixture(), manifest), []);
+});
+
+test("v4 rejects undocumented modules, disconnected entities and orphan commitments", () => {
+  const undocumented = graphV4Fixture().replace(
+    "contract: docs/modules/arrangement.md; implementation: src/arrangement/",
+    "NOT_REQUIRED: helper",
+  );
+  assert.match(validateMemoryGraph(undocumented, manifest).join("\n"), /requires explicit current contract and implementation references/);
+  const missingImplementation = graphV4Fixture().replace(
+    "contract: docs/modules/arrangement.md; implementation: src/arrangement/",
+    "contract: docs/modules/arrangement.md",
+  );
+  assert.match(validateMemoryGraph(missingImplementation, manifest).join("\n"), /requires explicit current contract and implementation references/);
+
+  const disconnected = graphV4Fixture()
+    .replace("Declared routes: 3", "Declared routes: 2")
+    .replace(/^\| ENT-CAPABILITY \| produces \| ENT-ARTIFACT .*\n/m, "");
+  assert.match(validateMemoryGraph(disconnected, manifest).join("\n"), /ENT-ARTIFACT has no entity route to an OUTCOME/);
+
+  const noOwner = graphV4Fixture().replace("- Owner gate: product owner", "- Owner gate: none");
+  assert.match(validateMemoryGraph(noOwner, manifest).join("\n"), /commitment lacks an owner gate/);
+  const noReturn = graphV4Fixture().replace(
+    "- Return / close when: planning checkpoint produces an accepted decision or explicit retirement",
+    "- Return / close when: TBD",
+  );
+  assert.match(validateMemoryGraph(noReturn, manifest).join("\n"), /commitment lacks a return or close condition/);
+});
+
+test("v4 rejects missing source coverage and cross-domain retrieval proof", () => {
+  const missingCoverage = graphV4Fixture().replace(/^\| user decision \| rev-2 .*\n/m, "");
+  assert.match(validateMemoryGraph(missingCoverage, manifest).join("\n"), /MEM-COMMITMENT is absent from Source Coverage Ledger/);
+
+  const missingProbe = graphV4Fixture().replace(/^\| CROSS_DOMAIN .*\n/m, "");
+  assert.match(validateMemoryGraph(missingProbe, manifest).join("\n"), /missing CROSS_DOMAIN retrieval probe/);
 });
 
 test("memory validation rejects missing meaning and an unresolvable anchor", () => {

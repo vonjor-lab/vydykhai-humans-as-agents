@@ -12,7 +12,7 @@ Use source precedence:
 4. agent plan or handoff;
 5. inference.
 
-Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory Brief and [Context Route](context-route.md), any [Executable Memory Brief](memory-brief-envelope.md) plus its application receipt, material task-local pivots, targeted orchestrator patches, and any `Rejected Candidate` used as evidence. Compare actual scope with the inherited constraints and affected consumers; local green tests do not prove an unexercised cross-boundary outcome. Do not reconstruct unrelated Project State, raw meeting history, or the full Project Memory Graph. Summarize:
+Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory Brief and [Context Route](context-route.md), touched [Module Contracts](module-contract-template.md), any [Executable Memory Brief](memory-brief-envelope.md) plus its application receipt, material task-local pivots, targeted orchestrator patches, and any `Rejected Candidate` used as evidence. Compare actual scope with the inherited constraints and affected consumers; local green tests do not prove an unexercised cross-boundary outcome. Do not reconstruct unrelated Project State, raw meeting history, or the full Project Memory Graph. Summarize:
 
 - goal and DOD impact;
 - scope/out of scope;
@@ -28,11 +28,12 @@ Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory 
 - every required atomic item/clause/row id and the exact validation result when an executable envelope was supplied;
 - outcome owner, recipient/dependency boundary, and any required recipient proof;
 - material burn limit;
-- verification route.
+- verification route;
+- documentation impact across purpose/boundary, inputs/authority, algorithm/invariants, outputs/consumers, accepted behavior, operations, and verification.
 
 ## 2. Inspect Delivery
 
-Review changed behavior, files/artifacts, docs, tests, smoke, unresolved comments, and participant impact. Ignore unrelated local changes unless they affect acceptance.
+Review changed behavior, files/artifacts, Module Contracts and other docs, tests, smoke, unresolved comments, and participant impact. Compare documentation with current code and accepted behavior; disagreement is evidence, not a reason to choose one silently. Ignore unrelated local changes unless they affect acceptance.
 
 ## 3. Verify Exact Current Code
 
@@ -74,7 +75,8 @@ Check:
 - declared human checkpoint;
 - whether its observable questions match the judgment that person owns rather than delegating technical verification;
 - recipient-side exact-artifact/revision proof and agreed receipt check; for runnable data-backed work, exact environment, schema/migration revision, reproducible safe data source, recipient access, and a representative scenario;
-- tests, exact-current-code smoke, docs, and durable handoff.
+- tests, exact-current-code smoke, docs, and durable handoff;
+- whether every touched durable module/capability has a current Module Contract and any behavioral documentation impact is included in the same Candidate and accurate.
 
 ## 5. Classify
 
@@ -94,6 +96,7 @@ Keep fixes, smoke, and manual merge in the owning task context. After human conf
 - for an enabler, report `Unlocks`, `Still missing`, and the next product slice/owner; do not close the parent from technical completion alone.
 - classify each follow-up as a required DOD gap or optional `IDEA` candidate; optional ideas do not keep the accepted task or parent open by themselves.
 - report graph nodes applied, confirmed, refined, superseded, or contradicted; keep local-only lineage in the task.
+- report `Documentation impact: NONE` only after checking purpose/boundary, inputs, outputs/consumers, algorithm/invariants, accepted behavior, operational dependencies, and verification; otherwise require the exact Module Contract update in the same Candidate and return its files/sections plus affected graph anchors. Missing required documentation is `NEEDS_FIXES`; the orchestrator integrates graph meaning/routes, not product documentation.
 - report `Memory Brief result` item by item as `applied / missed / contradicted / not exercised`; a miss is evidence for orchestrator-owned Memory Reflection and a representative regression scenario.
 - validate any `memory.application-receipt.v1` against the unchanged envelope; missing ids or mismatched authority/prompt/digest cannot be accepted as applied.
 - report boundary consultations and any deliberately changed or unexpected surfaces.

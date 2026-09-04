@@ -21,7 +21,7 @@ The orchestrator selects the required skill and workflow.
 - `project-guard.md`: run the project-owned event and schedule safety check outside the active orchestrator context.
 - `framework-orchestrator.md`: restore state, dispatch, supervise, recover, rotate, and choose next-best-action.
 - `start-work.md`: turn a raw or changed topic into an epic brief and minimum task contracts.
-- `context-route.md`: connect goals, inherited decisions and affected consumers to each task; inventory existing memory without losing evidence.
+- `context-route.md`: navigate from goals through modules, entities, current meaning and affected consumers; decide direct execution versus bounded discovery.
 - `memory-brief-envelope.md`: preserve indivisible ordered clauses or repeated rows through dispatch and prove item-level application.
 - `daily-alignment.md`: reconcile meeting/event/local deltas across participants.
 - `accept-work.md`: accept work against current intent and exact-current-code evidence.
@@ -29,7 +29,8 @@ The orchestrator selects the required skill and workflow.
 ## Durable Artifacts
 
 - `project-state-template.md`: compact current dashboard for the DOD line, execution leases, pending returns, detours, and next action.
-- `project-memory-graph-template.md`: stable anchors, reusable meaning, pending memory events, typed relations, and live current/next/prior-miss retrieval probes.
+- `project-memory-graph-template.md`: v4 entity spine, atomic current meaning, source coverage, typed routes, and live current/next/cross-domain/prior-miss probes.
+- `module-contract-template.md`: current purpose, inputs, algorithm, outputs, consumers, invariants, evidence and open commitments for a durable module or capability.
 - `idea-memory-template.md`: compatibility input for projects migrating older Idea Memory into the graph.
 - `intent-trail-template.md`: compatibility input for projects migrating an older Intent Trail into the graph.
 - `alignment-issue-template.md`: one meeting, milestone, or compact work window.

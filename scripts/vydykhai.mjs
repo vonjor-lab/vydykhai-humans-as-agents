@@ -604,9 +604,12 @@ function printDoctor(result, asJson) {
   } else {
     console.log("Rotation: not declared by installed version");
   }
-  console.log(
-    `Memory: ${result.memoryPolicy.policy} v${result.memoryPolicy.graphVersion}; ${result.memoryPolicy.contextRoutingPolicy ? "complete goal-to-evidence context; no fixed node cap" : `task brief <= ${result.memoryPolicy.taskBriefMaxNodes} executable nodes`}`,
-  );
+  const memoryDescription = result.memoryPolicy.entityDocumentationPolicy
+    ? "entity-routed goal-to-evidence context; Module Contracts before code; no fixed node cap"
+    : result.memoryPolicy.contextRoutingPolicy
+      ? "complete goal-to-evidence context; no fixed node cap"
+      : `task brief <= ${result.memoryPolicy.taskBriefMaxNodes} executable nodes`;
+  console.log(`Memory: ${result.memoryPolicy.policy} v${result.memoryPolicy.graphVersion}; ${memoryDescription}`);
   if (Array.isArray(result.memoryPolicy.acceptanceOrder)) {
     console.log(`Memory acceptance: ${result.memoryPolicy.acceptanceOrder.join(" -> ")}`);
   }
@@ -1317,26 +1320,44 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
   return result("COVERED", issues);
 }
 
+function memoryGraphVersion(content) {
+  const matches = [...content.matchAll(/<!-- vydykhai:project-memory-graph v(\d+) -->/g)];
+  return matches.length === 1 ? Number(matches[0][1]) : null;
+}
+
 export function validateMemoryGraph(content, manifest) {
   const label = "Project Memory Graph";
+  const graphVersion = memoryGraphVersion(content);
+  const compatibleVersions = manifest.memoryPolicy.compatibleGraphVersions || [manifest.memoryPolicy.graphVersion];
+  const effectiveVersion = graphVersion || manifest.memoryPolicy.graphVersion;
   const issues = validateClosedArtifact(content, {
     label,
-    startMarker: `<!-- vydykhai:project-memory-graph v${manifest.memoryPolicy.graphVersion} -->`,
+    startMarker: `<!-- vydykhai:project-memory-graph v${effectiveVersion} -->`,
     endMarker: "<!-- vydykhai:project-memory-graph:end -->",
     requiredHeadings: [
       "## Anchor Index",
+      ...(effectiveVersion >= 4 ? ["## Entity Routes", "## Source Coverage Ledger"] : []),
       "## Current Memory Nodes",
       "## Pending Memory Events",
       "## Live Retrieval Probes",
       "## Legacy Source Map",
     ],
   });
+  if (graphVersion !== null && !compatibleVersions.includes(graphVersion)) {
+    issues.push(`${label}: unsupported graph version ${graphVersion}; supported versions are ${compatibleVersions.join(", ")}`);
+  }
 
   for (const field of ["Watermark:", "Declared nodes:", "Last compaction:", "Last retrieval check:"]) {
     if (!content.includes(field)) issues.push(`${label}: missing ${field}`);
   }
+  if (effectiveVersion >= 4) {
+    for (const field of ["Operating Brief:", "Source ledger:", "Declared anchors:", "Declared routes:"]) {
+      if (!content.includes(field)) issues.push(`${label}: missing ${field}`);
+    }
+  }
 
-  const nodeSection = section(content, "## Current Memory Nodes", ["## Pending Memory Events"]);
+  const nodeSection = section(content, "## Current Memory Nodes",
+    effectiveVersion >= 4 ? ["## Source Coverage Ledger"] : ["## Pending Memory Events"]);
   const nodeIds = [...nodeSection.matchAll(/^### (MEM-[A-Za-z0-9_-]+)/gm)].map((match) => match[1]);
   const declared = content.match(/^Declared nodes:\s*(\d+)\s*$/m);
   if (!declared) issues.push(`${label}: declared node count is missing or unresolved`);
@@ -1346,23 +1367,39 @@ export function validateMemoryGraph(content, manifest) {
   const duplicateNodes = duplicateValues(nodeIds);
   if (duplicateNodes.length) issues.push(`${label}: duplicate memory node ${duplicateNodes.join(", ")}`);
 
-  const anchorSection = section(content, "## Anchor Index", ["## Current Memory Nodes"]);
+  const anchorSection = section(content, "## Anchor Index",
+    effectiveVersion >= 4 ? ["## Entity Routes"] : ["## Current Memory Nodes"]);
   const anchorRows = tableRows(anchorSection, /^ID$/i);
   const anchorIds = anchorRows.map((row) => row[0]);
   const duplicateAnchors = duplicateValues(anchorIds);
   if (duplicateAnchors.length) issues.push(`${label}: duplicate anchor ${duplicateAnchors.join(", ")}`);
 
   const present = (value) => Boolean(value?.trim()) && !/^<[^>]*>$/.test(value.trim());
+  const expectedAnchorColumns = effectiveVersion >= 4 ? 6 : 5;
+  const anchorKinds = new Map();
+  const anchorDocs = new Map();
   for (const row of anchorRows) {
-    if (!/^ENT-[A-Za-z0-9_-]+$/.test(row[0]) || row.length !== 5 || row.some((value) => !present(value))) {
+    if (!/^ENT-[A-Za-z0-9_-]+$/.test(row[0]) || row.length !== expectedAnchorColumns || row.some((value) => !present(value))) {
       issues.push(`${label}: incomplete anchor row ${row[0] || "(unnamed)"}`);
     } else if (!manifest.memoryPolicy.anchorKinds.includes(row[1].toLowerCase())) {
       issues.push(`${label}: unknown anchor kind ${row[1]}`);
+    }
+    anchorKinds.set(row[0], row[1]?.toLowerCase());
+    if (effectiveVersion >= 4) anchorDocs.set(row[0], row[4]);
+  }
+  if (effectiveVersion >= 4) {
+    const duplicateNames = duplicateValues(anchorRows.map((row) => row[2]?.trim().toLowerCase()).filter(Boolean));
+    if (duplicateNames.length) issues.push(`${label}: duplicate canonical anchor name ${duplicateNames.join(", ")}`);
+    const declaredAnchors = content.match(/^Declared anchors:\s*(\d+)\s*$/m);
+    if (!declaredAnchors) issues.push(`${label}: declared anchor count is missing or unresolved`);
+    else if (Number(declaredAnchors[1]) !== anchorIds.length) {
+      issues.push(`${label}: declared ${declaredAnchors[1]} anchors but found ${anchorIds.length}`);
     }
   }
 
   // This checks records and references, not whether their meaning is correct.
   const knownIds = new Set([...anchorIds, ...nodeIds]);
+  const usedAnchors = new Set();
   for (const record of nodeSection.split(/^### /m).slice(1)) {
     const [heading, ...lines] = record.split(/\r?\n/);
     const id = heading.match(/^(MEM-[A-Za-z0-9_-]+)(?:\s|$)/)?.[1];
@@ -1381,7 +1418,9 @@ export function validateMemoryGraph(content, manifest) {
       if (fields.has(key)) issues.push(`${label}: ${id} duplicate field ${key}`);
       fields.set(key, field[2].trim().replace(/^`|`$/g, ""));
     }
-    const missing = ["Type / status", "About", "Because", "Apply", "Avoid", "Verify", "Applies / exceptions", "Relations", "Source / checked"]
+    const requiredFields = ["Type / status", "About", "Because", "Apply", "Avoid", "Verify", "Applies / exceptions", "Relations", "Source / checked"];
+    if (effectiveVersion >= 4) requiredFields.push("Recall when", "Owner gate", "Return / close when");
+    const missing = requiredFields
       .filter((name) => !present(fields.get(name)));
     const legacyLayout = fields.has("Current meaning") && (fields.has("Why / change") || fields.has("Sources / aliases"));
     if (legacyLayout && missing.length) {
@@ -1400,6 +1439,22 @@ export function validateMemoryGraph(content, manifest) {
     const about = present(fields.get("About")) ? fields.get("About").split(/\s*[,;]\s*/) : [];
     for (const anchor of about) {
       if (!anchorIds.includes(anchor)) issues.push(`${label}: ${id} unknown anchor ${anchor || "(missing)"}`);
+      else usedAnchors.add(anchor);
+    }
+    if (effectiveVersion >= 4 && type === "COMMITMENT") {
+      if (/^(none|not_required|not required|tbd|unknown)$/i.test(fields.get("Owner gate") || "")) {
+        issues.push(`${label}: ${id} commitment lacks an owner gate`);
+      }
+      if (/^(none|not_required|not required|tbd|unknown)$/i.test(fields.get("Return / close when") || "")) {
+        issues.push(`${label}: ${id} commitment lacks a return or close condition`);
+      }
+    }
+    if (effectiveVersion >= 4 && type === "POINTER") {
+      const pointer = fields.get("Protected pointer (POINTER only)");
+      const parts = pointer?.split(/\s*\|\s*/).filter((value) => present(value)) || [];
+      if (parts.length !== manifest.memoryPolicy.protectedPointerRequiredFields.length) {
+        issues.push(`${label}: ${id} protected pointer must contain ${manifest.memoryPolicy.protectedPointerRequiredFields.length} complete fields`);
+      }
     }
     const relations = fields.get("Relations");
     if (relations && relations !== "none") {
@@ -1417,8 +1472,105 @@ export function validateMemoryGraph(content, manifest) {
     }
   }
 
+  if (effectiveVersion >= 4) {
+    const entityRouteSection = section(content, "## Entity Routes", ["## Current Memory Nodes"]);
+    const entityRouteRows = tableRows(entityRouteSection, /^From$/i);
+    const routeKeys = [];
+    const adjacency = new Map(anchorIds.map((id) => [id, new Set()]));
+    for (const row of entityRouteRows) {
+      if (row.length !== 5 || row.some((value) => !present(value))) {
+        issues.push(`${label}: incomplete entity route ${row[0] || "(unnamed)"}`);
+        continue;
+      }
+      const [from, relation, to] = row;
+      routeKeys.push(`${from}|${relation}|${to}`);
+      if (!anchorIds.includes(from)) issues.push(`${label}: entity route has unknown source ${from}`);
+      if (!anchorIds.includes(to)) issues.push(`${label}: entity route has unknown target ${to}`);
+      if (!manifest.memoryPolicy.entityRouteTypes.includes(relation)) {
+        issues.push(`${label}: invalid entity route relation ${relation}`);
+      }
+      if (from === to) issues.push(`${label}: self-referencing entity route ${from}`);
+      if (adjacency.has(from) && adjacency.has(to) && from !== to) {
+        adjacency.get(from).add(to);
+        adjacency.get(to).add(from);
+        usedAnchors.add(from);
+        usedAnchors.add(to);
+      }
+    }
+    const duplicateRoutes = duplicateValues(routeKeys);
+    if (duplicateRoutes.length) issues.push(`${label}: duplicate entity route ${duplicateRoutes.join(", ")}`);
+    const declaredRoutes = content.match(/^Declared routes:\s*(\d+)\s*$/m);
+    if (!declaredRoutes) issues.push(`${label}: declared route count is missing or unresolved`);
+    else if (Number(declaredRoutes[1]) !== entityRouteRows.length) {
+      issues.push(`${label}: declared ${declaredRoutes[1]} routes but found ${entityRouteRows.length}`);
+    }
+
+    const outcomes = anchorIds.filter((id) => anchorKinds.get(id) === "outcome");
+    if (!outcomes.length) issues.push(`${label}: v4 requires at least one OUTCOME anchor`);
+    const reachable = new Set(outcomes);
+    const queue = [...outcomes];
+    while (queue.length) {
+      const current = queue.shift();
+      for (const next of adjacency.get(current) || []) {
+        if (!reachable.has(next)) {
+          reachable.add(next);
+          queue.push(next);
+        }
+      }
+    }
+    for (const id of anchorIds) {
+      if (!usedAnchors.has(id)) issues.push(`${label}: orphan anchor ${id}`);
+      if (anchorKinds.get(id) !== "actor" && !reachable.has(id)) {
+        issues.push(`${label}: anchor ${id} has no entity route to an OUTCOME`);
+      }
+      if (manifest.memoryPolicy.entityDocumentationPolicy.requiredForAnchorKinds.includes(anchorKinds.get(id))) {
+        const references = (anchorDocs.get(id) || "").match(/^contract:\s*(.+?)\s*;\s*implementation:\s*(.+)$/i);
+        const invalidReference = (value) => !present(value) || /^(none|not[-_ ]required(?::.*)?|tbd|unknown)$/i.test(value);
+        if (!references || invalidReference(references[1]) || invalidReference(references[2])) {
+          issues.push(`${label}: ${id} requires explicit current contract and implementation references`);
+        }
+      }
+    }
+
+    const coverageSection = section(content, "## Source Coverage Ledger", ["## Pending Memory Events"]);
+    const coverageRows = tableRows(coverageSection, /^Source \/ participant$/i);
+    const coveredAnchors = new Set();
+    const coveredNodes = new Set();
+    const coverageKeys = [];
+    const coverageStates = new Set(["COVERED", "PARTIAL", "CONFLICT", "UNAVAILABLE", "EVIDENCE_ONLY"]);
+    for (const row of coverageRows) {
+      if (row.length !== 7 || row.some((value) => !present(value))) {
+        issues.push(`${label}: incomplete source coverage row ${row[0] || "(unnamed)"}`);
+        continue;
+      }
+      coverageKeys.push(`${row[0]}|${row[1]}`);
+      if (!coverageStates.has(row[4])) issues.push(`${label}: invalid source coverage state ${row[4]}`);
+      for (const id of row[2].split(/\s*[,;]\s*/)) {
+        if (!anchorIds.includes(id)) issues.push(`${label}: source coverage has unknown anchor ${id}`);
+        else coveredAnchors.add(id);
+      }
+      if (!/^none$/i.test(row[3])) {
+        for (const id of row[3].split(/\s*[,;]\s*/)) {
+          if (!nodeIds.includes(id)) issues.push(`${label}: source coverage has unknown node ${id}`);
+          else coveredNodes.add(id);
+        }
+      }
+      if (["PARTIAL", "CONFLICT", "UNAVAILABLE"].includes(row[4]) && /^none$/i.test(row[5])) {
+        issues.push(`${label}: ${row[4]} source coverage lacks an explicit gap`);
+      }
+    }
+    const duplicateCoverage = duplicateValues(coverageKeys);
+    if (duplicateCoverage.length) issues.push(`${label}: duplicate source coverage range ${duplicateCoverage.join(", ")}`);
+    for (const id of anchorIds) {
+      if (!coveredAnchors.has(id)) issues.push(`${label}: anchor ${id} is absent from Source Coverage Ledger`);
+    }
+    for (const id of nodeIds) {
+      if (!coveredNodes.has(id)) issues.push(`${label}: node ${id} is absent from Source Coverage Ledger`);
+    }
+  }
+
   const probes = section(content, "## Live Retrieval Probes", ["## Legacy Source Map"]);
-  for (const probe of ["CURRENT", "NEXT", "PRIOR_MISS"]) {
+  for (const probe of ["CURRENT", "NEXT", ...(effectiveVersion >= 4 ? ["CROSS_DOMAIN"] : []), "PRIOR_MISS"]) {
     const rows = tableRows(probes, /^Slot$/i).filter((row) => row[0] === probe);
     if (!rows.length) issues.push(`${label}: missing ${probe} retrieval probe`);
     else if (rows.length > 1) issues.push(`${label}: duplicate ${probe} retrieval probe`);
@@ -1446,6 +1598,7 @@ async function controlCheck(
   const graph = await readFile(graphPath, "utf8");
   const stateIssues = validateProjectState(state, manifest);
   const graphIssues = validateMemoryGraph(graph, manifest);
+  const actualMemoryGraphVersion = memoryGraphVersion(graph);
   const stateSha256 = sha256(state);
   const graphSha256 = sha256(graph);
   if (expectStateSha && stateSha256 !== expectStateSha) {
@@ -1469,7 +1622,9 @@ async function controlCheck(
     publicationPolicy: manifest.controlStatePublicationPolicy?.policy || null,
     continuationPolicy: manifest.continuationPolicy || null,
     projectStateVersion: manifest.controlLoopPolicy.projectStateVersion,
-    memoryGraphVersion: manifest.memoryPolicy.graphVersion,
+    memoryGraphVersion: actualMemoryGraphVersion || manifest.memoryPolicy.graphVersion,
+    memoryGraphTargetVersion: manifest.memoryPolicy.graphVersion,
+    memoryMigrationRequired: actualMemoryGraphVersion !== manifest.memoryPolicy.graphVersion,
     memoryValidationScope: "structure-and-references-only",
     statePath,
     graphPath,
@@ -1601,7 +1756,10 @@ function printControlCheck(result, asJson) {
   console.log(`Control check: ${result.ok ? "PASS" : "MISMATCH"}`);
   console.log(`Policy: ${result.policy}`);
   console.log(`Project State: v${result.projectStateVersion}${result.stateIssues.length ? " / FAILED" : " / PASS"}`);
-  console.log(`Memory Graph: v${result.memoryGraphVersion}${result.graphIssues.length ? " / FAILED" : " / PASS"} (structure and references only; semantic coverage requires reviewed retrieval evidence)`);
+  const migration = result.memoryMigrationRequired
+    ? `target v${result.memoryGraphTargetVersion}; migration required`
+    : "current target";
+  console.log(`Memory Graph: v${result.memoryGraphVersion}${result.graphIssues.length ? " / FAILED" : " / PASS"} (${migration}; structure and references only; semantic coverage requires reviewed retrieval evidence)`);
   console.log(`Project State sha256: ${result.stateSha256}`);
   console.log(`Memory Graph sha256: ${result.graphSha256}`);
   if (result.outbox) {

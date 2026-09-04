@@ -10,7 +10,7 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.28.0`
+Current version: `1.29.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -20,7 +20,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - **Готовит сложные изменения без лишних церемоний.** Простую задачу можно сразу выполнять; перед возвращением к запутанной теме AI восстанавливает прежние решения. Когда несколько задач должны сложиться в одно изменение, при доступном контроле назначается временный ведущий по его согласованности. Пользователю объясняют зачем и какой результат он увидит следующим.
 - **Сводит людей и разные AI в одну работу.** Участники могут действовать асинхронно на своих компьютерах и в своих агентных средах; общий репозиторий связывает их планы, результаты и приемку.
 - **Включает людей как агентов смысла.** Оркестратор обращается к конкретному человеку только за его решением или проверкой, объясняет, что требуется и куда вернется результат; независимая работа тем временем продолжается.
-- **Сохраняет смысл по мере роста проекта.** Задачи получают связанные цели, прежние решения и причины выбора, чтобы локальное улучшение не теряло общий замысел. Идеи, уроки и обещания вернуться поднимаются при следующей подходящей работе; точные последовательности, наборы сценариев и важные оговорки доходят до исполнителя без сокращения.
+- **Сохраняет смысл по мере роста проекта.** Перед изменением AI проходит от цели к затронутым модулям, их входам, результатам и зависимым частям, читает актуальную документацию и только затем код. Изменение поведения и документации идет одной работой. Прежние решения, идеи, уроки и обещания вернуться находятся по связанным сущностям; если карта неполна или противоречива, система сначала проводит ограниченное исследование, а не угадывает и не строит функцию заново.
 - **Восстанавливает движение.** Если работа остановилась, результат не вернулся или оркестратор потерял фокус, Vydykhai сверяется с общим состоянием и возвращает работу к следующему шагу. Зависший служебный процесс или старый формат результата не должны превращать восстановление в день повторных запусков. Служебный ремонт не заменяет цель: после него продолжается работа либо возвращается ожидающий вопрос. Если агентная среда не позволяет независимую проверку, это ограничение показывается явно.
 
 ## What Vydykhai Owns
@@ -29,7 +29,7 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 - **Prepares complex changes proportionately.** Clear tasks go straight to execution; uncertain areas first recover prior decisions. When several tasks must form one coherent change, a temporary lead can follow the solution if the environment supports the required supervision. The person hears why and what result to expect next.
 - **Converges people and different AI tools.** Participants may work asynchronously across their own computers and agent environments while one shared repository connects plans, results, and acceptance.
 - **Includes people as agents of judgment.** The orchestrator asks a specific person only for the decision or review they own, explains what is needed and where the result returns, and keeps independent work moving.
-- **Preserves understanding as the project grows.** Tasks receive linked goals, prior decisions and their rationale so a local improvement keeps the overall intent. Ideas, lessons and promises to return resurface at the next relevant task; exact sequences, scenario sets and material qualifications reach execution without being shortened.
+- **Preserves understanding as the project grows.** Before a change, AI follows the goal through touched modules, their inputs, outputs and dependent parts, reads current module documentation, and only then inspects code. Behavior and documentation change in the same piece of work. Prior decisions, ideas, lessons and promises to return are found through related entities; if the map is missing or contradictory, the system runs bounded discovery instead of guessing or rebuilding the capability from scratch.
 - **Restores forward motion.** If work stalls, a result does not return, or the orchestrator loses focus, Vydykhai reconciles shared state and returns to the next step. A stale service process or older result format should not turn recovery into a day of repeated starts. Service repair does not replace the goal: afterward, resume work or restore the question awaiting the person. When an agent environment cannot support an independent check, the limitation stays explicit.
 
 ## Give This To Your Agent
@@ -54,7 +54,7 @@ The human may still need to grant repository/network access or approve merge. Th
 
 - Start with a rough goal. Your orchestrator helps shape it into a shared compass, brief, nearest DOD, and visible plan.
 - Each participant keeps one personal project orchestrator. The orchestrators coordinate what, why, when, and who through shared Git-backed state; focused task, discovery, lab, and maintenance contexts own the actual work.
-- Every focused context receives only the applicable goal, boundary, memory, verification, human checkpoint, and return route. Exact multi-part obligations use a checked envelope so none can disappear during summarization; ordinary context stays readable. The task continues autonomously inside that contract and consults the orchestrator only at a real boundary.
+- Every focused context receives only the applicable goal, boundary, entity route, module documentation, memory, verification, human checkpoint, and return route. It reads `graph route -> Module Contract -> current code`; exact multi-part obligations use a checked envelope so none can disappear during summarization. The task continues autonomously inside that contract and consults the orchestrator only at a real boundary.
 - Reasoning follows the role: the orchestrator uses the strongest available profile, unresolved solution work uses deep bounded discovery, and a ready execution task uses an efficient profile.
 - Accepted corrections and lessons update shared project memory and the affected plan. A participant's durable learning can therefore guide the other orchestrators instead of remaining inside one chat.
 - Results are written to durable shared state before the orchestrator is notified. After productive handoff or a real wait, the orchestrator remains available instead of polling; a service interruption does not discard its next working step. Newer results and unrelated memory updates do not hide pending work; lost cross-context messages do not make a person recover or resend it.
