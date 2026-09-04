@@ -18,7 +18,7 @@ Orchestrator health: <HEALTHY | REVIEW | REPAIR | ROTATE> | Context: <canonical 
 Work origin: <PASS | REVIEW | UNOWNED_PROJECT_WORK> | Advisory contract: <CONTROL_ONLY / ROUTE_TO_FOCUSED_CONTEXT / none> | Accepted evidence owner: <human decision / durable source / focused-context receipt / gap> | Last checked: <event/time/source>
 Last independent check: <date / exact sources / result> | Same-class failures since repair: <count>
 DOD Control Line: <current DOD -> last accepted visible proof -> exact remaining gap -> next-best-action>
-Memory coverage: <graph/schema/watermark -> CURRENT/NEXT/PRIOR_MISS probes -> PASS, gap, or migration>
+Memory coverage: <graph/schema/watermark -> CURRENT/NEXT/CROSS_DOMAIN/PRIOR_MISS probes -> PASS, gap, or migration>
 Project Memory Graph: <current canonical link> | Last memory delta: <memory event id / NO_CHANGE / checked; routine control events do not advance it>
 Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current / pending / window / PR>
 Framework context readback: <active orchestrator own cwd> | HEAD: <accepted project revision> | Doctor: <installed/source/schema/integrity> | Core reread: <PASS / gap> | Result: <PASS / ACTUAL_CONTEXT_COHERENCE>

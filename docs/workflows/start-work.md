@@ -41,7 +41,9 @@ If its outcome or ownership remains ambiguous, resolve the decision or split at 
 
 Compare with active epics, shared contracts, deltas, and known lessons. Surface overlap in code or intended outcome, duplicated work, conflicting assumptions, and unsafe parallel edits. A support, demo, review, or transport task stays separate from the product task's DOD and burn even when its files are isolated.
 
-Derive a `Touch Set` from the proposed outcome, actors, entities, surfaces, contracts/authorities, and data/operational realms. Resolve stable graph anchors and aliases, add semantic candidates when wording differs, traverse relevant typed relations until the applicable goal, contract, decision and consumer context is complete, then filter by source precedence, status, scope, applicability, and supersession.
+Derive a `Touch Set` from the proposed outcome, journeys, modules/capabilities, actors, entities, surfaces, contracts/authorities, data/artifacts, and systems/operations. Resolve stable graph anchors and aliases, then traverse the vertical spine and reverse consumer routes until the applicable goal, inputs, outputs, storage, current decisions, open commitments, accepted artifacts, and verification are complete. Filter only after those routes are assembled, using source precedence, status, scope, applicability, and supersession.
+
+For every touched durable module or capability, read its current [Module Contract](module-contract-template.md) before inspecting current code and tests. This graph -> documentation -> code sequence is the minimum preparation for any implementation task, not a separate Discovery ritual. If a required route, contract, accepted artifact, or implementation cannot be reconciled, raise `MEMORY_COVERAGE_GAP` and choose bounded Discovery for that gap.
 
 Record the complete applicable `Memory Brief` without a fixed node cap. Each item must say `Because <anchor>, apply <rule>, avoid <path>, verify <evidence>, source <link>` and may expose a conflict or `MEMORY_COVERAGE_GAP`; ids alone are invalid. Preserve rationale that explains purpose, existing choices and material qualifications even when it does not alter the first action. Remove unrelated repetition, not inherited obligations. Keep the Touch Set and retrieval reasoning in the orchestrator.
 
@@ -68,7 +70,9 @@ Scope freshness / Accepted Baseline:
 Continue from: <accepted mechanism/reference>
 Applicable Memory Brief: <complete applicable Because / Apply / Avoid / Verify / Source items with node ids, or MEMORY_COVERAGE_GAP / none>
 Executable Memory Brief: <none | exact compiler-produced atomicRender and required application receipt>
-Context route: <goal/brief -> affected scenario/contracts/entities -> decisions and existing artifacts -> verification; checked sources and any gaps>
+Context route: <goal/brief -> journey -> modules/capabilities -> inputs/entities/contracts/data/artifacts/systems -> current meaning/commitments -> consumers -> accepted artifacts/verification; checked sources and gaps>
+Module contracts / implementation: <current docs and exact code/test boundaries read before work>
+Documentation impact: <expected NONE or named module-contract sections that may change>
 Product loop or linked enabler:
 For enabler: Unlocks / Still missing / next product slice:
 Authority / safety envelope:
@@ -92,6 +96,8 @@ Keep one owning execution context, Execution Lease, and canonical Candidate per 
 ## 6. Approve And Publish
 
 Show the brief, task map, sequence, ownership, checkpoints, Memory Brief, open decisions, and risks. Ask for human approval.
+
+Require each implementation task to read its supplied graph route and Module Contracts, verify them against current code, update affected Module Contracts in the same Candidate when behavior changes, and return exact documentation impact with acceptance evidence.
 
 After approval, create/update each task's one current contract, formal parent/dependencies where supported, and tracker projection together, then return the sequence to the Framework Orchestrator. Compile any declared atomic Memory Brief before dispatch; a hand-written manifest or shortened render is invalid. Every implementation task starts in role `EXECUTION` on the efficient profile: it continues the accepted mechanism, performs the first safe observable action in the launch/resume turn, resolves ordinary failures autonomously, consults only at a material undeclared boundary, never climbs effort levels mechanically, and runs `$accept-work`. At every declared readiness, checkpoint, blocker, or terminal return trigger it writes the full marked unique-id Return Sync to the durable outbox before attempting the same id as a native wakeup; an Action Receipt never substitutes, and the orchestrator later appends the paired marked Return Route receipt. Its title is `<work-id> [<track>] [<mode>] — <short outcome>` using the owning Issue or stable tracker key, never a PR; normal execution omits the mode. Before declaring launch, the orchestrator reads back title, actual link, role/profile, exact base, `PREPARED -> STARTED` lease evidence, and return route. The task does not run orchestration or alignment workflows.
 

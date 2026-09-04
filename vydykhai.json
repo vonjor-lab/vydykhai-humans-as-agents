@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.28.0",
+  "version": "1.29.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -312,31 +312,54 @@
   },
   "memoryPolicy": {
     "policy": "project-memory-graph",
-    "graphVersion": 3,
+    "graphVersion": 4,
+    "compatibleGraphVersions": [3, 4],
     "anchorKinds": [
       "outcome",
       "actor",
+      "journey",
+      "module",
+      "capability",
       "entity",
       "surface",
       "contract",
       "data",
+      "artifact",
+      "system",
       "operation"
     ],
     "nodeTypes": [
       "invariant",
+      "requirement",
       "decision",
       "lesson",
+      "commitment",
       "idea",
       "pointer"
     ],
     "relationTypes": [
       "about",
+      "part-of",
+      "serves",
+      "produces",
+      "consumes",
+      "depends-on",
+      "stored-in",
       "requires",
       "constrains",
       "supersedes",
       "conflicts",
       "learned-from",
       "verified-by"
+    ],
+    "entityRouteTypes": [
+      "part-of",
+      "serves",
+      "produces",
+      "consumes",
+      "depends-on",
+      "stored-in",
+      "constrains"
     ],
     "candidateActions": [
       "no-change",
@@ -365,7 +388,46 @@
       "source",
       "capability-aliases-and-trigger",
       "applicability-timing-and-checkpoint",
-      "pending-human-question"
+      "pending-human-question",
+      "owner",
+      "return-or-close-condition"
+    ],
+    "entityDocumentationPolicy": {
+      "policy": "module-contract-before-code",
+      "requiredForAnchorKinds": ["module", "capability"],
+      "template": "docs/workflows/module-contract-template.md",
+      "anchorReferenceFields": ["contract", "implementation"],
+      "taskReadOrder": ["memory-route", "module-contracts", "current-code"],
+      "updateOwner": "owning-task-same-candidate",
+      "orchestratorAction": "verify-and-integrate-shared-memory-only",
+      "updateOn": [
+        "purpose-or-boundary-change",
+        "input-output-or-consumer-change",
+        "algorithm-or-invariant-change",
+        "accepted-behavior-change",
+        "operational-dependency-change"
+      ],
+      "staleAction": "memory-coverage-gap-or-bounded-discovery"
+    },
+    "retrievalSpine": [
+      "goal-and-brief",
+      "outcome-and-journey",
+      "module-and-capability",
+      "entity-contract-data-and-system",
+      "current-decisions-requirements-and-commitments",
+      "accepted-artifacts-and-verification",
+      "current-work-and-return-condition"
+    ],
+    "sourceCoveragePolicy": "single-pass-source-ledger-with-explicit-supersession",
+    "endToEndStages": [
+      "source",
+      "entity-route",
+      "memory-node",
+      "retrieval",
+      "task-brief",
+      "task-application",
+      "acceptance-and-return",
+      "memory-update"
     ],
     "taskBriefMaxNodes": null,
     "contextRoutingPolicy": "goal-to-evidence-completeness",

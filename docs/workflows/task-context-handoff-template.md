@@ -28,7 +28,9 @@ Accepted Baseline: <commit, artifact, or proven behavior>
 Continue from: <accepted mechanism/reference>
 Applicable Memory Brief: <complete applicable items: node id / Because / Apply / Avoid / Verify / Source, or MEMORY_COVERAGE_GAP / none>
 Executable Memory Brief: <none | exact compiler-produced atomicRender from memory-brief-envelope.md; never summarize or edit>
-Context route: <goal/brief -> affected scenario/contracts/entities -> decisions and existing artifacts -> verification; checked sources and gaps, per context-route.md>
+Context route: <goal/brief -> journey -> modules/capabilities -> inputs/entities/contracts/data/artifacts/systems -> current meaning/commitments -> consumers -> accepted artifacts/verification; checked sources and gaps>
+Module contracts / implementation: <current project docs plus exact code/test boundaries>
+Documentation impact: <expected NONE or named contract sections>
 Progress continuity: <UNCHANGED | Preserved / Replaced / Added / Remaining>
 
 In scope:
@@ -41,7 +43,7 @@ Authority / safety envelope: <allowed actions and named approval boundaries>
 Dependency / recipient boundary: <only what this execution must preserve or deliver>
 Design consultation recipient, when assigned: <bounded lead and parent outcome; send material CONSULT through the existing orchestrator return route, not a second supervisor>
 
-Read the supplied relevant meaning, rationale and source excerpts before changing behavior. Narrow responsibility does not remove inherited constraints. Consult if a material link is missing; do not reconstruct unrelated project history or silently drop context to meet a length target.
+Read the supplied graph route and relevant meaning, then each touched Module Contract, then current code and tests before changing behavior. Narrow responsibility does not remove inherited constraints. Documentation does not silently override observed code: consult if a material link is missing or the sources disagree. Do not reconstruct unrelated project history or silently drop context to meet a length target.
 
 ## Completion
 
@@ -90,6 +92,7 @@ Boundary consultation: <none | Boundary / Evidence / Proposed move / Safe contin
 Learning / approach evidence: <none | Before / Now / Why / Keep / Rebuild / Drop / Unknown / source>
 Memory Brief result: <each item applied | missed | contradicted | not exercised, with evidence>
 Executable Memory application receipt: <none | memory.application-receipt.v1 and validation result>
+Documentation impact: <NONE with checked dimensions | exact Module Contract files/sections updated in this Candidate plus affected graph anchors>
 Memory candidates: <NO_MEMORY_DELTA | task-local only | one or more ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT candidates with type, Apply/Avoid, anchors, scope, relations, and safe source>
 Recipient proof: <not applicable | exact artifact/revision, environment, schema/migration revision, access, agreed check, and reproducible safe data when required>
 Artifact disposition: <context / PR / branch / worktree / runtime / monitor -> ACTIVE | WAITING | FINISH (cleaned/pending) | SALVAGE | RETIRE (cleaned/pending) | not applicable, with proof or re-entry>

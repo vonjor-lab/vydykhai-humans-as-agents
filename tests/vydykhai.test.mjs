@@ -58,7 +58,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.28.0");
+    assert.equal(lock.installedVersion, "1.29.0");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -105,7 +105,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /Execution leases: one-work-one-owning-context/);
     assert.match(doctor.stdout, /Task returns: durable-outbox-native-wakeup; terminal=return-sync; fallback=discover-unrouted-durable-return/);
     assert.match(doctor.stdout, /Rotation: independent-health-gated; independent check after 2 compactions or 24 active hours/);
-    assert.match(doctor.stdout, /Memory: project-memory-graph v3; complete goal-to-evidence context; no fixed node cap/);
+    assert.match(doctor.stdout, /Memory: project-memory-graph v4; entity-routed goal-to-evidence context; Module Contracts before code; no fixed node cap/);
     assert.match(doctor.stdout, /Memory acceptance: ordinary-unhinted-real-task-probes -> targeted-regression -> atomic-shadow-integration -> human-confirmed-cutover/);
     assert.match(doctor.stdout, /Executable memory brief: memory\.executable-brief\.v1; atomic obligations only/);
     assert.match(doctor.stdout, /Action receipts: critical-transition-readback; 7 critical boundaries/);
@@ -116,6 +116,13 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const legacyManifestPath = path.join(target, "vydykhai.json");
     const legacyManifest = JSON.parse(await readFile(legacyManifestPath, "utf8"));
     delete legacyManifest.actionReceiptPolicy;
+    legacyManifest.memoryPolicy.graphVersion = 3;
+    delete legacyManifest.memoryPolicy.compatibleGraphVersions;
+    delete legacyManifest.memoryPolicy.entityRouteTypes;
+    delete legacyManifest.memoryPolicy.entityDocumentationPolicy;
+    delete legacyManifest.memoryPolicy.retrievalSpine;
+    delete legacyManifest.memoryPolicy.sourceCoveragePolicy;
+    delete legacyManifest.memoryPolicy.endToEndStages;
     delete legacyManifest.memoryPolicy.contextRoutingPolicy;
     delete legacyManifest.memoryPolicy.contextRoutes;
     legacyManifest.memoryPolicy.taskBriefMaxNodes = 7;
@@ -167,7 +174,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.28\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.29\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -309,10 +316,20 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.ok(manifest.rotationPolicy.hardSignals.includes("unowned-project-work-after-repair"));
   assert.equal(manifest.defaultScopeFreshnessDays, 7);
   assert.equal(manifest.memoryPolicy.policy, "project-memory-graph");
-  assert.equal(manifest.memoryPolicy.graphVersion, 3);
-  assert.ok(manifest.memoryPolicy.anchorKinds.includes("entity"));
-  assert.ok(manifest.memoryPolicy.nodeTypes.includes("lesson"));
-  assert.ok(manifest.memoryPolicy.relationTypes.includes("learned-from"));
+  assert.equal(manifest.memoryPolicy.graphVersion, 4);
+  assert.deepEqual(manifest.memoryPolicy.compatibleGraphVersions, [3, 4]);
+  for (const kind of ["outcome", "journey", "module", "capability", "entity", "artifact", "system"]) {
+    assert.ok(manifest.memoryPolicy.anchorKinds.includes(kind));
+  }
+  for (const type of ["invariant", "requirement", "decision", "lesson", "commitment", "idea", "pointer"]) {
+    assert.ok(manifest.memoryPolicy.nodeTypes.includes(type));
+  }
+  for (const relation of ["part-of", "serves", "produces", "consumes", "depends-on", "stored-in", "constrains", "learned-from"]) {
+    assert.ok(manifest.memoryPolicy.relationTypes.includes(relation));
+  }
+  assert.deepEqual(manifest.memoryPolicy.entityRouteTypes, [
+    "part-of", "serves", "produces", "consumes", "depends-on", "stored-in", "constrains",
+  ]);
   assert.deepEqual(manifest.memoryPolicy.acceptanceOrder, [
     "ordinary-unhinted-real-task-probes",
     "targeted-regression",
@@ -336,6 +353,30 @@ test("current manifest preserves updater compatibility fields", async () => {
     "capability-aliases-and-trigger",
     "applicability-timing-and-checkpoint",
     "pending-human-question",
+    "owner",
+    "return-or-close-condition",
+  ]);
+  assert.deepEqual(manifest.memoryPolicy.entityDocumentationPolicy, {
+    policy: "module-contract-before-code",
+    requiredForAnchorKinds: ["module", "capability"],
+    template: "docs/workflows/module-contract-template.md",
+    anchorReferenceFields: ["contract", "implementation"],
+    taskReadOrder: ["memory-route", "module-contracts", "current-code"],
+    updateOwner: "owning-task-same-candidate",
+    orchestratorAction: "verify-and-integrate-shared-memory-only",
+    updateOn: [
+      "purpose-or-boundary-change",
+      "input-output-or-consumer-change",
+      "algorithm-or-invariant-change",
+      "accepted-behavior-change",
+      "operational-dependency-change",
+    ],
+    staleAction: "memory-coverage-gap-or-bounded-discovery",
+  });
+  assert.equal(manifest.memoryPolicy.sourceCoveragePolicy, "single-pass-source-ledger-with-explicit-supersession");
+  assert.deepEqual(manifest.memoryPolicy.endToEndStages, [
+    "source", "entity-route", "memory-node", "retrieval", "task-brief", "task-application",
+    "acceptance-and-return", "memory-update",
   ]);
   assert.equal(manifest.memoryPolicy.taskBriefMaxNodes, null);
   assert.equal(manifest.memoryPolicy.contextRoutingPolicy, "goal-to-evidence-completeness");
@@ -391,7 +432,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(core, /Memory Reflection/);
   assert.match(core, /RETRIEVAL_MISS/);
   assert.match(core, /Because \/ Apply \/ Avoid \/ Verify \/ Source/);
-  assert.match(core, /recall commitment/);
+  assert.match(core, /first-class `COMMITMENT`/);
   assert.match(core, /opaque ids alone are invalid/);
   assert.match(core, /Role-Routed Agent Profiles/);
   assert.match(core, /Low-ready/);
@@ -427,7 +468,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectState, /Last memory delta:/);
   assert.match(projectState, /Tracker projection:/);
   assert.match(projectState, /Operational sources:/);
-  assert.match(projectState, /CURRENT\/NEXT\/PRIOR_MISS/);
+  assert.match(projectState, /CURRENT\/NEXT\/CROSS_DOMAIN\/PRIOR_MISS/);
   assert.match(projectState, /Latest seen:/);
   assert.match(projectState, /Update:/);
   assert.match(projectState, /Framework context readback:/);
@@ -473,10 +514,10 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /maintenance task or a detached verification checkout proves the Candidate, not activation/);
   assert.match(orchestratorWorkflow, /newer than the last Return Sync/);
   assert.match(orchestratorWorkflow, /no context message, no-op trace, or model wake-up/);
-  assert.match(orchestratorWorkflow, /representative current, upcoming, and prior-miss Touch Sets/);
+  assert.match(orchestratorWorkflow, /representative current, upcoming, cross-domain, and prior-miss Touch Sets/);
   assert.match(orchestratorWorkflow, /Memory Reflection/);
   assert.match(orchestratorWorkflow, /APPLICATION_MISS/);
-  assert.match(orchestratorWorkflow, /compare a side-by-side candidate with current memory/);
+  assert.match(orchestratorWorkflow, /Source Coverage Ledger/);
   assert.match(orchestratorWorkflow, /non-destructive access check/);
   assert.match(orchestratorWorkflow, /last safe check time\/result\/source/);
   assert.match(orchestratorWorkflow, /before history search, human secret re-request, or live action/);
@@ -492,7 +533,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(orchestratorWorkflow, /tracker projection/);
   assert.match(orchestratorWorkflow, /Work Hygiene Check/);
   assert.match(orchestratorWorkflow, /one machine cannot certify the team/);
-  assert.match(orchestratorWorkflow, /bounded read-only memory backfill/);
+  assert.match(orchestratorWorkflow, /process each bounded source range once/);
   assert.match(orchestratorWorkflow, /ordinary unhinted real-task queries/);
   assert.match(orchestratorWorkflow, /Governor Check/);
   assert.match(orchestratorWorkflow, /EXECUTION_STALLED/);
@@ -509,8 +550,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectGuardWorkflow, /evaluateGuardLock/);
   assert.match(projectGuardWorkflow, /one fresh bounded owner/);
   const projectLaunch = await readFile(path.join(root, "docs/workflows/project-launch.md"), "utf8");
-  assert.match(projectLaunch, /bounded read-only memory backfill/);
-  assert.match(projectLaunch, /Do not copy the full transcript or model narration/);
+  assert.match(projectLaunch, /Source Coverage Ledger/);
+  assert.match(projectLaunch, /Do not copy full transcripts or model narration/);
   assert.match(projectLaunch, /doctor` proves framework integrity only/);
   assert.match(projectLaunch, /Never create disposable probe issues/);
   assert.match(projectLaunch, /One machine cannot certify another/);
@@ -683,6 +724,9 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     assert.equal(healthyResult.ok, true);
     assert.match(healthyResult.stateSha256, /^[a-f0-9]{64}$/);
     assert.match(healthyResult.graphSha256, /^[a-f0-9]{64}$/);
+    assert.equal(healthyResult.memoryGraphVersion, 3);
+    assert.equal(healthyResult.memoryGraphTargetVersion, 4);
+    assert.equal(healthyResult.memoryMigrationRequired, true);
     assert.equal(healthyResult.memoryValidationScope, "structure-and-references-only");
     const routineState = healthyState.replace("Snapshot as of: event-7", "Snapshot as of: event-8")
       .replace("Last checked: event-7/now/adapter", "Last checked: event-8/now/adapter");
