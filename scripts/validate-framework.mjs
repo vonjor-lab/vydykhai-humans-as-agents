@@ -193,7 +193,13 @@ if (
   manifest.projectGuardPolicy?.changedConditionAction !== "audit-required" ||
   manifest.projectGuardPolicy?.settleWindowSeconds !== 30 ||
   manifest.projectGuardPolicy?.maxAutomaticRepairsPerIncident !== 1 ||
-  manifest.projectGuardPolicy?.repeatedRepairAction !== "control-degraded"
+  manifest.projectGuardPolicy?.repeatedRepairAction !== "control-degraded" ||
+  manifest.projectGuardPolicy?.lockPolicy?.evaluator !== "scripts/vydykhai.mjs#evaluateGuardLock" ||
+  manifest.projectGuardPolicy?.lockPolicy?.sameHostStaleAfterSeconds !== 120 ||
+  manifest.projectGuardPolicy?.lockPolicy?.recovery !== "quarantine-then-recheck-never-replay" ||
+  manifest.projectGuardPolicy?.lockPolicy?.unknownExternalOutcome !== "block" ||
+  manifest.projectGuardPolicy?.staleServiceContextAction !== "one-observable-start-check-then-fresh-bounded-owner" ||
+  manifest.projectGuardPolicy?.verificationShell !== "preserve-command-exit-status"
 ) {
   fail("Project Guard incident identity, cost, or circuit-breaker policy is invalid");
 }
@@ -253,7 +259,8 @@ if (manifest.continuationPolicy?.policy !== "evidence-backed-next-action" ||
     manifest.continuationPolicy.interruption !== "resume-or-explicitly-supersede" ||
     manifest.continuationPolicy.turnRelease !== "productive-handoff-or-concrete-wait" ||
     manifest.continuationPolicy.unknownActivity !== "limited-not-stopped" ||
-    manifest.continuationPolicy.wakeup !== "reconcile-existing-owner-never-duplicate") {
+    manifest.continuationPolicy.wakeup !== "reconcile-existing-owner-never-duplicate" ||
+    manifest.continuationPolicy.bindingIdentity !== "semantic-owner-state-excluding-receipt-prose") {
   fail("Production continuation must retain the next action and use bounded fresh activity without duplicate work");
 }
 if (manifest.executionLeasePolicy?.policy !== "one-work-one-owning-context") {
@@ -282,7 +289,13 @@ if (
 if (manifest.taskReturnPolicy?.machineFormat !== "marked-return-sync-and-route-v1") {
   fail("Task return machine format must pair marked Return Sync and Return Route receipts");
 }
-if (manifest.taskReturnPolicy?.adapterParser !== "scripts/vydykhai.mjs#validateDurableOutbox") {
+if (manifest.taskReturnPolicy?.writer !== "scripts/vydykhai.mjs#createReturnSync+createReturnRoute") {
+  fail("Task return writers must use canonical constructors");
+}
+if (manifest.taskReturnPolicy?.readerCompatibility !== "bounded-legacy-field-and-status-normalization") {
+  fail("Task return reader compatibility must stay bounded");
+}
+if (manifest.taskReturnPolicy?.adapterParser !== "scripts/vydykhai.mjs#parseDurableOutboxComment") {
   fail("Task return adapters must reuse the canonical parser");
 }
 for (const check of [
@@ -290,6 +303,8 @@ for (const check of [
   "matching-route-receipt",
   "scheduled-noop-after-routing",
   "malformed-or-mismatched-route-audits",
+  "legacy-route-and-status-read-compatibility",
+  "canonical-writer-only",
   "older-pending-survives-newer-routed",
   "bounded-source-refresh-preserves-edits-and-pending",
   "pending-wakeup-survives-unrelated-change-and-recipient-handoff",
@@ -356,6 +371,19 @@ for (const field of [
 if (manifest.memoryPolicy?.taskBriefMaxNodes !== null || manifest.memoryPolicy?.contextRoutingPolicy !== "goal-to-evidence-completeness") {
   fail("Task Memory Brief must preserve complete applicable context without a fixed node cap");
 }
+if (
+  manifest.memoryPolicy?.executableBriefPolicy?.schema !== "memory.executable-brief.v1" ||
+  manifest.memoryPolicy?.executableBriefPolicy?.applicationReceiptSchema !== "memory.application-receipt.v1" ||
+  manifest.memoryPolicy?.executableBriefPolicy?.compiler !== "scripts/memory-brief.mjs#compileExecutableBrief" ||
+  manifest.memoryPolicy?.executableBriefPolicy?.validator !== "scripts/memory-brief.mjs#validateApplicationReceipt" ||
+  manifest.memoryPolicy?.executableBriefPolicy?.useWhen !== "non-factorable-obligations-only" ||
+  manifest.memoryPolicy?.executableBriefPolicy?.ordinaryMemory !== "advisory-prose" ||
+  manifest.memoryPolicy?.executableBriefPolicy?.manifest !== "compiler-derived" ||
+  manifest.memoryPolicy?.executableBriefPolicy?.digest !== "sha256-rfc8785-jcs" ||
+  manifest.memoryPolicy?.executableBriefPolicy?.applicationReceipt !== "required-before-claim"
+) {
+  fail("Executable Memory Brief must preserve only non-factorable obligations with a bound receipt");
+}
 for (const route of ["execution", "discovery", "correction-and-acceptance"]) {
   if (!manifest.memoryPolicy?.contextRoutes?.includes(route)) fail(`Memory context route is missing: ${route}`);
 }
@@ -414,6 +442,9 @@ if (manifest.managedPaths.includes("LICENSE.md") || manifest.managedPaths.includ
 if (!manifest.managedPaths.includes("docs/VYDYKHAI_NOTICE.md")) {
   fail("Managed framework notice is missing from the manifest");
 }
+if (!manifest.managedPaths.includes("scripts/memory-brief.mjs")) {
+  fail("Executable Memory Brief compiler is missing from managed paths");
+}
 if (!manifest.managedPaths.includes("docs/workflows") || manifest.managedPaths.includes("docs/codex-workflows")) {
   fail("Managed workflows must use the environment-neutral docs/workflows path");
 }
@@ -427,6 +458,7 @@ const compatibilityEn = await text("docs/COLLABORATION_FRAMEWORK_2026-06-10.md")
 const compatibilityRu = await text("docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md");
 const projectStateTemplate = await text("docs/workflows/project-state-template.md");
 const projectMemoryGraphTemplate = await text("docs/workflows/project-memory-graph-template.md");
+const memoryBriefEnvelopeWorkflow = await text("docs/workflows/memory-brief-envelope.md");
 const ideaMemoryTemplate = await text("docs/workflows/idea-memory-template.md");
 const intentTrailTemplate = await text("docs/workflows/intent-trail-template.md");
 const orchestratorWorkflow = await text("docs/workflows/framework-orchestrator.md");
@@ -660,6 +692,16 @@ if (
 ) {
   fail("Project Memory Graph is missing anchors, atomic nodes, reflection, executable retrieval, evaluation, lineage, or secret-safety rules");
 }
+if (
+  !memoryBriefEnvelopeWorkflow.includes("non-factorable obligations") ||
+  !memoryBriefEnvelopeWorkflow.includes("memory.executable-brief.v1") ||
+  !memoryBriefEnvelopeWorkflow.includes("memory.application-receipt.v1") ||
+  !memoryBriefEnvelopeWorkflow.includes("memory-brief-compile") ||
+  !memoryBriefEnvelopeWorkflow.includes("memory-brief-validate") ||
+  !memoryBriefEnvelopeWorkflow.includes("Advisory prose cannot satisfy an atomic id")
+) {
+  fail("Executable Memory Brief workflow is incomplete or over-broad");
+}
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
 if (
   !projectLaunchWorkflow.includes("bounded read-only memory backfill") ||
@@ -699,11 +741,13 @@ if (
   !taskHandoffTemplate.includes("DOD Control Line contribution:") ||
   !taskHandoffTemplate.includes("Continue from:") ||
   !taskHandoffTemplate.includes("Applicable Memory Brief:") ||
+  !taskHandoffTemplate.includes("Executable Memory Brief:") ||
   !taskHandoffTemplate.includes("Authority / safety envelope:") ||
   !taskHandoffTemplate.includes("Consult when:") ||
   !taskHandoffTemplate.includes("Return triggers:") ||
   !taskHandoffTemplate.includes("Learning / approach evidence:") ||
   !taskHandoffTemplate.includes("Memory Brief result:") ||
+  !taskHandoffTemplate.includes("Executable Memory application receipt:") ||
   !taskHandoffTemplate.includes("Memory candidates:") ||
   !taskHandoffTemplate.includes("Artifact disposition:") ||
   !taskHandoffTemplate.includes("Return receipt id:") ||
@@ -783,6 +827,9 @@ if (
   !projectGuardWorkflow.includes("two real boundary tests") ||
   !projectGuardWorkflow.includes("no queued message, and no model call") ||
   !projectGuardWorkflow.includes("focused service task") ||
+  !projectGuardWorkflow.includes("evaluateGuardLock") ||
+  !projectGuardWorkflow.includes("preserve the checker's exit status") ||
+  !projectGuardWorkflow.includes("one fresh bounded owner") ||
   !orchestratorWorkflow.includes("external Project Guard") ||
   !orchestratorWorkflow.includes("productive handoff or concrete wait") ||
   !projectGuardWorkflow.includes("--activity") ||
@@ -801,6 +848,7 @@ if (
   !orchestratorWorkflow.includes("tracker projection") ||
   !orchestratorWorkflow.includes("representative current, upcoming, and prior-miss Touch Sets") ||
   !orchestratorWorkflow.includes("Memory Reflection") ||
+  !orchestratorWorkflow.includes("Executable Memory Brief") ||
   !orchestratorWorkflow.includes("memory-reflection/detour receipts") ||
   !orchestratorWorkflow.includes("APPLICATION_MISS") ||
   !orchestratorWorkflow.includes("compare a side-by-side candidate with current memory") ||
@@ -853,6 +901,7 @@ if (
   !orchestratorWorkflow.includes("bounded read-only memory backfill") ||
   !orchestratorWorkflow.includes("id counts and synthetic PASS alone are insufficient") ||
   !orchestratorSkill.includes("open recall commitments") ||
+  !orchestratorSkill.includes("memory-brief-envelope.md") ||
   !orchestratorSkill.includes("ordinary unhinted real-task queries")
 ) {
   fail("Orchestrator is missing recall-commitment retrieval or semantic backfill proof");

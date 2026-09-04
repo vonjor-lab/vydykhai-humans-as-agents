@@ -12,7 +12,7 @@ Use source precedence:
 4. agent plan or handoff;
 5. inference.
 
-Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory Brief and [Context Route](context-route.md), material task-local pivots, targeted orchestrator patches, and any `Rejected Candidate` used as evidence. Compare actual scope with the inherited constraints and affected consumers; local green tests do not prove an unexercised cross-boundary outcome. Do not reconstruct unrelated Project State, raw meeting history, or the full Project Memory Graph. Summarize:
+Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory Brief and [Context Route](context-route.md), any [Executable Memory Brief](memory-brief-envelope.md) plus its application receipt, material task-local pivots, targeted orchestrator patches, and any `Rejected Candidate` used as evidence. Compare actual scope with the inherited constraints and affected consumers; local green tests do not prove an unexercised cross-boundary outcome. Do not reconstruct unrelated Project State, raw meeting history, or the full Project Memory Graph. Summarize:
 
 - goal and DOD impact;
 - scope/out of scope;
@@ -25,6 +25,7 @@ Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory 
 - Lab/Peer Review contract when used;
 - current approach and why material pivots replaced earlier paths;
 - each executable Memory Brief item and whether it was applied, missed, contradicted, or not exercised;
+- every required atomic item/clause/row id and the exact validation result when an executable envelope was supplied;
 - outcome owner, recipient/dependency boundary, and any required recipient proof;
 - material burn limit;
 - verification route.
@@ -94,6 +95,7 @@ Keep fixes, smoke, and manual merge in the owning task context. After human conf
 - classify each follow-up as a required DOD gap or optional `IDEA` candidate; optional ideas do not keep the accepted task or parent open by themselves.
 - report graph nodes applied, confirmed, refined, superseded, or contradicted; keep local-only lineage in the task.
 - report `Memory Brief result` item by item as `applied / missed / contradicted / not exercised`; a miss is evidence for orchestrator-owned Memory Reflection and a representative regression scenario.
+- validate any `memory.application-receipt.v1` against the unchanged envelope; missing ids or mismatched authority/prompt/digest cannot be accepted as applied.
 - report boundary consultations and any deliberately changed or unexpected surfaces.
 - publish terminal Return Sync with learning/approach evidence plus `Memory candidates: NO_MEMORY_DELTA`, `task-local only`, or compact `ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT` candidates containing type, current value, touch keys, relations, and safe source. The orchestrator integrates reusable candidates into the graph; the task never edits shared memory and not every task note is promoted.
 - write that complete marked Return Sync to the durable task/tracker outbox first, then attempt the same receipt id as the native wakeup. An Action Receipt never substitutes for Return Sync, including a readiness or human-checkpoint result. Report only through `SENT`; the orchestrator owns `RECEIVED -> CONSUMED -> ROUTED`, the paired marked Return Route receipt, and lease closure. Native final text and task/thread reads are non-authoritative and may be empty; native loss does not justify human polling or recreating an already durable result.

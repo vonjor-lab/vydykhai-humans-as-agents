@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.27.0",
+  "version": "1.28.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -158,6 +158,14 @@
     "settleWindowSeconds": 30,
     "maxAutomaticRepairsPerIncident": 1,
     "repeatedRepairAction": "control-degraded",
+    "lockPolicy": {
+      "evaluator": "scripts/vydykhai.mjs#evaluateGuardLock",
+      "sameHostStaleAfterSeconds": 120,
+      "recovery": "quarantine-then-recheck-never-replay",
+      "unknownExternalOutcome": "block"
+    },
+    "staleServiceContextAction": "one-observable-start-check-then-fresh-bounded-owner",
+    "verificationShell": "preserve-command-exit-status",
     "states": [
       "active",
       "limited",
@@ -200,7 +208,8 @@
     "interruption": "resume-or-explicitly-supersede",
     "turnRelease": "productive-handoff-or-concrete-wait",
     "unknownActivity": "limited-not-stopped",
-    "wakeup": "reconcile-existing-owner-never-duplicate"
+    "wakeup": "reconcile-existing-owner-never-duplicate",
+    "bindingIdentity": "semantic-owner-state-excluding-receipt-prose"
   },
   "humanAttentionPolicy": {
     "policy": "durable-single-manager-attention",
@@ -252,12 +261,16 @@
     "nativeThreadRead": "non-authoritative",
     "guardFallback": "discover-unrouted-durable-return",
     "machineFormat": "marked-return-sync-and-route-v1",
-    "adapterParser": "scripts/vydykhai.mjs#validateDurableOutbox",
+    "writer": "scripts/vydykhai.mjs#createReturnSync+createReturnRoute",
+    "readerCompatibility": "bounded-legacy-field-and-status-normalization",
+    "adapterParser": "scripts/vydykhai.mjs#parseDurableOutboxComment",
     "adapterAcceptance": [
       "real-emitted-return-format",
       "matching-route-receipt",
       "scheduled-noop-after-routing",
       "malformed-or-mismatched-route-audits",
+      "legacy-route-and-status-read-compatibility",
+      "canonical-writer-only",
       "older-pending-survives-newer-routed",
       "bounded-source-refresh-preserves-edits-and-pending",
       "pending-wakeup-survives-unrelated-change-and-recipient-handoff"
@@ -365,6 +378,17 @@
     ],
     "naturalProbeRange": [3, 4],
     "naturalProbeFailureAction": "stop-before-broad-evaluation",
+    "executableBriefPolicy": {
+      "schema": "memory.executable-brief.v1",
+      "applicationReceiptSchema": "memory.application-receipt.v1",
+      "compiler": "scripts/memory-brief.mjs#compileExecutableBrief",
+      "validator": "scripts/memory-brief.mjs#validateApplicationReceipt",
+      "useWhen": "non-factorable-obligations-only",
+      "ordinaryMemory": "advisory-prose",
+      "manifest": "compiler-derived",
+      "digest": "sha256-rfc8785-jcs",
+      "applicationReceipt": "required-before-claim"
+    },
     "legacyInputs": [
       "intent-trail",
       "idea-memory"
@@ -423,6 +447,7 @@
     "docs/VYDYKHAI_NOTICE.md",
     "vydykhai.json",
     "scripts/vydykhai.mjs",
+    "scripts/memory-brief.mjs",
     "docs/AGENTS_CORE.md",
     "docs/FRAMEWORK.md",
     "docs/FRAMEWORK_RU.md",

@@ -27,6 +27,7 @@ Freshness: <UNCHANGED | PATCH_REQUIRED | REBRIEF_REQUIRED> | Checked: <date/evid
 Accepted Baseline: <commit, artifact, or proven behavior>
 Continue from: <accepted mechanism/reference>
 Applicable Memory Brief: <complete applicable items: node id / Because / Apply / Avoid / Verify / Source, or MEMORY_COVERAGE_GAP / none>
+Executable Memory Brief: <none | exact compiler-produced atomicRender from memory-brief-envelope.md; never summarize or edit>
 Context route: <goal/brief -> affected scenario/contracts/entities -> decisions and existing artifacts -> verification; checked sources and gaps, per context-route.md>
 Progress continuity: <UNCHANGED | Preserved / Replaced / Added / Remaining>
 
@@ -60,6 +61,7 @@ Return triggers: <readiness result | named human checkpoint | irreducible blocke
 - Do not run `$project-launch`, `$start-work`, `$daily-alignment`, or `$framework-orchestrator` here. Use implementation/domain skills as needed and run `$accept-work` before completion.
 - Detect an undeclared boundary, stale upstream state, unresolved solution choice, or evidence that the acceptance contract is insufficient, but do not redesign project scope, sequence, ownership, shared contracts, or model routing. Send one compact `CONSULT`: `Boundary / Evidence / Proposed move / Safe continuation`, then pause only that boundary.
 - If a human says an instruction was already decided or the supplied brief contradicts known direction, follow the clear current instruction inside scope and send compact miss evidence through `CONSULT`; do not search the full graph or run project-wide reflection here.
+- When an Executable Memory Brief is present, preserve its bytes and order, apply every required id, and validate the bound application receipt before claiming use. Missing or invalid ids block only the affected obligation; advisory prose cannot substitute for them.
 - Apply a targeted orchestrator instruction at the next safe operation boundary. Continue unaffected work unless the instruction or safety envelope says otherwise.
 - Keep corrective fixes, human smoke, and manual merge in this context because it owns the implementation evidence. A side answer or service exchange does not complete this contract: continue within scope or return the actual checkpoint/blocker through Return Sync.
 - Before compaction, context handoff, risky external action, or after a human-accepted checkpoint, preserve the current Accepted Baseline/Candidate and next experiment as a commit or durable artifact. Accepted work may not exist only in chat or untracked files.
@@ -73,6 +75,7 @@ Return triggers: <readiness result | named human checkpoint | irreducible blocke
 # Return Sync
 
 Status: <BLOCKED_BEFORE_START | NEEDS_REBRIEF | CHECKPOINT_READY | ACCEPT | ACCEPT_WITH_FOLLOWUPS | NEEDS_FIXES | BLOCKED | OUTCOME_UNKNOWN>
+Status detail: <optional plain-language qualification; never append it to Status with `/`>
 Return receipt id: <unique event id>
 Return lifecycle: <WRITTEN | WRITTEN -> SENT; task reports only through SENT>
 Task / context / PR / commit / artifact:
@@ -86,6 +89,7 @@ Burn result:
 Boundary consultation: <none | Boundary / Evidence / Proposed move / Safe continuation>
 Learning / approach evidence: <none | Before / Now / Why / Keep / Rebuild / Drop / Unknown / source>
 Memory Brief result: <each item applied | missed | contradicted | not exercised, with evidence>
+Executable Memory application receipt: <none | memory.application-receipt.v1 and validation result>
 Memory candidates: <NO_MEMORY_DELTA | task-local only | one or more ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT candidates with type, Apply/Avoid, anchors, scope, relations, and safe source>
 Recipient proof: <not applicable | exact artifact/revision, environment, schema/migration revision, access, agreed check, and reproducible safe data when required>
 Artifact disposition: <context / PR / branch / worktree / runtime / monitor -> ACTIVE | WAITING | FINISH (cleaned/pending) | SALVAGE | RETIRE (cleaned/pending) | not applicable, with proof or re-entry>

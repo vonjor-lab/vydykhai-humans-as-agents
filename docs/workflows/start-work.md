@@ -45,6 +45,8 @@ Derive a `Touch Set` from the proposed outcome, actors, entities, surfaces, cont
 
 Record the complete applicable `Memory Brief` without a fixed node cap. Each item must say `Because <anchor>, apply <rule>, avoid <path>, verify <evidence>, source <link>` and may expose a conflict or `MEMORY_COVERAGE_GAP`; ids alone are invalid. Preserve rationale that explains purpose, existing choices and material qualifications even when it does not alter the first action. Remove unrelated repetition, not inherited obligations. Keep the Touch Set and retrieval reasoning in the orchestrator.
 
+If one omitted, merged or reordered clause would invalidate an exact sequence, path matrix, safety gate or previously missed obligation, compile only that indivisible portion through [Executable Memory Brief](memory-brief-envelope.md). Put its exact `atomicRender` beside the ordinary brief and require the bound application receipt. Do not rigidly encode all context or use the envelope as authority.
+
 Propose:
 
 - Lab Mode when isolation reduces cost/risk, including decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn, production transfer, and risk-based real-flow smoke;
@@ -65,6 +67,7 @@ Scope / out of scope:
 Scope freshness / Accepted Baseline:
 Continue from: <accepted mechanism/reference>
 Applicable Memory Brief: <complete applicable Because / Apply / Avoid / Verify / Source items with node ids, or MEMORY_COVERAGE_GAP / none>
+Executable Memory Brief: <none | exact compiler-produced atomicRender and required application receipt>
 Context route: <goal/brief -> affected scenario/contracts/entities -> decisions and existing artifacts -> verification; checked sources and any gaps>
 Product loop or linked enabler:
 For enabler: Unlocks / Still missing / next product slice:
@@ -90,6 +93,6 @@ Keep one owning execution context, Execution Lease, and canonical Candidate per 
 
 Show the brief, task map, sequence, ownership, checkpoints, Memory Brief, open decisions, and risks. Ask for human approval.
 
-After approval, create/update each task's one current contract, formal parent/dependencies where supported, and tracker projection together, then return the sequence to the Framework Orchestrator. Every implementation task starts in role `EXECUTION` on the efficient profile: it continues the accepted mechanism, performs the first safe observable action in the launch/resume turn, resolves ordinary failures autonomously, consults only at a material undeclared boundary, never climbs effort levels mechanically, and runs `$accept-work`. At every declared readiness, checkpoint, blocker, or terminal return trigger it writes the full marked unique-id Return Sync to the durable outbox before attempting the same id as a native wakeup; an Action Receipt never substitutes, and the orchestrator later appends the paired marked Return Route receipt. Its title is `<work-id> [<track>] [<mode>] — <short outcome>` using the owning Issue or stable tracker key, never a PR; normal execution omits the mode. Before declaring launch, the orchestrator reads back title, actual link, role/profile, exact base, `PREPARED -> STARTED` lease evidence, and return route. The task does not run orchestration or alignment workflows.
+After approval, create/update each task's one current contract, formal parent/dependencies where supported, and tracker projection together, then return the sequence to the Framework Orchestrator. Compile any declared atomic Memory Brief before dispatch; a hand-written manifest or shortened render is invalid. Every implementation task starts in role `EXECUTION` on the efficient profile: it continues the accepted mechanism, performs the first safe observable action in the launch/resume turn, resolves ordinary failures autonomously, consults only at a material undeclared boundary, never climbs effort levels mechanically, and runs `$accept-work`. At every declared readiness, checkpoint, blocker, or terminal return trigger it writes the full marked unique-id Return Sync to the durable outbox before attempting the same id as a native wakeup; an Action Receipt never substitutes, and the orchestrator later appends the paired marked Return Route receipt. Its title is `<work-id> [<track>] [<mode>] — <short outcome>` using the owning Issue or stable tracker key, never a PR; normal execution omits the mode. Before declaring launch, the orchestrator reads back title, actual link, role/profile, exact base, `PREPARED -> STARTED` lease evidence, and return route. The task does not run orchestration or alignment workflows.
 
 Do not implement in this workflow.

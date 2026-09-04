@@ -44,6 +44,9 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Role: EXECUTION/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Consult when:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Applicable Memory Brief:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Executable Memory Brief:/);
+    assert.match(await readFile(path.join(target, "docs/workflows/memory-brief-envelope.md"), "utf8"), /memory\.executable-brief\.v1/);
+    assert.match(await readFile(path.join(target, "scripts/memory-brief.mjs"), "utf8"), /compileExecutableBrief/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory Brief result:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Memory candidates:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Artifact disposition:/);
@@ -55,7 +58,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.27.0");
+    assert.equal(lock.installedVersion, "1.28.0");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -97,12 +100,14 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /Control state publication: validate-publish-readback-or-restore/);
     assert.match(doctor.stdout, /Project Guard: external-event-and-schedule; healthy=deterministic-no-model; anomaly=maximum-available; incident=semantic-condition-set/);
     assert.match(doctor.stdout, /Guard repair: 1 per incident; repeat=control-degraded/);
+    assert.match(doctor.stdout, /Guard lock: quarantine-then-recheck-never-replay/);
     assert.match(doctor.stdout, /Human attention: durable-single-manager-attention; guard=silent; completion=restore-or-explicitly-supersede/);
     assert.match(doctor.stdout, /Execution leases: one-work-one-owning-context/);
     assert.match(doctor.stdout, /Task returns: durable-outbox-native-wakeup; terminal=return-sync; fallback=discover-unrouted-durable-return/);
     assert.match(doctor.stdout, /Rotation: independent-health-gated; independent check after 2 compactions or 24 active hours/);
     assert.match(doctor.stdout, /Memory: project-memory-graph v3; complete goal-to-evidence context; no fixed node cap/);
     assert.match(doctor.stdout, /Memory acceptance: ordinary-unhinted-real-task-probes -> targeted-regression -> atomic-shadow-integration -> human-confirmed-cutover/);
+    assert.match(doctor.stdout, /Executable memory brief: memory\.executable-brief\.v1; atomic obligations only/);
     assert.match(doctor.stdout, /Action receipts: critical-transition-readback; 7 critical boundaries/);
     assert.match(doctor.stdout, /Tracker: task-contract-with-event-driven-projection/);
     assert.match(doctor.stdout, /Creator: Alexander Rozhnov \(@vonjor-lab\)/);
@@ -162,7 +167,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.27\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.28\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -238,6 +243,14 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.projectGuardPolicy.settleWindowSeconds, 30);
   assert.equal(manifest.projectGuardPolicy.maxAutomaticRepairsPerIncident, 1);
   assert.equal(manifest.projectGuardPolicy.repeatedRepairAction, "control-degraded");
+  assert.deepEqual(manifest.projectGuardPolicy.lockPolicy, {
+    evaluator: "scripts/vydykhai.mjs#evaluateGuardLock",
+    sameHostStaleAfterSeconds: 120,
+    recovery: "quarantine-then-recheck-never-replay",
+    unknownExternalOutcome: "block",
+  });
+  assert.equal(manifest.projectGuardPolicy.staleServiceContextAction, "one-observable-start-check-then-fresh-bounded-owner");
+  assert.equal(manifest.projectGuardPolicy.verificationShell, "preserve-command-exit-status");
   assert.deepEqual(manifest.projectGuardPolicy.actions, ["noop", "wake", "audit-required", "control-degraded"]);
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("independent-trigger"));
   assert.ok(manifest.projectGuardPolicy.requiredCapabilities.includes("idempotent-incident"));
@@ -255,6 +268,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.continuationPolicy.turnRelease, "productive-handoff-or-concrete-wait");
   assert.equal(manifest.continuationPolicy.policy, "evidence-backed-next-action");
   assert.equal(manifest.continuationPolicy.activityMaxAgeSeconds, 300);
+  assert.equal(manifest.continuationPolicy.bindingIdentity, "semantic-owner-state-excluding-receipt-prose");
   assert.equal(manifest.executionLeasePolicy.policy, "one-work-one-owning-context");
   assert.deepEqual(manifest.executionLeasePolicy.states, [
     "prepared",
@@ -272,12 +286,16 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.taskReturnPolicy.nativeThreadRead, "non-authoritative");
   assert.equal(manifest.taskReturnPolicy.guardFallback, "discover-unrouted-durable-return");
   assert.equal(manifest.taskReturnPolicy.machineFormat, "marked-return-sync-and-route-v1");
-  assert.equal(manifest.taskReturnPolicy.adapterParser, "scripts/vydykhai.mjs#validateDurableOutbox");
+  assert.equal(manifest.taskReturnPolicy.writer, "scripts/vydykhai.mjs#createReturnSync+createReturnRoute");
+  assert.equal(manifest.taskReturnPolicy.readerCompatibility, "bounded-legacy-field-and-status-normalization");
+  assert.equal(manifest.taskReturnPolicy.adapterParser, "scripts/vydykhai.mjs#parseDurableOutboxComment");
   assert.deepEqual(manifest.taskReturnPolicy.adapterAcceptance, [
     "real-emitted-return-format",
     "matching-route-receipt",
     "scheduled-noop-after-routing",
     "malformed-or-mismatched-route-audits",
+    "legacy-route-and-status-read-compatibility",
+    "canonical-writer-only",
     "older-pending-survives-newer-routed",
     "bounded-source-refresh-preserves-edits-and-pending",
     "pending-wakeup-survives-unrelated-change-and-recipient-handoff",
@@ -322,6 +340,17 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.memoryPolicy.taskBriefMaxNodes, null);
   assert.equal(manifest.memoryPolicy.contextRoutingPolicy, "goal-to-evidence-completeness");
   assert.deepEqual(manifest.memoryPolicy.contextRoutes, ["execution", "discovery", "correction-and-acceptance"]);
+  assert.deepEqual(manifest.memoryPolicy.executableBriefPolicy, {
+    schema: "memory.executable-brief.v1",
+    applicationReceiptSchema: "memory.application-receipt.v1",
+    compiler: "scripts/memory-brief.mjs#compileExecutableBrief",
+    validator: "scripts/memory-brief.mjs#validateApplicationReceipt",
+    useWhen: "non-factorable-obligations-only",
+    ordinaryMemory: "advisory-prose",
+    manifest: "compiler-derived",
+    digest: "sha256-rfc8785-jcs",
+    applicationReceipt: "required-before-claim",
+  });
   assert.equal(manifest.actionReceiptPolicy.policy, "critical-transition-readback");
   assert.deepEqual(manifest.actionReceiptPolicy.boundaries, [
     "task-launch",
@@ -345,6 +374,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.deepEqual(manifest.actionReceiptPolicy.results, ["pass", "mismatch", "unverified", "outcome-unknown"]);
   assert.equal(manifest.trackerPolicy.policy, "task-contract-with-event-driven-projection");
   assert.ok(manifest.managedPaths.includes("docs/workflows"));
+  assert.ok(manifest.managedPaths.includes("scripts/memory-brief.mjs"));
   assert.ok(!manifest.managedPaths.includes("docs/codex-workflows"));
   assert.match(await readFile(path.join(root, "docs/workflows/idea-memory-template.md"), "utf8"), /legacy\/read-only/);
   const core = await readFile(path.join(root, "docs/FRAMEWORK.md"), "utf8");
@@ -414,7 +444,9 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(taskHandoff, /DOD Control Line contribution:/);
   assert.match(taskHandoff, /Continue from:/);
   assert.match(taskHandoff, /Applicable Memory Brief:/);
+  assert.match(taskHandoff, /Executable Memory Brief:/);
   assert.match(taskHandoff, /Memory Brief result:/);
+  assert.match(taskHandoff, /Executable Memory application receipt:/);
   assert.match(taskHandoff, /Memory candidates:/);
   assert.match(taskHandoff, /Return receipt id:/);
   assert.match(taskHandoff, /CHECKPOINT_READY/);
@@ -474,6 +506,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectGuardWorkflow, /semantic incident id/);
   assert.match(projectGuardWorkflow, /two real boundary tests/);
   assert.match(projectGuardWorkflow, /no queued message, and no model call/);
+  assert.match(projectGuardWorkflow, /evaluateGuardLock/);
+  assert.match(projectGuardWorkflow, /one fresh bounded owner/);
   const projectLaunch = await readFile(path.join(root, "docs/workflows/project-launch.md"), "utf8");
   assert.match(projectLaunch, /bounded read-only memory backfill/);
   assert.match(projectLaunch, /Do not copy the full transcript or model narration/);

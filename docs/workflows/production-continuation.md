@@ -51,7 +51,7 @@ For `WORKING`, also supply `owner` with the same shape for the exact task contex
 
 Activity status is `ACTIVE`, `IDLE`, or `UNKNOWN`. Only authoritative native status or equivalent independent runtime evidence establishes idle; an empty chat view, old final answer, or absence of messages does not. Observations expire after five minutes; timestamps more than five seconds in the future are rejected. Missing, stale, malformed, wrong-context, or unobservable data returns coverage `LIMITED`, not a fabricated stall or a healthy result. One accepted observation limitation may stay quiet through the existing incident mechanism, but it remains `LIMITED` and cannot certify adoption.
 
-The key binds the action, current orchestrator, and matching lease identity/state/owner, not global snapshot or graph hashes. Unrelated memory changes retain the pending step; a changed action, lease, or recipient requires fresh observation. Re-read those exact sources before delivery. Keep the existing delta inventory and durable outbox discovery; this check neither reloads chat history nor replaces checks on other leases.
+The key binds the stable action id/work/owner/state, current orchestrator, and matching lease identity/state/owner, not receipt wording, evidence prose, or global snapshot/graph hashes. A refreshed receipt description and unrelated memory change retain the same observation; a changed action identity, state, lease, or recipient requires a fresh one. Re-read those exact sources before delivery. Keep the existing delta inventory and durable outbox discovery; this check neither reloads chat history nor replaces checks on other leases.
 
 ## Route The Result
 
