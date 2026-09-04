@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
-import { validateDurableOutbox } from "../scripts/vydykhai.mjs";
+import {
+  createReturnRoute,
+  createReturnSync,
+  parseDurableOutboxComment,
+  validateDurableOutbox,
+} from "../scripts/vydykhai.mjs";
 
 function producer(id) {
   return `<!-- vydykhai:return-sync v1 -->
@@ -52,6 +57,56 @@ test("complete pairs expose the same structured records used by guard-check", ()
   assert.equal(result.routes[0].fields.Consumer, "active-orchestrator");
   assert.equal(result.returns[0].valid, true);
   assert.equal(result.routes[0].valid, true);
+});
+
+test("canonical constructors emit parser-valid records and reject invented status grammar", () => {
+  const emittedReturn = createReturnSync({
+    status: "NEEDS_FIXES",
+    statusDetail: "Production was not touched",
+    returnReceiptId: "R1",
+    taskContextArtifact: "task-one / worker / none / abc123 / result",
+    memoryCandidates: "NO_MEMORY_DELTA",
+    artifactDisposition: "context -> FINISH / clean",
+    recommendedNextAction: "repair the bounded finding",
+  });
+  const emittedRoute = createReturnRoute({
+    returnReceiptId: "R1",
+    consumer: "active-orchestrator",
+    routedNextAction: "bounded repair routed",
+    evidence: "event-one",
+  });
+  const parsed = parseDurableOutboxComment(`${emittedReturn}\n${emittedRoute}`);
+  assert.deepEqual(parsed.issues, []);
+  assert.deepEqual(parsed.warnings, []);
+  assert.deepEqual(parsed.routedReturnIds, ["R1"]);
+  assert.throws(() => createReturnSync({ status: "NEEDS_FIXES / PRODUCTION_NOT_TOUCHED" }), TypeError);
+});
+
+test("bounded legacy route labels and status qualifiers remain readable", () => {
+  const legacyReturn = producer("R1").replace("Status: ACCEPT", "Status: NEEDS_FIXES / PRODUCTION_NOT_TOUCHED");
+  const legacyRoute = consumer("R1")
+    .replace("Consumer: active-orchestrator", "Consumer / route: active-orchestrator")
+    .replace("Evidence: event-one", "Accepted evidence: event-one");
+  const result = validateDurableOutbox(`${legacyReturn}\n${legacyRoute}`);
+  assert.deepEqual(result.issues, []);
+  assert.equal(result.warnings.length, 3);
+  assert.deepEqual(result.routedReturnIds, ["R1"]);
+  assert.equal(result.returns[0].fields.Status, "NEEDS_FIXES");
+  assert.deepEqual(result.returns[0].statusQualifiers, ["PRODUCTION_NOT_TOUCHED"]);
+  assert.equal(result.routes[0].fields.Consumer, "active-orchestrator");
+  assert.equal(result.routes[0].fields.Evidence, "event-one");
+});
+
+test("mixed canonical and legacy route labels stay ambiguous", () => {
+  for (const route of [
+    consumer("R1").replace("Consumer: active-orchestrator", "Consumer: active-orchestrator\nConsumer / route: active-orchestrator"),
+    consumer("R1").replace("Evidence: event-one", "Evidence: event-one\nAccepted evidence: event-one"),
+  ]) {
+    const result = validateDurableOutbox(`${producer("R1")}\n${route}`);
+    assert.equal(result.routedCount, 0);
+    assert.deepEqual(result.pendingReturnIds, ["R1"]);
+    assert.ok(result.issues.some((issue) => issue.includes("repeats or mixes")));
+  }
 });
 
 test("a newer routed result never masks an older pending result", () => {

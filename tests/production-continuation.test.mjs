@@ -57,6 +57,23 @@ test("service interruption leaves one routable step; dispatch then makes checks 
   assert.equal(check(working).action, "NOOP");
 });
 
+test("receipt prose can advance without invalidating the same semantic action binding", () => {
+  const before = state();
+  const afterReceipt = state({
+    ...next,
+    action: "Dispatch the same accepted increment using its refreshed receipt",
+    evidence: "accepted-brief-2",
+  });
+  assert.equal(readProductionContinuation(afterReceipt).key, readProductionContinuation(before).key);
+  assert.equal(check(afterReceipt, observation(before)).action, "WAKE");
+
+  const changedState = state({ ...next, state: "WAITING", action: "Wait", evidence: "gate-1",
+    resumeWhen: "The named review completes" }, "WAITING");
+  assert.notEqual(readProductionContinuation(changedState).key, readProductionContinuation(before).key);
+  const changedOwner = state({ ...next, owner: "new-manager" }).replace("Context: manager", "Context: new-manager");
+  assert.notEqual(readProductionContinuation(changedOwner).key, readProductionContinuation(before).key);
+});
+
 test("an active coordinator is not interrupted, but unresolved work is not accepted away", () => {
   const content = state();
   const active = observation(content, { orchestrator: { context: "manager", status: "ACTIVE", evidence: "turn-1" } });

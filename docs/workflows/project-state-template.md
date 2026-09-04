@@ -12,7 +12,7 @@ Snapshot as of: <latest durable event / revision / date>
 ## Control Snapshot
 
 Governor: <HEALTHY | REPAIR | ROTATE> | Receipt: <id/link> | Trigger: <semantic anomaly or active 24h review> | Audited incident: <semantic incident id / none at activation> | Basis event: <snapshot inspected> | Route: <deterministic close / fresh independent context>
-Project Guard: <ACTIVE | LIMITED | MISSING> | Runner: <project-owned external adapter/id> | Independent: <YES | NO> | Event route: <hook/outbox/activity watermark> | Schedule: <interval/native job> | Last proof: <time/result/source> | Wakeup: <active-context route> | Incident: <display-only last/current id or none; runner ledger is authority>
+Project Guard: <ACTIVE | LIMITED | MISSING> | Runner: <project-owned external adapter/id and lock liveness> | Independent: <YES | NO> | Event route: <hook/outbox/activity watermark> | Schedule: <interval/native job> | Last proof: <time/result/source> | Wakeup: <active-context route> | Incident: <display-only last/current id or none; runner ledger is authority>
 Human attention: <NONE | PENDING | RESURFACE_DUE> | ID: <stable id> | Request: <one plain-language decision or review> | Source: <task/result/link> | Raised: <event/time> | Resume after: <none or Guard/repair/rotation id>
 Orchestrator health: <HEALTHY | REVIEW | REPAIR | ROTATE> | Context: <canonical title/link> | Profile: ORCHESTRATOR / maximum / <resolved mapping> | Last compaction/context-loss signal: <numeric count / date or none>
 Work origin: <PASS | REVIEW | UNOWNED_PROJECT_WORK> | Advisory contract: <CONTROL_ONLY / ROUTE_TO_FOCUSED_CONTEXT / none> | Accepted evidence owner: <human decision / durable source / focused-context receipt / gap> | Last checked: <event/time/source>
@@ -96,7 +96,7 @@ Every deliberate departure from the current DOD and every human “remember/revi
 <!-- vydykhai:project-state:end -->
 ````
 
-The existing next action follows [Production Continuation](production-continuation.md): `READY`, `WORKING`, or `WAITING` with a concrete `resumeWhen`. Preserve it across service events; only completion or an explicit sourced decision supersedes it. `control-check` validates the record; `guard-check --activity` separately requires fresh adapter evidence before claiming liveness coverage.
+The existing next action follows [Production Continuation](production-continuation.md): `READY`, `WORKING`, or `WAITING` with a concrete `resumeWhen`. Preserve it across service events; only completion or an explicit sourced decision supersedes it. Receipt/evidence wording may refresh without changing its stable action binding; owner, state, lease, or action identity changes require a fresh observation. `control-check` validates the record; `guard-check --activity` separately requires fresh adapter evidence before claiming liveness coverage.
 
 `Human attention` is `NONE` when no answer is due. Otherwise keep one stable user-facing request as `PENDING`; if a Guard, repair, rotation, or later system event has displaced it, use `RESURFACE_DUE` until the orchestrator shows it again. A new request must combine with, resolve, or explicitly supersede the prior one; it may not silently replace it.
 

@@ -18,6 +18,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { compileExecutableBrief, validateApplicationReceipt } from "./memory-brief.mjs";
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const LOCK_FILE = ".vydykhai-lock.json";
@@ -28,6 +29,16 @@ const CANONICAL_MANIFEST = "https://raw.githubusercontent.com/vonjor-lab/vydykha
 const CANONICAL_SOURCE = "https://github.com/vonjor-lab/vydykhai-humans-as-agents";
 const FRAMEWORK_CREATOR = "Alexander Rozhnov";
 const FRAMEWORK_LICENSE = "PolyForm-Small-Business-1.0.0";
+const RETURN_STATUSES = new Set([
+  "BLOCKED_BEFORE_START",
+  "NEEDS_REBRIEF",
+  "CHECKPOINT_READY",
+  "ACCEPT",
+  "ACCEPT_WITH_FOLLOWUPS",
+  "NEEDS_FIXES",
+  "BLOCKED",
+  "OUTCOME_UNKNOWN",
+]);
 
 function usage() {
   return `Vydykhai framework manager
@@ -37,6 +48,8 @@ Usage:
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--json]
   node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--expect-state-sha <sha256>] [--expect-graph-sha <sha256>] [--json]
   node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--woken-incident <semantic-id>] [--repair-incident <semantic-id> --repair-attempts <count>] [--json]
+  node scripts/vydykhai.mjs memory-brief-compile --input <brief-input.json>
+  node scripts/vydykhai.mjs memory-brief-validate --envelope <brief-envelope.json> --receipt <application-receipt.json>
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
 `;
 }
@@ -58,6 +71,9 @@ function parseArgs(argv) {
     repairAttempts: null,
     expectStateSha: null,
     expectGraphSha: null,
+    input: null,
+    envelope: null,
+    receipt: null,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -70,7 +86,7 @@ function parseArgs(argv) {
       i += 1;
       if (!flags.from) throw new Error("--from requires a framework repository path");
     } else if (
-      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--woken-incident", "--repair-incident", "--repair-attempts", "--expect-state-sha", "--expect-graph-sha"].includes(
+      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--woken-incident", "--repair-incident", "--repair-attempts", "--expect-state-sha", "--expect-graph-sha", "--input", "--envelope", "--receipt"].includes(
         value,
       )
     ) {
@@ -85,6 +101,9 @@ function parseArgs(argv) {
         "--repair-attempts": "repairAttempts",
         "--expect-state-sha": "expectStateSha",
         "--expect-graph-sha": "expectGraphSha",
+        "--input": "input",
+        "--envelope": "envelope",
+        "--receipt": "receipt",
       }[value];
       flags[key] = argv[i + 1];
       i += 1;
@@ -175,6 +194,12 @@ async function loadManifest(root) {
       manifest.projectGuardPolicy.anomalyProfile !== "maximum-available" ||
       manifest.projectGuardPolicy.maxAutomaticRepairsPerIncident !== 1 ||
       manifest.projectGuardPolicy.repeatedRepairAction !== "control-degraded" ||
+      manifest.projectGuardPolicy.lockPolicy?.evaluator !== "scripts/vydykhai.mjs#evaluateGuardLock" ||
+      manifest.projectGuardPolicy.lockPolicy?.sameHostStaleAfterSeconds !== 120 ||
+      manifest.projectGuardPolicy.lockPolicy?.recovery !== "quarantine-then-recheck-never-replay" ||
+      manifest.projectGuardPolicy.lockPolicy?.unknownExternalOutcome !== "block" ||
+      manifest.projectGuardPolicy.staleServiceContextAction !== "one-observable-start-check-then-fresh-bounded-owner" ||
+      manifest.projectGuardPolicy.verificationShell !== "preserve-command-exit-status" ||
       (manifest.projectGuardPolicy.incidentIdentity &&
         manifest.projectGuardPolicy.incidentIdentity !== "semantic-condition-set"))
   ) {
@@ -194,7 +219,8 @@ async function loadManifest(root) {
   }
   if (manifest.continuationPolicy &&
       (manifest.continuationPolicy.policy !== "evidence-backed-next-action" ||
-       manifest.continuationPolicy.activityMaxAgeSeconds !== 300)) {
+       manifest.continuationPolicy.activityMaxAgeSeconds !== 300 ||
+       manifest.continuationPolicy.bindingIdentity !== "semantic-owner-state-excluding-receipt-prose")) {
     throw new Error(`Invalid continuation policy in ${file}`);
   }
   if (
@@ -205,6 +231,9 @@ async function loadManifest(root) {
       manifest.taskReturnPolicy.nativeWakeup !== "required-attempt" ||
       manifest.taskReturnPolicy.nativeThreadRead !== "non-authoritative" ||
       manifest.taskReturnPolicy.guardFallback !== "discover-unrouted-durable-return" ||
+      manifest.taskReturnPolicy.writer !== "scripts/vydykhai.mjs#createReturnSync+createReturnRoute" ||
+      manifest.taskReturnPolicy.readerCompatibility !== "bounded-legacy-field-and-status-normalization" ||
+      manifest.taskReturnPolicy.adapterParser !== "scripts/vydykhai.mjs#parseDurableOutboxComment" ||
       (manifest.taskReturnPolicy.machineFormat &&
         manifest.taskReturnPolicy.machineFormat !== "marked-return-sync-and-route-v1"))
   ) {
@@ -212,6 +241,16 @@ async function loadManifest(root) {
   }
   if (manifest.rotationPolicy?.policy && manifest.rotationPolicy.policy !== "independent-health-gated") {
     throw new Error(`Invalid rotation policy in ${file}`);
+  }
+  if (manifest.memoryPolicy?.executableBriefPolicy &&
+      (manifest.memoryPolicy.executableBriefPolicy.schema !== "memory.executable-brief.v1" ||
+       manifest.memoryPolicy.executableBriefPolicy.applicationReceiptSchema !== "memory.application-receipt.v1" ||
+       manifest.memoryPolicy.executableBriefPolicy.compiler !== "scripts/memory-brief.mjs#compileExecutableBrief" ||
+       manifest.memoryPolicy.executableBriefPolicy.validator !== "scripts/memory-brief.mjs#validateApplicationReceipt" ||
+       manifest.memoryPolicy.executableBriefPolicy.useWhen !== "non-factorable-obligations-only" ||
+       manifest.memoryPolicy.executableBriefPolicy.ordinaryMemory !== "advisory-prose" ||
+       manifest.memoryPolicy.executableBriefPolicy.applicationReceipt !== "required-before-claim")) {
+    throw new Error(`Invalid executable memory brief policy in ${file}`);
   }
   manifest.managedPaths = manifest.managedPaths.map(normalizeManagedPath);
   return manifest;
@@ -527,6 +566,9 @@ function printDoctor(result, asJson) {
           `repeat=${result.projectGuardPolicy.repeatedRepairAction}`,
       );
     }
+    if (result.projectGuardPolicy.lockPolicy?.recovery) {
+      console.log(`Guard lock: ${result.projectGuardPolicy.lockPolicy.recovery}`);
+    }
   } else {
     console.log("Project Guard: not declared by installed version");
   }
@@ -567,6 +609,9 @@ function printDoctor(result, asJson) {
   );
   if (Array.isArray(result.memoryPolicy.acceptanceOrder)) {
     console.log(`Memory acceptance: ${result.memoryPolicy.acceptanceOrder.join(" -> ")}`);
+  }
+  if (result.memoryPolicy.executableBriefPolicy?.schema) {
+    console.log(`Executable memory brief: ${result.memoryPolicy.executableBriefPolicy.schema}; atomic obligations only`);
   }
   if (result.actionReceiptPolicy?.policy && Array.isArray(result.actionReceiptPolicy.boundaries)) {
     console.log(
@@ -657,11 +702,90 @@ function blockField(block, name) {
   return block.match(new RegExp(`^${escapeRegExp(name)}:[\\t ]*([^\\r\\n]*)$`, "m"))?.[1]?.trim() || "";
 }
 
+function compatibleBlockField(block, canonicalName, legacyNames = []) {
+  const names = [canonicalName, ...legacyNames];
+  const occurrences = names.flatMap((name) => [...block.matchAll(
+    new RegExp(`^${escapeRegExp(name)}:[\\t ]*([^\\r\\n]*)$`, "gm"),
+  )].map((match) => ({ name, value: match[1].trim() })));
+  return {
+    value: occurrences.length === 1 ? occurrences[0].value : "",
+    selectedName: occurrences.length === 1 ? occurrences[0].name : null,
+    occurrenceCount: occurrences.length,
+    legacy: occurrences.length === 1 && occurrences[0].name !== canonicalName,
+  };
+}
+
+export function parseReturnStatus(value) {
+  if (typeof value !== "string") return { valid: false, status: null, qualifiers: [] };
+  const parts = value.split(/\s*\/\s*/);
+  const [status, ...qualifiers] = parts;
+  const valid = RETURN_STATUSES.has(status) && qualifiers.every((part) => /^[A-Z][A-Z0-9_]*$/.test(part));
+  return { valid, status: valid ? status : null, qualifiers: valid ? qualifiers : [] };
+}
+
+function requiredWriterLine(name, value) {
+  if (typeof value !== "string" || !value.trim() || /[\r\n]/.test(value) || /<.*>/.test(value)) {
+    throw new TypeError(`${name} must be one concrete line`);
+  }
+  return value.trim();
+}
+
+export function createReturnSync({
+  status,
+  statusDetail = null,
+  returnReceiptId,
+  returnLifecycle = "WRITTEN -> SENT",
+  taskContextArtifact,
+  memoryCandidates,
+  artifactDisposition,
+  recommendedNextAction,
+} = {}) {
+  if (!RETURN_STATUSES.has(status)) throw new TypeError("status must be one canonical Return Sync status");
+  if (!/^WRITTEN(?:\s*->\s*SENT)?$/.test(returnLifecycle || "")) {
+    throw new TypeError("returnLifecycle must be WRITTEN or WRITTEN -> SENT");
+  }
+  const lines = [
+    "<!-- vydykhai:return-sync v1 -->",
+    "# Return Sync",
+    `Status: ${status}`,
+  ];
+  if (statusDetail !== null) lines.push(`Status detail: ${requiredWriterLine("statusDetail", statusDetail)}`);
+  lines.push(
+    `Return receipt id: ${requiredWriterLine("returnReceiptId", returnReceiptId)}`,
+    `Return lifecycle: ${returnLifecycle}`,
+    `Task / context / PR / commit / artifact: ${requiredWriterLine("taskContextArtifact", taskContextArtifact)}`,
+    `Memory candidates: ${requiredWriterLine("memoryCandidates", memoryCandidates)}`,
+    `Artifact disposition: ${requiredWriterLine("artifactDisposition", artifactDisposition)}`,
+    `Recommended orchestrator next action: ${requiredWriterLine("recommendedNextAction", recommendedNextAction)}`,
+    "<!-- vydykhai:return-sync:end -->",
+  );
+  return lines.join("\n");
+}
+
+export function createReturnRoute({
+  returnReceiptId,
+  consumer,
+  routedNextAction,
+  evidence,
+} = {}) {
+  return [
+    "<!-- vydykhai:return-route v1 -->",
+    "# Return Route",
+    `Return receipt id: ${requiredWriterLine("returnReceiptId", returnReceiptId)}`,
+    "Return lifecycle: RECEIVED -> CONSUMED -> ROUTED",
+    `Consumer: ${requiredWriterLine("consumer", consumer)}`,
+    `Routed next action: ${requiredWriterLine("routedNextAction", routedNextAction)}`,
+    `Evidence: ${requiredWriterLine("evidence", evidence)}`,
+    "<!-- vydykhai:return-route:end -->",
+  ].join("\n");
+}
+
 // Shared by the CLI and host adapters; only complete, unambiguous pairs close returns.
 export function validateDurableOutbox(content) {
   const returnBlocks = markedBlocks(content, "return-sync", "Return Sync");
   const routeBlocks = markedBlocks(content, "return-route", "Return Route");
   const issues = [...returnBlocks.issues, ...routeBlocks.issues];
+  const warnings = [];
   const unframed = content
     .replace(/<!-- vydykhai:return-sync v1 -->[\s\S]*?<!-- vydykhai:return-sync:end -->/g, "")
     .replace(/<!-- vydykhai:return-route v1 -->[\s\S]*?<!-- vydykhai:return-route:end -->/g, "");
@@ -680,7 +804,9 @@ export function validateDurableOutbox(content) {
   for (const block of returnBlocks.blocks) {
     const issueStart = issues.length;
     const id = blockField(block, "Return receipt id");
-    const status = blockField(block, "Status");
+    const rawStatus = blockField(block, "Status");
+    const parsedStatus = parseReturnStatus(rawStatus);
+    const status = parsedStatus.status || rawStatus;
     const lifecycle = blockField(block, "Return lifecycle");
     const required = [
       ["Status", status],
@@ -699,18 +825,11 @@ export function validateDurableOutbox(content) {
     }
     if (
       status &&
-      ![
-        "BLOCKED_BEFORE_START",
-        "NEEDS_REBRIEF",
-        "CHECKPOINT_READY",
-        "ACCEPT",
-        "ACCEPT_WITH_FOLLOWUPS",
-        "NEEDS_FIXES",
-        "BLOCKED",
-        "OUTCOME_UNKNOWN",
-      ].includes(status)
+      !parsedStatus.valid
     ) {
-      issues.push(`Durable outbox: Return Sync ${id || "<missing>"} has invalid status ${status}`);
+      issues.push(`Durable outbox: Return Sync ${id || "<missing>"} has invalid status ${rawStatus}`);
+    } else if (parsedStatus.qualifiers.length) {
+      warnings.push(`Durable outbox: Return Sync ${id || "<missing>"} uses legacy status qualifiers; emit canonical Status plus Status detail next time`);
     }
     if (lifecycle && !/^WRITTEN(?:\s*->\s*SENT)?$/.test(lifecycle)) {
       issues.push(`Durable outbox: Return Sync ${id || "<missing>"} lifecycle must be WRITTEN or WRITTEN -> SENT`);
@@ -720,24 +839,39 @@ export function validateDurableOutbox(content) {
       issues.push(`Durable outbox: duplicate Return Sync ${id}`);
       ambiguousReturns.add(id);
     }
-    returns.set(id, { id, fields: Object.fromEntries(required), valid: framingValid && issues.length === issueStart });
+    returns.set(id, {
+      id,
+      fields: Object.fromEntries(required),
+      rawStatus,
+      statusQualifiers: parsedStatus.qualifiers,
+      valid: framingValid && issues.length === issueStart,
+    });
   }
 
   for (const block of routeBlocks.blocks) {
     const issueStart = issues.length;
     const id = blockField(block, "Return receipt id");
     const lifecycle = blockField(block, "Return lifecycle");
+    const consumer = compatibleBlockField(block, "Consumer", ["Consumer / route"]);
+    const evidence = compatibleBlockField(block, "Evidence", ["Accepted evidence"]);
     const required = [
       ["Return receipt id", id],
       ["Return lifecycle", lifecycle],
-      ["Consumer", blockField(block, "Consumer")],
+      ["Consumer", consumer.value],
       ["Routed next action", blockField(block, "Routed next action")],
-      ["Evidence", blockField(block, "Evidence")],
+      ["Evidence", evidence.value],
     ];
     for (const [field, value] of required) {
       if (!value || /<.*>/.test(value)) issues.push(`Durable outbox: Return Route ${id || "<missing>"} lacks ${field}`);
-      if (countExact(block, new RegExp(`^${escapeRegExp(field)}:`, "gm")) > 1) {
+      if (!["Consumer", "Evidence"].includes(field) && countExact(block, new RegExp(`^${escapeRegExp(field)}:`, "gm")) > 1) {
         issues.push(`Durable outbox: Return Route ${id || "<missing>"} repeats ${field}`);
+      }
+    }
+    for (const [field, parsed] of [["Consumer", consumer], ["Evidence", evidence]]) {
+      if (parsed.occurrenceCount > 1) {
+        issues.push(`Durable outbox: Return Route ${id || "<missing>"} repeats or mixes ${field} aliases`);
+      } else if (parsed.legacy) {
+        warnings.push(`Durable outbox: Return Route ${id || "<missing>"} uses legacy ${parsed.selectedName}; emit ${field} next time`);
       }
     }
     if (lifecycle && !/^RECEIVED\s*->\s*CONSUMED\s*->\s*ROUTED$/.test(lifecycle)) {
@@ -748,7 +882,15 @@ export function validateDurableOutbox(content) {
       issues.push(`Durable outbox: duplicate Return Route ${id}`);
       ambiguousRoutes.add(id);
     }
-    routes.set(id, { id, fields: Object.fromEntries(required), valid: framingValid && issues.length === issueStart });
+    routes.set(id, {
+      id,
+      fields: Object.fromEntries(required),
+      compatibility: {
+        consumerField: consumer.selectedName,
+        evidenceField: evidence.selectedName,
+      },
+      valid: framingValid && issues.length === issueStart,
+    });
   }
 
   for (const id of ambiguousReturns) returns.get(id).valid = false;
@@ -765,6 +907,7 @@ export function validateDurableOutbox(content) {
 
   return {
     issues,
+    warnings,
     returnCount: returns.size,
     routeCount: routes.size,
     routedCount: routedReturnIds.length,
@@ -773,6 +916,11 @@ export function validateDurableOutbox(content) {
     returns: [...returns.values()],
     routes: [...routes.values()],
   };
+}
+
+// Host adapters use the same parser for individual task/tracker comments.
+export function parseDurableOutboxComment(content) {
+  return validateDurableOutbox(content);
 }
 
 function validateClosedArtifact(content, { label, startMarker, endMarker, requiredHeadings }) {
@@ -959,7 +1107,7 @@ function concreteLine(value) {
     !/<[^>]*>/.test(value) && value.trim().toLowerCase() !== "none";
 }
 
-// Bind observations to the next action and its owner, not unrelated graph/state edits.
+// Bind observations to semantic ownership and state, not mutable receipt prose.
 export function readProductionContinuation(content) {
   const issues = [];
   const fail = (reason) => issues.push(`Production continuation: ${reason}`);
@@ -999,8 +1147,63 @@ export function readProductionContinuation(content) {
   if (lease?.[1] === "OUTCOME_UNKNOWN") fail("uncertain work needs reconciliation before continuation");
   const record = Object.fromEntries(["schemaVersion", "id", "work", "action", "owner", "state", "evidence", "resumeWhen"]
     .map((field) => [field, value[field] ?? null]));
-  return { value: record, orchestrator, issues,
-    key: issues.length ? null : sha256(JSON.stringify({ record, orchestrator, lease: lease?.slice(0, 3) ?? null })) };
+  const binding = {
+    schemaVersion: value.schemaVersion,
+    id: value.id,
+    work: value.work,
+    owner: value.owner,
+    state: value.state,
+    orchestrator,
+    leaseIdentity: lease ? { work: lease[0], state: lease[1], owner: lease[2] } : null,
+  };
+  return {
+    value: record,
+    orchestrator,
+    binding,
+    issues,
+    key: issues.length ? null : sha256(JSON.stringify(binding)),
+  };
+}
+
+export function evaluateGuardLock(
+  observation,
+  { now = Date.now(), graceSeconds = 120 } = {},
+) {
+  const result = (status, reason, ageSeconds = null) => ({ status, reason, ageSeconds });
+  if (observation?.exists === false) return result("FREE", "no lock exists");
+  if (!observation || observation.exists !== true) return result("LIMITED", "lock existence is unknown");
+  if (!concreteLine(observation.hostId) || !concreteLine(observation.currentHostId)) {
+    return result("LIMITED", "lock host identity is unavailable");
+  }
+  if (observation.hostId !== observation.currentHostId) {
+    return result("LIMITED", "cross-host process liveness cannot be inferred");
+  }
+  if (!Number.isInteger(observation.pid) || observation.pid < 1 || typeof observation.pidAlive !== "boolean") {
+    return result("LIMITED", "lock process liveness is unavailable");
+  }
+  const acquired = typeof observation.acquiredAt === "string" ? Date.parse(observation.acquiredAt) : NaN;
+  if (!Number.isFinite(acquired) || acquired > now + 5000) {
+    return result("LIMITED", "lock acquisition time is invalid");
+  }
+  const ageSeconds = Math.max(0, (now - acquired) / 1000);
+  if (observation.pidAlive) return result("HELD", "owning process is alive", ageSeconds);
+  if (!Number.isFinite(graceSeconds) || graceSeconds < 0) return result("LIMITED", "lock grace period is invalid");
+  if (ageSeconds <= graceSeconds) return result("HELD", "dead process is still inside the settlement window", ageSeconds);
+  return result("STALE_RECLAIMABLE", "same-host process is dead beyond the settlement window", ageSeconds);
+}
+
+export function planGuardLockRecovery(evaluation, { externalOutcome = "UNKNOWN" } = {}) {
+  if (!evaluation || evaluation.status !== "STALE_RECLAIMABLE") {
+    return { action: "NONE", replayExternalAction: false, reason: "lock is not safely reclaimable" };
+  }
+  if (!["NO_EXTERNAL_ACTION", "RECONCILED"].includes(externalOutcome)) {
+    return { action: "BLOCKED", replayExternalAction: false, reason: "external outcome must be reconciled first" };
+  }
+  return {
+    action: "QUARANTINE_STALE_LOCK_THEN_RECHECK",
+    replayExternalAction: false,
+    reason: "remove only the stale lock boundary and recompute current control state",
+  };
 }
 
 export function evaluateProductionContinuation(content, activity, { now = Date.now(), maxAgeSeconds = 300 } = {}) {
@@ -1387,6 +1590,7 @@ function printGuardCheck(result, asJson) {
   if (result.continuation) console.log(`Production continuation: ${result.continuation.coverage}`);
   if (result.leaseActivity) console.log(`Lease activity: ${result.leaseActivity.coverage}`);
   for (const issue of [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])]) console.log(`- ${issue}`);
+  for (const warning of result.outbox?.warnings || []) console.log(`Warning: ${warning}`);
 }
 
 function printControlCheck(result, asJson) {
@@ -1407,6 +1611,7 @@ function printControlCheck(result, asJson) {
     );
   }
   for (const issue of [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])]) console.log(`- ${issue}`);
+  for (const warning of result.outbox?.warnings || []) console.log(`Warning: ${warning}`);
 }
 
 async function cloneUpstream(upstream) {
@@ -1483,6 +1688,26 @@ async function main() {
       activityPath: flags.activity ? path.resolve(flags.activity) : null,
     });
     printGuardCheck(result, flags.json);
+    return;
+  }
+
+  if (command === "memory-brief-compile") {
+    if (!flags.input) throw new Error(`memory-brief-compile requires --input\n\n${usage()}`);
+    const input = await readJson(path.resolve(flags.input));
+    console.log(JSON.stringify(compileExecutableBrief(input), null, 2));
+    return;
+  }
+
+  if (command === "memory-brief-validate") {
+    if (!flags.envelope || !flags.receipt) {
+      throw new Error(`memory-brief-validate requires --envelope and --receipt\n\n${usage()}`);
+    }
+    const result = validateApplicationReceipt({
+      envelope: await readJson(path.resolve(flags.envelope)),
+      receipt: await readJson(path.resolve(flags.receipt)),
+    });
+    console.log(JSON.stringify(result, null, 2));
+    if (result.status !== "APPLIED") process.exitCode = 1;
     return;
   }
 

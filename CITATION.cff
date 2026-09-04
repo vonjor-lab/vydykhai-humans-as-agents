@@ -5,7 +5,7 @@ title: "Vydykhai: Team Autopilot for People and AI"
 authors:
   - family-names: Rozhnov
     given-names: Alexander
-version: 1.27.0
+version: 1.28.0
 date-released: "2026-09-03"
 license: PolyForm-Small-Business-1.0.0
 repository-code: "https://github.com/vonjor-lab/vydykhai-humans-as-agents"
