@@ -21,6 +21,7 @@ import { fileURLToPath } from "node:url";
 import { compileExecutableBrief, validateApplicationReceipt } from "./memory-brief.mjs";
 import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
+import { planAdoption } from "./adoption-plan.mjs";
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const LOCK_FILE = ".vydykhai-lock.json";
@@ -53,6 +54,7 @@ Usage:
   node scripts/vydykhai.mjs memory-brief-compile --input <brief-input.json>
   node scripts/vydykhai.mjs memory-brief-validate --envelope <brief-envelope.json> --receipt <application-receipt.json>
   node scripts/vydykhai.mjs context-run --input <context-request.json>
+  node scripts/vydykhai.mjs adoption-plan [target] --json
   node scripts/vydykhai.mjs context-prepare <plan|confirm|read|ack|bind> --output <task-local-dir> ...
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
 `;
@@ -385,6 +387,13 @@ async function installFrom(sourceRoot, targetRoot, { force = false } = {}) {
   await assertNoTargetSymlink(targetRoot, "AGENTS.md");
   const currentAgents = existsSync(targetAgents) ? await readFile(targetAgents, "utf8") : "";
   const nextBlock = await agentsBlock(sourceRoot);
+  await assertNoTargetSymlink(targetRoot, LOCK_FILE);
+  const revision = await sourceRevision(sourceRoot);
+  const adoptionPlan = planAdoption({ manifest, managedFiles: newHashes, agentsBlockHash: sha256(nextBlock),
+    sourceRevision: revision, previousLock: oldLock,
+    changelog: await readFile(path.join(sourceRoot, "docs/COLLABORATION_FRAMEWORK_CHANGELOG.md"), "utf8").catch(e => {
+      if (e.code === "ENOENT") return ""; throw e;
+    }) });
   const currentBlock = extractAgentsBlock(currentAgents);
   if (currentBlock) {
     const previousBlockHash = oldLock?.agentsBlockHash;
@@ -422,13 +431,22 @@ async function installFrom(sourceRoot, targetRoot, { force = false } = {}) {
     canonicalSource: manifest.canonicalSource,
     requiredNotice: manifest.requiredNotice,
     upstream: manifest.upstream,
-    sourceRevision: await sourceRevision(sourceRoot),
+    sourceRevision: revision,
+    adoptionPlan,
     managedFiles: newHashes,
     agentsBlockHash: sha256(nextBlock),
   };
   await writeFile(path.join(targetRoot, LOCK_FILE), `${JSON.stringify(lock, null, 2)}\n`, "utf8");
 
   return { manifest, lock, files, conflicts, staleFiles };
+}
+
+function printAdoption(plan) {
+  console.log(`Activation: ${plan.activeUse}; adoption plan ${plan.id}`);
+  console.log(`Release review: ${plan.reviewFromVersion || "fresh/unknown baseline"} -> ${plan.target.version}; ${plan.releases.map(r => r.version).join(", ") || plan.releaseCoverage}`);
+  for (const requirement of plan.requirements) console.log(`- ${requirement.id}: ${requirement.action}`);
+  console.log(plan.next);
+  console.log("Retrieve/resume: node scripts/vydykhai.mjs adoption-plan --json (in the installed workspace). Progress and bounded repair attempts remain in Project State; installation is not activation.");
 }
 
 async function fetchUpstreamManifest(manifest) {
@@ -1821,6 +1839,7 @@ async function main() {
     const result = await installFrom(SCRIPT_ROOT, target, flags);
     console.log(`Installed Vydykhai ${result.manifest.version} into ${target}`);
     console.log(`Managed files: ${result.files.length}; project-specific files were preserved.`);
+    printAdoption(result.lock.adoptionPlan);
     return;
   }
 
@@ -1829,6 +1848,23 @@ async function main() {
     const result = await doctor(target, flags);
     printDoctor(result, flags.json);
     if (!result.ok) process.exitCode = 1;
+    return;
+  }
+
+  if (command === "adoption-plan") {
+    const target = path.resolve(positionals[0] || process.cwd());
+    const lock = await loadLock(target);
+    if (!lock) throw new Error("Install lock missing; establish installed kit identity first");
+    // Older loaded updaters cannot call new code after copying it. Supply their
+    // missing handoff without writing in the active accepted checkout.
+    const manifest = await loadManifest(target);
+    if (manifest.version !== lock.installedVersion) throw new Error("Installed manifest/lock mismatch; resolve kit integrity first");
+    const plan = planAdoption({ manifest, managedFiles: lock.managedFiles, agentsBlockHash: lock.agentsBlockHash,
+      sourceRevision: lock.sourceRevision, previousLock: lock.adoptionPlan ? lock : { ...lock, installedVersion: null },
+      changelog: await readFile(path.join(target, "docs/COLLABORATION_FRAMEWORK_CHANGELOG.md"), "utf8").catch(e => {
+        if (e.code === "ENOENT") return ""; throw e;
+      }) });
+    if (flags.json) console.log(JSON.stringify(plan, null, 2)); else printAdoption(plan);
     return;
   }
 
@@ -1900,6 +1936,7 @@ async function main() {
     try {
       const result = await installFrom(source, target, flags);
       console.log(`Updated Vydykhai to ${result.manifest.version} in ${target}`);
+      printAdoption(result.lock.adoptionPlan);
     } finally {
       if (temporary) await rm(temporary.parent, { recursive: true, force: true });
     }

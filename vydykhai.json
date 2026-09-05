@@ -513,6 +513,7 @@
     "scripts/context-run.mjs",
     "scripts/context-hook.mjs",
     "scripts/context-prepare.mjs",
+    "scripts/adoption-plan.mjs",
     "examples/context-preparation",
     "docs/AGENTS_CORE.md",
     "docs/FRAMEWORK.md",
@@ -526,5 +527,73 @@
     ".agents/skills/start-work",
     ".agents/skills/daily-alignment",
     ".agents/skills/accept-work"
+  ],
+  "adoptionRequirements": [
+    {
+      "id": "own-transition",
+      "since": "1.30.0",
+      "action": "One active orchestrator owns prepare/apply-prove/resume at a named safe checkpoint; reuse one maintenance executor and preserve baseline, pending human action and productive next step.",
+      "reuseBy": [
+        "acceptedBaseline",
+        "transitionOwner"
+      ],
+      "workflow": "docs/workflows/framework-activation.md"
+    },
+    {
+      "id": "active-context",
+      "since": "1.30.0",
+      "action": "Read back the actual active context cwd/accepted HEAD/core/title/State and its own live plus offline doctor; rotate only with justification and existing confirmation.",
+      "reuseBy": [
+        "targetBundle",
+        "activeContext",
+        "acceptedHead"
+      ],
+      "workflow": "docs/workflows/framework-activation.md"
+    },
+    {
+      "id": "team-memory",
+      "since": "1.30.0",
+      "action": "Reconcile relevant participants through existing sync: source-backed delta/no-change/gap, one integration owner, shared watermark and each participant own retrieval/readiness; unavailable scope stays pending.",
+      "reuseBy": [
+        "participant",
+        "sourceRange",
+        "moduleContract",
+        "sharedWatermark"
+      ],
+      "workflow": "docs/workflows/framework-activation.md"
+    },
+    {
+      "id": "prepared-work",
+      "since": "1.30.0",
+      "action": "Use context-prepare/context-run by default for new qualifying tasks; old workers only at safe rebrief/readback. Prove independent-source ordinary probes and source-to-worker/new-plus-retained-behavior/Return/memory path.",
+      "reuseBy": [
+        "sourceRange",
+        "moduleContract",
+        "worker",
+        "verificationBoundary"
+      ],
+      "workflow": "docs/workflows/framework-activation.md"
+    },
+    {
+      "id": "guard-continuity",
+      "since": "1.30.0",
+      "action": "Keep one liveness-only Guard; reuse applicable adapter/bundle/recipient evidence. Changed service adoption or recipient needs real event, installed timer and silent repeat proof.",
+      "reuseBy": [
+        "guardBundle",
+        "recipient",
+        "installedTimer"
+      ],
+      "workflow": "docs/workflows/framework-activation.md"
+    },
+    {
+      "id": "resume-or-checkpoint",
+      "since": "1.30.0",
+      "action": "Record accepted target activation with explicit limits or exact access/decision gap in Project State. One bounded repair per unchanged defect; never reset attempts on update, no broad rollback.",
+      "reuseBy": [
+        "defectIdentity",
+        "changedServiceBundle"
+      ],
+      "workflow": "docs/workflows/framework-activation.md"
+    }
   ]
 }
