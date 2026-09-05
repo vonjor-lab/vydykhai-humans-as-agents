@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.29.0",
+  "version": "1.30.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -510,6 +510,10 @@
     "vydykhai.json",
     "scripts/vydykhai.mjs",
     "scripts/memory-brief.mjs",
+    "scripts/context-run.mjs",
+    "scripts/context-hook.mjs",
+    "scripts/context-prepare.mjs",
+    "examples/context-preparation",
     "docs/AGENTS_CORE.md",
     "docs/FRAMEWORK.md",
     "docs/FRAMEWORK_RU.md",

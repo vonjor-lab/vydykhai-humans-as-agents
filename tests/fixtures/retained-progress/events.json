@@ -1,0 +1,29 @@
+{
+  "notice": "Synthetic source events, authored before the graph projection. No product history was read.",
+  "inventoryId": "synthetic-sources-r1",
+  "limits": ["Only S1-S7 are inventoried.", "Earlier history and unavailable participant history are UNKNOWN, not covered."],
+  "events": [
+    {"id":"S1","revision":"1","scope":"bundle","assertions":[
+      {"id":"S1:1","text":"Accept buildBundle at bundle-r1 for the JSON consumer. It normalizes labels, rejects duplicate identifiers, orders entries by identifier, and emits schema bundle/v1, entries and count. normalizeEntries is an internal pass that returns an array; it is not the accepted public boundary."},
+      {"id":"S1:2","text":"The enclosing workspace experiment remains unfinished. Its status does not undo the independently accepted buildBundle capability or certify the whole workspace."}
+    ]},
+    {"id":"S2","revision":"1","scope":"bundle","assertions":[
+      {"id":"S2:1","text":"Before compiling the next task, retain the original requirement: duplicate identifiers must fail with DUPLICATE_ID, including when all labels differ. Do not silently keep the last entry."}
+    ]},
+    {"id":"S3","revision":"1","scope":"bundle","assertions":[
+      {"id":"S3:1","text":"When the bundle/export module next returns to scope, remind the module owner to decide whether CSV should be supported. Revisit the discussion then; implementation is deferred and requires that owner's explicit decision. Close only with that decision or explicit retirement."}
+    ]},
+    {"id":"S4","revision":"1","scope":"bundle","assertions":[
+      {"id":"S4:1","text":"Local user correction: for the next accepted bundle revision, compare identifiers case-insensitively for duplicate detection, preserving their original spelling in output. This supersedes the case-sensitive comparison in bundle-r1 only. The executor may prepare the local fix; send the scoped correction and source to the orchestrator before another dependent task is dispatched."}
+    ]},
+    {"id":"S5","revision":"1","scope":"bundle","assertions":[
+      {"id":"S5:1","text":"A candidate returned all required brief IDs, but supplied no candidate behavior evidence. Delivery accounting may be complete; acceptance of the changed bundle requires its new result and the still-applicable accepted examples on the candidate revision."}
+    ]},
+    {"id":"S6","revision":"1","scope":"bundle","assertions":[
+      {"id":"S6:1","text":"The active worker started with an older handoff and has not read back the required context behavior. Updating the orchestrator does not update that worker. Send one bounded patch at its next safe boundary and require its readback; unaffected work may continue."}
+    ]},
+    {"id":"S7","revision":"1","scope":"theme","assertions":[
+      {"id":"S7:1","text":"Change the theme preview label. No bundle source, route, input assumption, accepted example or consumer changes."}
+    ]}
+  ]
+}

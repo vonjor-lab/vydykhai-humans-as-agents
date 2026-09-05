@@ -55,6 +55,8 @@ Last retrieval check: <CURRENT/NEXT/CROSS_DOMAIN/PRIOR_MISS receipt / evaluator 
 
 Process a source range once, then revisit only a changed revision or a declared gap. User corrections and participant decisions are sources, not model narration. Later evidence may supersede earlier meaning but never erases its provenance.
 
+For a task requiring `retained-progress-v1`, `Checked` points to the bounded intake/classification/integration receipts in [Context Route](context-route.md#bounded-reference-caller). Sources are inventoried independently of MEM ids; observed ranges differ from classified prefixes. An unclassified range remains pending even without a node. Reviewed no-change receipts do not advance the semantic Graph watermark. Existing columns/schemas remain readable; receipts do not create a second graph.
+
 | Source / participant | Range / revision | Anchors | Current nodes | Coverage | Gap / supersession | Checked |
 | --- | --- | --- | --- | --- | --- | --- |
 | <brief / dialogue / meeting / task / PR / code / artifact / participant packet> | <bounded range or exact revision> | <ENT ids> | <MEM ids or none> | <COVERED / PARTIAL / CONFLICT / UNAVAILABLE / EVIDENCE_ONLY> | <exact missing source, conflict, or superseding node; none when covered> | <actor / date / receipt> |

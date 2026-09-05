@@ -1,0 +1,24 @@
+{
+  "notice":"Frozen source-derived oracle. Never regenerate from a graph or candidate output. Changes require a new explicit source decision and review.",
+  "acceptedPublicBoundary":"buildBundle",
+  "internalBoundary":"normalizeEntries",
+  "baselineRevision":"bundle-r1",
+  "parentAccepted":false,
+  "examples":[
+    {"id":"B1","sourceAssertions":["S1:1"],"input":[{"id":"b","label":" Beta "},{"id":"a","label":" Alpha "}],"expected":{"schema":"bundle/v1","entries":[{"id":"a","label":"Alpha"},{"id":"b","label":"Beta"}],"count":2}},
+    {"id":"B2","sourceAssertions":["S2:1"],"input":[{"id":"a","label":"One"},{"id":"a","label":"Two"}],"expectedError":"DUPLICATE_ID"},
+    {"id":"N1","sourceAssertions":["S4:1"],"input":[{"id":"a","label":"One"},{"id":"A","label":"Two"}],"expectedError":"DUPLICATE_ID","appliesAt":"bundle-r2"}
+  ],
+  "cases":[
+    {"id":"C1","sources":["S1:1","S2:1"],"query":"Continue the bundle change with the original requirements.","negative":"Remove S2 before graph and brief compilation, retaining it in the independent inventory.","expected":"SOURCE_DISPOSITION_MISSING for S2:1; affected recall claim cannot pass.","evidence":"RUNTIME_BOUNDARY + PROPOSAL_ONLY"},
+    {"id":"C2","sources":["S3:1"],"query":"We are working on exporting the collection again. What must we revisit?","negative":"Store only a broad dormant idea without the module return trigger.","expected":"Recall CSV decision, module owner, module-return trigger and human gate; no implementation authorization.","evidence":"SEMANTIC_NOT_RUN"},
+    {"id":"C3","sources":["S1:1","S1:2"],"query":"Use the accepted bundling algorithm for the next consumer even though the workspace experiment is unfinished.","negative":"Substitute normalizeEntries for buildBundle.","expected":"Resolve buildBundle public contract, bundle-r1 and B1/B2; preserve independent capability; parent stays open.","evidence":"RUNTIME_BOUNDARY + SYNTHETIC_BEHAVIOR; fresh-worker interpretation NOT_RUN"},
+    {"id":"C4","sources":["S4:1"],"query":"Continue the next bundle task after the local duplicate-detection correction.","negative":"A routed return has been recorded but the correction is absent from shared meaning.","expected":"Pending correction blocks affected dispatch; after integration use case-insensitive comparison, preserve spelling and supersession source; unrelated work continues.","evidence":"RUNTIME_BOUNDARY + PROPOSAL_ONLY; semantic integration NOT_RUN"},
+    {"id":"C5","sources":["S5:1"],"query":"All required IDs were applied. Is this candidate accepted?","negative":"Supply a valid application receipt without behavior evidence.","expected":"Application receipt APPLIED; product acceptance unestablished until B1/B2 and N1 when applicable have candidate evidence.","evidence":"RUNTIME_BOUNDARY; acceptance workflow NOT_RUN"},
+    {"id":"C6","sources":["S1:1","S2:1","S4:1"],"query":"Accept the new case-insensitive duplicate check while preserving existing bundling.","negative":"Update expected outputs to match the internal pass or omit an inherited example.","expected":"Run B1/B2 and N1 against bundle-r2; original expectations remain unchanged absent an explicit supersession decision.","evidence":"SYNTHETIC_BEHAVIOR; product observation NOT_RUN"},
+    {"id":"C7","sources":["S1:1"],"query":"Continue the same accepted bundle work with unchanged relevant context.","negative":"Demand another historical discovery or model call solely because of resume.","expected":"Reuse preparation and semantic review; deterministic current dependency check; no extra model call.","evidence":"RUNTIME_BOUNDARY + PROPOSAL_ONLY; orchestrator dispatch NOT_RUN"},
+    {"id":"C8","sources":["S7:1"],"query":"Resume bundling after an unrelated theme edit.","negative":"Invalidate bundling because the whole graph hash changed.","expected":"Reuse relevant semantic preparation if source membership and both-direction route dependencies are unchanged. New task may recompile an envelope against the new whole graph hash, without another semantic model call.","evidence":"RUNTIME_BOUNDARY + PROPOSAL_ONLY"},
+    {"id":"C9","sources":["S2:1"],"query":"Continue with one original bundle instruction inaccessible.","negative":"Infer that unavailable or unindexed history contains no obligations.","expected":"Named source gap and bounded recovery; no complete-history claim or global freeze.","evidence":"PROPOSAL_ONLY"},
+    {"id":"C10","sources":["S6:1"],"query":"Resume the older worker under the required current handoff behavior.","negative":"Treat the orchestrator version as worker readback.","expected":"Affected work needs one patch and bound worker readback; if unsupported, bounded rebrief/replacement through existing route. No automatic retry or global worker rotation.","evidence":"PROPOSAL_ONLY"}
+  ]
+}

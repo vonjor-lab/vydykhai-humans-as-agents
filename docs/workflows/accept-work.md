@@ -37,6 +37,8 @@ Review changed behavior, files/artifacts, Module Contracts and other docs, tests
 
 ## 3. Verify Exact Current Code
 
+When the pinned task requires `retained-progress-v1`, call `context-run` operation `accept` under [Context Route](context-route.md#bounded-reference-caller). It executes the declared verification script and checks retained plus new observations against frozen source expectations and exact declared Candidate/input hashes. Applied ids cannot replace missing behavior evidence. Its `VERIFIED` receipt is bounded reference evidence; task/human acceptance and parent closure are separate. Return any source-authorized local overlay for orchestrator integration; the runner never writes shared meaning.
+
 Verify only the risks changed by the Candidate. For runtime, integration, or state work, record:
 
 - repo/worktree, branch, commit, and dirty state;

@@ -19,6 +19,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { compileExecutableBrief, validateApplicationReceipt } from "./memory-brief.mjs";
+import { runContextFile } from "./context-run.mjs";
+import { prepareContext } from "./context-prepare.mjs";
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const LOCK_FILE = ".vydykhai-lock.json";
@@ -50,6 +52,8 @@ Usage:
   node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--woken-incident <semantic-id>] [--repair-incident <semantic-id> --repair-attempts <count>] [--json]
   node scripts/vydykhai.mjs memory-brief-compile --input <brief-input.json>
   node scripts/vydykhai.mjs memory-brief-validate --envelope <brief-envelope.json> --receipt <application-receipt.json>
+  node scripts/vydykhai.mjs context-run --input <context-request.json>
+  node scripts/vydykhai.mjs context-prepare <plan|confirm|read|ack|bind> --output <task-local-dir> ...
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
 `;
 }
@@ -1790,6 +1794,21 @@ async function main() {
   const [command, ...rest] = process.argv.slice(2);
   if (!command || command === "help" || command === "--help") {
     console.log(usage());
+    return;
+  }
+
+  if (command === "context-prepare") {
+    const result = await prepareContext(rest, { createReturnSync, parseDurableOutboxComment });
+    console.log(JSON.stringify(result, null, 2));
+    process.exitCode = result.status === "BLOCKED" ? 1 : 0;
+    return;
+  }
+  if (command === "context-run") {
+    const result = rest.length === 2 && rest[0] === "--input"
+      ? await runContextFile(path.resolve(rest[1]), { createReturnSync, parseDurableOutboxComment })
+      : { status: "BLOCKED", code: "REQUEST_ARGUMENTS_INVALID", stats: { commands: 0 } };
+    console.log(JSON.stringify(result, null, 2));
+    process.exitCode = result.status === "LIMITED" ? 2 : result.status === "BLOCKED" ? 1 : 0;
     return;
   }
 
