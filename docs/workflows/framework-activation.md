@@ -54,6 +54,11 @@ transcripts/secrets or let one machine certify another. An absent participant
 leaves that dependent scope pending; unrelated safe work continues. On return,
 consume the new delta and recheck affected scopes, not everyone's history again.
 
+The global watermark records integration/readback provenance; it is not a reuse
+key. Bind team-memory evidence to selected meaning/route (`sharedMeaningScope`),
+participant, source range and Module Contract. An unrelated semantic edit may
+advance the global watermark without invalidating this selected evidence.
+
 Reuse existing graph, Module Contracts, source coverage and retrieval evidence
 when sources and relevant boundaries still match. A version number is not a
 memory gap. A real omission/conflict needs source-backed repair. To claim the

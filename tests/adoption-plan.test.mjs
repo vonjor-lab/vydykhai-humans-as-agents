@@ -105,17 +105,19 @@ test("actual historical updater copies new kit; new entry retrieves unknown plan
 
 test("single-user graph reuse versus real gap compares scope only, never semantic success", () => {
   const r = manifest.adoptionRequirements.find(r => r.id === "team-memory");
-  const current = { participant: "local", sourceRange: "range-1", moduleContract: "contract-1", sharedWatermark: "meaning-1" };
+  const current = { participant: "local", sourceRange: "range-1", moduleContract: "contract-1", sharedMeaningScope: "selected-meaning-1", sharedWatermark: "global-1" };
   const first = adoptionEvidenceScope(r, current);
-  const reused = adoptionEvidenceScope(r, { ...current, unrelatedGraphSection: "changed" }, first);
+  const reused = adoptionEvidenceScope(r, { ...current, sharedWatermark: "global-2" }, first);
   assert.equal(reused.status, "REVIEW_EXISTING_EVIDENCE"); assert.equal(reused.acceptance, "NOT_ESTABLISHED");
   assert.equal(adoptionEvidenceScope(r, { ...current, sourceRange: "new-gap" }, first).status, "REVIEW_CHANGED_SCOPE");
+  assert.equal(adoptionEvidenceScope(r, { ...current, sharedMeaningScope: "selected-meaning-2" }, first).status, "REVIEW_CHANGED_SCOPE");
+  assert.equal(adoptionEvidenceScope(r, { ...current, moduleContract: "contract-2" }, first).status, "REVIEW_CHANGED_SCOPE");
 });
 
 test("absent participant leaves its scope missing; arriving delta changes only its applicability", () => {
   const r = manifest.adoptionRequirements.find(r => r.id === "team-memory");
   assert.equal(adoptionEvidenceScope(r, { participant: "remote" }).status, "MISSING_SCOPE");
-  const local = { participant: "local", sourceRange: "local-1", moduleContract: "contract", sharedWatermark: "meaning" };
+  const local = { participant: "local", sourceRange: "local-1", moduleContract: "contract", sharedMeaningScope: "selected-meaning" };
   const prior = adoptionEvidenceScope(r, local);
   assert.equal(adoptionEvidenceScope(r, { ...local, participant: "remote", sourceRange: "remote-delta" }, prior).status, "REVIEW_CHANGED_SCOPE");
   assert.equal(adoptionEvidenceScope(r, local, prior).status, "REVIEW_EXISTING_EVIDENCE");

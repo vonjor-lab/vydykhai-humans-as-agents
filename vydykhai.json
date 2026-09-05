@@ -558,7 +558,7 @@
         "participant",
         "sourceRange",
         "moduleContract",
-        "sharedWatermark"
+        "sharedMeaningScope"
       ],
       "workflow": "docs/workflows/framework-activation.md"
     },
