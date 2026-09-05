@@ -20,6 +20,7 @@ Owner / decision gate: <owner or none>
 
 - Actor outcome: <what becomes possible for whom>
 - Responsibility: <what this module owns>
+- Accepted public boundary: <entry/input/output and revision; distinguish internal passes and independently accepted capability from unfinished parent>
 - Excludes: <nearby responsibilities it does not own>
 
 ## Inputs And Authority
@@ -48,6 +49,8 @@ Link the current `REQUIREMENT`, `DECISION`, `INVARIANT`, and relevant `LESSON` n
 - Representative product path: <actor/environment/scenario>
 - Cross-domain checks: <affected consumers and expected result>
 - Known limits: <explicitly unproven behavior>
+- Retained examples: <source assertion -> frozen input/expected observation -> applicability; link reference-runner metadata when used>
+- New result: <task-promised examples plus retained examples on the exact Candidate; expectations change only through an explicit source decision>
 
 ## Open Commitments
 

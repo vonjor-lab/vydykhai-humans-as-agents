@@ -415,3 +415,127 @@ export function validateApplicationReceipt({ envelope, receipt } = {}) {
   if (receipt.status === "BLOCKED") return { status: "BLOCKED", code: "MISSING_ID", issues: missing };
   return { status: "APPLIED", code: "OK", issues: [] };
 }
+
+// Separate from the strict executable-brief v1 carrier. This checks declared source
+// accounting and content bindings, never semantic truth or product acceptance.
+export function checkPreparedContext(input = {}) {
+  const blocked = (code, ref = "context") => ({ status: "BLOCKED", code, ref });
+  const contextId = v => typeof v === "string" && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/.test(v);
+  const strings = (v, nonEmpty = false) => Array.isArray(v) && v.length <= 1024 && (!nonEmpty || v.length > 0) &&
+    v.every(x => validText(x) && x.trim()) && new Set(v).size === v.length;
+  const scopeValues = v => strings(v, true) && v.every(x => x === "*" || contextId(x));
+  const intersects = (a, b) => a.includes("*") || b.includes("*") || a.some(v => b.includes(v));
+  if (!ownKeysMatch(input, ["inventory", "dispositions", "prepared", "phase"]) ||
+      !["prepare", "bind"].includes(input.phase) || !Array.isArray(input.inventory) ||
+      !Array.isArray(input.dispositions) || !isObject(input.prepared)) return blocked("CONTEXT_SCHEMA_INVALID");
+  const p = input.prepared;
+  if (!ownKeysMatch(p, ["scope", "taskId", "owner", "allowLocalOverlay", "items", "envelope", "atomicRender"]) ||
+      !scopeValues(p.scope) || !contextId(p.taskId) || !contextId(p.owner) || typeof p.allowLocalOverlay !== "boolean" ||
+      !Array.isArray(p.items) || typeof p.atomicRender !== "string") return blocked("CONTEXT_SCHEMA_INVALID");
+  const inventory = new Map(), dispositionMap = new Map(), assertions = new Map(), required = new Set();
+  for (const source of input.inventory) {
+    if (!ownKeysMatch(source, ["sourceId", "eventId", "sha256", "scope"]) || !contextId(source.sourceId) ||
+        !contextId(source.eventId) || !validHash(source.sha256) || !scopeValues(source.scope)) return blocked("CONTEXT_SCHEMA_INVALID");
+    const key = `${source.sourceId}/${source.eventId}`;
+    if (inventory.has(key)) return blocked("DUPLICATE_SOURCE", key);
+    inventory.set(key, source);
+  }
+  for (const d of input.dispositions) {
+    if (!ownKeysMatch(d, ["sourceId", "eventId", "sourceSha256", "reviewRef", "integrated", "localOwner", "localTask", "assertions", "reason"]) ||
+        !contextId(d.sourceId) || !contextId(d.eventId) || !validHash(d.sourceSha256) || !validText(d.reviewRef) ||
+        typeof d.integrated !== "boolean" || !(d.localOwner === null || contextId(d.localOwner)) ||
+        !(d.localTask === null || contextId(d.localTask)) || (d.localOwner === null) !== (d.localTask === null) ||
+        !Array.isArray(d.assertions) || !validText(d.reason)) return blocked("CONTEXT_SCHEMA_INVALID");
+    const key = `${d.sourceId}/${d.eventId}`;
+    if (dispositionMap.has(key)) return blocked("DUPLICATE_DISPOSITION", key);
+    if (!inventory.has(key)) return blocked("UNKNOWN_SOURCE_DISPOSITION", key);
+    dispositionMap.set(key, d);
+    if (d.sourceSha256 !== inventory.get(key).sha256) return blocked("SOURCE_REVISION_CHANGED", key);
+    for (const a of d.assertions) {
+      if (!ownKeysMatch(a, ["id", "disposition", "scope", "targetRef", "reason", "supersededBy", "ownerGate", "trigger"]) ||
+          !contextId(a.id) || !scopeValues(a.scope) || !validText(a.targetRef) || !validText(a.reason) ||
+          !["current_constraint", "accepted_capability", "deferred", "superseded", "unresolved", "evidence_only"].includes(a.disposition) ||
+          !(a.supersededBy === null || validText(a.supersededBy)) ||
+          !(a.ownerGate === null || validText(a.ownerGate)) || !(a.trigger === null || validText(a.trigger))) return blocked("CONTEXT_SCHEMA_INVALID");
+      if (assertions.has(a.id)) return blocked("DUPLICATE_ASSERTION", a.id);
+      const sourceScope = inventory.get(key).scope;
+      if (!sourceScope.includes("*") && !a.scope.every(s => sourceScope.includes(s))) return blocked("ASSERTION_SCOPE_OUTSIDE_SOURCE", a.id);
+      assertions.set(a.id, { assertion: a, source: d });
+      if (a.disposition === "superseded" && !a.supersededBy) return blocked("SUPERSESSION_SOURCE_MISSING", a.id);
+      if (a.disposition === "deferred" && (!a.ownerGate || !a.trigger)) return blocked("DEFERRED_GATE_MISSING", a.id);
+      if (intersects(a.scope, p.scope)) {
+        if (a.disposition === "unresolved") return blocked("SOURCE_UNRESOLVED", a.id);
+        if (["current_constraint", "accepted_capability", "deferred"].includes(a.disposition)) required.add(a.id);
+      }
+    }
+  }
+  for (const [key, s] of inventory) {
+    if (!intersects(s.scope, p.scope)) continue;
+    const d = dispositionMap.get(key);
+    if (!d) return blocked("SOURCE_RANGE_PENDING", key);
+  }
+  // Supersession is a bound edge between reviewed assertions, not free text.
+  // Each edge must cover the whole old scope; partial replacement needs explicit
+  // scoped assertions so that obligations outside the replacement survive.
+  for (const { assertion } of assertions.values()) {
+    if (assertion.disposition !== "superseded") continue;
+    const visited = new Set([assertion.id]);
+    let current = assertion;
+    while (current.disposition === "superseded") {
+      const replacement = assertions.get(current.supersededBy);
+      if (!replacement) return blocked("SUPERSESSION_SOURCE_MISSING", current.id);
+      const next = replacement.assertion;
+      if (visited.has(next.id)) return blocked("SUPERSESSION_CYCLE", next.id);
+      if (!next.scope.includes("*") && !current.scope.every(s => next.scope.includes(s))) return blocked("SUPERSESSION_SCOPE_GAP", current.id);
+      if (next.disposition === "unresolved") return blocked("SUPERSESSION_UNRESOLVED", next.id);
+      const d = replacement.source;
+      if (!d.integrated && !(p.allowLocalOverlay && d.localOwner === p.owner && d.localTask === p.taskId)) return blocked("SHARED_INTEGRATION_PENDING", next.id);
+      visited.add(next.id);
+      current = next;
+    }
+  }
+  for (const [key, s] of inventory) {
+    if (!intersects(s.scope, p.scope)) continue;
+    const d = dispositionMap.get(key);
+    if (!d.integrated && !(p.allowLocalOverlay && d.localOwner === p.owner && d.localTask === p.taskId)) return blocked("SHARED_INTEGRATION_PENDING", key);
+  }
+  const itemIds = new Set(), delivered = new Set();
+  for (const item of p.items) {
+    if (!ownKeysMatch(item, ["id", "text", "sourceAssertionRefs"]) || !contextId(item.id) || !validText(item.text) || !item.text.trim() ||
+        !strings(item.sourceAssertionRefs, true)) return blocked("CONTEXT_SCHEMA_INVALID");
+    if (itemIds.has(item.id)) return blocked("DUPLICATE_CONTENT_ID", item.id);
+    itemIds.add(item.id);
+    for (const ref of item.sourceAssertionRefs) {
+      if (!assertions.has(ref)) return blocked("UNKNOWN_CONTENT_SOURCE", ref);
+      delivered.add(ref);
+    }
+  }
+  if (input.phase === "bind") {
+    if (p.envelope !== null) {
+      const m = p.envelope?.payload?.manifest;
+      if (!m) return blocked("CONTEXT_ENVELOPE_INVALID");
+      const checked = validateApplicationReceipt({ envelope: p.envelope, receipt: {
+        schema: APPLICATION_RECEIPT_SCHEMA, authorityReceipt: p.envelope.header?.authorityReceipt,
+        ordinaryPromptSha256: p.envelope.header?.ordinaryPromptSha256, briefDigest: p.envelope.briefDigest,
+        ...m, appliedItemIds: m.requiredItemIds, appliedClauseIds: m.requiredClauseIds,
+        appliedRowIds: m.requiredRowIds, status: "APPLIED", issues: [],
+      } });
+      if (checked.status !== "APPLIED") return blocked("CONTEXT_ENVELOPE_INVALID");
+      const render = `<!-- vydykhai:executable-memory-brief v1 -->\n${canonicalJson(p.envelope)}\n<!-- vydykhai:executable-memory-brief:end -->`;
+      if (p.atomicRender !== render) return blocked("RENDER_BINDING_MISMATCH");
+      for (const item of p.envelope.payload.items) {
+        for (const part of item.clauses || item.rows) {
+          if (itemIds.has(part.id)) return blocked("DUPLICATE_CONTENT_ID", part.id);
+          itemIds.add(part.id);
+          for (const ref of part.sourceRefs) {
+            if (!assertions.has(ref)) return blocked("UNKNOWN_CONTENT_SOURCE", ref);
+            delivered.add(ref);
+          }
+        }
+      }
+    } else if (p.atomicRender !== "") return blocked("RENDER_BINDING_MISMATCH");
+    for (const id of required) if (!delivered.has(id)) return blocked("BRIEF_ASSERTION_MISSING", id);
+  }
+  return { status: "READY", code: "OK", requiredAssertionIds: [...required].sort(),
+    coverageBasis: "declared-source-snapshots", semanticTruth: "NOT_VERIFIED" };
+}

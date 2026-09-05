@@ -28,6 +28,7 @@ Accepted Baseline: <commit, artifact, or proven behavior>
 Continue from: <accepted mechanism/reference>
 Applicable Memory Brief: <complete applicable items: node id / Because / Apply / Avoid / Verify / Source, or MEMORY_COVERAGE_GAP / none>
 Executable Memory Brief: <none | exact compiler-produced atomicRender from memory-brief-envelope.md; never summarize or edit>
+Prepared context capability: <legacy/workflow limitation | retained-progress-v1: pinned task/capsule, context-run request, worker readback; reference scope only>
 Context route: <goal/brief -> journey -> modules/capabilities -> inputs/entities/contracts/data/artifacts/systems -> current meaning/commitments -> consumers -> accepted artifacts/verification; checked sources and gaps>
 Module contracts / implementation: <current project docs plus exact code/test boundaries>
 Documentation impact: <expected NONE or named contract sections>
@@ -64,6 +65,7 @@ Return triggers: <readiness result | named human checkpoint | irreducible blocke
 - Detect an undeclared boundary, stale upstream state, unresolved solution choice, or evidence that the acceptance contract is insufficient, but do not redesign project scope, sequence, ownership, shared contracts, or model routing. Send one compact `CONSULT`: `Boundary / Evidence / Proposed move / Safe continuation`, then pause only that boundary.
 - If a human says an instruction was already decided or the supplied brief contradicts known direction, follow the clear current instruction inside scope and send compact miss evidence through `CONSULT`; do not search the full graph or run project-wide reflection here.
 - When an Executable Memory Brief is present, preserve its bytes and order, apply every required id, and validate the bound application receipt before claiming use. Missing or invalid ids block only the affected obligation; advisory prose cannot substitute for them.
+- When the pinned task requires `retained-progress-v1`, use the [Context Route reference caller](context-route.md#bounded-reference-caller): `resume` gates the explicit local command; `accept` executes the retained-plus-new verification plan. Legacy compile/receipt or orchestrator version cannot substitute. A local overlay applies only to its reviewed task and worker; return it for shared integration before dependent tasks.
 - Apply a targeted orchestrator instruction at the next safe operation boundary. Continue unaffected work unless the instruction or safety envelope says otherwise.
 - Keep corrective fixes, human smoke, and manual merge in this context because it owns the implementation evidence. A side answer or service exchange does not complete this contract: continue within scope or return the actual checkpoint/blocker through Return Sync.
 - Before compaction, context handoff, risky external action, or after a human-accepted checkpoint, preserve the current Accepted Baseline/Candidate and next experiment as a commit or durable artifact. Accepted work may not exist only in chat or untracked files.

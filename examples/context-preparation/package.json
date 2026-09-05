@@ -1,0 +1,155 @@
+{
+  "schema": "context.package.v1",
+  "owner": "module-owner",
+  "task": {
+    "id": "bundle-change",
+    "worker": "bundle-worker",
+    "scope": [
+      "bundle"
+    ],
+    "action": {
+      "executable": "node",
+      "args": [
+        "action.mjs"
+      ],
+      "cwd": "."
+    },
+    "candidateFiles": [
+      "candidate.mjs"
+    ]
+  },
+  "module": {
+    "publicBoundary": "buildBundle",
+    "implementationFiles": [
+      "candidate.mjs"
+    ],
+    "retainedExampleIds": [
+      "B1",
+      "B2"
+    ],
+    "newExampleIds": [
+      "N1"
+    ],
+    "oracle": "oracle.json",
+    "verificationScript": "verify.mjs",
+    "verificationCommand": {
+      "executable": "node",
+      "args": [
+        "verify.mjs"
+      ],
+      "cwd": "."
+    }
+  },
+  "sources": [
+    {
+      "id": "bundle-history",
+      "path": "sources.json",
+      "scope": [
+        "bundle"
+      ]
+    }
+  ],
+  "classifications": [
+    {
+      "sourceId": "bundle-history",
+      "eventId": "S1",
+      "eventDisposition": "assertions",
+      "assertions": [
+        {
+          "id": "S1:1",
+          "quote": "Accept buildBundle at bundle-r1 for the JSON consumer. It normalizes labels, rejects duplicate identifiers, orders entries by identifier, and emits schema bundle/v1, entries and count. normalizeEntries is an internal pass that returns an array; it is not the accepted public boundary.",
+          "disposition": "accepted_capability",
+          "scope": [
+            "bundle"
+          ],
+          "targetRef": "module:buildBundle",
+          "reason": "Preserve this source-backed obligation at the public boundary.",
+          "supersededBy": null,
+          "ownerGate": null,
+          "trigger": null
+        },
+        {
+          "id": "S1:2",
+          "quote": "The enclosing workspace experiment remains unfinished. Its status does not undo the independently accepted buildBundle capability or certify the whole workspace.",
+          "disposition": "accepted_capability",
+          "scope": [
+            "bundle"
+          ],
+          "targetRef": "module:buildBundle",
+          "reason": "Preserve this source-backed obligation at the public boundary.",
+          "supersededBy": null,
+          "ownerGate": null,
+          "trigger": null
+        }
+      ],
+      "reason": "Explicit source classification for the next bundle revision."
+    },
+    {
+      "sourceId": "bundle-history",
+      "eventId": "S2",
+      "eventDisposition": "assertions",
+      "assertions": [
+        {
+          "id": "S2:1",
+          "quote": "Before compiling the next task, retain the original requirement: duplicate identifiers must fail with DUPLICATE_ID, including when all labels differ. Do not silently keep the last entry.",
+          "disposition": "current_constraint",
+          "scope": [
+            "bundle"
+          ],
+          "targetRef": "module:buildBundle",
+          "reason": "Preserve this source-backed obligation at the public boundary.",
+          "supersededBy": null,
+          "ownerGate": null,
+          "trigger": null
+        }
+      ],
+      "reason": "Explicit source classification for the next bundle revision."
+    },
+    {
+      "sourceId": "bundle-history",
+      "eventId": "S3",
+      "eventDisposition": "assertions",
+      "assertions": [
+        {
+          "id": "S3:1",
+          "quote": "When the bundle/export module next returns to scope, remind the module owner to decide whether CSV should be supported. Revisit the discussion then; implementation is deferred and requires that owner's explicit decision. Close only with that decision or explicit retirement.",
+          "disposition": "deferred",
+          "scope": [
+            "bundle"
+          ],
+          "targetRef": "module:buildBundle",
+          "reason": "Preserve this source-backed obligation at the public boundary.",
+          "supersededBy": null,
+          "ownerGate": "module-owner",
+          "trigger": "bundle/export module returns to scope"
+        }
+      ],
+      "reason": "Explicit source classification for the next bundle revision."
+    },
+    {
+      "sourceId": "bundle-history",
+      "eventId": "S4",
+      "eventDisposition": "assertions",
+      "assertions": [
+        {
+          "id": "S4:1",
+          "quote": "Local user correction: for the next accepted bundle revision, compare identifiers case-insensitively for duplicate detection, preserving their original spelling in output. This supersedes the case-sensitive comparison in bundle-r1 only. The executor may prepare the local fix; send the scoped correction and source to the orchestrator before another dependent task is dispatched.",
+          "disposition": "current_constraint",
+          "scope": [
+            "bundle"
+          ],
+          "targetRef": "module:buildBundle",
+          "reason": "Preserve this source-backed obligation at the public boundary.",
+          "supersededBy": null,
+          "ownerGate": null,
+          "trigger": null
+        }
+      ],
+      "reason": "Explicit source classification for the next bundle revision."
+    }
+  ],
+  "dependencies": [],
+  "sharedArtifacts": [
+    "shared.md"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "context.events.v1",
+  "complete": true,
+  "events": [
+    {
+      "id": "S1",
+      "authorKind": "human",
+      "body": "Accept buildBundle at bundle-r1 for the JSON consumer. It normalizes labels, rejects duplicate identifiers, orders entries by identifier, and emits schema bundle/v1, entries and count. normalizeEntries is an internal pass that returns an array; it is not the accepted public boundary.\nThe enclosing workspace experiment remains unfinished. Its status does not undo the independently accepted buildBundle capability or certify the whole workspace."
+    },
+    {
+      "id": "S2",
+      "authorKind": "human",
+      "body": "Before compiling the next task, retain the original requirement: duplicate identifiers must fail with DUPLICATE_ID, including when all labels differ. Do not silently keep the last entry."
+    },
+    {
+      "id": "S3",
+      "authorKind": "human",
+      "body": "When the bundle/export module next returns to scope, remind the module owner to decide whether CSV should be supported. Revisit the discussion then; implementation is deferred and requires that owner's explicit decision. Close only with that decision or explicit retirement."
+    },
+    {
+      "id": "S4",
+      "authorKind": "human",
+      "body": "Local user correction: for the next accepted bundle revision, compare identifiers case-insensitively for duplicate detection, preserving their original spelling in output. This supersedes the case-sensitive comparison in bundle-r1 only. The executor may prepare the local fix; send the scoped correction and source to the orchestrator before another dependent task is dispatched."
+    }
+  ]
+}

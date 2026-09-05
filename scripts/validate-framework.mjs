@@ -473,6 +473,15 @@ if (!manifest.managedPaths.includes("docs/VYDYKHAI_NOTICE.md")) {
 if (!manifest.managedPaths.includes("scripts/memory-brief.mjs")) {
   fail("Executable Memory Brief compiler is missing from managed paths");
 }
+if (!manifest.managedPaths.includes("scripts/context-run.mjs")) {
+  fail("The bounded context reference caller is missing from managed paths");
+}
+if (!manifest.managedPaths.includes("scripts/context-hook.mjs")) {
+  fail("Managed paths must include the opt-in context hook adapter.");
+}
+if (!manifest.managedPaths.includes("scripts/context-prepare.mjs") || !manifest.managedPaths.includes("examples/context-preparation")) {
+  fail("Managed paths must include context preparation and its ordinary input example.");
+}
 if (!manifest.managedPaths.includes("docs/workflows") || manifest.managedPaths.includes("docs/codex-workflows")) {
   fail("Managed workflows must use the environment-neutral docs/workflows path");
 }

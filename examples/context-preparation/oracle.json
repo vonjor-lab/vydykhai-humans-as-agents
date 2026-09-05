@@ -1,0 +1,73 @@
+{
+  "schema": "context.oracle.v1",
+  "examples": [
+    {
+      "id": "B1",
+      "sourceAssertionRefs": [
+        "S1:1"
+      ],
+      "input": [
+        {
+          "id": "b",
+          "label": " Beta "
+        },
+        {
+          "id": "a",
+          "label": " Alpha "
+        }
+      ],
+      "expected": {
+        "schema": "bundle/v1",
+        "entries": [
+          {
+            "id": "a",
+            "label": "Alpha"
+          },
+          {
+            "id": "b",
+            "label": "Beta"
+          }
+        ],
+        "count": 2
+      }
+    },
+    {
+      "id": "B2",
+      "sourceAssertionRefs": [
+        "S2:1"
+      ],
+      "input": [
+        {
+          "id": "a",
+          "label": "One"
+        },
+        {
+          "id": "a",
+          "label": "Two"
+        }
+      ],
+      "expected": {
+        "error": "DUPLICATE_ID"
+      }
+    },
+    {
+      "id": "N1",
+      "sourceAssertionRefs": [
+        "S4:1"
+      ],
+      "input": [
+        {
+          "id": "a",
+          "label": "One"
+        },
+        {
+          "id": "A",
+          "label": "Two"
+        }
+      ],
+      "expected": {
+        "error": "DUPLICATE_ID"
+      }
+    }
+  ]
+}
