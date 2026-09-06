@@ -106,6 +106,13 @@ const observations = ids.filter(id => ${JSON.stringify(verificationMode)} !== 'm
   return { id, observed };
 });
 if (${JSON.stringify(verificationMode)} === 'mutate-candidate') appendFileSync('candidate.mjs', '\\n// changed during verification\\n');
+if (${JSON.stringify(verificationMode)} === 'mutate-dependency') appendFileSync('routes.json', ' ');
+if (${JSON.stringify(verificationMode)} === 'mutate-task') appendFileSync('task.json', ' ');
+if (${JSON.stringify(verificationMode)} === 'mutate-source') appendFileSync('sources.json', ' ');
+if (${JSON.stringify(verificationMode)} === 'mutate-unrelated') appendFileSync('theme.json', ' ');
+for (const name of ['module', 'memory-review', 'capsule', 'readback', 'owner-evidence']) {
+  if (${JSON.stringify(verificationMode)} === 'mutate-' + name) appendFileSync(name + '.json', ' ');
+}
 console.log(JSON.stringify({ schema: 'context.observations.v1',
 candidateSha256: ${JSON.stringify(verificationMode)} === 'stale-candidate' ? '0'.repeat(64) : process.env.VYDYKHAI_CANDIDATE_SHA256,
 oracleSha256: ${JSON.stringify(verificationMode)} === 'stale-fixture' ? '0'.repeat(64) : process.env.VYDYKHAI_ORACLE_SHA256,
@@ -446,6 +453,87 @@ test("verification cannot accept a candidate modified while its command runs", a
   const f = await fixture(t, { verificationMode: "mutate-candidate" }); await f.prepare();
   const result = await f.run("accept"); assert.equal(result.code, "CANDIDATE_CHANGED_DURING_VERIFICATION");
   assert.equal(result.stats.verificationCommands, 1); assert.equal(result.receipt, undefined);
+});
+
+test("verification cannot accept changed task, source or relevant conditions even when behavior passes", async t => {
+  for (const [mode, code] of [
+    ["mutate-dependency", "CONTEXT_CHANGED_DURING_VERIFICATION"],
+    ["mutate-task", "TASK_CHANGED_DURING_VERIFICATION"],
+    ["mutate-source", "CONTEXT_CHANGED_DURING_VERIFICATION"],
+  ]) {
+    const f = await fixture(t, { verificationMode: mode }); await f.prepare();
+    const result = await f.run("accept");
+    assert.equal(result.status, "BLOCKED", `${mode}: ${result.raw}`);
+    assert.equal(result.code, code, result.raw);
+    assert.equal(result.stats.verificationCommands, 1);
+    assert.equal(result.receipt, undefined); assert.equal(result.returnSync, undefined);
+    await noAction(f);
+  }
+  const control = await fixture(t, { verificationMode: "mutate-unrelated" }); await control.prepare();
+  assert.equal((await control.run("accept")).status, "VERIFIED");
+});
+
+test("direct human control must be observed; a stale graph cannot clear an unreviewed new instruction", async t => {
+  const f = await fixture(t); await f.prepare();
+  const sharedBefore = await readFile(path.join(f.root, "shared.md"), "utf8");
+  // The caller cannot infer a conversation absent from its declared export.
+  const unseen = await f.run("preflight");
+  assert.equal(unseen.status, "READY");
+  assert.equal(unseen.coverageBasis.unknownHistory, "outside declared exports");
+  f.exported.events.push({ id: "HUMAN-CONTROL", authorKind: "human",
+    body: "I am directing this experiment in the existing lab. Do not redirect it; ask me before changing that agreement." });
+  await f.put("sources.json", f.exported);
+  for (const operation of ["preflight", "resume", "accept"]) {
+    const result = await f.run(operation);
+    assert.equal(result.code, "SOURCE_RANGE_PENDING", result.raw);
+    assert.equal(result.stats.commands, 0); assert.equal(result.receipt, undefined);
+  }
+  assert.equal(await readFile(path.join(f.root, "shared.md"), "utf8"), sharedBefore);
+  await noAction(f);
+});
+
+test("acceptance also rechecks module authority, memory approval and worker delivery evidence", async t => {
+  for (const name of ["module", "memory-review", "capsule", "readback", "owner-evidence"]) {
+    const f = await fixture(t, { verificationMode: `mutate-${name}` }); await f.prepare();
+    const result = await f.run("accept");
+    assert.equal(result.status, "BLOCKED", `${name}: ${result.status}`);
+    assert.equal(result.code, "ARTIFACT_HASH_MISMATCH", result.raw);
+    assert.equal(result.stats.verificationCommands, 1);
+    assert.equal(result.receipt, undefined); assert.equal(result.returnSync, undefined);
+  }
+});
+
+test("changed declared test conditions cannot reuse proof for the agreed entry path", async t => {
+  const agreed = { entry: "existing-lab", mechanism: "accepted-recognizer", providerMode: "enabled",
+    source: "original-input", storage: "isolated-snapshot", consumers: ["public-result"] };
+  for (const change of [{ entry: "parallel-lab" }, { mechanism: "replacement-parser" },
+    { providerMode: "disabled" }, { source: "prepared-fixture" }, { storage: "other-environment" }]) {
+    const f = await fixture(t);
+    f.dependencies.dependencies.push({ id: "agreed-test-conditions", path: "conditions.json", scope: ["bundle"] });
+    await f.put("conditions.json", agreed); await f.put("dependencies.json", f.dependencies);
+    await f.prepare();
+    await f.put("conditions.json", { ...agreed, ...change });
+    for (const operation of ["resume", "accept"]) {
+      const result = await f.run(operation);
+      assert.equal(result.code, "RELEVANT_CONTEXT_CHANGED", result.raw);
+      assert.equal(result.stats.commands, 0); assert.equal(result.receipt, undefined);
+    }
+    await noAction(f);
+  }
+});
+
+test("a new fix that breaks retained behavior is rejected; restoring the accepted mechanism permits verification", async t => {
+  const f = await fixture(t, { correction: true }); await f.prepare();
+  await f.put("candidate.mjs", f.candidateCode.replace("e.label.trim()", "e.label"));
+  const broken = await f.run("accept");
+  assert.equal(broken.code, "BEHAVIOR_MISMATCH", broken.raw);
+  assert.equal(broken.receipt, undefined);
+  assert.equal(await readFile(path.join(f.root, "verifications.log"), "utf8"), "B1,B2,N1\n");
+  await f.put("candidate.mjs", f.candidateCode);
+  const restored = await f.run("accept");
+  assert.equal(restored.status, "VERIFIED", restored.raw);
+  assert.equal(restored.receipt.productAcceptance, "NOT_ESTABLISHED");
+  assert.equal(restored.stats.compiles, 0); await noAction(f);
 });
 
 test("an explicitly reviewed NO_CHANGE advances source accounting without a shared artifact rewrite", async t => {

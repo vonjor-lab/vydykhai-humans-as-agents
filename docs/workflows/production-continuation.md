@@ -30,6 +30,8 @@ On a Guard or service event, retain this productive step and the separate Pendin
 
 Before ending a control turn, verify that ready management work has been acted on and the productive route now has observable execution or a real wait. Dispatching maintenance alone does not satisfy this condition. Do not keep the manager busy waiting for a worker. A task's side answer or service exchange likewise does not finish its accepted contract: continue inside scope or return the actual checkpoint/blocker through the existing Return Sync route.
 
+A native error may end a task before it writes Return Sync. Reconcile fresh native terminal status with its existing lease and saved evidence; absence of a return is not completion. Restore the same task when safe, or record the actual access/usage gate and resume condition; do not repeatedly launch replacements against an unavailable service or replay an uncertain action. An absent, disabled or unproven Guard adapter leaves automatic recovery LIMITED, regardless of local checker tests. State that limitation plainly without stopping independent work or pretending a model can resume while its harness is unavailable.
+
 ## Fresh Activity, No Model
 
 The project-owned adapter reads fresh native activity, calls `readProductionContinuation(state)` from the installed CLI, and supplies `guard-check --activity <observation.json>`. This is a bounded observation, not a new shared artifact or scheduler. Build it during each existing check; do not relabel cached evidence with a fresh timestamp.

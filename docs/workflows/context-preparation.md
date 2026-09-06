@@ -28,6 +28,13 @@ implementation may change after preparation: acceptance verifies its current
 behavior against retained and new examples. Do not list mutable implementation
 as an immutable dependency unless that restriction is intended.
 
+Include agreed entry/mechanism, relevant upstream and consumer boundaries,
+actual runtime/test conditions and direct-human-control decisions in these
+existing scoped sources/dependencies. Refresh them from observed evidence at a
+material change; declaration alone is not a live observation. Never include
+secret values. The caller cannot notice an unexported human correction or an
+undeclared environment change, and it does not intercept arbitrary native tools.
+
 ## One ordinary path
 
 Agent-side command sequence (replace paths/identities with the actual task):

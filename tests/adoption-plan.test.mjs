@@ -28,7 +28,7 @@ test("ordinary install automatically exposes an actionable plan, not readiness",
   assert.match(output, /Active orchestrator/);
   const plan = JSON.parse(f.run(["adoption-plan", "--json"], f.installed));
   assert.equal(plan.id, (await f.get(".vydykhai-lock.json")).adoptionPlan.id);
-  assert.equal(plan.target.version, "1.30.0");
+  assert.equal(plan.target.version, manifest.version);
   assert.equal(plan.progressOwner, "Project State");
   assert.ok(plan.requirements.some(r => r.id === "prepared-work"));
   assert.ok(plan.releases.every(r => r.path && r.heading && !r.notes));
@@ -47,9 +47,9 @@ test("same target repeat/resume preserves plan and State completion/failed repai
 
 test("skipped releases are ordered and unknown baseline remains conservative on changed target", () => {
   const p = planAdoption({ ...input, previousLock: { installedVersion: "1.27.0" } });
-  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0"]);
+  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1"]);
   const unknown = planAdoption(input);
-  const changed = planAdoption({ ...input, managedFiles: { "core.md": "changed" }, previousLock: { installedVersion: "1.30.0", adoptionPlan: unknown } });
+  const changed = planAdoption({ ...input, managedFiles: { "core.md": "changed" }, previousLock: { installedVersion: manifest.version, adoptionPlan: unknown } });
   assert.equal(changed.reviewFromVersion, null);
   assert.equal(changed.releaseCoverage, "UNKNOWN_BASELINE_REVIEW_ALL_DECLARED");
   assert.deepEqual(changed.requirements, unknown.requirements);
@@ -138,4 +138,55 @@ test("worker identity changes require review; planner grants no inheritance or r
   const plan = planAdoption(input);
   assert.equal(plan.completed, undefined); assert.equal(plan.repairAttempts, undefined);
   assert.match(plan.requirements.find(r => r.id === "resume-or-checkpoint").action, /never reset attempts/);
+});
+
+// Contract/scenario coverage only: these assertions cannot prove model compliance
+// or substitute for native task/UI/publication readback in an actual transition.
+const [dispatchContract, activationContract, publicationContract] = await Promise.all([
+  "docs/workflows/framework-orchestrator.md", "docs/workflows/framework-activation.md", "CONTRIBUTING.md",
+].map(name => readFile(path.join(root, name), "utf8")));
+for (const [scenario, contract, requirements] of [
+  ["first-class maintenance owner precedes mutation", dispatchContract, [
+    /Select transport by the owned result before execution/, /framework installation and its Candidate\/PR are maintenance execution/,
+    /product Candidates\/PRs retain their existing result-based roles/,
+    /Before mutation, the launch Action Receipt must prove a first-class independently reachable visible owner/,
+    /actual native task listing, title\/link and return route/, /advisory thread URL alone is not owner proof/,
+  ]],
+  ["disallowed task creation yields one human checkpoint", dispatchContract, [
+    /requires explicit human launch/, /one precise launch\/authorization checkpoint/,
+    /do not claim a hidden worker is launched or mutate before its owner is established/,
+    /do not pin or navigate to convert a hidden agent/,
+  ]],
+  ["hidden result transfers once without a second installation or PR", dispatchContract, [
+    /reconcile its result\/branch\/PR and transfer once to a visible owner/,
+    /never repeat installation or create another PR merely to change container/,
+    /internal control-only advisors remain allowed/,
+  ]],
+  ["in-place completion and confirmed rotation identify where to continue", activationContract, [
+    /active orchestrator remains the manager/, /one short linked completion in its own context/,
+    /in-place update say no move is needed/, /confirmed rotation link the actual\s+new manager/,
+    /installation versus capability readiness/,
+  ]],
+  ["service pins cannot displace human pins or other projects", activationContract, [
+    /Do not auto-pin service workers or move foreground on dispatch/,
+    /Remove only service pins introduced by this transition/, /preserve user pins and other projects/,
+    /Restore its view only when fresh\s+supported UI readback proves the person is still on the service view displaced/,
+    /no newer deliberate human navigation occurred; otherwise\s+use link-only/,
+    /Missing observability means link fallback, not an extra UI poll/, /link-only\/manual fallback/,
+    /cosmetic view mismatch does not block safe product work/,
+  ]],
+  ["completion restores the pending human decision without gratuitous rotation", activationContract, [
+    /Restore the pending human decision and next productive action/,
+    /Reconcile actual manager title\/link\/pin state/, /Do not rotate, archive or delete for display\s+cleanup/,
+  ]],
+  ["source-new release-old is not publication complete and stale metadata must be reread", publicationContract, [
+    /Merge is not release/, /main\/update availability may precede the public GitHub Release/,
+    /unpublished or publication incomplete/, /finish the missing authorized steps/,
+    /At close, reread live remote source\/version, exact tag commit/,
+    /Release version\/title\/draft\/prerelease\/Latest status, source archive and updater selection/,
+    /dispatch-time metadata snapshot cannot establish current publication status/,
+    /do not roll back or reinstall to fix a display mismatch/,
+  ]],
+]) test(`workflow contract: ${scenario}`, () => {
+  for (const requirement of requirements) assert.match(contract, requirement);
 });
