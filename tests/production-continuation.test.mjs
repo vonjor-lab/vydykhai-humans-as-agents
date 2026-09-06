@@ -157,3 +157,35 @@ test("safety and ownership gates dominate a ready action, even while manager is 
     assert.equal(readProductionContinuation(content).key, null);
   }
 });
+
+test("a failed native turn without a return routes once, waits for real availability, then resumes the same lease", () => {
+  for (const failure of ["transport-forbidden", "usage-limit-exceeded"]) {
+    const running = state({ ...next, state: "WORKING", owner: "executor", evidence: "first-action" }, "WORKING");
+    const failed = observation(running, { owner: { context: "executor", status: "IDLE", evidence: `native-terminal-${failure}` } });
+    const detected = check(running, failed);
+    assert.equal(detected.action, "WAKE");
+    assert.equal(detected.continuation.value.owner, "executor");
+    assert.equal(check(running, failed, [], { wokenIncidentId: detected.incidentId }).action, "AUDIT_REQUIRED");
+
+    // Reconciliation records an actual external gate, not an invented successful return.
+    const waiting = state({ ...next, state: "WAITING", owner: "executor", evidence: `native-terminal-${failure}`,
+      resumeWhen: "Access is restored and any uncertain prior action is reconciled" }, "WAITING");
+    assert.equal(check(waiting).action, "NOOP");
+    assert.equal(check(waiting, observation(waiting, { wait: { status: "CHANGED", evidence: "availability-restored" } })).action, "WAKE");
+    assert.equal(check(running).action, "NOOP");
+    assert.equal(readProductionContinuation(running).value.id, next.id);
+  }
+});
+
+test("a direct-human-control wait is not a stalled worker and old managerial observations cannot reopen it", () => {
+  const old = state({ ...next, state: "WORKING", owner: "executor" }, "WORKING");
+  const directed = state({ ...next, id: "NEXT-HUMAN", state: "WAITING", owner: "executor",
+    action: "Await the human's next lab direction", evidence: "direct-human-control",
+    resumeWhen: "Human returns coordination or requests a bounded intervention" }, "WAITING");
+  const activity = observation(directed, { owner: { context: "executor", status: "IDLE", evidence: "human-checkpoint" } });
+  assert.equal(check(directed, activity).action, "NOOP");
+  assert.equal(check(directed, observation(old)).continuation.coverage, "LIMITED");
+  const answered = observation(directed, { wait: { status: "CHANGED", evidence: "new-human-instruction" } });
+  assert.equal(check(directed, answered).action, "WAKE");
+  assert.equal(check(directed, answered).continuation.value.state, "WAITING");
+});

@@ -14,6 +14,10 @@ update task/branch; no competing updaters. Keep old workers on their accepted
 contract until safe rebrief and actual readback. A new version alone does not
 justify rotation, a full memory rebuild or another Guard.
 
+Before mutation, use the existing [launch Action Receipt](framework-orchestrator.md)
+to establish the visible maintenance owner; internal advice is not that owner.
+Do not auto-pin service workers or move foreground on dispatch.
+
 `install` and `update` copy the kit and automatically expose the target adoption
 plan stored in `.vydykhai-lock.json`. In the installed workspace consume:
 
@@ -99,8 +103,19 @@ service bundle where safe. Never broadly roll back product code. Show one exact
 needs-access/decision checkpoint and retain the pending question/next productive
 action. Only materially changed evidence reopens the affected review.
 
-The orchestrator records accepted target activation **with explicit limitations**
-or the exact pending boundary. Failed critical capabilities cannot be called full
-success; installing files alone cannot advance accepted activation. Resume the
-next productive action, or preserve one actionable human checkpoint. External
-availability and perfect recall are not promised.
+The active orchestrator remains the manager and records accepted target activation
+**with explicit limitations** or the exact pending boundary. Failed critical
+capabilities cannot be called full success; installing files alone cannot advance
+accepted activation. It emits one short linked completion in its own context:
+version, installation versus capability readiness, limits, and where to continue.
+For in-place update say no move is needed; for confirmed rotation link the actual
+new manager. Restore the pending human decision and next productive action.
+Reconcile actual manager title/link/pin state. Restore its view only when fresh
+supported UI readback proves the person is still on the service view displaced
+by this transition and no newer deliberate human navigation occurred; otherwise
+use link-only. Missing observability means link fallback, not an extra UI poll.
+Remove only service pins introduced by this transition;
+preserve user pins and other projects. Do not rotate, archive or delete for display
+cleanup. If UI capability is unavailable, give a link-only/manual fallback; a
+cosmetic view mismatch does not block safe product work. External availability
+and perfect recall are not promised.

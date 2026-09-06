@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 1.30.0 | Status: canonical operating core
+Version: 1.30.1 | Status: canonical operating core
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 
@@ -90,7 +90,7 @@ When sources disagree, use this order:
 4. Agent plans, summaries, and handoffs.
 5. Inference from code, chat history, or local state.
 
-An agent plan never overrides a later human correction. Treat a material correction as a memory event: investigate whether knowledge was absent, not retrieved, not applied, or not verified; record the repaired meaning before dependent work continues. Stop only the affected scope.
+An agent plan never overrides a later human correction. Explicit direct human control persists in the task contract/lease until returned; read newer direction and resolve conflicts through dialogue, not competing commands. Treat a material correction as a memory event: investigate whether knowledge was absent, not retrieved, not applied, or not verified; record the repaired meaning before dependent work continues. Stop only the affected scope.
 
 ## Proactive Guardrails
 
@@ -154,7 +154,7 @@ Choose the smallest useful context:
 
 - Orchestrator Work: project-wide synthesis, prioritization, sequencing, or an owner decision stays in the `ORCHESTRATOR` control context. Internal advisory agents are allowed when the durable result is only a control artifact and their notes can be discarded after synthesis. Give each one `Control decision / Available sources / Expected orchestration output / Route to focused context when`; it returns `CONTROL_ONLY` or `ROUTE_TO_FOCUSED_CONTEXT` in the same control cycle.
 - Research Context: restore unproven context or resolve a bounded question in `DISCOVERY`, without product-code changes. Close after incorporation unless explicitly assigned a bounded lead for ongoing cross-task coherence; follow [Context Route](workflows/context-route.md) for selection, waits, consultation, user explanation and exit. A lead never becomes another dispatcher.
-- Lab Mode: isolated implementation or experimentation reduces risk, cost, or time-to-feedback. Define the decision, Accepted Baseline, one main variable, human-verifiable proof, stop/burn limit, and promote/reject/re-brief route before starting. Exit through production transfer, tests, and risk-based real-flow smoke.
+- Lab Mode: isolated implementation or experimentation reduces risk, cost, or time-to-feedback. Define the decision, Accepted Baseline, one main variable, agreed entry/mechanism and test conditions, human-verifiable proof, stop/burn limit, and promote/reject/re-brief route before starting. Agree departures with the decision owner: disabled AI or a fixture cannot prove an unexercised producer or justify replacing it. Close the agreed Lab decision; product acceptance additionally requires authorized production transfer, tests and risk-based real-flow smoke. Lab success or a cap alone grants no transfer authority.
 - Task Context: the outcome and acceptance boundary are clear enough for `EXECUTION` in the real product path.
 - Stale Or Re-brief: the current card is outdated, mixed, too broad, contradictory, or missing required inputs. Revise or split it before creating a task context.
 

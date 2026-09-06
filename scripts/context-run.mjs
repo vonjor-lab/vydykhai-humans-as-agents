@@ -159,7 +159,8 @@ export async function runContextTransition(request, services = {}) {
       [task.sourceSet, task.classifications, task.dependencies].every(text) && ref(task.module) && ref(task.memoryReview) &&
       list(task.newExampleIds, id, false) && unique(task.newExampleIds) && list(task.candidateFiles, text) && unique(task.candidateFiles) &&
       typeof task.allowLocalOverlay === "boolean");
-    if (Object.hasOwn(task, "packageApproval")) {
+    const checkPackageApproval = async () => {
+      if (!Object.hasOwn(task, "packageApproval")) return;
       requireThat(keys(task.packageApproval, ["plan", "approval"]) && text(task.packageApproval.plan) && text(task.packageApproval.approval), "PACKAGE_APPROVAL_INVALID");
       const planBytes = await bytes(task.packageApproval.plan), plan = parse(planBytes);
       schema(plan, "context.preparation-plan.v1", ["owner", "workspace", "semanticPackage", "inputFiles", "artifacts"]);
@@ -172,7 +173,8 @@ export async function runContextTransition(request, services = {}) {
       // This one explicit decision is provenance for all exact derived reviews.
       // No derived review is an additional independently made approval.
       for (const r of [...plan.inputFiles, ...plan.artifacts]) requireThat(await readArtifactHash(r) === r.sha256, "PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
-    }
+    };
+    await checkPackageApproval();
     if (task.enforcement !== "reference" || !task.requiredCapabilities.includes(CAPABILITY) ||
         task.requiredCapabilities.some(c => c !== CAPABILITY)) throw new ContextError("CAPABILITY_NOT_ENFORCED", true);
     const identity = await bytes(task.identity.path);
@@ -363,13 +365,15 @@ export async function runContextTransition(request, services = {}) {
     requireThat(id(review.reviewer) && review.decision === "approved" && review.sourceDigest === snapshot.sourceDigest &&
       review.meaningDigest === snapshot.meaningDigest && review.contentDigest === capsule.contentDigest &&
       review.publicBoundary === module.publicBoundary, "MEMORY_REVIEW_MISMATCH");
-    const recheck = async () => {
+    const recheck = async (phase = "BEFORE_ACTION", references = []) => {
       requireThat(sha256(await bytes(request.task.path)) === request.task.sha256 &&
-        sha256(await bytes(task.identity.path)) === task.identity.sha256, "TASK_CHANGED_BEFORE_ACTION");
+        sha256(await bytes(task.identity.path)) === task.identity.sha256, `TASK_CHANGED_${phase}`);
       const latest = await intake();
       requireThat(latest.sourceDigest === snapshot.sourceDigest && latest.meaningDigest === snapshot.meaningDigest &&
-        latest.dependencyDigest === snapshot.dependencyDigest, "CONTEXT_CHANGED_BEFORE_ACTION");
+        latest.dependencyDigest === snapshot.dependencyDigest, `CONTEXT_CHANGED_${phase}`);
       gate("bind", { ...prepared, envelope, atomicRender }, latest);
+      for (const reference of references) requireThat(sha256(await bytes(reference.path)) === reference.sha256, "ARTIFACT_HASH_MISMATCH");
+      if (phase === "DURING_VERIFICATION") await checkPackageApproval();
     };
     await recheck();
     const basis = { sourceDigest: snapshot.sourceDigest, dependencyDigest: snapshot.dependencyDigest,
@@ -423,6 +427,7 @@ export async function runContextTransition(request, services = {}) {
       requiredExamples.every(e => observations.observations.some(o => o.id === e)), "BEHAVIOR_EVIDENCE_MISSING");
     for (const observed of observations.observations) requireThat(hash(observed.observed) ===
       hash(oracle.examples.find(e => e.id === observed.id).expected), "BEHAVIOR_MISMATCH", observed.id);
+    await recheck("DURING_VERIFICATION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef]);
     requireThat(typeof services.createReturnSync === "function", "RETURN_ADAPTER_MISSING");
     const pendingIntegrationSources = snapshot.dispositions.filter(d => !d.integrated).map(d => ({ sourceId: d.sourceId, eventId: d.eventId, sha256: d.sourceSha256 }));
     const receipt = { schema: "context.verification.v1", taskSha256: request.task.sha256, capsuleSha256: request.capsule.sha256,

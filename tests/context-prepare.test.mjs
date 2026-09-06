@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { nativeActionCommand, hookEventKey } from "../scripts/context-hook.mjs";
+import { classifyGuard, createReturnRoute, evaluateProductionContinuation, readProductionContinuation,
+  validateDurableOutbox } from "../scripts/vydykhai.mjs";
 
 const repository = fileURLToPath(new URL("../", import.meta.url));
 async function workspace(t, selectors = false) {
@@ -142,4 +144,108 @@ test("generated hook transport requires actual source mapping and retains it on 
   callback(next);
   assert.equal(w.prepare("bind", "--owner", "module-owner", "--event", `prepared/hook-metadata/event-${hookEventKey(next)}.json`).code, "HOOK_SOURCE_BODY_MISMATCH");
   assert.equal(callback({ ...tool, turn_id: "turn-2", tool_use_id: "action-2" }).hookSpecificOutput.permissionDecision, "deny");
+});
+
+test("the ordinary prepared path rejects owner approval revoked during passing verification", async t => {
+  const w = await workspace(t);
+  const verifier = await readFile(path.join(w.root, "verify.mjs"), "utf8");
+  await w.put("verify.mjs", verifier + `
+import { writeFileSync } from "node:fs";
+const approval = JSON.parse(readFileSync("prepared/approval.json", "utf8"));
+approval.decision = "revoked";
+writeFileSync("prepared/approval.json", JSON.stringify(approval));
+`);
+  await w.ready();
+  await w.put("candidate.mjs", (await readFile(path.join(w.root, "candidate.mjs"), "utf8"))
+    .replace("const key = entry.id;", "const key = entry.id.toLowerCase();"));
+  const accepted = w.run("accept");
+  assert.equal(accepted.status, "BLOCKED", JSON.stringify(accepted));
+  assert.equal(accepted.code, "PACKAGE_APPROVAL_MISMATCH");
+  assert.equal(accepted.stats.verificationCommands, 1);
+  assert.equal(accepted.receipt, undefined); assert.equal(accepted.returnSync, undefined);
+  assert.equal(w.run("resume").code, "PACKAGE_APPROVAL_MISMATCH");
+  await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
+});
+
+test("prepared experiment, human detour, retained regression and lost wake close through the existing cycle", async t => {
+  const w = await workspace(t, true); await w.ready();
+  const original = await readFile(path.join(w.root, "candidate.mjs"), "utf8");
+  const intended = original.replace("const key = entry.id;", "const key = entry.id.toLowerCase();");
+  await w.put("candidate.mjs", intended.replace("entry.label.trim()", "entry.label"));
+  assert.equal(w.run("accept").code, "BEHAVIOR_MISMATCH", "new behavior cannot erase retained behavior");
+  await w.put("candidate.mjs", intended);
+
+  const now = Date.parse("2026-01-01T12:00:00Z");
+  const state = (status, evidence, resumeWhen = null) => `Orchestrator health: HEALTHY | Context: manager | Profile: maximum
+Project Guard: ACTIVE | Incident: none
+Human attention: NONE
+## Execution Leases
+| Work | State | Owner / context |
+| --- | --- | --- |
+| bundle-change | ${status} | bundle-worker |
+## Pending Return Inbox
+## Next-Best-Action
+\`\`\`json
+${JSON.stringify({ schemaVersion: 1, id: "BUNDLE-NEXT", work: "bundle-change", action: "Verify the agreed bundle increment",
+    owner: "bundle-worker", state: status, evidence, ...(resumeWhen ? { resumeWhen } : {}) })}
+\`\`\`
+<!-- vydykhai:project-state:end -->`;
+  const guard = (content, ownerStatus, issues = []) => {
+    const activity = { schemaVersion: 1, continuationKey: readProductionContinuation(content).key,
+      observedAt: new Date(now).toISOString(), orchestrator: { context: "manager", status: "IDLE", evidence: "native-manager" },
+      owner: { context: "bundle-worker", status: ownerStatus, evidence: "native-worker" },
+      wait: { status: "PENDING", evidence: "human-decision" } };
+    const continuation = evaluateProductionContinuation(content, activity, { now });
+    const all = [...continuation.issues, ...issues];
+    return classifyGuard({ ok: all.length === 0, stateIssues: all, graphIssues: [], continuation }, content);
+  };
+  const sources = await w.json("sources.json"), pkg = await w.json("package.json");
+  const direct = "I am directing this lab now. Ask me before any change of direction or transfer into the product.";
+  sources.events.push({ id: "S5", authorKind: "human", body: direct });
+  await w.put("sources.json", sources);
+  assert.equal(w.run("resume").status, "BLOCKED");
+  const waiting = state("WAITING", "human-S5", "The human returns coordination or requests a bounded intervention");
+  assert.equal(guard(waiting, "IDLE").action, "NOOP");
+  assert.equal(evaluateProductionContinuation(waiting, null, { now }).coverage, "LIMITED");
+
+  // Explicit fixture decisions model the human and owner; the checker does not infer their meaning.
+  const returned = "Return coordination for the same narrow bundle fix and its verification. Product integration still requires my decision.";
+  sources.events.push({ id: "S6", authorKind: "human", body: returned });
+  await w.put("sources.json", sources);
+  for (const [eventId, quote, disposition, supersededBy] of [
+    ["S5", direct, "superseded", "S6:1"], ["S6", returned, "current_constraint", null],
+  ]) pkg.classifications.push({ sourceId: "bundle-history", eventId, eventDisposition: "assertions",
+    reason: "Explicit source-backed handoff decision for the same bounded experiment.",
+    assertions: [{ id: `${eventId}:1`, quote, disposition, scope: ["bundle"], targetRef: "module:buildBundle",
+      reason: "Preserve direct human control and the separate integration decision.", supersededBy, ownerGate: null, trigger: null }] });
+  await w.put("package.json", pkg);
+  const prepare = (mode, ...args) => w.cli("context-prepare", mode, "--output", "reviewed", ...args);
+  assert.equal(prepare("plan", "--input", "package.json").status, "PLAN_READY");
+  assert.equal(prepare("confirm", "--owner", "module-owner", "--decision", "approved").status, "PREPARED");
+  const delivery = prepare("read", "--worker", "bundle-worker");
+  assert.match(delivery.context, /Product integration still requires my decision/);
+  assert.match(delivery.context, /CSV/);
+  await w.put("worker-evidence.txt", "Retain buildBundle and its JSON consumer; implement only the accepted comparison fix. Keep CSV deferred. Coordination returned for verification only; product integration is still a human decision.");
+  assert.equal(prepare("ack", "--worker", "bundle-worker", "--evidence", "worker-evidence.txt").status, "ACKNOWLEDGED");
+  const run = op => w.cli("context-run", "--input", `reviewed/${op}.json`);
+  assert.equal(run("resume").status, "ACTION_COMPLETED");
+  const working = state("WORKING", "actual-action");
+  assert.equal(guard(working, "ACTIVE").action, "NOOP");
+  assert.equal(guard(working, "IDLE").action, "WAKE", "missing native return cannot close the lease");
+  assert.equal(run("preflight").status, "READY", "reconcile without rerunning the dependent action");
+  const accepted = run("accept");
+  assert.equal(accepted.status, "VERIFIED", JSON.stringify(accepted));
+  assert.equal(accepted.receipt.productAcceptance, "NOT_ESTABLISHED");
+  assert.deepEqual(accepted.receipt.observations.map(x => x.id), ["B1", "B2", "N1"]);
+  await w.put("outbox.md", accepted.returnSync);
+  const outbox = validateDurableOutbox(await readFile(path.join(w.root, "outbox.md"), "utf8"));
+  assert.equal(outbox.pendingReturnIds.length, 1);
+  assert.equal(guard(working, "IDLE", outbox.issues).action, "WAKE");
+  const route = createReturnRoute({ returnReceiptId: outbox.pendingReturnIds[0], consumer: "manager",
+    routedNextAction: "Preserve the lab result and await the human integration decision", evidence: "exact-verification-receipt" });
+  await w.put("outbox.md", accepted.returnSync + "\n" + route);
+  assert.deepEqual(validateDurableOutbox(await readFile(path.join(w.root, "outbox.md"), "utf8")).pendingReturnIds, []);
+  assert.equal(guard(state("WAITING", "human-integration", "Human decides whether to integrate"), "IDLE").action, "NOOP");
+  assert.equal(await readFile(path.join(w.root, "actions.log"), "utf8"), "called\n");
+  assert.equal(await readFile(path.join(w.root, "candidate.mjs"), "utf8"), intended);
 });

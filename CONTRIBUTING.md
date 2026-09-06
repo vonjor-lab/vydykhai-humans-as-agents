@@ -26,3 +26,9 @@ Weigh the benefit against added concepts, context, model calls, coordination ste
 Give one short review in the existing PR or change discussion: **Benefit / Evidence and limits / Complexity tradeoff / Verdict** (`ship`, `simplify`, `defer`, or `no release`). Explain the user outcome in ordinary language, not internal procedure names. Scale the review to the change and reuse current evidence; do not create a separate audit artifact, agent, scheduler, or runtime ritual. A passing structural test or a new version number is not proof of user value.
 
 A lesson that fails this gate belongs in project instructions, an issue for further evidence, or an existing mechanism's example rather than the universal runtime.
+
+## Publication Completion
+
+Merge is not release: main/update availability may precede the public GitHub Release. Report that interval as unpublished or publication incomplete, not a failed installation. Once publishing is authorized, finish the missing authorized steps; never move a conflicting released tag or create another version to hide a mismatch.
+
+At close, reread live remote source/version, exact tag commit, Release version/title/draft/prerelease/Latest status, source archive and updater selection. Require agreement with the accepted source; a dispatch-time metadata snapshot cannot establish current publication status. Reuse unchanged validation evidence and perform only missing boundary checks. Keep installed-kit, project activation and public publication status distinct; do not roll back or reinstall to fix a display mismatch. No new release automation or artifact system is needed.
