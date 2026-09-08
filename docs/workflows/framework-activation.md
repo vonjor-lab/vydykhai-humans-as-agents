@@ -68,7 +68,7 @@ Preserve product code, uncommitted work, accepted artifacts, direct human contro
 Do not merge product main just to acquire instructions or overwrite managed-file conflicts with `--force`.
 Review that conflict separately and pause only affected work. After installation, the worker reads the changed core
 and applicable skills and acknowledges its actual target, outcome, remaining action and boundaries in the existing receipt.
-Prove affected behavior before claiming effective adoption. No compulsory rotation, scheduler or blanket project pause.
+Prove affected behavior before claiming effective adoption. No compulsory rotation, scheduler or blanket project pause. When return instructions change, reconcile the current human source, exact recipient and allowed report data in the existing worker contract (`task-context-handoff-template.md#return-authorization`). Preserve pending denials/approvals: a kit update neither grants host permission nor restarts a rejected transfer. Reuse the unfinished-worker inventory, not a new migration or process.
 
 The executor applies the accepted kit update and returns exact-code evidence.
 After authorized merge, the **active orchestrator itself** reads its own cwd,

@@ -97,6 +97,29 @@ test("bounded legacy route labels and status qualifiers remain readable", () => 
   assert.equal(result.routes[0].fields.Evidence, "event-one");
 });
 
+test("writing a result does not claim delivery when sending was absent or denied", () => {
+  const input = {
+    status: "CHECKPOINT_READY", returnReceiptId: "UNSENT-1",
+    taskContextArtifact: "task-one / local result",
+    memoryCandidates: "NO_MEMORY_DELTA",
+    artifactDisposition: "Result retained locally; sending not authorized by the host",
+    recommendedNextAction: "Resolve the exact delivery permission; do not repeat the completed work",
+  };
+  const written = createReturnSync(input);
+  const pending = parseDurableOutboxComment(written);
+  assert.equal(pending.returns[0].fields["Return lifecycle"], "WRITTEN");
+  assert.equal(pending.returns[0].fields.Status, "CHECKPOINT_READY");
+  assert.deepEqual(pending.pendingReturnIds, ["UNSENT-1"]);
+  assert.equal(pending.routedCount, 0);
+  assert.equal(createReturnSync(input), written, "receipt construction neither sends nor retries");
+
+  // A caller records SENT only after its own confirmed, authorized transport.
+  const sent = parseDurableOutboxComment(createReturnSync({ ...input, returnLifecycle: "WRITTEN -> SENT" }));
+  assert.equal(sent.returns[0].fields["Return lifecycle"], "WRITTEN -> SENT");
+  assert.deepEqual(sent.pendingReturnIds, ["UNSENT-1"], "sending is still not consumption");
+  assert.throws(() => createReturnSync({ ...input, returnLifecycle: "WRITTEN -> ROUTED" }), TypeError);
+});
+
 test("mixed canonical and legacy route labels stay ambiguous", () => {
   for (const route of [
     consumer("R1").replace("Consumer: active-orchestrator", "Consumer: active-orchestrator\nConsumer / route: active-orchestrator"),

@@ -84,7 +84,7 @@ Expected surface / first evidence: <only when expansion risk is material>
 Verification / completion route:
 Consult when: <undeclared scope/authority/shared-contract/safety boundary, impossible DOD, or repeated no-progress stop>
 Return to / triggers: <orchestrator or tracker / named human checkpoint, irreducible blocker, terminal result>
-Execution Lease / durable return: <PREPARED identity, review-by, outbox, native wakeup>
+Execution Lease / durable return: <PREPARED identity, review-by, exact recipient, approved outbox/wakeup, current human source and permitted report data under task-context-handoff-template.md#return-authorization>
 Dependencies / parallel boundary:
 Progress continuity: <Preserved / Replaced / Added / Remaining when patched, split, or re-briefed>
 ```

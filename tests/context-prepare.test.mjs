@@ -251,6 +251,7 @@ ${JSON.stringify({ schemaVersion: 1, id: "BUNDLE-NEXT", work: "bundle-change", a
   assert.equal(outbox.pendingReturnIds.length, 1);
   assert.equal(outbox.returnCount, 1);
   assert.equal(outbox.returns[0].fields.Status, "CHECKPOINT_READY", "readiness is delivered before human acceptance");
+  assert.equal(outbox.returns[0].fields["Return lifecycle"], "WRITTEN", "local acceptance has no native delivery evidence");
   assert.equal(guard(working, "IDLE", outbox.issues).action, "WAKE");
   const route = createReturnRoute({ returnReceiptId: outbox.pendingReturnIds[0], consumer: "manager",
     routedNextAction: "Preserve the lab result and await the human integration decision", evidence: "exact-verification-receipt" });
@@ -265,4 +266,26 @@ ${JSON.stringify({ schemaVersion: 1, id: "BUNDLE-NEXT", work: "bundle-change", a
   assert.equal(guard(state("WAITING", "human-integration", "Human decides whether to integrate"), "IDLE").action, "NOOP");
   assert.equal(await readFile(path.join(w.root, "actions.log"), "utf8"), "called\n");
   assert.equal(await readFile(path.join(w.root, "candidate.mjs"), "utf8"), intended);
+});
+
+test("return authority cites the actual source event, not another page or stale instruction", async t => {
+  const w = await workspace(t), pkg = await w.json("package.json"), sources = await w.json("sources.json");
+  const permission = "Return the bounded result and evidence to manager in this project. No raw documents, secrets, external services or runtime changes.";
+  pkg.classifications.push({ sourceId: "bundle-history", eventId: "S5", eventDisposition: "assertions",
+    reason: "Current scoped return instruction, not general disclosure or action permission.",
+    assertions: [{ id: "S5:1", quote: permission, disposition: "current_constraint", scope: ["bundle"],
+      targetRef: "module:buildBundle", reason: "Preserve the named recipient and disclosure limits.",
+      supersededBy: null, ownerGate: null, trigger: null }] });
+  await w.put("package.json", pkg);
+  assert.equal(w.plan().code, "PACKAGE_UNKNOWN_SOURCE", "a successful read of other messages is not the requested event");
+  sources.events.push({ id: "S5", authorKind: "human", body: "Only prepare a local comparison; no return instruction supplied here." });
+  await w.put("sources.json", sources);
+  assert.equal(w.plan().code, "PACKAGE_QUOTE_AMBIGUOUS_OR_MISSING", "the right event id with different content is not authority");
+  sources.events.at(-1).body = permission;
+  await w.put("sources.json", sources);
+  await w.ready();
+  const delivery = w.prepare("read", "--worker", "bundle-worker");
+  assert.ok(delivery.context.includes(permission), "the worker receives the exact scoped instruction");
+  // The fixture models reviewed source provenance. It does not authenticate a
+  // real user, grant host permissions or run a native messaging tool.
 });
