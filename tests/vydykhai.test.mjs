@@ -580,6 +580,42 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(intentTrail, /expiry or re-entry condition/);
 });
 
+// These text regressions keep entrypoints aligned; they are not model-compliance tests.
+test("acceptance contract separates local repair, readiness delivery and approval", async () => {
+  const workflow = await readFile(path.join(root, "docs/workflows/accept-work.md"), "utf8");
+  const skill = await readFile(path.join(root, ".agents/skills/accept-work/SKILL.md"), "utf8");
+  assert.match(workflow, /`CHECKPOINT_READY`:.*deliver it before waiting, without claiming acceptance/);
+  assert.match(workflow, /an unrun or failed local test alone is not a blocker/);
+  assert.match(workflow, /These are task verdicts, not raw tool statuses/);
+  assert.match(workflow, /never bypass a failed gate or replay an uncertain action/);
+  assert.match(workflow, /A local `NEEDS_FIXES` returns to correction and verification within scope\/burn/);
+  assert.match(skill, /A local `NEEDS_FIXES` self-check returns to corrective work/);
+  assert.match(skill, /Use the task verdicts in `docs\/workflows\/accept-work.md`/);
+  assert.match(workflow, /`OUTCOME_UNKNOWN`:.*Freeze replay and reconcile exact evidence/);
+  assert.doesNotMatch(workflow, /or reliable verification is missing/);
+  const reporting = workflow.split("## 6. Finish In The Task Context")[1].split("Only after technical acceptance")[0];
+  assert.match(reporting, /Reporting readiness does not require the approval it requests/);
+  assert.match(reporting, /write that complete marked Return Sync/);
+  assert.doesNotMatch(reporting, /After human confirmation:/);
+  assert.match(workflow, /A routed checkpoint remains `WAITING`.*not `CLOSED` or accepted merely because delivery succeeded/);
+  assert.match(workflow, /Acceptance, merge, and deploy are separate authorities/);
+});
+
+test("update and return entrypoints retain the focused worker as execution owner", async () => {
+  const workflow = await readFile(path.join(root, "docs/workflows/framework-orchestrator.md"), "utf8");
+  const core = await readFile(path.join(root, "docs/AGENTS_CORE.md"), "utf8");
+  const readme = await readFile(path.join(root, "README.md"), "utf8");
+  const returnStep = workflow.split("\n").find(line => line.startsWith("- Return event:"));
+  assert.match(returnStep, /read the owning task's marked Return Sync/);
+  assert.match(returnStep, /orchestrator does not create or rewrite the task's producer record/);
+  assert.match(returnStep, /append only the paired marked Return Route receipt/);
+  assert.match(core, /the task uses the installed canonical writer/);
+  assert.match(readme, /one focused maintenance task prepares or reuses the update branch/);
+  assert.match(readme, /orchestrator coordinates that task.*does not perform the installation/);
+  assert.match(readme, /paused work stays paused/);
+  assert.doesNotMatch(readme, /At the chosen window it prepares or reuses one update branch/);
+});
+
 test("orchestrator and task contexts keep distinct hot and cold paths", async () => {
   const orchestratorSkill = await readFile(
     path.join(root, ".agents/skills/framework-orchestrator/SKILL.md"),

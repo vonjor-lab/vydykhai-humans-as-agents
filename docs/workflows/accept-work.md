@@ -84,16 +84,19 @@ Check:
 
 - `ACCEPT`: promised scope and checkpoint are complete.
 - `ACCEPT_WITH_FOLLOWUPS`: useful scope is accepted, named follow-ups remain, and parent stays open when needed.
-- `NEEDS_FIXES`: task is close but the promised outcome, loop, checkpoint, verification, or inheritance proof is incomplete.
-- `BLOCKED`: a decision, packet, conflict, access, burn exception, or reliable verification is missing.
+- `CHECKPOINT_READY`: the declared review artifact is ready, but a human decision or named dependency remains; deliver it before waiting, without claiming acceptance.
+- `NEEDS_FIXES`: the promised outcome, loop, verification, or inheritance proof is incomplete and can be corrected within the task's authority and burn limit.
+- `BLOCKED`: an evidenced unresolved decision, access, dependency, scope/authority conflict, or actual cap prevents the next required action. Name the boundary and resume condition; an unrun or failed local test alone is not a blocker.
+- `OUTCOME_UNKNOWN`: a possible external/shared-state action has no reliable result. Freeze replay and reconcile exact evidence before continuing that action.
+
+These are task verdicts, not raw tool statuses. Inspect the reason and side-effect evidence when a check such as `context-run` returns `BLOCKED`: a local behavior mismatch calls for task-owned correction, not automatic finalization. Missing source/approval or an unknown external outcome must still be reconciled; never bypass a failed gate or replay an uncertain action.
 
 ## 6. Finish In The Task Context
 
-Keep fixes, smoke, and manual merge in the owning task context. After human confirmation:
+Keep fixes, smoke, and manual merge in the owning task context. A local `NEEDS_FIXES` returns to correction and verification within scope/burn, not another request to "continue". Before a final answer, apply the completion rule in `task-context-handoff-template.md`; preserve explicit pauses and consult at a real unresolved boundary.
 
-- promote the accepted Candidate to the new Accepted Baseline;
-- update task/PR status and acceptance summary;
-- request alignment only when another participant's safe action changes; the orchestrator runs that workflow.
+At each declared readiness result, human checkpoint, irreducible blocker, or terminal result, the owning task reports through its agreed authorized return route before waiting. Reporting readiness does not require the approval it requests and grants no merge, deploy, spend, or acceptance authority:
+
 - report DOD impact, human checkpoint, burn, verification, merge, risks, and recommended orchestrator action; the orchestrator decides parent state and next-best-action.
 - for an enabler, report `Unlocks`, `Still missing`, and the next product slice/owner; do not close the parent from technical completion alone.
 - classify each follow-up as a required DOD gap or optional `IDEA` candidate; optional ideas do not keep the accepted task or parent open by themselves.
@@ -102,9 +105,11 @@ Keep fixes, smoke, and manual merge in the owning task context. After human conf
 - report `Memory Brief result` item by item as `applied / missed / contradicted / not exercised`; a miss is evidence for orchestrator-owned Memory Reflection and a representative regression scenario.
 - validate any `memory.application-receipt.v1` against the unchanged envelope; missing ids or mismatched authority/prompt/digest cannot be accepted as applied.
 - report boundary consultations and any deliberately changed or unexpected surfaces.
-- publish terminal Return Sync with learning/approach evidence plus `Memory candidates: NO_MEMORY_DELTA`, `task-local only`, or compact `ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT` candidates containing type, current value, touch keys, relations, and safe source. The orchestrator integrates reusable candidates into the graph; the task never edits shared memory and not every task note is promoted.
+- publish the corresponding Return Sync with learning/approach evidence plus `Memory candidates: NO_MEMORY_DELTA`, `task-local only`, or compact `ADD / REFINE / SUPERSEDE / RETIRE / CONFLICT` candidates containing type, current value, touch keys, relations, and safe source. The orchestrator integrates reusable candidates into the graph; the task never edits shared memory and not every task note is promoted.
 - write that complete marked Return Sync to the durable task/tracker outbox first, then attempt the same receipt id as the native wakeup. An Action Receipt never substitutes for Return Sync, including a readiness or human-checkpoint result. Report only through `SENT`; the orchestrator owns `RECEIVED -> CONSUMED -> ROUTED`, the paired marked Return Route receipt, and lease closure. Native final text and task/thread reads are non-authoritative and may be empty; native loss does not justify human polling or recreating an already durable result.
 - include `Artifact disposition` for the context, PR, branch, worktree, runtime, and monitor. Close or clean only what is proven safe to remove, with unique work incorporated or preserved. Preserve ambiguous evidence; mark useful stale work `SALVAGE` for transfer onto the current Accepted Baseline rather than reviving it wholesale, and give `WAITING` or `RETIRE` an owner plus re-entry or cleanup condition. The orchestrator consumes this result and routes any separate maintenance without performing it.
+
+Only after technical acceptance and any required human confirmation, promote the Candidate to the new Accepted Baseline and update task/PR acceptance status. Request alignment only when another participant's safe action changes; the orchestrator runs that workflow. A routed checkpoint remains `WAITING` with its owner and resume condition, not `CLOSED` or accepted merely because delivery succeeded.
 
 Before merge, deploy, spend, or shared-state mutation, read back owning acceptance plus fresh exact actor, environment, revision, permitted mutation, and stop conditions as the Action Receipt. Acceptance, merge, and deploy are separate authorities; an absent, stale, or cross-environment receipt is `BLOCKED` for that action.
 

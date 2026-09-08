@@ -38,6 +38,6 @@ Load the task contract, current PR/diff or artifact, direct human corrections in
 
 ## Finish
 
-Return `ACCEPT`, `ACCEPT_WITH_FOLLOWUPS`, `NEEDS_FIXES`, or `BLOCKED` with verified evidence, unresolved risk, human checkpoint state, and recommended orchestrator action.
+Use the task verdicts in `docs/workflows/accept-work.md` at the declared return boundary, with verified evidence, unresolved risk, human checkpoint state, and recommended orchestrator action. Readiness awaiting approval is not acceptance; a routed result does not close unfinished work.
 
 A local `NEEDS_FIXES` self-check returns to corrective work; it does not by itself end the native turn or request another "continue". Send the verdict at the task's actual declared return boundary. A partial report or answered side question cannot replace the outstanding agreed outcome (`task-context-handoff-template.md`).
