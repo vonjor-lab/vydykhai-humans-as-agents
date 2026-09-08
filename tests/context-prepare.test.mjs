@@ -52,7 +52,14 @@ test("ordinary package reaches action and acceptance after the worker changes Ca
   assert.equal(w.confirm().status, "PREPARED");
   assert.equal(w.run("awaiting-worker").status, "BLOCKED");
   await w.acknowledge();
-  assert.equal(w.run("accept").status, "BLOCKED", "unfixed Candidate must fail N1");
+  const taskBeforeRepair = await readFile(path.join(w.root, "prepared/task.json"), "utf8");
+  const failedCheck = w.run("accept");
+  assert.equal(failedCheck.status, "BLOCKED", "a check verdict is not the task's stop decision");
+  assert.equal(failedCheck.code, "BEHAVIOR_MISMATCH", "unfixed Candidate must fail N1");
+  assert.equal(failedCheck.stats.verificationCommands, 1);
+  assert.equal(failedCheck.stats.dependentCommands, 0);
+  assert.equal(failedCheck.actionOutcome, "NOT_INVOKED");
+  assert.equal(failedCheck.returnSync, undefined, "a failed local check is not a terminal task return");
   const before = await readFile(path.join(w.root, "candidate.mjs"), "utf8");
   await w.put("candidate.mjs", before.replace("const key = entry.id;", "const key = entry.id.toLowerCase();"));
   assert.ok(!(await w.json("prepared/plan.json")).inputFiles.some(r => r.path === "candidate.mjs"));
@@ -63,6 +70,8 @@ test("ordinary package reaches action and acceptance after the worker changes Ca
   assert.equal(await readFile(path.join(w.root, "actions.log"), "utf8"), "called\n");
   const accepted = w.run("accept");
   assert.equal(accepted.status, "VERIFIED", JSON.stringify(accepted));
+  assert.equal(await readFile(path.join(w.root, "prepared/task.json"), "utf8"), taskBeforeRepair,
+    "local corrective work retains the same accepted task and authority");
   assert.equal(w.plan().status, "PLAN_READY", "Candidate edits must not stale preparation");
 });
 
@@ -240,11 +249,19 @@ ${JSON.stringify({ schemaVersion: 1, id: "BUNDLE-NEXT", work: "bundle-change", a
   await w.put("outbox.md", accepted.returnSync);
   const outbox = validateDurableOutbox(await readFile(path.join(w.root, "outbox.md"), "utf8"));
   assert.equal(outbox.pendingReturnIds.length, 1);
+  assert.equal(outbox.returnCount, 1);
+  assert.equal(outbox.returns[0].fields.Status, "CHECKPOINT_READY", "readiness is delivered before human acceptance");
   assert.equal(guard(working, "IDLE", outbox.issues).action, "WAKE");
   const route = createReturnRoute({ returnReceiptId: outbox.pendingReturnIds[0], consumer: "manager",
     routedNextAction: "Preserve the lab result and await the human integration decision", evidence: "exact-verification-receipt" });
   await w.put("outbox.md", accepted.returnSync + "\n" + route);
-  assert.deepEqual(validateDurableOutbox(await readFile(path.join(w.root, "outbox.md"), "utf8")).pendingReturnIds, []);
+  const routedContent = await readFile(path.join(w.root, "outbox.md"), "utf8");
+  assert.ok(routedContent.startsWith(accepted.returnSync + "\n"), "routing preserves the task's producer bytes");
+  const routed = validateDurableOutbox(routedContent);
+  assert.deepEqual(routed.pendingReturnIds, []);
+  assert.equal(routed.returnCount, 1, "the manager does not manufacture a second producer");
+  assert.equal(routed.routeCount, 1);
+  assert.equal(routed.returns[0].fields.Status, "CHECKPOINT_READY", "routing cannot promote readiness to acceptance");
   assert.equal(guard(state("WAITING", "human-integration", "Human decides whether to integrate"), "IDLE").action, "NOOP");
   assert.equal(await readFile(path.join(w.root, "actions.log"), "utf8"), "called\n");
   assert.equal(await readFile(path.join(w.root, "candidate.mjs"), "utf8"), intended);
