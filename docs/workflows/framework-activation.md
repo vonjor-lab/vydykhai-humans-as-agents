@@ -11,8 +11,12 @@ The active project orchestrator owns the transition in existing Project State:
 accepted baseline, target plan id, one focused maintenance executor, safe named
 checkpoint, Pending Human Action and productive next action. Reuse an existing
 update task/branch; no competing updaters. Keep old workers on their accepted
-contract until safe rebrief and actual readback. A new version alone does not
-justify rotation, a full memory rebuild or another Guard.
+contract until safe rebrief and actual readback; account for every unresolved worker in existing leases.
+Active workers adopt at the next safe boundary after in-flight reconciliation; paused/waiting ones
+retain their pause and adopt before productive resume. Closed history needs no update until reopened.
+Record accepted readback, due-at-checkpoint, due-on-resume or an exact blocked/LIMITED reason for each;
+another participant attests their own environment. Never claim uniform adoption while workers are pending.
+A new version alone does not justify rotation, a full memory rebuild or another Guard.
 
 Before mutation, use the existing [launch Action Receipt](framework-orchestrator.md)
 to establish the visible maintenance owner; internal advice is not that owner.
@@ -40,6 +44,31 @@ an identical bundle reuses its plan id. It never marks activation complete. When
 retain the prior plan reference and carry forward scoped progress from State.
 
 ## Apply and prove the applicable requirements
+
+At task launch, material resume, reopen/restoration or branch/workspace change,
+compare the actual worker kit with the accepted project target, not an arbitrary
+latest remote release. Use the current accepted updater so an old worker's CLI
+cannot silently omit this check:
+
+```sh
+node /accepted-project/scripts/vydykhai.mjs adoption-plan /accepted-project --worker /worker-repo --json
+```
+
+This read-only, offline comparison reports the real checkout, observed managed bundle and target.
+`KIT_MATCH` proves matching files only, not applied instructions or task authority. `UPDATE_REQUIRED` needs safe adoption;
+`REVIEW_REQUIRED` prevents a blind downgrade or source substitution. Invalid kits
+are `BLOCKED`; unavailable workers/checkouts are `LIMITED`, not success. Exit zero
+means kit match only. Keep the accepted target reference in the existing task
+contract. A missing target/access becomes one scoped consultation, not an upstream
+search or permission to invent a target. Reuse a matching actual-kit and worker
+readback on the hot path; do not repeat network checks or migration on every turn.
+
+The owning or focused maintenance task uses the supported updater for framework-managed paths and block only.
+Preserve product code, uncommitted work, accepted artifacts, direct human control, role/profile, approvals and return route.
+Do not merge product main just to acquire instructions or overwrite managed-file conflicts with `--force`.
+Review that conflict separately and pause only affected work. After installation, the worker reads the changed core
+and applicable skills and acknowledges its actual target, outcome, remaining action and boundaries in the existing receipt.
+Prove affected behavior before claiming effective adoption. No compulsory rotation, scheduler or blanket project pause.
 
 The executor applies the accepted kit update and returns exact-code evidence.
 After authorized merge, the **active orchestrator itself** reads its own cwd,

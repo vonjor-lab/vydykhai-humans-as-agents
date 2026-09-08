@@ -17,6 +17,8 @@ Use an already reconciled `$daily-alignment` delta when this is a re-brief from 
 
 ## Contract
 
+- Before dispatch or material resume, require the actual worker checkout/kit check against the accepted project target and instruction readback under `framework-activation.md`. An orchestrator version is not worker readiness; retain existing progress and pause only an affected unresolved adoption boundary.
+
 - Restore the atomic Project State control snapshot and DOD Control Line first, then product intent, latest explicit human decisions, Project Memory Graph, related work, tracker projection, and verified repo state.
 - Apply source precedence before using an old plan or issue as current intent.
 - After activation, new tasks touching durable modules with prior obligations or acceptance behavior use `retained-progress-v1` and `docs/workflows/context-preparation.md` by default. The orchestrator reviews sources/plan; the assigned worker reads and acknowledges actual context before `context-run` execution. Missing critical access stays scoped pending/LIMITED. Existing workers enter at safe rebrief/readback, never by silent installation inheritance.

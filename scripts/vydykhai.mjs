@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 import { compileExecutableBrief, validateApplicationReceipt } from "./memory-brief.mjs";
 import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
-import { planAdoption } from "./adoption-plan.mjs";
+import { planAdoption, assessWorkerAdoption, kitIdentity } from "./adoption-plan.mjs";
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const LOCK_FILE = ".vydykhai-lock.json";
@@ -54,7 +54,7 @@ Usage:
   node scripts/vydykhai.mjs memory-brief-compile --input <brief-input.json>
   node scripts/vydykhai.mjs memory-brief-validate --envelope <brief-envelope.json> --receipt <application-receipt.json>
   node scripts/vydykhai.mjs context-run --input <context-request.json>
-  node scripts/vydykhai.mjs adoption-plan [target] --json
+  node scripts/vydykhai.mjs adoption-plan [target] [--worker <worker-repo>] --json
   node scripts/vydykhai.mjs context-prepare <plan|confirm|read|ack|bind> --output <task-local-dir> ...
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
 `;
@@ -80,6 +80,7 @@ function parseArgs(argv) {
     input: null,
     envelope: null,
     receipt: null,
+    worker: null,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -92,7 +93,7 @@ function parseArgs(argv) {
       i += 1;
       if (!flags.from) throw new Error("--from requires a framework repository path");
     } else if (
-      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--woken-incident", "--repair-incident", "--repair-attempts", "--expect-state-sha", "--expect-graph-sha", "--input", "--envelope", "--receipt"].includes(
+      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--woken-incident", "--repair-incident", "--repair-attempts", "--expect-state-sha", "--expect-graph-sha", "--input", "--envelope", "--receipt", "--worker"].includes(
         value,
       )
     ) {
@@ -108,6 +109,7 @@ function parseArgs(argv) {
         "--expect-state-sha": "expectStateSha",
         "--expect-graph-sha": "expectGraphSha",
         "--input": "input",
+        "--worker": "worker",
         "--envelope": "envelope",
         "--receipt": "receipt",
       }[value];
@@ -346,6 +348,66 @@ async function loadLock(targetRoot) {
   const file = path.join(targetRoot, LOCK_FILE);
   if (!existsSync(file)) return null;
   return readJson(file);
+}
+
+async function observedKit(root) {
+  for (const file of ["vydykhai.json", LOCK_FILE, "AGENTS.md"]) await assertNoTargetSymlink(root, file);
+  // An old kit need not declare today's policies. Its observed ownership and
+  // hashes are enough to compare it; loading current-only policy validation is not.
+  const manifest = await readJson(path.join(root, "vydykhai.json")), lock = await loadLock(root);
+  if (manifest.schemaVersion !== 1 || manifest.name !== "vydykhai" || !/^\d+\.\d+\.\d+$/.test(manifest.version || "") ||
+      !Array.isArray(manifest.managedPaths) || !manifest.managedPaths.length) throw new Error("KIT_MANIFEST_INVALID");
+  if (!lock || lock.installedVersion !== manifest.version || !lock.managedFiles || Array.isArray(lock.managedFiles)) throw new Error("KIT_LOCK_MISMATCH");
+  const declared = manifest.managedPaths.map(normalizeManagedPath), files = Object.keys(lock.managedFiles).sort();
+  if (!["vydykhai.json", "docs/AGENTS_CORE.md", "scripts/vydykhai.mjs"].every(file => files.includes(file))) throw new Error("KIT_FILE_SET_MISMATCH");
+  for (const relative of declared) {
+    await assertNoTargetSymlink(root, relative);
+    if ((await lstat(path.join(root, relative))).isFile() && !files.includes(relative)) throw new Error("KIT_FILE_SET_MISMATCH");
+  }
+  const hashes = {};
+  for (const file of files) {
+    const relative = normalizeManagedPath(file);
+    if (!declared.some(p => relative === p || relative.startsWith(p + "/"))) throw new Error("KIT_FILE_SET_MISMATCH");
+    await assertNoTargetSymlink(root, file);
+    hashes[file] = await hashFile(path.join(root, file));
+    if (hashes[file] !== lock.managedFiles[file]) throw new Error("MANAGED_FILES_CHANGED");
+  }
+  const block = extractAgentsBlock(await readFile(path.join(root, "AGENTS.md"), "utf8"));
+  if (!block || sha256(block) !== lock.agentsBlockHash || block !== await agentsBlock(root)) throw new Error("MANAGED_CORE_CHANGED");
+  return kitIdentity(manifest, hashes, sha256(block));
+}
+
+export async function checkWorkerAdoption(targetRoot, workerRoot) {
+  const result = { target: null, worker: null, checkout: null, readOnly: true, activeUse: "UNPROVEN_BY_KIT_CHECK" };
+  const failed = (reason, error) => ({ ...result, status: "BLOCKED", reason,
+    detail: ["KIT_MANIFEST_INVALID", "KIT_LOCK_MISMATCH", "KIT_FILE_SET_MISMATCH", "MANAGED_FILES_CHANGED", "MANAGED_CORE_CHANGED"].includes(error.message)
+      ? error.message : "KIT_UNAVAILABLE_OR_UNSAFE" });
+  try { targetRoot = await realpath(targetRoot); result.target = await observedKit(targetRoot); }
+  catch (error) { return failed("TARGET_KIT_INVALID", error); }
+  try { workerRoot = await realpath(workerRoot); }
+  catch { return { ...result, status: "LIMITED", reason: "WORKER_UNAVAILABLE" }; }
+  try { result.worker = await observedKit(workerRoot); }
+  catch (error) { return failed("WORKER_KIT_INVALID", error); }
+  const checkout = async () => {
+    const git = args => execFileSync("git", ["-C", workerRoot, ...args], {
+      encoding: "utf8", timeout: 3000, maxBuffer: 65536, stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    const repository = await realpath(git(["rev-parse", "--show-toplevel"]));
+    if (repository !== workerRoot) throw new Error("WORKER_NOT_REPOSITORY_ROOT");
+    const head = git(["rev-parse", "HEAD"]), branch = git(["rev-parse", "--abbrev-ref", "HEAD"]);
+    return { workspace: workerRoot, head, branch };
+  };
+  try { result.checkout = await checkout(); }
+  catch { return { ...result, status: "LIMITED", reason: "CHECKOUT_IDENTITY_UNAVAILABLE" }; }
+  // Reconcile after reading checkout identity; never certify a kit changed during this check.
+  try {
+    if (JSON.stringify(await observedKit(targetRoot)) !== JSON.stringify(result.target)) throw new Error("MANAGED_FILES_CHANGED");
+    if (JSON.stringify(await observedKit(workerRoot)) !== JSON.stringify(result.worker)) throw new Error("MANAGED_FILES_CHANGED");
+  } catch (error) { return failed("KIT_CHANGED_DURING_CHECK", error); }
+  try {
+    if (JSON.stringify(await checkout()) !== JSON.stringify(result.checkout)) throw new Error("CHECKOUT_CHANGED");
+  } catch { return { ...result, status: "LIMITED", reason: "CHECKOUT_CHANGED_DURING_CHECK" }; }
+  return { ...result, ...assessWorkerAdoption(result.target, result.worker) };
 }
 
 async function installFrom(sourceRoot, targetRoot, { force = false } = {}) {
@@ -1831,6 +1893,7 @@ async function main() {
   }
 
   const { positionals, flags } = parseArgs(rest);
+  if (flags.worker && command !== "adoption-plan") throw new Error("--worker is only supported by adoption-plan");
 
   if (command === "install") {
     if (!positionals[0]) throw new Error(`install requires a target repository\n\n${usage()}`);
@@ -1864,7 +1927,19 @@ async function main() {
       changelog: await readFile(path.join(target, "docs/COLLABORATION_FRAMEWORK_CHANGELOG.md"), "utf8").catch(e => {
         if (e.code === "ENOENT") return ""; throw e;
       }) });
-    if (flags.json) console.log(JSON.stringify(plan, null, 2)); else printAdoption(plan);
+    if (flags.worker) {
+      plan.workerCheck = await checkWorkerAdoption(target, path.resolve(flags.worker));
+      if (plan.workerCheck.target && JSON.stringify(plan.workerCheck.target) !== JSON.stringify(plan.target)) {
+        plan.workerCheck.status = "BLOCKED";
+        plan.workerCheck.reason = "TARGET_PLAN_CHANGED";
+      }
+      if (plan.workerCheck.status !== "KIT_MATCH") process.exitCode = plan.workerCheck.status === "LIMITED" ? 2 : 1;
+    }
+    if (flags.json) console.log(JSON.stringify(plan, null, 2));
+    else {
+      printAdoption(plan);
+      if (plan.workerCheck) console.log(`Worker kit: ${plan.workerCheck.status} (${plan.workerCheck.reason}); instruction readback is separate.`);
+    }
     return;
   }
 

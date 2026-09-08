@@ -58,6 +58,8 @@ Read `docs/workflows/framework-orchestrator.md` for a cold-path decision. Load a
 
 ## Finish
 
+For framework updates, account for every unresolved worker through `framework-activation.md`: accepted target, actual kit/checkout, safe adoption boundary and worker instruction readback. Manager activation alone is not uniform worker adoption. Recheck reopened/restored or branch-switched tasks before dependent work, without waking paused work or replacing its product baseline.
+
 Return one status: `CONTINUE`, `CONTINUE_WITH_CAUTIONS`, `WAIT`, `WAIT_FOR_MEMORY_COVERAGE`, `LAUNCH_TASK_CONTEXT`, `LAUNCH_DISCOVERY_CONTEXT`, `SEND_ACCEPT_WORK`, `CONTROL_DEGRADED`, `PREPARE_ORCHESTRATOR_ROTATION`, `REQUEST_ROTATION_CONFIRMATION`, `ROTATION_COMPLETE`, `ROTATION_CUTOVER_INCOMPLETE`, `NEEDS_DECISION`, or `BLOCKED`.
 
 Always include the exact next action for the project human and project state. Never route it to framework maintenance.
