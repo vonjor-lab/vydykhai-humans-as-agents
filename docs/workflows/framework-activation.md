@@ -16,7 +16,7 @@ Active workers adopt at the next safe boundary after in-flight reconciliation; p
 retain their pause and adopt before productive resume. Closed history needs no update until reopened.
 Record accepted readback, due-at-checkpoint, due-on-resume or an exact blocked/LIMITED reason for each;
 another participant attests their own environment. Never claim uniform adoption while workers are pending.
-A new version alone does not justify rotation, a full memory rebuild or another Guard.
+A new version alone does not justify rotation, a full memory rebuild or another Guard. `control-check` may report `ok: false` but `publicationReady: true` for a complete snapshot declaring Guard `LIMITED`; preserve that limitation, not a false healthy label. This is not corrupt memory or a reason to block independent work; missing fields, other defects or readback mismatch still block publication (see `project-state-template.md`).
 
 Before mutation, use the existing [launch Action Receipt](framework-orchestrator.md)
 to establish the visible maintenance owner; internal advice is not that owner.
@@ -68,7 +68,7 @@ Preserve product code, uncommitted work, accepted artifacts, direct human contro
 Do not merge product main just to acquire instructions or overwrite managed-file conflicts with `--force`.
 Review that conflict separately and pause only affected work. After installation, the worker reads the changed core
 and applicable skills and acknowledges its actual target, outcome, remaining action and boundaries in the existing receipt.
-Prove affected behavior before claiming effective adoption. No compulsory rotation, scheduler or blanket project pause. When return instructions change, reconcile the current human source, exact recipient and allowed report data in the existing worker contract (`task-context-handoff-template.md#return-authorization`). Preserve pending denials/approvals: a kit update neither grants host permission nor restarts a rejected transfer. Reuse the unfinished-worker inventory, not a new migration or process.
+Prove affected behavior before claiming effective adoption. No compulsory rotation, scheduler or blanket project pause. Apply Execution Readiness and `task-context-handoff-template.md#return-authorization` in the actual worker; preserve current sources, recipient, report scope, denials and approvals. The existing adapter adopts readiness/exact-turn observations and the missing-cwd, denied-report and empty-view replay under `production-continuation.md`; legacy observations cannot certify that coverage. A kit update neither grants host permission nor restarts rejected transfers. Reuse the unfinished-worker inventory, not another migration.
 
 The executor applies the accepted kit update and returns exact-code evidence.
 After authorized merge, the **active orchestrator itself** reads its own cwd,
