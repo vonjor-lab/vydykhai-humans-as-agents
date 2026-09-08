@@ -7,6 +7,25 @@ const version = v => typeof v === "string" && /^\d+\.\d+\.\d+$/.test(v);
 const compare = (a, b) => { const x = a.split(".").map(Number), y = b.split(".").map(Number);
   for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i]; return 0; };
 
+// Compares observed kits only; the project owner still accepts the target and
+// the worker must read back its changed instructions at a safe boundary.
+export function assessWorkerAdoption(target, worker) {
+  const valid = kit => kit && version(kit.version) && typeof kit.source === "string" && kit.source &&
+    /^[a-f0-9]{64}$/.test(kit.bundleSha256 || "");
+  if (!valid(target) || !valid(worker)) return { status: "LIMITED", reason: "KIT_IDENTITY_UNAVAILABLE" };
+  if (target.source !== worker.source) return { status: "REVIEW_REQUIRED", reason: "DIFFERENT_SOURCE" };
+  if (compare(worker.version, target.version) > 0) return { status: "REVIEW_REQUIRED", reason: "WORKER_NEWER_THAN_TARGET" };
+  if (worker.version !== target.version || worker.bundleSha256 !== target.bundleSha256) {
+    return { status: "UPDATE_REQUIRED", reason: "TARGET_KIT_DIFFERS" };
+  }
+  return { status: "KIT_MATCH", reason: "WORKER_READBACK_REQUIRED" };
+}
+
+export function kitIdentity(manifest, managedFiles, agentsBlockHash) {
+  return { version: manifest.version, source: manifest.canonicalSource || manifest.upstream || "unknown",
+    bundleSha256: hash({ managedFiles, agentsBlockHash }) };
+}
+
 // Applicability only. A matching identity is never semantic/host acceptance.
 export function adoptionEvidenceScope(requirement, current, recorded = {}) {
   const bindings = {};
@@ -21,8 +40,7 @@ export function adoptionEvidenceScope(requirement, current, recorded = {}) {
 
 export function planAdoption({ manifest, managedFiles, agentsBlockHash, sourceRevision, previousLock, changelog }) {
   if (!version(manifest.version)) throw new Error("Adoption target version must be semver");
-  const target = { version: manifest.version, source: manifest.canonicalSource || manifest.upstream || "unknown",
-    bundleSha256: hash({ managedFiles, agentsBlockHash }) };
+  const target = kitIdentity(manifest, managedFiles, agentsBlockHash);
   const id = hash(target), previous = previousLock?.adoptionPlan;
   const sameTarget = previous?.schema === "vydykhai.adoption-plan.v1" && previous.id === id && stable(previous.target) === stable(target);
   const reviewFromVersion = previous && Object.hasOwn(previous, "reviewFromVersion") ? previous.reviewFromVersion

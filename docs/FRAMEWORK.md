@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 1.30.1 | Status: canonical operating core
+Version: 1.30.2 | Status: canonical operating core
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 
@@ -284,7 +284,7 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Keep the orchestrator organization-only: `ORCHESTRATOR_WORK` may use bounded advisory agents for control decisions, but every material project claim requires accepted work origin. `UNOWNED_PROJECT_WORK` receives one bounded repair; repetition after repair is a rotation signal.
 - Keep universal rules in the canonical framework and project rules in the product repo.
 - Keep human conversation product-focused; hide branch and worktree mechanics unless they affect a decision or risk.
-- Do not start implementation without a goal, boundary, DOD impact, human checkpoint, and verification route.
+- Do not start implementation without a goal, boundary, DOD impact, human checkpoint, and verification route. Keep that outcome active across clarification answers, side questions and internal test failures: continue owned correction until the agreed result/checkpoint, explicit pause or evidenced unresolved boundary. Activation covers every unfinished worker at a safe checkpoint or before resume; actual kit and instruction readback are distinct from the manager's version. Preserve product code and direct human control (`framework-activation.md`, `task-context-handoff-template.md`).
 - Do not claim team alignment while shared repo/tracker or relevant input access is `SYNC_LIMITED`.
 - Check scope freshness before dispatch, re-brief, or material resume of stale/paused work; ordinary continue inside a current active contract does not trigger it.
 - Treat unexpected task expansion as a diagnostic trigger; do not normalize recurring architecture tax or close containment as root-cause repair.
