@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.30.3",
+  "version": "1.30.4",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -532,7 +532,7 @@
     {
       "id": "unfinished-workers",
       "since": "1.30.2",
-      "action": "Account for every unfinished worker, including paused and reopened contexts. Check the actual checkout/kit against the accepted target; update managed files only at a safe boundary and read back the changed instructions plus outstanding outcome. Preserve product progress, pauses and authority; kit match alone is not active use.",
+      "action": "Account for every unfinished worker, including paused and reopened contexts. Check the actual checkout/kit against the accepted target; update managed files only at a safe boundary and read back the changed instructions plus outstanding outcome. Verify actual cwd, readable sources, permitted report storage and return route before productive resume. Preserve product progress, pauses and authority; kit match alone is not active use.",
       "reuseBy": ["targetBundle", "worker", "workerBundle", "instructionReadback"],
       "workflow": "docs/workflows/framework-activation.md"
     },
@@ -584,7 +584,7 @@
     {
       "id": "guard-continuity",
       "since": "1.30.0",
-      "action": "Keep one liveness-only Guard; reuse applicable adapter/bundle/recipient evidence. Changed service adoption or recipient needs real event, installed timer and silent repeat proof.",
+      "action": "Keep one liveness-only Guard; reuse applicable adapter/bundle/recipient evidence. Changed service adoption or recipient needs real event, installed timer and silent repeat proof. For execution recovery, supply current readiness and exact-turn terminal observations and prove missing cwd, denied report, empty API with result/blocker, bounded same-owner recovery and quiet waits. Legacy observation alone does not prove this coverage; pending proof limits only that guarantee, not independent work.",
       "reuseBy": [
         "guardBundle",
         "recipient",

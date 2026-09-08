@@ -14,6 +14,7 @@ Task / outcome owner / backup / recipient:
 Return to: <exact recipient/project and approved outbox + wakeup; see Return Authorization below>
 Execution Lease: <PREPARED id / project / repo / worktree / branch / baseline / review-by / durable outbox + wakeup>
 Framework readiness: <accepted project target/bundle; actual worker checkout/kit check; changed instructions read back, or exact pending boundary>
+Execution readiness: <actual cwd + readable sources + permitted report storage + return route; evidence or exact blocker/resume condition, checked in this worker>
 
 ## Outcome
 
@@ -60,7 +61,7 @@ Return triggers: <readiness result | named human checkpoint | irreducible blocke
 
 - Start implementation immediately; approved planning is not repeated in the task context.
 - Before launch, material resume, reopening or restoring a context, or switching its branch/workspace, check its actual kit against the project's accepted target under `framework-activation.md`. Apply changed instructions only at a safe boundary and read them back here; a manager's version/title does not update this worker. Reuse matching readback on ordinary continue, without repeating installation, broad memory retrieval or remote version checks.
-- On launch and every material resume, make the first safe observable action in the same turn. Commentary, future-tense intention, or a plan without action is `PLAN_ONLY`, not `STARTED`. Name a real blocker or request re-brief when no safe action exists.
+- On launch and every material resume, apply Execution Readiness below, then make the first safe observable action in the same turn. Commentary, future-tense intention, or a plan without action is `PLAN_ONLY`, not `STARTED`. Name a real blocker or request re-brief when no safe action exists; a missing report alone does not prove no action occurred.
 - Own local planning, implementation, debugging, corrective fixes, tests, exact-current-code smoke, and technical evidence.
 - Resolve ordinary implementation failures autonomously inside the contract and burn limit. A failed internal test calls for repair or bounded diagnosis, not a final partial report. Repeated no-progress or an actual cap calls for the specific consultation below, not endless retries. Do not send routine progress or a Return Sync for a locally resolved failure, and do not change reasoning profile mechanically.
 - Do not run `$project-launch`, `$start-work`, `$daily-alignment`, or `$framework-orchestrator` here. Use implementation/domain skills as needed and run `$accept-work` before completion.
@@ -72,6 +73,16 @@ Return triggers: <readiness result | named human checkpoint | irreducible blocke
 - Keep corrective fixes, human smoke, and manual merge in this context because it owns the implementation evidence. Before a final response, compare the current result with the latest agreed outcome/checkpoint. Finish only at that result, an explicit pause, or a concrete unresolved decision/access/safety/dependency/cap boundary with evidence and a resume condition. Otherwise continue the next authorized action in this turn; an acknowledgment, apology, side answer, saved input or partial result does not finish the work. When a clarification or approval arrives, apply it to the outstanding outcome and resume without asking the human to say "continue" again. A new explicit pause or scope change still takes precedence. Report genuine checkpoints/blockers through the existing Return Sync, not a new progress ceremony.
 - Before compaction, context handoff, risky external action, or after a human-accepted checkpoint, preserve the current Accepted Baseline/Candidate and next experiment as a commit or durable artifact. In the existing task checkpoint retain the latest agreed outcome, remaining work, latest human correction/control, actual gate and next safe action. After context restoration, reconcile newer messages with that checkpoint before choosing what to answer or do. Accepted work may not exist only in chat or untracked files.
 - Empty output, timeout, transport failure, or lost context after a possible paid, external, or shared-state action is `OUTCOME_UNKNOWN`. Freeze replay and ask the owning task to reconcile durable/provider/runtime receipts; never infer that no action occurred.
+
+## Execution Readiness
+
+Before productive launch, material resume or workspace/policy change, verify the actual worker's cwd, permitted source reads, required report location and delivery route in the existing launch receipt. A manager's writable workspace or role label proves none of these. Reuse unchanged evidence on ordinary continue; do not create disposable write probes or ask for broader access than the task needs. The first real checkpoint can prove an already permitted write.
+
+Read-only source access is suitable for Discovery; a required report still needs an allowed output location and return route. Check host policy as well as filesystem access: a source-only sandbox with approvals unavailable cannot write a report just because the directory exists. Do not start a task whose required result cannot be retained/delivered, or declare it launched from a prompt alone. A bounded preflight read or concrete blocked response is allowed and does not certify productive start.
+
+For a missing cwd, the orchestrator routes one scoped environment repair: verify the accepted baseline and retained work, then restore/rebind the same task only within existing authority. For denied storage/delivery, retain the exact host denial and existing human approval, resolve only that access boundary under Return Authorization, and do not retry unchanged policy or use another worker/path as a bypass. For unavailable observation, recover the exact turn evidence under Production Continuation before deciding whether anything needs restarting.
+
+The orchestrator owns repair routing, not product implementation or permission grants; the worker owns the preflight and result. Preserve the current outcome, safe checkpoint and human request. Record a concrete wait and its resume condition in the existing lease; after a verified change resume the same task without another generic "continue". Use the existing event/timer and incident repair budget, never a new monitor. Continue independent authorized work; unresolved permission needs one plain question identifying the blocked action and smallest required change, not repeated reminders.
 
 ## Return Authorization
 

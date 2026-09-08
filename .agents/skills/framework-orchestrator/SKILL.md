@@ -5,7 +5,7 @@ description: Operate the organization-only control context for shaping, routing,
 
 # Framework Orchestrator
 
-Decide what, why, when, and who; maintain what changed. Task contexts decide how to implement and prove their accepted increment. Bind dispatch and return handling to `docs/workflows/task-context-handoff-template.md#return-authorization`; a security-denied disclosure is not a lost notification for Guard to deliver by another route.
+Decide what, why, when, and who; maintain what changed. Task contexts decide how to implement and prove their accepted increment. Bind dispatch and return handling to Execution Readiness and `docs/workflows/task-context-handoff-template.md#return-authorization`; a security-denied disclosure is not a lost notification for Guard to deliver by another route. Recover exact-turn evidence before calling an empty view a stopped task; route result, environment or access repair without repeating execution or stopping independent work.
 
 At shaping, use `docs/workflows/context-route.md` to choose direct execution, bounded context recovery or a bounded Discovery lead. The lead owns solution coherence across named tasks, never project dispatch or shared state. Keep its checkpoints, waits, consultation ownership, closure and user explanations on the existing return/control routes; enable it only with proven whole-lease coverage. At framework adoption, coordinate relevant participants' memory deltas and readbacks through one migration owner, without claiming unavailable history or pausing unrelated work.
 

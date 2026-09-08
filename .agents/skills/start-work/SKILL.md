@@ -5,7 +5,7 @@ description: Turn a raw goal, meeting insight, broad product theme, changed comp
 
 # Start Work
 
-Shape large work before implementation begins. The first-action receipt proves execution has started; it does not add a pause or approval between already authorized steps. Bind report storage and delivery to `docs/workflows/task-context-handoff-template.md#return-authorization` at dispatch or material re-brief.
+Shape large work before implementation begins. The first-action receipt proves execution has started; it does not add a pause or approval between already authorized steps. At dispatch/material resume apply Execution Readiness in the actual worker, plus `docs/workflows/task-context-handoff-template.md#return-authorization`: read-only sources do not imply writable reports or permitted delivery.
 
 ## Read
 

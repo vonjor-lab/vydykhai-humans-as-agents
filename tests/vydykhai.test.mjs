@@ -58,7 +58,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.30.3");
+    assert.equal(lock.installedVersion, "1.30.4");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -174,7 +174,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.30\.3/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.30\.4/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -758,6 +758,8 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     assert.equal(healthy.status, 0, healthy.stderr);
     const healthyResult = JSON.parse(healthy.stdout);
     assert.equal(healthyResult.ok, true);
+    assert.equal(healthyResult.publicationReady, true);
+    assert.deepEqual(healthyResult.operationalIssues, []);
     assert.match(healthyResult.stateSha256, /^[a-f0-9]{64}$/);
     assert.match(healthyResult.graphSha256, /^[a-f0-9]{64}$/);
     assert.equal(healthyResult.memoryGraphVersion, 3);
@@ -817,6 +819,18 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     assert.equal(JSON.parse(healthyGuard.stdout).action, "NOOP");
     assert.equal(JSON.parse(healthyGuard.stdout).leaseActivity.coverage, "NOT_REQUESTED");
     const baseActivity = JSON.parse(await readFile(activityPath, "utf8"));
+    for (const [status, action, nextAction] of [["RESULT", "WAKE", "RECONCILE_RESULT"],
+      ["BLOCKED", "WAKE", "RESOLVE_BLOCKER"], ["UNAVAILABLE", "AUDIT_REQUIRED", "RECOVER_OBSERVATION"]]) {
+      const owner = { ...baseActivity.owner, status: "IDLE", turnId: "current-turn",
+        terminal: { turnId: "current-turn", status, evidence: "authorized-current-turn-observation",
+          resumeWhen: "Named access boundary is resolved" } };
+      await writeFile(activityPath, JSON.stringify({ ...baseActivity, owner }));
+      const terminalResult = JSON.parse(run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+      assert.equal(terminalResult.action, action);
+      assert.equal(terminalResult.continuation.nextAction, nextAction);
+      assert.equal(terminalResult.continuation.value.owner, "task-one");
+    }
+    await writeFile(activityPath, JSON.stringify(baseActivity));
     const wholeActivity = { ...baseActivity, leaseKey: readLeaseActivityScope(healthyState).key,
       owner: { ...baseActivity.owner, status: "IDLE" },
       leases: [{ work: "WORK-1", context: "task-one", status: "IDLE", evidence: "native-idle-owner" }] };
@@ -924,6 +938,16 @@ Evidence: state event-7
 
     const limitedState = healthyState.replace("Project Guard: ACTIVE", "Project Guard: LIMITED");
     await writeFile(statePath, limitedState);
+    const limitedControl = run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]);
+    const limitedSnapshot = JSON.parse(limitedControl.stdout);
+    assert.equal(limitedControl.status, 1);
+    assert.equal(limitedSnapshot.ok, false);
+    assert.equal(limitedSnapshot.publicationReady, true);
+    assert.deepEqual(limitedSnapshot.operationalIssues, ["Project State: Project Guard requires LIMITED"]);
+    assert.deepEqual(limitedSnapshot.graphIssues, []);
+    const limitedWrongReadback = JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath,
+      "--expect-state-sha", "0".repeat(64), "--json"]).stdout);
+    assert.equal(limitedWrongReadback.publicationReady, false);
     const limitedFirst = JSON.parse(run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
     const acceptedLimitedFirst = JSON.parse(
       run([
@@ -1081,6 +1105,8 @@ Evidence: state event-7
       assert.equal(result.status, 1);
       assert.match(result.stdout, /Control check: MISMATCH/);
       assert.match(result.stdout, expected);
+      const details = JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+      assert.equal(details.publicationReady, expected.source === "Project Guard requires LIMITED");
     }
   } finally {
     await rm(target, { recursive: true, force: true });

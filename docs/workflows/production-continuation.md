@@ -64,6 +64,22 @@ The key binds the stable action id/work/owner/state, current orchestrator, and m
 - Keep one delivery owner per semantic incident. While delivery is in flight, do not enqueue another message. At the next check reconcile actual progress; one unresolved wake goes to the existing bounded audit/repair path, not endless reminders. An accepted incident id alone cannot erase an observed unfinished continuation.
 - After repair, restore or explicitly supersede the human request as well as the productive step. The person sees the result, next decision, or real blocker from their orchestrator, not Guard mechanics.
 
+## Execution Boundary And Terminal Evidence
+
+At launch or material resume use [Execution Readiness](task-context-handoff-template.md#execution-readiness). `evaluateExecutionReadiness(checks)` checks the four existing receipt dimensions: `cwd`, `sources`, `report`, `delivery`. Each has `status` and a concrete `evidence` reference to the actual context/path/policy/route. Status is `AVAILABLE`, `MISSING`, `DENIED`, or `UNKNOWN`; only report/delivery may be `NOT_REQUIRED` when the accepted contract genuinely requires neither. Missing/denied checks also name `resumeWhen`. The helper returns `READY`, `BLOCKED`, or `LIMITED`; absence returns `NOT_REQUESTED`, never certified readiness. It does not probe a host or grant permissions.
+
+The same fresh activity `owner` and applicable `leases[]` entries may carry `readiness` with those checks. Missing paths route `REPAIR_ENVIRONMENT`; denied actions route `RESOLVE_ACCESS`, not execute-or-block again. The adapter must collect actual evidence in the affected worker, not copy another context's settings or label read-only Discovery capable of writing.
+
+If an idle current turn has an empty native view, inspect only authorized exact-turn public action/final/blocker metadata or durable receipts. Do not read hidden reasoning, all history, or achieve a denied disclosure by another route. Include the actual current `turnId` on the view and:
+
+```json
+{"terminal":{"turnId":"current-turn-id","status":"BLOCKED","evidence":"authorized-exact-turn-blocker","resumeWhen":"Named report scope is permitted by host policy"}}
+```
+
+Terminal status is `RESULT`, `BLOCKED`, or `UNAVAILABLE`. A `RESULT` routes `RECONCILE_RESULT`; it does not prove task acceptance, create Return Sync, or require the executor to redo work. `BLOCKED` requires its concrete resume condition and routes `RESOLVE_BLOCKER`. A missing report may be the blocked write, not missing execution. If outcome evidence is unavailable, emit `UNAVAILABLE` and its exact observation-gap reference: the checker returns `LIMITED` with `RECOVER_OBSERVATION`, never an instruction to restart. Wrong-turn, malformed or conflicting active/terminal observations also remain limited. Fresh enclosing context/key/time checks still apply; stale finals do not describe newer turns.
+
+`continuation.nextAction` and `leaseActivity.nextActions` refine the existing Guard route, not a second dispatcher. The manager consumes that distinction under current authority. Reconciled access waits use existing `WAITING/PENDING` and stay quiet; changed gates trigger one routing decision and same-owner resume, not automatic replay of external actions. An unavailable final takes precedence over environment repair; a verified result takes precedence over recreating a now-missing checkout. Legacy observations remain readable without these optional fields but cannot certify this recovery coverage. Adoption must supply them when applicable and prove the missing-cwd, denied-report and empty-view cases; installing a new parser alone does not change a running adapter.
+
 ## Whole-Lease Coverage When Needed
 
 Before enabling a bounded Discovery lead, extend the same fresh `--activity` observation with `leaseKey` from `readLeaseActivityScope(state)` and a `leases` array for every `STARTED`, `WORKING` or `WAITING` row. This is transient adapter input, not a new shared artifact, model call or timer. Reuse bounded native status and durable dependency/checkpoint metadata; do not reload discussion history. The existing CLI calls `evaluateLeaseActivity` and returns `leaseActivity.coverage` separately from the next-action check.

@@ -62,7 +62,7 @@ A bounded Discovery lead remains a focused work owner, not a second Guard or orc
 
 ## 4. Evaluate Only The Anomaly
 
-An empty native context view means observation is unavailable, not that execution stopped. Check durable receipts and available action metadata/journal pointers before classifying a stall; if neither proves activity, report the observation gap instead of inventing a failure or launching duplicate work.
+An empty native context view means observation is unavailable, not that execution stopped. Under `production-continuation.md#execution-boundary-and-terminal-evidence`, check authorized exact-turn action/final/blocker metadata and durable receipts; emit `terminal: UNAVAILABLE` when neither provides the outcome. Route an existing result or observed access/environment blocker instead of execute-or-block again. Do not extract hidden reasoning or bypass a denied disclosure. Keep the existing one-incident repair budget, concrete waits and quiet schedule; limited observation blocks only its dependent guarantee, not unrelated authorized work.
 
 For `AUDIT_REQUIRED`, start a fresh ephemeral evaluator on the maximum available profile with the exact incident, current durable snapshot, and read-only access to relevant context metadata. It never inherits the orchestrator's explanation as truth and never performs project work. Do not invoke it for an expected lifecycle transition, a newer snapshot hash, or drift in a non-authoritative view.
 

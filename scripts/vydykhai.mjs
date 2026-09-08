@@ -1293,6 +1293,51 @@ export function planGuardLockRecovery(evaluation, { externalOutcome = "UNKNOWN" 
   };
 }
 
+// Adapter evidence describes current capability; this checker never grants permissions.
+export function evaluateExecutionReadiness(checks) {
+  if (checks === undefined) return { status: "NOT_REQUESTED", nextAction: null, blocked: [], unresolved: [] };
+  const blocked = [];
+  const unresolved = [];
+  for (const field of ["cwd", "sources", "report", "delivery"]) {
+    const check = checks?.[field];
+    const optional = field === "report" || field === "delivery";
+    if (!concreteLine(check?.evidence) ||
+        !["AVAILABLE", "MISSING", "DENIED", ...(optional ? ["NOT_REQUIRED"] : [])].includes(check.status) ||
+        (["MISSING", "DENIED"].includes(check.status) && !concreteLine(check.resumeWhen))) {
+      unresolved.push(field);
+    } else if (["MISSING", "DENIED"].includes(check.status)) blocked.push(field);
+  }
+  const status = unresolved.length ? "LIMITED" : blocked.length ? "BLOCKED" : "READY";
+  const nextAction = unresolved.length ? "CHECK_READINESS" : blocked.length
+    ? blocked.some((field) => checks[field].status === "DENIED") ? "RESOLVE_ACCESS" : "REPAIR_ENVIRONMENT"
+    : null;
+  return { status, nextAction, blocked, unresolved };
+}
+
+function evaluateExecutionObservation(view) {
+  const limited = (reason, nextAction = "RECOVER_OBSERVATION") => ({ coverage: "LIMITED", reason, nextAction });
+  if (Object.hasOwn(view, "terminal")) {
+    const terminal = view.terminal;
+    if (view.status !== "IDLE" || !concreteLine(view.turnId) || terminal?.turnId !== view.turnId ||
+        !concreteLine(terminal.evidence)) return limited("terminal evidence is missing or belongs to another turn");
+    if (terminal.status === "RESULT") {
+      return { coverage: "COVERED", signal: "terminal result awaits reconciliation", nextAction: "RECONCILE_RESULT" };
+    }
+    if (terminal.status === "BLOCKED" && concreteLine(terminal.resumeWhen)) {
+      return { coverage: "COVERED", signal: "observed blocker awaits routing", nextAction: "RESOLVE_BLOCKER" };
+    }
+    return limited("current turn outcome is unavailable or unresolved");
+  }
+  const readiness = evaluateExecutionReadiness(Object.hasOwn(view, "readiness") ? view.readiness ?? null : undefined);
+  if (readiness.status === "LIMITED") return limited("execution readiness is incomplete", readiness.nextAction);
+  if (readiness.status === "BLOCKED") {
+    const boundaries = readiness.blocked.map((field) => `${field}:${view.readiness[field].status}`).join(", ");
+    return { coverage: "COVERED", signal: `execution boundary ${boundaries} needs repair`,
+      nextAction: readiness.nextAction };
+  }
+  return { coverage: "COVERED", signal: null, nextAction: null };
+}
+
 export function evaluateProductionContinuation(content, activity, { now = Date.now(), maxAgeSeconds = 300 } = {}) {
   const record = readProductionContinuation(content);
   const limited = (reason) => ({ ...record, coverage: "LIMITED", signal: null, orchestratorActive: false,
@@ -1306,17 +1351,22 @@ export function evaluateProductionContinuation(content, activity, { now = Date.n
   if (!known(activity.orchestrator, record.orchestrator)) return limited("orchestrator activity unavailable");
   const orchestratorActive = activity.orchestrator.status === "ACTIVE";
   let signal = null;
+  let nextAction = null;
   if (record.value.state === "READY" && !orchestratorActive) signal = "ready step has no active coordinator";
   if (record.value.state === "WORKING") {
     if (!known(activity.owner, record.value.owner)) return limited("task activity unavailable");
-    if (activity.owner.status === "IDLE") signal = "task is idle without a routed continuation";
+    const execution = evaluateExecutionObservation(activity.owner);
+    if (execution.coverage === "LIMITED") return { ...limited(execution.reason), nextAction: execution.nextAction };
+    signal = execution.signal;
+    nextAction = execution.nextAction;
+    if (!signal && activity.owner.status === "IDLE") signal = "task is idle without a routed continuation";
   }
   if (record.value.state === "WAITING") {
     if (!["PENDING", "CHANGED"].includes(activity.wait?.status) ||
         !concreteLine(activity.wait.evidence)) return limited("wait condition unavailable");
     if (activity.wait.status === "CHANGED") signal = "wait condition changed";
   }
-  return { ...record, coverage: "COVERED", signal, orchestratorActive,
+  return { ...record, coverage: "COVERED", signal, nextAction, orchestratorActive,
     issues: signal ? [`Production continuation: ${record.value.id} requires routing (${signal})`] : [] };
 }
 
@@ -1331,7 +1381,7 @@ export function readLeaseActivityScope(content) {
 export function evaluateLeaseActivity(content, activity, { now = Date.now(), maxAgeSeconds = 300 } = {}) {
   const scope = readLeaseActivityScope(content);
   const result = (coverage, issues = []) => ({ key: scope.key, coverage, issues,
-    signal: coverage === "COVERED" && issues.length > 0 });
+    signal: coverage === "COVERED" && issues.length > 0, nextActions: [] });
   if (!activity || !Object.hasOwn(activity, "leases")) return result("NOT_REQUESTED");
   const limited = (reason) => result("LIMITED", [`Lease activity: LIMITED (${reason})`]);
   const observed = typeof activity.observedAt === "string" ? Date.parse(activity.observedAt) : NaN;
@@ -1356,6 +1406,13 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
     if (activity.owner?.context === view.context && activity.owner.status !== view.status) {
       return limited(`conflicting activity for ${lease.work}`);
     }
+    if (lease.state !== "WAITING" && activity.owner?.context === view.context) {
+      const primary = evaluateExecutionObservation(activity.owner);
+      const current = evaluateExecutionObservation(view);
+      if (["coverage", "signal", "nextAction", "reason"].some((field) => primary[field] !== current[field])) {
+        return limited(`conflicting execution evidence for ${lease.work}`);
+      }
+    }
     const dependencies = [];
     if (lease.state === "WAITING") {
       if (!["PENDING", "CHANGED"].includes(view.wait?.status) || !concreteLine(view.wait.evidence) ||
@@ -1374,9 +1431,15 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
   }
   if (entries.size !== live.length) return limited("not all live leases were observed");
   const issues = [];
+  const nextActions = [];
   for (const { lease, view, dependencies } of entries.values()) {
-    if (lease.state !== "WAITING" && view.status === "IDLE") {
-      issues.push(`Lease activity: ${lease.work} requires routing (idle without a wait)`);
+    if (lease.state !== "WAITING") {
+      const execution = evaluateExecutionObservation(view);
+      if (execution.coverage === "LIMITED") return limited(`${lease.work}: ${execution.reason}`);
+      if (execution.nextAction) nextActions.push({ work: lease.work, context: view.context, action: execution.nextAction });
+      if (execution.signal || view.status === "IDLE") {
+        issues.push(`Lease activity: ${lease.work} requires routing (${execution.signal || "idle without a wait"})`);
+      }
     } else if (lease.state === "WAITING" && (view.wait.status === "CHANGED" || dependencies.some((work) =>
       scope.leases.some((target) => target.work === work && target.state === "CLOSED")))) {
       issues.push(`Lease activity: ${lease.work} requires routing (wait condition changed)`);
@@ -1401,7 +1464,7 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
   }
   for (const work of [...entries.keys()].sort()) visit(work);
   for (const cycle of [...cycles].sort()) issues.push(`Lease activity: circular wait ${cycle}`);
-  return result("COVERED", issues);
+  return { ...result("COVERED", issues), nextActions };
 }
 
 function memoryGraphVersion(content) {
@@ -1700,8 +1763,13 @@ async function controlCheck(
       ...validateDurableOutbox(outboxContent),
     };
   }
+  const operationalIssues = stateIssues.filter((issue) => issue === "Project State: Project Guard requires LIMITED");
+  const publicationReady = stateIssues.length === operationalIssues.length &&
+    graphIssues.length === 0 && (!outbox || outbox.issues.length === 0);
   return {
-    ok: stateIssues.length === 0 && graphIssues.length === 0 && (!outbox || outbox.issues.length === 0),
+    ok: publicationReady && operationalIssues.length === 0,
+    publicationReady,
+    operationalIssues,
     policy: manifest.controlLoopPolicy.policy,
     publicationPolicy: manifest.controlStatePublicationPolicy?.policy || null,
     continuationPolicy: manifest.continuationPolicy || null,
@@ -1839,7 +1907,10 @@ function printControlCheck(result, asJson) {
   }
   console.log(`Control check: ${result.ok ? "PASS" : "MISMATCH"}`);
   console.log(`Policy: ${result.policy}`);
-  console.log(`Project State: v${result.projectStateVersion}${result.stateIssues.length ? " / FAILED" : " / PASS"}`);
+  console.log(`Snapshot publication: ${result.publicationReady ? "VALID (preserve declared limits)" : "BLOCKED"}; not operational readiness or action authority`);
+  const stateStatus = result.stateIssues.length === 0 ? "PASS" :
+    result.stateIssues.length === result.operationalIssues.length ? "LIMITED" : "FAILED";
+  console.log(`Project State: v${result.projectStateVersion} / ${stateStatus}`);
   const migration = result.memoryMigrationRequired
     ? `target v${result.memoryGraphTargetVersion}; migration required`
     : "current target";
