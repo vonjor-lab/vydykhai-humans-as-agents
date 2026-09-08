@@ -4,6 +4,8 @@ Goal: detect and repair control-loop failure even when the active orchestrator n
 
 Project Guard is an operation, not a permanent agent or conversation. One project-owned runner lives outside the active orchestrator context and survives its repair or rotation.
 
+Apply [Return Authorization](task-context-handoff-template.md#return-authorization) to all reads, outbox publication and wakeups. `WAKE` is a liveness recommendation, not permission to disclose. A security-denied transfer is not transport loss: preserve the result and denial evidence, show the exact permission question once through an allowed user channel, and retain the existing Pending Human Action/incident wait. Do not use a parent read, shared tracker, alternate tool or repeated Governor to achieve the denied transfer. Continue independent authorized work; require resolved authority under host policy before resuming the affected route. Structural outbox/Guard checks do not authenticate recipients or certify host permission, and may still flag the result as pending.
+
 ## 1. Install The Runner
 
 During `$project-launch`, detect the cheapest independent scheduler available in the current environment: native harness automation, operating-system scheduler plus agent CLI, CI scheduler, or equivalent. Register one primary runner for the project; an optional standby may claim work only after the shared lease expires.

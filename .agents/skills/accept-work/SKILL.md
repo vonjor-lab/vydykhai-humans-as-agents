@@ -5,7 +5,7 @@ description: Run the final acceptance of a task, PR, lab/maintenance result, or 
 
 # Accept Work
 
-Run the final self-check in the task context before claiming completion.
+Run the final self-check in the task context before claiming completion. Report through `docs/workflows/task-context-handoff-template.md#return-authorization`: readiness does not require product acceptance, but storage and delivery require their own applicable authority. `WRITTEN` stays unsent until authorized transport succeeds.
 
 ## Read
 

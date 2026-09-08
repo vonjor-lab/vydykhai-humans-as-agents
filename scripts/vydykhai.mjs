@@ -821,7 +821,7 @@ export function createReturnSync({
   status,
   statusDetail = null,
   returnReceiptId,
-  returnLifecycle = "WRITTEN -> SENT",
+  returnLifecycle = "WRITTEN",
   taskContextArtifact,
   memoryCandidates,
   artifactDisposition,

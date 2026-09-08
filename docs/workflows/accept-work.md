@@ -95,7 +95,9 @@ These are task verdicts, not raw tool statuses. Inspect the reason and side-effe
 
 Keep fixes, smoke, and manual merge in the owning task context. A local `NEEDS_FIXES` returns to correction and verification within scope/burn, not another request to "continue". Before a final answer, apply the completion rule in `task-context-handoff-template.md`; preserve explicit pauses and consult at a real unresolved boundary.
 
-At each declared readiness result, human checkpoint, irreducible blocker, or terminal result, the owning task reports through its agreed authorized return route before waiting. Reporting readiness does not require the approval it requests and grants no merge, deploy, spend, or acceptance authority:
+At each declared readiness result, human checkpoint, irreducible blocker, or terminal result, the owning task reports through its agreed authorized return route before waiting. Reporting readiness does not require the approval it requests and grants no merge, deploy, spend, or acceptance authority.
+
+Apply [Return Authorization](task-context-handoff-template.md#return-authorization) before storage or delivery. A real host denial blocks that transfer, not the completed result or independent authorized work. Preserve current permission evidence and the local result; never treat a denied disclosure as a lost notification to route around.
 
 - report DOD impact, human checkpoint, burn, verification, merge, risks, and recommended orchestrator action; the orchestrator decides parent state and next-best-action.
 - for an enabler, report `Unlocks`, `Still missing`, and the next product slice/owner; do not close the parent from technical completion alone.

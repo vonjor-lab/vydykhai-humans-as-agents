@@ -44,6 +44,7 @@ Capture only:
 - product goal, first useful outcome, users/actors, first DOD, non-goals, and constraints;
 - participants, role/decision scope, owner/backup convention, and availability;
 - coordination inputs, direct or intake-owner route, access evidence, and approval path;
+- authorized internal return routes: exact participant/project recipients, report data scope and human approval source under `task-context-handoff-template.md#return-authorization`; shared project membership alone is not disclosure authority;
 - safe operational sources for the first DOD: environment/service owner, current baseline/revision, protected references, runbooks, merge/deploy authority, recovery route, and last safe check, never secret values;
 - agent environment adapter, role mappings, context mapping, Return Sync route, Project Guard runner, and scope-freshness interval;
 - tracker projection, open decisions, immediate risks, and first next action.
