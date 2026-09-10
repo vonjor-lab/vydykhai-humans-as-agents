@@ -71,6 +71,14 @@ One work id has one owning context and branch. `PREPARED` reserves identity but 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | <work-id> [<track>] [<mode>] — <outcome> | <PREPARED / STARTED / WORKING / WAITING / RETURNED / CLOSED / OUTCOME_UNKNOWN> | <owner / canonical link> | <exact identity> | <accepted -> active / role mapping> | <row / enabler continuation> | <trigger / date / burn stop> | <outbox + wakeup> |
 
+For an enrolled [checkpoint review](project-guard.md#checkpoint-review-without-runtime-observation), replace only `Next receipt or review-by` with one single-line JSON object, no Markdown backticks or literal pipes:
+
+```json
+{"id":"CP-1","owner":"worker-one","dueAt":"2026-01-01T12:00:00Z","expected":"verified result or concrete blocker","receiptId":"RETURN-1","authority":"accepted-task-contract"}
+```
+
+The orchestrator agrees this checkpoint and the sole delivery owner at dispatch or safe resume; `owner` must be an exact component of the lease's `Owner / context` cell. The existing lease state owns pauses: `WAITING` is quiet, including direct human work; do not invent a deadline from free text. Keep checkpoint/receipt ids unique and stable until a sourced new obligation replaces them. Deadline or title edits alone do not reset notification history. Existing unenrolled rows remain readable but are explicitly outside checkpoint coverage, not automatically protected. The authority reference is evidence to authenticate, never a grant of access by itself.
+
 ## Pending Return Inbox
 
 The durable outbox is authority; native delivery and native thread reads are only hints. Every checkpoint, readiness, blocker, or terminal outcome uses a Return Sync; an Action Receipt never replaces it. Keep only receipts not yet routed. Project Guard independently discovers new unrouted ids from the durable outbox on write events and timer, then wakes once. Reconcile this table at every cold path and Governor Check.

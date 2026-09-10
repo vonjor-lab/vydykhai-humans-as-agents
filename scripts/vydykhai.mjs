@@ -22,6 +22,8 @@ import { compileExecutableBrief, validateApplicationReceipt } from "./memory-bri
 import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
 import { planAdoption, assessWorkerAdoption, kitIdentity } from "./adoption-plan.mjs";
+import { classifyCheckpointReviews } from "./checkpoint-review.mjs";
+export { checkpointNoticeStillDue } from "./checkpoint-review.mjs";
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const LOCK_FILE = ".vydykhai-lock.json";
@@ -51,6 +53,7 @@ Usage:
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--json]
   node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--expect-state-sha <sha256>] [--expect-graph-sha <sha256>] [--json]
   node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--woken-incident <semantic-id>] [--repair-incident <semantic-id> --repair-attempts <count>] [--json]
+  node scripts/vydykhai.mjs guard-check --mode checkpoints --state <project-state.md> --graph <project-memory-graph.md> --outbox <durable-outbox.md> [--woken-incident <id> --notice-at <UTC-time> | --uncertain-incident <id>] [--accepted-incident <id>] [--json]
   node scripts/vydykhai.mjs memory-brief-compile --input <brief-input.json>
   node scripts/vydykhai.mjs memory-brief-validate --envelope <brief-envelope.json> --receipt <application-receipt.json>
   node scripts/vydykhai.mjs context-run --input <context-request.json>
@@ -81,6 +84,9 @@ function parseArgs(argv) {
     envelope: null,
     receipt: null,
     worker: null,
+    mode: null,
+    uncertainIncident: null,
+    noticeAt: null,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -93,7 +99,7 @@ function parseArgs(argv) {
       i += 1;
       if (!flags.from) throw new Error("--from requires a framework repository path");
     } else if (
-      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--woken-incident", "--repair-incident", "--repair-attempts", "--expect-state-sha", "--expect-graph-sha", "--input", "--envelope", "--receipt", "--worker"].includes(
+      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--woken-incident", "--repair-incident", "--repair-attempts", "--expect-state-sha", "--expect-graph-sha", "--input", "--envelope", "--receipt", "--worker", "--mode", "--uncertain-incident", "--notice-at"].includes(
         value,
       )
     ) {
@@ -112,6 +118,9 @@ function parseArgs(argv) {
         "--worker": "worker",
         "--envelope": "envelope",
         "--receipt": "receipt",
+        "--mode": "mode",
+        "--uncertain-incident": "uncertainIncident",
+        "--notice-at": "noticeAt",
       }[value];
       flags[key] = argv[i + 1];
       i += 1;
@@ -656,6 +665,9 @@ function printDoctor(result, asJson) {
   } else {
     console.log("Project Guard: not declared by installed version");
   }
+  console.log(result.projectGuardPolicy?.checkpointReview?.policy
+    ? `Checkpoint review: ${result.projectGuardPolicy.checkpointReview.policy}; available, live adoption NOT_EVALUATED`
+    : "Checkpoint review: not declared by installed version");
   if (result.humanAttentionPolicy?.policy) {
     console.log(
       `Human attention: ${result.humanAttentionPolicy.policy}; ` +
@@ -1377,6 +1389,20 @@ export function readLeaseActivityScope(content) {
     leases: rows.map(([work, state, owner]) => ({ work, state, owner })) };
 }
 
+export function evaluateCheckpointReview(content, outboxContent, options = {}) {
+  const continuation = readProductionContinuation(content);
+  const rows = tableRows(section(content, "## Execution Leases", ["## Pending Return Inbox"]), /^Work$/i);
+  const result = classifyCheckpointReviews({ orchestrator: continuation.orchestrator,
+    leases: rows.map(([work, state, owner, , , , checkpointText]) => ({ work, state, owner, checkpointText })),
+    outbox: typeof outboxContent === "string" ? validateDurableOutbox(outboxContent) : null }, options);
+  if (continuation.issues.length) {
+    result.action = "LIMITED"; result.coverage = "LIMITED";
+    result.issues.push(...continuation.issues);
+    for (const review of result.reviews) if (review.status === "REVIEW_DUE") review.status = "WITHHELD";
+  }
+  return result;
+}
+
 // Optional whole-lease observation uses the existing timer, not a second control loop.
 export function evaluateLeaseActivity(content, activity, { now = Date.now(), maxAgeSeconds = 300 } = {}) {
   const scope = readLeaseActivityScope(content);
@@ -1871,6 +1897,24 @@ export function classifyGuard(
 async function guardCheck(statePath, graphPath, options = {}) {
   const stateContent = await readFile(statePath, "utf8");
   const result = await controlCheck(statePath, graphPath, { ...options, stateContent });
+  if (options.mode === "checkpoints") {
+    const manifest = await loadManifest(SCRIPT_ROOT);
+    const outboxContent = await readFile(options.outboxPath, "utf8");
+    const review = evaluateCheckpointReview(stateContent, outboxContent, {
+      notifiedIncidentIds: options.wokenIncidentId ? [options.wokenIncidentId] : [],
+      uncertainIncidentIds: options.uncertainIncidentId ? [options.uncertainIncidentId] : [],
+      attentionIncidentIds: options.acceptedIncidentId ? [options.acceptedIncidentId] : [],
+      noticeTimes: options.wokenIncidentId ? { [options.wokenIncidentId]: options.noticeAt } : {},
+      responseWaitSeconds: manifest.projectGuardPolicy.checkpointReview.responseWaitSeconds,
+    });
+    const blocking = [...result.stateIssues.filter(issue => !result.operationalIssues.includes(issue)), ...result.graphIssues];
+    if (sha256(outboxContent) !== result.outbox.sha256) blocking.push("Checkpoint review: outbox changed during readback");
+    if (blocking.length) {
+      review.action = "LIMITED"; review.coverage = "LIMITED"; review.issues.push(...blocking);
+      for (const item of review.reviews) if (item.status === "REVIEW_DUE") item.status = "WITHHELD";
+    }
+    return { ...result, mode: "checkpoints", action: review.action, checkpointReview: review };
+  }
   if (result.continuationPolicy) {
     const activity = options.activityPath ? await readJson(options.activityPath).catch(() => null) : null;
     result.continuation = evaluateProductionContinuation(stateContent, activity, {
@@ -1891,6 +1935,11 @@ function printGuardCheck(result, asJson) {
     return;
   }
   console.log(`Project Guard action: ${result.action}`);
+  if (result.checkpointReview) {
+    console.log(`Checkpoint coverage: ${result.checkpointReview.coverage}; not runtime activity, permission or task completion`);
+    for (const review of result.checkpointReview.reviews) console.log(`- ${review.work}: ${review.status} (${review.reason})`);
+    for (const issue of result.checkpointReview.issues) console.log(`- ${issue}`);
+  }
   if (result.incidentId) console.log(`Incident: ${result.incidentId}`);
   if (result.circuitBroken) console.log(`Circuit breaker: CONTROL_DEGRADED after ${result.repairAttempts} bounded repair`);
   console.log(`Control check: ${result.ok ? "PASS" : "MISMATCH"}`);
@@ -1965,6 +2014,7 @@ async function main() {
 
   const { positionals, flags } = parseArgs(rest);
   if (flags.worker && command !== "adoption-plan") throw new Error("--worker is only supported by adoption-plan");
+  if ((flags.mode || flags.uncertainIncident || flags.noticeAt) && command !== "guard-check") throw new Error("checkpoint options are only supported by guard-check");
 
   if (command === "install") {
     if (!positionals[0]) throw new Error(`install requires a target repository\n\n${usage()}`);
@@ -2030,6 +2080,14 @@ async function main() {
 
   if (command === "guard-check") {
     if (!flags.state || !flags.graph) throw new Error(`guard-check requires --state and --graph\n\n${usage()}`);
+    if (flags.mode && flags.mode !== "checkpoints") throw new Error("guard-check supports only --mode checkpoints; omit for existing activity checks");
+    if (flags.mode === "checkpoints" && (!flags.outbox || flags.activity || flags.repairIncident || flags.repairAttempts)) {
+      throw new Error("checkpoint mode requires --outbox and cannot run activity/evaluator repair");
+    }
+    if (flags.uncertainIncident && flags.mode !== "checkpoints") throw new Error("--uncertain-incident requires checkpoint mode");
+    if (flags.noticeAt && (flags.mode !== "checkpoints" || !flags.wokenIncident || !Number.isFinite(Date.parse(flags.noticeAt)))) {
+      throw new Error("--notice-at requires checkpoint mode, --woken-incident and a valid time");
+    }
     if ((flags.repairIncident == null) !== (flags.repairAttempts == null)) {
       throw new Error("guard-check requires --repair-incident and --repair-attempts together");
     }
@@ -2045,6 +2103,11 @@ async function main() {
       repairIncidentId: flags.repairIncident,
       repairAttempts: flags.repairAttempts == null ? 0 : Number(flags.repairAttempts),
       activityPath: flags.activity ? path.resolve(flags.activity) : null,
+      mode: flags.mode,
+      uncertainIncidentId: flags.uncertainIncident,
+      noticeAt: flags.noticeAt,
+      expectStateSha: flags.expectStateSha,
+      expectGraphSha: flags.expectGraphSha,
     });
     printGuardCheck(result, flags.json);
     return;

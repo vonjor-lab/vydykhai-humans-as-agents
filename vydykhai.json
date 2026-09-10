@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.30.4",
+  "version": "1.31.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -148,6 +148,14 @@
   },
   "projectGuardPolicy": {
     "policy": "external-event-and-schedule",
+    "checkpointReview": {
+      "policy": "agreed-receipt-deadline-review",
+      "mode": "checkpoints",
+      "responseWaitSeconds": 1800,
+      "unknownRuntime": "not-evaluated-never-inferred-idle",
+      "unresolvedNotice": "one-human-checkpoint-no-automatic-repair",
+      "enrollment": "existing-execution-lease-safe-checkpoint"
+    },
     "defaultIntervalMinutes": 30,
     "healthyPath": "deterministic-no-model",
     "anomalyProfile": "maximum-available",
@@ -509,6 +517,7 @@
     "docs/VYDYKHAI_NOTICE.md",
     "vydykhai.json",
     "scripts/vydykhai.mjs",
+    "scripts/checkpoint-review.mjs",
     "scripts/memory-brief.mjs",
     "scripts/context-run.mjs",
     "scripts/context-hook.mjs",
@@ -529,6 +538,13 @@
     ".agents/skills/accept-work"
   ],
   "adoptionRequirements": [
+    {
+      "id": "checkpoint-review",
+      "since": "1.31.0",
+      "action": "Select the existing Guard's supported mode. When exact runtime observation is unavailable, adopt checkpoint review from agreed lease deadlines, not inferred idle. At safe dispatch/resume boundaries enroll real authorized workers, expected receipt and sole delivery owner; preserve pauses and unknown sends. Reuse proven courier/timer boundaries, then prove one actual missed checkpoint reaches the manager once, a result or pause cancels it, and repeats stay quiet. If the manager does not reconcile, prove one independent permitted human checkpoint, not another repair loop. Report enrolled coverage and missing transport honestly; do not reinstall, rebuild memory or hold independent work for absent host metadata.",
+      "reuseBy": ["guardBundle", "recipient", "installedTimer", "checkpointScope", "deliveryOwner"],
+      "workflow": "docs/workflows/project-guard.md"
+    },
     {
       "id": "unfinished-workers",
       "since": "1.30.2",

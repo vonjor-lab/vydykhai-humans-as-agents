@@ -47,7 +47,7 @@ test("same target repeat/resume preserves plan and State completion/failed repai
 
 test("skipped releases are ordered and unknown baseline remains conservative on changed target", () => {
   const p = planAdoption({ ...input, previousLock: { installedVersion: "1.27.0" } });
-  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1", "1.30.2", "1.30.3", "1.30.4"]);
+  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1", "1.30.2", "1.30.3", "1.30.4", "1.31.0"]);
   const unknown = planAdoption(input);
   const changed = planAdoption({ ...input, managedFiles: { "core.md": "changed" }, previousLock: { installedVersion: manifest.version, adoptionPlan: unknown } });
   assert.equal(changed.reviewFromVersion, null);
@@ -128,6 +128,17 @@ test("Guard recipient change invalidates reuse; unrelated target version does no
   const scope = { guardBundle: "tested-service", recipient: "owner-1", installedTimer: "timer-1" }, previous = adoptionEvidenceScope(r, scope);
   assert.equal(adoptionEvidenceScope(r, { ...scope, targetVersion: "new" }, previous).status, "REVIEW_EXISTING_EVIDENCE");
   assert.equal(adoptionEvidenceScope(r, { ...scope, recipient: "owner-2" }, previous).status, "REVIEW_CHANGED_SCOPE");
+});
+
+test("checkpoint adoption is included from 1.30.4 and actual delivery ownership scopes reuse", () => {
+  const plan = planAdoption({ ...input, previousLock: { installedVersion: "1.30.4" } });
+  const requirement = plan.requirements.find(r => r.id === "checkpoint-review");
+  assert.ok(requirement); assert.match(requirement.action, /real authorized workers/);
+  assert.match(requirement.action, /one independent permitted human checkpoint/);
+  const scope = { guardBundle: "bundle", recipient: "manager", installedTimer: "existing", checkpointScope: "work-1", deliveryOwner: "native" };
+  const before = adoptionEvidenceScope(requirement, scope);
+  assert.equal(adoptionEvidenceScope(requirement, { ...scope, deliveryOwner: "guard" }, before).status, "REVIEW_CHANGED_SCOPE");
+  assert.equal(adoptionEvidenceScope(requirement, { ...scope, checkpointScope: "work-2" }, before).status, "REVIEW_CHANGED_SCOPE");
 });
 
 test("worker identity changes require review; planner grants no inheritance or repair reset", () => {

@@ -108,7 +108,7 @@ unsupported execution leaves the affected capability pending/LIMITED, never
 fully active. Old workers enter only at safe rebrief/readback. The common path
 needs no hooks; native interception needs separate applicable trust/host proof.
 
-Keep the existing Guard liveness-only. Preserve unchanged tested adapters and
+Keep the existing Guard liveness-only; adopt supported checkpoint coverage per `project-guard.md#checkpoint-review-without-runtime-observation`, without requiring unavailable runtime metadata or changing a pause. Preserve unchanged tested adapters and
 reuse evidence relevant to the service version/bundle, recipient and installed
 timer. A changed recipient, adopted/repointed service or changed adapter requires
 actual event and installed timer evidence plus a silent repeat under

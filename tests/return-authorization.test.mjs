@@ -20,7 +20,7 @@ test("return instructions distinguish verified scope from an agent assertion", (
 
 test("denial handling retains work and approval without alternate-channel disclosure", () => {
   for (const rule of [
-    /minimal native wakeup/, /Record `SENT` only after successful authorized transport/,
+    /single accepted notification owner uses a minimal wakeup/, /Record `SENT` only after successful authorized transport/,
     /explicit security denial from transport loss/,
     /another tool, tracker, recipient, parent read or Guard/,
     /as permitted by the host policy/, /continue independent authorized work/,

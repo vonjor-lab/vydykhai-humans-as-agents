@@ -5,7 +5,7 @@ import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { readLeaseActivityScope, readProductionContinuation } from "../scripts/vydykhai.mjs";
+import { readLeaseActivityScope, readProductionContinuation, createReturnSync } from "../scripts/vydykhai.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -58,7 +58,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.30.4");
+    assert.equal(lock.installedVersion, "1.31.0");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -80,7 +80,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const installedCli = path.join(target, "scripts/vydykhai.mjs");
     const imported = spawnSync(process.execPath, [
       "--input-type=module", "--eval",
-      `const {validateDurableOutbox} = await import(${JSON.stringify(pathToFileURL(installedCli).href)}); console.log(JSON.stringify(validateDurableOutbox("# Return Sync\\nread-only note")));`,
+      `const {validateDurableOutbox, evaluateCheckpointReview, checkpointNoticeStillDue} = await import(${JSON.stringify(pathToFileURL(installedCli).href)}); if (typeof evaluateCheckpointReview !== "function" || typeof checkpointNoticeStillDue !== "function") throw Error("installed checkpoint API missing"); console.log(JSON.stringify(validateDurableOutbox("# Return Sync\\nread-only note")));`,
     ], { encoding: "utf8" });
     assert.equal(imported.status, 0, imported.stderr);
     assert.deepEqual(JSON.parse(imported.stdout).pendingReturnIds, []);
@@ -103,6 +103,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /Guard lock: quarantine-then-recheck-never-replay/);
     assert.match(doctor.stdout, /Human attention: durable-single-manager-attention; guard=silent; completion=restore-or-explicitly-supersede/);
     assert.match(doctor.stdout, /Execution leases: one-work-one-owning-context/);
+    assert.match(doctor.stdout, /Checkpoint review: agreed-receipt-deadline-review; available, live adoption NOT_EVALUATED/);
     assert.match(doctor.stdout, /Task returns: durable-outbox-native-wakeup; terminal=return-sync; fallback=discover-unrouted-durable-return/);
     assert.match(doctor.stdout, /Rotation: independent-health-gated; independent check after 2 compactions or 24 active hours/);
     assert.match(doctor.stdout, /Memory: project-memory-graph v4; entity-routed goal-to-evidence context; Module Contracts before code; no fixed node cap/);
@@ -174,7 +175,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.30\.4/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.31\.0/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -650,7 +651,7 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   assert.doesNotMatch(startup, /Project State:/);
   assert.match(handoff, /Resolve ordinary implementation failures autonomously/);
   assert.match(handoff, /Do not run `\$project-launch`, `\$start-work`, `\$daily-alignment`, or `\$framework-orchestrator` here/);
-  assert.match(handoff, /apply Return Authorization above, write the complete marked Return Sync to the authorized durable outbox, then attempt the authorized native wakeup with the same id/);
+  assert.match(handoff, /apply Return Authorization above, write the complete marked Return Sync to the authorized durable outbox, then use the single accepted notification owner/);
   assert.match(handoff, /An Action Receipt never substitutes for this Return Sync/);
 });
 
@@ -766,6 +767,39 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     assert.equal(healthyResult.memoryGraphTargetVersion, 4);
     assert.equal(healthyResult.memoryMigrationRequired, true);
     assert.equal(healthyResult.memoryValidationScope, "structure-and-references-only");
+    const checkpoint = { id: "CP-CLI-1", owner: "task-one", dueAt: new Date(Date.now() - 60000).toISOString(),
+      expected: "verified task result", receiptId: "RETURN-CLI-1", authority: "accepted-task-contract" };
+    const checkpointState = healthyState.replace("Project Guard: ACTIVE", "Project Guard: LIMITED").replace(
+      "| WORK-1 [DOD] — close actor flow | WORKING | task-one |",
+      `| WORK-1 [DOD] — close actor flow | WORKING | task-one | repo | base | outcome | ${JSON.stringify(checkpoint)} | outbox |`);
+    await writeFile(statePath, checkpointState); await writeFile(outboxPath, "");
+    const checkpointArgs = ["guard-check", "--mode", "checkpoints", "--state", statePath, "--graph", graphPath, "--outbox", outboxPath, "--json"];
+    const due = runCli(checkpointArgs);
+    assert.equal(due.status, 0, due.stderr);
+    const checkpointResult = JSON.parse(due.stdout);
+    assert.equal(checkpointResult.action, "REVIEW_DUE");
+    assert.equal(checkpointResult.ok, false, "overall LIMITED stays truthful");
+    assert.equal(checkpointResult.checkpointReview.runtimeObservation, "NOT_EVALUATED");
+    const noticeId = checkpointResult.checkpointReview.reviews[0].incidentId;
+    const queued = runCli([...checkpointArgs, "--woken-incident", noticeId, "--notice-at", new Date().toISOString()]);
+    assert.equal(JSON.parse(queued.stdout).action, "NOOP");
+    const unknown = runCli([...checkpointArgs, "--uncertain-incident", noticeId]);
+    assert.equal(JSON.parse(unknown.stdout).action, "NEEDS_ATTENTION");
+    const recorded = runCli([...checkpointArgs, "--uncertain-incident", noticeId, "--accepted-incident", noticeId]);
+    assert.equal(JSON.parse(recorded.stdout).action, "NOOP");
+    assert.equal(runCli([...checkpointArgs, "--activity", activityPath]).status, 1, "cannot mix recovery and checkpoint modes");
+    assert.equal(JSON.parse(runCli([...checkpointArgs, "--expect-state-sha", "wrong"]).stdout).action, "LIMITED");
+    assert.equal(JSON.parse(runCli(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout).action,
+      "AUDIT_REQUIRED", "legacy activity guard remains unchanged");
+    await writeFile(outboxPath, createReturnSync({ status: "ACCEPT", returnReceiptId: checkpoint.receiptId,
+      taskContextArtifact: "task-one / result", memoryCandidates: "NO_MEMORY_DELTA", artifactDisposition: "retained",
+      recommendedNextAction: "review task result" }));
+    const received = JSON.parse(runCli(checkpointArgs).stdout);
+    assert.equal(received.action, "NOOP", "existing result cancels checkpoint notification");
+    assert.equal(received.checkpointReview.reviews[0].status, "RECEIPT_PRESENT");
+    assert.deepEqual(received.outbox.pendingReturnIds, [checkpoint.receiptId], "existing courier still sees the pending result");
+    await writeFile(outboxPath, "");
+    await writeFile(statePath, healthyState);
     const routineState = healthyState.replace("Snapshot as of: event-7", "Snapshot as of: event-8")
       .replace("Last checked: event-7/now/adapter", "Last checked: event-8/now/adapter");
     await writeFile(statePath, routineState);
