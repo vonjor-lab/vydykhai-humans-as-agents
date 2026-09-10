@@ -17,6 +17,8 @@ Use an already reconciled `$daily-alignment` delta when this is a re-brief from 
 
 ## Contract
 
+- If checkpoint review is selected, agree the next expected receipt/id and UTC review-by in the current task contract and existing Execution Lease at safe launch/resume. Preserve explicit pauses and direct human control; register the actual worker's approved source and sole native-or-Guard notification owner. Follow `docs/workflows/project-guard.md#checkpoint-review-without-runtime-observation`; a version update or installation-only receipt does not enroll all work.
+
 - Before dispatch or material resume, require the actual worker checkout/kit check against the accepted project target and instruction readback under `framework-activation.md`. An orchestrator version is not worker readiness; retain existing progress and pause only an affected unresolved adoption boundary.
 
 - Restore the atomic Project State control snapshot and DOD Control Line first, then product intent, latest explicit human decisions, Project Memory Graph, related work, tracker projection, and verified repo state.
@@ -38,7 +40,7 @@ Use an already reconciled `$daily-alignment` delta when this is a re-brief from 
 - Show parent closure and progress continuity: what is preserved, replaced, added, and remaining; what the slice unlocks; what still blocks the product loop; and which optional ideas stay outside the nearest DOD.
 - Recommend sequence, outcome owner, backup/failover, recipient/dependency boundary, and parallel-safe purpose as well as file boundaries.
 - Ask for human approval before creating or changing shared-tracker tasks.
-- Instruct every launched task to make a first safe observable action in the launch/resume turn, resolve ordinary failures autonomously, use `CONSULT` only at an undeclared boundary, keep its profile, and run `$accept-work`. Every readiness, checkpoint, blocker, or terminal outcome writes the marked Return Sync to a durable outbox before attempting the same receipt id as a native wakeup; an Action Receipt never substitutes, and the orchestrator later writes the paired marked Return Route receipt. The orchestrator records `PREPARED`, then reads back title/link/profile/exact base/action evidence/route before `STARTED`; plan-only is not progress. Return approved work to the Framework Orchestrator; do not implement there.
+- Instruct every launched task to make a first safe observable action in the launch/resume turn, resolve ordinary failures autonomously, use `CONSULT` only at an undeclared boundary, keep its profile, and run `$accept-work`. Every readiness, checkpoint, blocker, or terminal outcome writes the marked Return Sync to a durable outbox before notification by its single accepted owner under Return Authorization (native by default, never parallel Guard delivery); an Action Receipt never substitutes, and the orchestrator later writes the paired marked Return Route receipt. The orchestrator records `PREPARED`, then reads back title/link/profile/exact base/action evidence/route before `STARTED`; plan-only is not progress. Return approved work to the Framework Orchestrator; do not implement there.
 
 ## Finish
 

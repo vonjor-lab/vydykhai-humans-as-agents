@@ -10,11 +10,13 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.30.4`
+Current version: `1.31.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
 ## Что Vydykhai берет на себя
+
+Если AI-среда перестала надёжно показывать ход работы, контроль может опираться на согласованные результаты и сроки. Пропущенная контрольная точка возвращает вопрос оркестратору, но не запускает задачу заново. Эту возможность подключают к реальным задачам и явно показывают ограничения среды.
 
 - **Организует путь к результату.** Превращает сырую цель в общий бриф, ближайший DOD, ограниченные задачи и одно понятное следующее действие.
 - **Готовит сложные изменения без лишних церемоний.** Простую задачу можно сразу выполнять; перед возвращением к запутанной теме AI восстанавливает прежние решения. Когда несколько задач должны сложиться в одно изменение, при доступном контроле назначается временный ведущий по его согласованности. Пользователю объясняют зачем и какой результат он увидит следующим.
@@ -51,6 +53,8 @@ If the project is still only an idea and has no repository, send the same reques
 The human may still need to grant repository/network access or approve merge. They should not need to clone repositories, run installer commands, choose skills, or copy prompts.
 
 ## How It Works
+
+When live task observation is unavailable, an agreed checkpoint can keep unfinished work visible: a missing expected receipt prompts one manager review, not an automatic restart. Coverage must be proven on enrolled working tasks; an installation test alone does not protect the project.
 
 - Start with a rough goal. Your orchestrator helps shape it into a shared compass, brief, nearest DOD, and visible plan.
 - Each participant keeps one personal project orchestrator. The orchestrators coordinate what, why, when, and who through shared Git-backed state; focused task, discovery, lab, and maintenance contexts own the actual work.

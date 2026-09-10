@@ -266,6 +266,15 @@ if (manifest.continuationPolicy?.policy !== "evidence-backed-next-action" ||
 if (manifest.executionLeasePolicy?.policy !== "one-work-one-owning-context") {
   fail("Execution lease policy must use one-work-one-owning-context");
 }
+if (manifest.projectGuardPolicy?.checkpointReview?.policy !== "agreed-receipt-deadline-review" ||
+    manifest.projectGuardPolicy.checkpointReview.mode !== "checkpoints" ||
+    manifest.projectGuardPolicy.checkpointReview.responseWaitSeconds !== 1800 ||
+    manifest.projectGuardPolicy.checkpointReview.unknownRuntime !== "not-evaluated-never-inferred-idle" ||
+    manifest.projectGuardPolicy.checkpointReview.unresolvedNotice !== "one-human-checkpoint-no-automatic-repair" ||
+    !manifest.managedPaths.includes("scripts/checkpoint-review.mjs") ||
+    !manifest.adoptionRequirements.some(r => r.id === "checkpoint-review" && r.since === "1.31.0")) {
+  fail("Checkpoint review must use agreed receipts, bounded notification and explicit adoption without automatic recovery");
+}
 for (const state of ["prepared", "started", "working", "waiting", "returned", "closed", "outcome-unknown"]) {
   if (!manifest.executionLeasePolicy?.states?.includes(state)) fail(`Execution lease policy is missing state: ${state}`);
 }
