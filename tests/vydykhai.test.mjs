@@ -653,7 +653,9 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   assert.match(orchestratorWorkflow, /Material external delta:[\s\S]*Do not wake unaffected work/);
   assert.match(orchestratorWorkflow, /Repeated no-progress:[\s\S]*do not restart alignment/);
   assert.match(alignmentWorkflow, /Leave unaffected tasks asleep/);
-  assert.match(alignmentWorkflow, /Task contexts never read the raw transcript/);
+  assert.match(alignmentWorkflow, /Implementation contexts do not read raw transcripts/);
+  assert.match(alignmentWorkflow, /Owner-scoped Preparation\/Discovery may retrieve permitted sources/);
+  assert.match(alignmentWorkflow, /neither publishes shared guidance nor bypasses source access or participant authority/);
 
   const startup = handoff.split("## Startup")[1].split("## Execution Rules")[0];
   assert.match(startup, /Role: EXECUTION/);

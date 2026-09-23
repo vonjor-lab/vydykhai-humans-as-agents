@@ -17,11 +17,40 @@ const packet = () => ({ taskId: task.id, worker: task.worker, preparedBy: "prepa
   ], gaps: [] });
 
 test("preparation authority is reviewed but not forwarded as executor authority", async () => {
-  const result = await prepareNavigation(packet(), task, read);
+  const p = packet(); p.assignment.question = "Preparation is read-only. Do not implement.";
+  const result = await prepareNavigation(p, task, read);
   assert.deepEqual(result.references.map(r => r.id), ["contract"]);
   assert.equal(result.constraints.length, 1);
   assert.doesNotMatch(JSON.stringify(result), /read-only|Do not implement/);
   assert.match(result.references[0].sha256, /^[0-9a-f]{64}$/);
+  assert.equal(result.assignment.question, undefined);
+  assert.equal(result.assignment.requestId, p.assignment.requestId);
+});
+
+test("quote-only references derive exact coordinates without model-written line numbers", async () => {
+  const p = packet();
+  for (const r of p.references) { delete r.startLine; delete r.endLine; }
+  const result = await prepareNavigation(p, task, read);
+  assert.equal(result.references[0].startLine, 1);
+  assert.equal(result.references[0].endLine, 1);
+});
+
+test("quote resolution handles multiline CRLF, Unicode and final newline without exceeding EOF", async () => {
+  const p = packet(); p.references = [{ ...p.references[0], quote: "Accepted \u03b1.\r\nSecond line.\r\n" }];
+  delete p.references[0].startLine; delete p.references[0].endLine;
+  p.constraints = [p.constraints[0]];
+  const result = await prepareNavigation(p, task, async () => Buffer.from("Heading\r\nAccepted \u03b1.\r\nSecond line.\r\n"));
+  assert.equal(result.references[0].startLine, 2); assert.equal(result.references[0].endLine, 3);
+  assert.equal(result.references[0].quote, "Accepted \u03b1.\nSecond line.\n");
+  p.references[0].startLine = 2; p.references[0].endLine = 3;
+  assert.deepEqual((await prepareNavigation(p, task, async () => Buffer.from("Heading\r\nAccepted \u03b1.\r\nSecond line.\r\n"))).references, result.references);
+});
+
+test("ambiguous or missing quotes require source selection, never fuzzy correction", async () => {
+  const p = packet(); p.references = [p.references[0]]; p.constraints = [p.constraints[0]];
+  delete p.references[0].startLine; delete p.references[0].endLine;
+  await assert.rejects(prepareNavigation(p, task, async () => Buffer.from("Keep accepted output.\nKeep accepted output.\n")), /NAVIGATION_QUOTE_AMBIGUOUS/);
+  await assert.rejects(prepareNavigation(p, task, async () => Buffer.from("Changed meaning.\n")), /NAVIGATION_QUOTE_MISMATCH/);
 });
 
 test("real task-wide read-only authority is preserved, not removed by keyword filtering", async () => {

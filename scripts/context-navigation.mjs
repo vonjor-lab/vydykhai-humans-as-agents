@@ -31,22 +31,36 @@ export async function prepareNavigation(navigation, task, read, requiredContract
   need(keys(navigation, ["taskId", "worker", "preparedBy", "outcome", "references", "constraints", "gaps", "assignment"]) &&
     navigation.taskId === task.id && navigation.worker === task.worker &&
     text(navigation.preparedBy) && navigation.preparedBy !== task.worker && text(navigation.outcome), "NAVIGATION_IDENTITY_INVALID");
-  need(list(navigation.references) && navigation.references.length > 0 && list(navigation.constraints) &&
+  need(list(navigation.references) && navigation.references.length > 0 && navigation.references.every(object) && list(navigation.constraints) &&
     list(navigation.gaps), "NAVIGATION_SCHEMA_INVALID");
   need(list(requiredContracts) && requiredContracts.length > 0 && requiredContracts.every(text), "NAVIGATION_CONTRACT_ROUTE_MISSING");
   need(requiredContracts.every(p => navigation.references.some(r => r.path === p && r.appliesTo === "task")), "NAVIGATION_CONTRACT_UNREAD");
   const ids = new Set(), references = [];
   for (const r of navigation.references) {
-    need(keys(r, ["id", "path", "startLine", "endLine", "quote", "purpose", "appliesTo"]) && text(r.id) && !ids.has(r.id) &&
+    const explicit = object(r) && (Object.hasOwn(r, "startLine") || Object.hasOwn(r, "endLine"));
+    need(keys(r, ["id", "path", "quote", "purpose", "appliesTo", ...(explicit ? ["startLine", "endLine"] : [])]) && text(r.id) && !ids.has(r.id) &&
       text(r.path) && text(r.quote) && text(r.purpose) && ["task", "preparation"].includes(r.appliesTo), "NAVIGATION_REFERENCE_INVALID");
     const bytes = await read(r.path);
-    const lines = bytes.toString("utf8").split(/\r?\n/);
+    const body = bytes.toString("utf8").replaceAll("\r\n", "\n"), quote = r.quote.replaceAll("\r\n", "\n");
+    const lines = body.split("\n");
     if (lines.at(-1) === "") lines.pop();
-    need(Number.isSafeInteger(r.startLine) && Number.isSafeInteger(r.endLine) &&
-      r.startLine >= 1 && r.endLine >= r.startLine && r.endLine <= lines.length, "NAVIGATION_LINE_RANGE_INVALID");
-    need(lines.slice(r.startLine - 1, r.endLine).join("\n").includes(r.quote), "NAVIGATION_QUOTE_MISMATCH");
+    let { startLine, endLine } = r;
+    if (!explicit) {
+      // The model selects source meaning; exact coordinates come from file bytes.
+      const offset = body.indexOf(quote);
+      need(offset >= 0, "NAVIGATION_QUOTE_MISMATCH");
+      need(body.indexOf(quote, offset + 1) < 0, "NAVIGATION_QUOTE_AMBIGUOUS");
+      startLine = body.slice(0, offset).split("\n").length;
+      endLine = body.slice(0, offset + quote.length).split("\n").length - (quote.endsWith("\n") ? 1 : 0);
+    }
+    need(Number.isSafeInteger(startLine) && Number.isSafeInteger(endLine) &&
+      startLine >= 1 && endLine >= startLine && endLine <= lines.length, "NAVIGATION_LINE_RANGE_INVALID");
+    if (explicit) {
+      const selected = lines.slice(startLine - 1, endLine).join("\n") + (endLine < lines.length || body.endsWith("\n") ? "\n" : "");
+      need(selected.includes(quote), "NAVIGATION_QUOTE_MISMATCH");
+    }
     ids.add(r.id);
-    references.push({ ...r, sha256: createHash("sha256").update(bytes).digest("hex") });
+    references.push({ ...r, quote, startLine, endLine, sha256: hash(bytes) });
   }
   const constraints = [];
   for (const c of navigation.constraints) {
@@ -62,6 +76,8 @@ export async function prepareNavigation(navigation, task, read, requiredContract
     need(keys(gap, ["text", "critical"]) && text(gap.text) && typeof gap.critical === "boolean", "NAVIGATION_GAP_INVALID");
     need(!gap.critical, "NAVIGATION_CRITICAL_GAP");
   }
+  const { owner, requestId, phase, previous } = navigation.assignment;
   return { schema: "context.navigation.v1", taskId: task.id, worker: task.worker,
-    assignment: navigation.assignment, outcome: navigation.outcome, references: references.filter(r => r.appliesTo === "task"), constraints, gaps: navigation.gaps };
+    assignment: { owner, requestId, phase, previous }, outcome: navigation.outcome,
+    references: references.filter(r => r.appliesTo === "task"), constraints, gaps: navigation.gaps };
 }

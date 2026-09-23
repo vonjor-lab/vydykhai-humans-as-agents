@@ -22,6 +22,8 @@ The orchestrator selects the required skill and workflow.
 - `framework-orchestrator.md`: restore state, dispatch, supervise, recover, rotate, and choose next-best-action.
 - `start-work.md`: turn a raw or changed topic into an epic brief and minimum task contracts.
 - `context-route.md`: navigate from goals through modules, entities, current meaning and affected consumers; decide direct execution versus bounded discovery.
+- `context-routing.md`: orchestrator-owned low-cost retrieval and supplements across Discovery, Lab, implementation and maintenance; reuse evidence without another management layer.
+- `context-preparation.md`: build, approve and deliver an implementation packet with source-backed citations and current worker readback.
 - `memory-brief-envelope.md`: preserve indivisible ordered clauses or repeated rows through dispatch and prove item-level application.
 - `daily-alignment.md`: reconcile meeting/event/local deltas across participants.
 - `accept-work.md`: accept work against current intent and exact-current-code evidence.

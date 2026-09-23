@@ -76,7 +76,7 @@ Preserve an optional extension as an `IDEA` candidate. Record every material reu
 
 Do not leave a new delta behind an old dashboard.
 
-Task contexts never read the raw transcript, participant packets, or Alignment Window as part of normal execution. The orchestrator distills only the delta needed by that task.
+Implementation contexts do not read raw transcripts, participant packets, or the Alignment Window as part of normal execution. The orchestrator distills only the applicable delta. Owner-scoped Preparation/Discovery may retrieve permitted sources for that synthesis under `context-routing.md`; it neither publishes shared guidance nor bypasses source access or participant authority.
 
 ## 6. Rotate
 

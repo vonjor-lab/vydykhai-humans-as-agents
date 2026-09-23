@@ -100,12 +100,12 @@ relevant new capability, require independent-source ordinary-language probes
 worker delivery, new-plus-retained behavior verification, Return and integrated
 memory. Hashes, ids, flags and simulated checks do not establish semantic success.
 
-For new tasks touching a durable module with prior obligations or acceptance
+For new implementation tasks touching a durable module with prior obligations or acceptance
 behavior, use [Context Preparation](context-preparation.md) and `context-run` by
 default. The agent selects/reviews sources and handles transport; the worker
 reads and acknowledges the actual context. Missing critical source access or
 unsupported execution leaves the affected capability pending/LIMITED, never
-fully active. Old workers enter only at safe rebrief/readback. The common path
+fully active. Scoped research may resolve that gap under `context-routing.md`, without requiring its own complete implementation packet. Old workers enter only at safe rebrief/readback. The common path
 needs no hooks; native interception needs separate applicable trust/host proof.
 
 Keep the existing Guard liveness-only; adopt supported checkpoint coverage per `project-guard.md#checkpoint-review-without-runtime-observation`, without requiring unavailable runtime metadata or changing a pause. Preserve unchanged tested adapters and
