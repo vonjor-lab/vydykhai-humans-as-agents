@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 1.31.0 | Status: canonical operating core
+Version: 1.32.0 | Status: canonical operating core
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 
@@ -73,15 +73,15 @@ Operational readiness covers only the current DOD: environment owners, current d
 Only an evidence-backed receipt returns `PROJECT_READY`; non-critical gaps are `PROJECT_READY_WITH_LIMITS`, a real choice is `NEEDS_DECISION`, and access that blocks the first safe route is `BLOCKED_BY_ACCESS`. Missing participants block only overlapping work.
 
 ## Role-Routed Agent Profiles
-Use the latest available flagship model and spend reasoning where the work is decided:
+Choose by proven capability and total cost, not price/version alone. `selectionPolicy` is authoritative; legacy `modelPolicy` remains for old updaters:
 - `ORCHESTRATOR`: maximum available stable reasoning for compass, memory, routing, task design, consultation, integration, and next-best-action. Map to `Ultra` when that label exists.
 - `DISCOVERY`: deep bounded reasoning for a solution that is not yet defined: bounded research, product or architecture choices, unresolved UX/UI or visual direction, and experiment design. Map to `XHigh` when available.
-- `EXECUTION`: efficient bounded reasoning for a task whose solution and acceptance boundary are already defined. Map to `Low` when available.
-These labels are environment mappings, not vendor requirements. Resolve by current availability and authoritative guidance, record the actual model and all three mappings in Project State, and recheck at bootstrap, framework update, orchestrator rotation, model rejection/deprecation, and active Health Review at least every seven days. Pass the selected role explicitly to a new context when tools support it; never silently substitute another profile. A resumed current task keeps its accepted profile unless a re-brief changes it.
+- `EXECUTION`: efficient bounded reasoning for a defined solution and acceptance boundary; map to `Low`, on the lowest model proven for the task class.
+- `PREPARATION`: opt-in bounded retrieval, mapped to `Low`, on a proven low-cost model. Reuse sufficient current context; otherwise follow `context-preparation.md` for a source-backed, role-aware packet and fresh executor, not inherited search history.
+Orchestration and unresolved Discovery retain the current flagship. Without comparable evidence, retain the accepted execution profile or record an explicit flagship fallback. These are environment mappings, not vendor requirements. Record actual model/effort, capability evidence, date/source and fallback in Project State; recheck at bootstrap, update, rotation, rejection/deprecation and active Health Review at least every seven days. Pass the selected profile explicitly; never silently substitute it. A resumed task keeps its accepted profile until a re-brief changes it. Count preparation, review and rescue when evaluating cost; token prices are not subscription allowance multipliers.
 A human may override a profile for a named scope. Maximum reasoning never authorizes unbounded spend or external action, and no profile replaces tests, smoke, acceptance, or human checkpoints. Universal rules never pin today's model id.
 
 ## Source Precedence
-
 When sources disagree, use this order:
 
 1. The latest explicit human decision for the affected scope.
@@ -294,7 +294,7 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Do not accept Lab Mode as product completion without production transfer and real-flow verification.
 - Do not expose secret values, transcripts, private product data, proprietary prompts, or customer information in public framework artifacts or shared memory. A protected pointer stores only owner, protected reference, environment/scope, allowed non-destructive route, last safe check with source, and expiry/re-entry condition; if any required field is missing, mark the affected action `MEMORY_COVERAGE_GAP / BLOCKED` until repaired and rechecked.
 - Preserve the framework license, creator metadata, and required notice in installed or redistributed framework copies; they do not claim ownership of project-specific work.
-- Route the latest available flagship by role: maximum reasoning for the orchestrator, deep bounded reasoning for Discovery, and efficient bounded reasoning for Execution. Keep all resolved mappings and check date in Project State; do not pin a model version or silently substitute a profile.
+- Apply capability-and-cost routing: flagship orchestration and unresolved Discovery, proven efficient Execution and opt-in Preparation. Keep actual mappings, evidence and date in Project State; do not pin vendor ids or silently substitute profiles.
 - Preserve append-only evidence, but atomically rebuild current dashboards and reject duplicate or contradictory current sections.
 - Keep one DOD Control Line, one unresolved Execution Lease per increment, durable-outbox-first Return Sync, explicit detour return gates, and one external Project Guard. Healthy checks stay silent; anomaly routes bounded repair or confirmed rotation even when the orchestrator stops invoking its own rules. People never poll tasks or remember postponed work for the system.
 - Prefer next-best-action over status-only reporting.

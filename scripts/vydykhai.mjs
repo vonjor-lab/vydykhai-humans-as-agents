@@ -181,6 +181,16 @@ async function loadManifest(root) {
   ) {
     throw new Error(`Invalid agent routing policy in ${file}`);
   }
+  if (routing.selectionPolicy !== undefined) {
+    const profiles = routing.profiles;
+    if (routing.selectionPolicy !== "capability-and-cost" || ["orchestrator", "discovery"].some(role => profiles[role]?.modelPolicy !== "latest-available-flagship") ||
+        ["preparation", "execution"].some(role => profiles[role]?.modelPolicy !== "lowest-proven-capable" ||
+          profiles[role]?.fallback !== "latest-available-flagship") ||
+        profiles.preparation.reasoningPolicy !== "retrieval-bounded" ||
+        profiles.preparation.preferredEffortWhenAvailable !== "low" || profiles.preparation.adoption !== "opt-in") {
+      throw new Error(`Invalid capability-based agent routing policy in ${file}`);
+    }
+  }
   if (
     manifest.orchestratorAdvisoryPolicy &&
     (manifest.orchestratorAdvisoryPolicy.policy !== "control-only-advisory" ||
@@ -608,12 +618,15 @@ function printDoctor(result, asJson) {
   console.log(`Vydykhai ${result.installedVersion} (${result.mode})`);
   console.log(`Integrity: ${result.ok ? "OK" : "FAILED"}`);
   const routing = result.agentRoutingPolicy;
-  console.log(`Agent routing: ${routing.modelPolicy} / ${routing.policy}`);
+  console.log(`Agent routing: ${routing.selectionPolicy || routing.modelPolicy} / ${routing.policy}`);
   console.log(
     `Profiles: ORCHESTRATOR=${routing.profiles.orchestrator.reasoningPolicy}; ` +
       `DISCOVERY=${routing.profiles.discovery.reasoningPolicy}; ` +
       `EXECUTION=${routing.profiles.execution.reasoningPolicy}`,
   );
+  console.log(routing.profiles.preparation ?
+    `Preparation: ${routing.profiles.preparation.reasoningPolicy}; opt-in; live adoption NOT_EVALUATED` :
+    "Preparation: not declared by installed version");
   if (result.orchestratorAdvisoryPolicy?.policy) {
     console.log(
       `Orchestrator advisory: ${result.orchestratorAdvisoryPolicy.policy}; ` +

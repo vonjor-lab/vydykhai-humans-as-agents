@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.31.0",
+  "version": "1.32.0",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -25,19 +25,31 @@
   "agentRoutingPolicy": {
     "policy": "role-routed",
     "modelPolicy": "latest-available-flagship",
+    "selectionPolicy": "capability-and-cost",
     "refreshDays": 7,
     "profiles": {
       "orchestrator": {
+        "modelPolicy": "latest-available-flagship",
         "reasoningPolicy": "maximum-available",
         "preferredEffortWhenAvailable": "ultra"
       },
       "discovery": {
+        "modelPolicy": "latest-available-flagship",
         "reasoningPolicy": "deep-bounded",
         "preferredEffortWhenAvailable": "xhigh"
       },
       "execution": {
+        "modelPolicy": "lowest-proven-capable",
+        "fallback": "latest-available-flagship",
         "reasoningPolicy": "efficient-bounded",
         "preferredEffortWhenAvailable": "low"
+      },
+      "preparation": {
+        "modelPolicy": "lowest-proven-capable",
+        "fallback": "latest-available-flagship",
+        "reasoningPolicy": "retrieval-bounded",
+        "preferredEffortWhenAvailable": "low",
+        "adoption": "opt-in"
       }
     }
   },
@@ -522,6 +534,7 @@
     "scripts/context-run.mjs",
     "scripts/context-hook.mjs",
     "scripts/context-prepare.mjs",
+    "scripts/context-navigation.mjs",
     "scripts/adoption-plan.mjs",
     "examples/context-preparation",
     "docs/AGENTS_CORE.md",
@@ -538,6 +551,13 @@
     ".agents/skills/accept-work"
   ],
   "adoptionRequirements": [
+    {
+      "id": "context-routing",
+      "since": "1.32.0",
+      "action": "Resolve available models by role and proven task capability, not price alone. Cheap preparation is opt-in: reuse current sufficient context, otherwise prepare a source-backed navigation packet, review role applicability and gaps, and hand it to a fresh executor. Read back actual model/effort and one source-to-worker-to-retained-tests-to-Return cycle before claiming adoption. Preserve ongoing work and explicit human model choices; missing preparation proof does not block the established route.",
+      "reuseBy": ["targetBundle", "worker", "routingProfile", "sourceRange", "verificationBoundary"],
+      "workflow": "docs/workflows/context-preparation.md"
+    },
     {
       "id": "checkpoint-review",
       "since": "1.31.0",

@@ -70,6 +70,64 @@ unchanged calls are reusable. Output collisions, crossed task packets, stale
 approvals, changed selected inputs and missing worker readback block. Preparation
 does not overwrite a previous packet or erase its pending state.
 
+## Optional cheap preparation
+
+Check context sufficiency for every task. Reuse an adequate current packet; use
+the opt-in `PREPARATION` profile when context is missing, stale or scattered.
+Start from the ordinary module map/index and entity-linked memory, then Module
+Contracts and relevant code. Missing map or prior decision is a visible gap, not
+permission to fabricate a complete history. Mechanical file/symbol indexes should
+link existing contracts; do not create duplicate prose documentation or split
+proven code solely to meet a universal line count. Update affected contracts/map
+links with the owning increment; reusable semantic changes remain owner-reviewed.
+
+Preparation is a profile for bounded evidence retrieval in an ordinary focused
+Discovery context with its existing lease/Return Sync, not a new management role.
+It retrieves evidence, not new product/architecture decisions. Resolve
+the lowest model proven for the task class and record actual model/effort plus
+fallback. Keep unresolved solution design in `DISCOVERY`. A failed check first
+distinguishes missing evidence, environment failure and reasoning failure; do not
+oscillate models automatically. Preserve explicit human model decisions.
+
+The optional `navigation` object in `context.package.v1` contains `taskId`,
+`worker`, a distinct `preparedBy`, `outcome`, `references`, `constraints`, `gaps`.
+Each reference declares `id`, workspace-relative `path`, one-based inclusive
+`startLine`/`endLine`, exact `quote`, `purpose`, `appliesTo` (`task` or
+`preparation`). Each constraint has `text`, `appliesTo`, `referenceIds`.
+Each gap has `text` and boolean `critical`; critical gaps block preparation.
+For this route the owner declares nonempty `module.contractFiles` from the module
+map/graph independently of the preparer's found-code list. Each must have a
+task-wide cited quote; an omitted contract blocks. Review the complete applicable
+contract, not just a keyword hit. Distinguish an unavailable source from an
+available but unread source: neither proves absence of the underlying decision.
+The builder checks bounds/quotes and computes file hashes. Owner review still
+decides semantic coverage, correct audience and unresolved contradictions;
+structural checks cannot detect a wrongly classified natural-language rule.
+
+Only task-wide references/constraints reach `navigation.json` and worker `read`.
+Preparation-only read-only restrictions do not grant or remove executor rights;
+actual authority remains the current task. Real task-wide read-only rules stay.
+Navigation inputs are pinned by the existing plan except declared mutable
+Candidate/implementation files: their cited hashes describe the pre-change
+baseline, not a ban on the authorized edit. After edits use current-code
+`context-run` checks; re-prepare navigation if it must describe the new revision.
+The complete original semantic classifications remain mandatory; navigation is
+not a replacement for the Memory Brief, source coverage or owner confirmation.
+
+At approved handoff, launch a fresh executor with task and checked packet, not
+the preparer's history. Switching models in the same conversation does not
+remove that history. Verify actual host read/write readiness on the normal tool
+path, then worker read/ack and first authorized action; no ACK-only pause.
+An unavailable fresh-context capability is an explicit fallback, not a false
+freshness claim. Match the final receipt to the current task/expected artifact
+before routing its next action; an old successful report cannot close new work.
+
+Record native per-role input/cached/output, elapsed time, expanded reads, review,
+rescue and retained/new test results. Include preparation overhead; cached input
+and reasoning output are subsets, not additional totals. Credit prices do not
+prove subscription allowance multipliers; concurrent account activity prevents
+causal attribution. No hidden quota-measurement pause or mandatory control arm.
+
 ## Optional lifecycle adapter
 
 `ack` also emits an inert `hooks.template.json` for one declared action. The

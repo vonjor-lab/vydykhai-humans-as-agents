@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { canonicalJson, sha256, checkPreparedContext } from "./memory-brief.mjs";
 import { parseContextJson, runContextTransition, artifactHash } from "./context-run.mjs";
+import { prepareNavigation } from "./context-navigation.mjs";
 
 const hash = v => sha256(canonicalJson(v));
 const encoded = v => canonicalJson(v) + "\n";
@@ -41,12 +42,18 @@ async function build(root, input, output) {
     const data = await file(root, name); inputs.set(name, { path: name, sha256: sha256(data) }); return data;
   };
   const pkg = parseContextJson(await source(input));
-  need(keys(pkg, ["schema", "owner", "task", "module", "sources", "classifications", "dependencies", "sharedArtifacts"]) && pkg.schema === "context.package.v1" && id(pkg.owner));
+  need(keys(pkg, ["schema", "owner", "task", "module", "sources", "classifications", "dependencies", "sharedArtifacts",
+    ...(Object.hasOwn(pkg, "navigation") ? ["navigation"] : [])]) && pkg.schema === "context.package.v1" && id(pkg.owner));
   need(keys(pkg.task, ["id", "worker", "scope", "action", "candidateFiles"]) && id(pkg.task.id) && id(pkg.task.worker) && scope(pkg.task.scope) && list(pkg.task.candidateFiles));
-  need(keys(pkg.module, ["publicBoundary", "implementationFiles", "retainedExampleIds", "newExampleIds", "oracle", "verificationScript", "verificationCommand"]));
+  need(keys(pkg.module, ["publicBoundary", "implementationFiles", "retainedExampleIds", "newExampleIds", "oracle", "verificationScript", "verificationCommand",
+    ...(Object.hasOwn(pkg.module, "contractFiles") ? ["contractFiles"] : [])]) && list(pkg.module.implementationFiles));
   need(list(pkg.sources) && pkg.sources.length && list(pkg.classifications) && list(pkg.dependencies) && list(pkg.sharedArtifacts) && pkg.sharedArtifacts.length);
   const artifacts = new Map(), at = name => `${output}/${name}`;
   const add = (name, value) => { const p = at(name); artifacts.set(p, value); return reference(p, value); };
+  const mutable = new Set([...pkg.task.candidateFiles, ...pkg.module.implementationFiles]);
+  const navigation = pkg.navigation === undefined ? null : await prepareNavigation(pkg.navigation, pkg.task,
+    name => mutable.has(name) ? file(root, name) : source(name), pkg.module.contractFiles);
+  if (navigation) add("navigation.json", navigation);
   const sourceSet = { schema: "context.sources.v1", sources: [] }, inventory = [], bodies = new Map(), ranges = [];
   for (const s of pkg.sources) {
     need(keys(s, ["id", "path", "scope"]) && id(s.id) && scope(s.scope));
@@ -124,7 +131,7 @@ async function build(root, input, output) {
   const request = { schema: "context.request.v1", workspace: root, task, operation: "prepare", capsule: null, readback: null, integrationPlan: null };
   const plan = { schema: "context.preparation-plan.v1", owner: pkg.owner, workspace: root, semanticPackage: pkg,
     inputFiles: [...inputs.values()], artifacts: [...artifacts].map(([name, value]) => reference(name, value)) };
-  return { plan, artifacts, request, integrationPlan, expectedIntegration, render, task: artifacts.get(task.path) };
+  return { plan, artifacts, request, integrationPlan, expectedIntegration, render, navigation, task: artifacts.get(task.path) };
 }
 
 export async function prepareContext(args, services = {}) {
@@ -188,8 +195,10 @@ export async function prepareContext(args, services = {}) {
     const capsule = await read(root, pending.capsule.path); need(hash(capsule) === hash(checked.capsule), "PACKAGE_CAPSULE_CHANGED");
     if (mode === "read" || mode === "ack") {
       const worker = options["--worker"]; need(worker === built.task.owner, "PACKAGE_WORKER_MISMATCH");
-      const delivery = { schema: "context.worker-delivery.v1", worker, capsuleSha256: pending.capsule.sha256, renderSha256: sha256(capsule.render) };
-      if (mode === "read") { await put("worker-delivery.json", delivery); return { status: "DELIVERED", worker, context: capsule.render, acknowledgment: "REQUIRED" }; }
+      const navigation = built.navigation ? { navigation: built.navigation, navigationSha256: hash(built.navigation) } : {};
+      const delivery = { schema: "context.worker-delivery.v1", worker, capsuleSha256: pending.capsule.sha256, renderSha256: sha256(capsule.render),
+        ...(built.navigation ? { navigationSha256: hash(built.navigation) } : {}) };
+      if (mode === "read") { await put("worker-delivery.json", delivery); return { status: "DELIVERED", worker, context: capsule.render, ...navigation, acknowledgment: "REQUIRED" }; }
       need(hash(await read(root, `${output}/worker-delivery.json`)) === hash(delivery), "PACKAGE_WORKER_DELIVERY_MISSING");
       const evidence = options["--evidence"], data = await file(root, evidence); need(data.toString().trim().length, "PACKAGE_WORKER_EVIDENCE_EMPTY");
       const readback = await put("readback.json", { schema: "context.readback.v1", worker, taskSha256: pending.task.sha256,
