@@ -46,7 +46,7 @@ Authority / safety envelope: <current human source/event, allowed actions and re
 Dependency / recipient boundary: <only what this execution must preserve or deliver>
 Design consultation recipient, when assigned: <bounded lead and parent outcome; send material CONSULT through the existing orchestrator return route, not a second supervisor>
 
-Read the supplied graph route and relevant meaning, then each touched Module Contract, then current code and tests before changing behavior. Narrow responsibility does not remove inherited constraints. Documentation does not silently override observed code: consult if a material link is missing or the sources disagree. Do not reconstruct unrelated project history or silently drop context to meet a length target.
+Read the supplied graph route and relevant meaning, then each touched Module Contract. For consume, use its public contract and fixed release, reading only consumer wiring as needed; for authorized change/create, also read maintainer rationale and owned code/tests. Follow `module-contract-template.md#use-change-or-create`; an integration task does not authorize producer edits. Narrow responsibility does not remove inherited constraints. Documentation does not silently override observed code: consult if a material link is missing or the sources disagree. Do not reconstruct unrelated project history or silently drop context to meet a length target.
 
 ## Completion
 
