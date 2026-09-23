@@ -9,6 +9,7 @@ gap. Reuse a sufficient current packet; do not repeat an exhaustive search.
 - The orchestrator owns purpose, scope, constraints, required Module Contracts,
   the question assigned to preparation, model/effort selection and packet review.
   It receives a concise evidence/gap/decision summary, not search transcripts.
+  It preserves the accepted applicability and proof limits of donor modules in briefs and graph integration; a passed example is not permission to claim a reusable chain.
 - The preparer finds and combines source-backed facts through map/index -> graph
   and contracts -> relevant code. It labels unread, unavailable and contradictory
   sources separately. It does not choose product direction, design a new solution,
@@ -100,11 +101,18 @@ nor intercept arbitrary native edits; ordinary owner/lease control still applies
 
 ## Cost Comparison
 
+Use `agentRoutingPolicy.effortPolicy` over legacy profile fields. Orchestration uses flagship/Low; solution Discovery uses flagship/High. These are harness mappings, not model ids.
+A control failure means evidenced wrong routing, lost obligation or invalid readiness judgment. Diagnose it and make one targeted correction; if that fails the same success criterion, use High for bounded recovery, not another blind Low retry.
+Network/access failures, authorized pauses, missing human decisions and a worker's failing test alone do not trigger this escalation. Safety/authority uncertainty stops the affected action immediately; never try an unsafe action to earn a higher effort.
+Record the failure, correction, recovery criterion and effective effort in the existing next-action/State record. A High recovery ends only after observable handoff/return and retained obligations pass the criterion, not a promise or rewritten plan; return to Low at the next safe boundary.
+If High recovery still fails, use the existing blocker/confirmed-rotation path; do not oscillate Low/High, add retries or override human control. A missing switch capability has an explicit supported fallback/checkpoint, never a claimed switch. Independent work remains usable.
+Effort escalation never resets Guard repair limits, leases or burn caps: after a circuit breaker, High may diagnose/rebrief within authority, not replay the stopped action. Existing independent Governor anomaly evaluation is unchanged; routine checks remain model-free.
+
 The orchestrator selects the lowest proven capable route for the task class,
 honoring explicit human choices and fallback. Prefer observed subscription usage
 when it is attributable; credit estimates are a secondary proxy, not allowance
 coefficients. Do not stop other work to measure account limits without permission.
-Unknown costs remain unknown. No automatic model oscillation at checkpoints.
+Until attributable allowance data exists, use dated credit-rate coefficients as the planning proxy, then calibrate against practical whole-chain usage and time to accepted result. Unknown costs remain unknown; no automatic model oscillation at checkpoints.
 
 Use `node scripts/vydykhai.mjs context-prepare estimate --input cost.json` for an
 optional read-only comparison; it does not dispatch or authorize work. Input:
@@ -136,3 +144,5 @@ divided by one million, summed over the chain. Only eligible routes enter the
 comparison; if any eligible route has unknown costs no cheapest route is claimed.
 `subscriptionUsage: UNKNOWN` stays explicit. Capability, rate freshness, estimates
 and the final decision remain the owner's responsibility, not this calculator's.
+
+The existing loop closes through source-backed context -> scoped work -> retained/new behavior and documentation review -> consumed Return -> integrated graph meaning and next action. Required docs/map links belong to the Candidate; required reusable memory stays an explicit owner obligation until integrated, not an implied side effect of delivery. Compare total effort and rework per accepted outcome, not activity counts. Repeated misses or rising coordination cost trigger existing Health Review/maintenance with proof of improvement on the original flow; no new timer, role or global memory rebuild.

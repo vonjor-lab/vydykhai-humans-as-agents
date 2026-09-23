@@ -14,7 +14,7 @@ const events = JSON.parse(sourceBytes).events, frozen = JSON.parse(expectedBytes
 const hash = value => sha256(canonicalJson(value));
 const sorted = values => [...values].sort((a, b) => canonicalJson(a) < canonicalJson(b) ? -1 : canonicalJson(a) > canonicalJson(b) ? 1 : 0);
 
-async function fixture(t, { correction = false, verificationMode = "normal", actionBody = null, atomic = false } = {}) {
+async function fixture(t, { correction = false, verificationMode = "normal", actionBody = null, atomic = false, omitInputMember = false } = {}) {
   const root = await realpath(await mkdtemp(path.join(tmpdir(), "vydykhai-context-run-")));
   t.after(() => rm(root, { recursive: true, force: true }));
   const put = async (name, value) => {
@@ -91,7 +91,7 @@ async function fixture(t, { correction = false, verificationMode = "normal", act
   entries.sort((a,b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   return { schema: 'bundle/v1', entries, count: entries.length };
 }\n`;
-  await put("candidate.mjs", candidateCode);
+  await put("candidate.mjs", omitInputMember ? candidateCode.replace("entries, count:", "entries: entries.slice(0, 1), count:") : candidateCode);
   await put("action.mjs", actionBody ?? "import { appendFileSync } from 'node:fs'; appendFileSync('actions.log', 'called\\n');\n");
   const oracle = await put("oracle.json", { schema: "context.oracle.v1", examples: frozen.examples.map(e => ({
     id: e.id, sourceAssertionRefs: e.sourceAssertions, input: e.input, expected: e.expectedError ? { error: e.expectedError } : e.expected })) });
@@ -100,7 +100,8 @@ import { buildBundle } from './candidate.mjs';
 const oracle = JSON.parse(readFileSync('oracle.json', 'utf8'));
 const ids = JSON.parse(process.env.VYDYKHAI_REQUIRED_EXAMPLES);
 appendFileSync('verifications.log', ids.join(',') + '\\n');
-const observations = ids.filter(id => ${JSON.stringify(verificationMode)} !== 'missing' || id !== 'B2').map(id => {
+const observations = ids.filter(id => (${JSON.stringify(verificationMode)} !== 'missing' || id !== 'B2') &&
+  (${JSON.stringify(verificationMode)} !== 'retained-only' || id !== 'N1')).map(id => {
   const example = oracle.examples.find(e => e.id === id);
   let observed; try { observed = buildBundle(example.input); } catch (e) { observed = { error: e.message }; }
   return { id, observed };
@@ -413,6 +414,24 @@ test("verification script and oracle pin changes fail before verification execut
     const f = await fixture(t); await f.prepare(); await f.put(name, "changed input");
     const result = await f.run("accept"); assert.equal(result.status, "BLOCKED"); assert.equal(result.stats.commands, 0);
   }
+});
+
+test("passing retained examples cannot discharge a promised new-case obligation", async t => {
+  // This checks an owner-pinned obligation, not automatic discovery of adequate coverage.
+  const f = await fixture(t, { correction: true, verificationMode: "retained-only" });
+  await f.prepare();
+  const result = await f.run("accept");
+  assert.equal(result.code, "BEHAVIOR_EVIDENCE_MISSING");
+  assert.equal(result.receipt, undefined);
+  assert.equal(result.stats.dependentCommands, 0);
+});
+
+test("successful processing cannot hide a required input member from a source-derived oracle", async t => {
+  const f = await fixture(t, { omitInputMember: true });
+  await f.prepare();
+  const result = await f.run("accept");
+  assert.equal(result.code, "BEHAVIOR_MISMATCH");
+  assert.equal(result.receipt, undefined);
 });
 
 test("timeout, output cap and failing commands return structured errors without raw output", async t => {

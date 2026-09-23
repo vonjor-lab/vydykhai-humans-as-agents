@@ -101,6 +101,8 @@ test("actual historical updater copies new kit; new entry retrieves unknown plan
   f.run(["update", target, "--from", root], installed);
   const repeated = JSON.parse(f.run(["adoption-plan", target, "--json"], installed));
   assert.equal(repeated.id, plan.id); assert.equal(repeated.reviewFromVersion, null);
+  const doctor = f.run(["doctor", target, "--offline"], installed);
+  assert.match(doctor, /ORCHESTRATOR=low \(recovery=high\); DISCOVERY=high/);
 });
 
 test("single-user graph reuse versus real gap compares scope only, never semantic success", () => {
