@@ -10,7 +10,7 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.31.0`
+Current version: `1.32.0`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -126,13 +126,14 @@ Routine coordination is deliberately cheap. Current control facts live once in P
 
 ## Agent Profiles
 
-Vydykhai uses one current flagship model with reasoning routed by role:
+Vydykhai keeps strong reasoning where decisions need it and can use a cheaper proven model for focused work:
 
 - **Orchestrator:** maximum available reasoning, mapped to `Ultra` where that label exists.
 - **Discovery:** deep bounded reasoning for research, product/architecture decisions, and unresolved UX or visual direction, mapped to `XHigh` where available.
-- **Execution:** efficient bounded reasoning for a fully briefed task, mapped to `Low` where available.
+- **Execution:** efficient bounded reasoning for a fully briefed task, mapped to `Low`, on a model proven for that kind of work.
+- **Preparation (optional):** a low-cost model finds relevant code and earlier decisions, then hands a checked packet to a fresh executor. Existing sufficient context is reused; small tasks do not need another research pass.
 
-The labels are environment mappings, not vendor requirements. Bootstrap records the actual model, three mappings, check date, and fallback in Project State and rechecks them at setup, framework update, orchestrator rotation, model rejection/deprecation, and at least weekly while active. A human may override a profile for a named scope. Reasoning depth never replaces tests, smoke, acceptance, or human approval.
+The labels are environment mappings, not vendor requirements. Orchestration and unresolved Discovery retain flagship reasoning. Bootstrap records actual model/effort, capability evidence, date and fallback in Project State and rechecks them at setup, update, rotation, model rejection/deprecation and weekly while active. No automatic downgrade, memory rebuild or interruption of active work is required. A human may override a profile for a named scope. Reasoning depth never replaces tests, smoke, acceptance or human approval. Preparation can avoid repeated expensive searches; subscription savings depend on the complete accepted result and are not guaranteed by token prices.
 
 ## Human Interface
 

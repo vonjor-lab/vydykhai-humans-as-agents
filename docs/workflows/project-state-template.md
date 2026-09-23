@@ -22,7 +22,7 @@ Memory coverage: <graph/schema/watermark -> CURRENT/NEXT/CROSS_DOMAIN/PRIOR_MISS
 Project Memory Graph: <current canonical link> | Last memory delta: <memory event id / NO_CHANGE / checked; routine control events do not advance it>
 Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current / pending / window / PR>
 Framework context readback: <active orchestrator own cwd> | HEAD: <accepted project revision> | Doctor: <installed/source/schema/integrity> | Core reread: <PASS / gap> | Result: <PASS / ACTUAL_CONTEXT_COHERENCE>
-Agent routing: <latest flagship policy> | Resolved: <ORCHESTRATOR / DISCOVERY / EXECUTION mappings> | Checked: <date/source> | Fallback: <none/pending/reason>
+Agent routing: <capability-and-cost policy> | Resolved: <ORCHESTRATOR / DISCOVERY / EXECUTION / optional PREPARATION model-effort mappings> | Checked: <date/source/capability evidence> | Fallback: <none/pending/reason>
 Project activation: <PROJECT_READY | PROJECT_READY_WITH_LIMITS | NEEDS_DECISION | BLOCKED_BY_ACCESS> | Checked: <date/event>
 Shared Sync: Repo: <url> | Tracker: <url> | Readiness: <READY | SYNC_LIMITED with gaps>
 Coordination inputs: <meeting/chat/docs/manual route + access> | Intake: <direct or named owner> | Active alignment / latest delta: <link/event or none>

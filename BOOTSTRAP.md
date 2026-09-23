@@ -29,14 +29,14 @@ The bootstrap request authorizes creation of a setup branch, framework install/u
 
 ## Resolve Agent Routing
 
-Use the latest available flagship model and resolve three reasoning profiles from the current agent environment:
+Resolve capability-and-cost profiles from the current agent environment; do not equate price with task capability:
 
 1. `ORCHESTRATOR`: maximum available stable reasoning; map to `Ultra` when that label exists.
 2. `DISCOVERY`: deep bounded reasoning; map to `XHigh` when that label exists.
-3. `EXECUTION`: efficient bounded reasoning; map to `Low` when that label exists.
-4. Resolve by current model catalog or authoritative guidance, not version number alone. If discovery is unavailable, use the environment's recommended flagship and mark verification pending.
+3. `EXECUTION`: efficient bounded reasoning; map to `Low`. Use the lowest model proven for the task class, otherwise retain the accepted profile or explicit flagship fallback.
+4. `PREPARATION`: opt-in bounded retrieval at `Low`, using a proven low-cost model and `docs/workflows/context-preparation.md`. Resolve current availability, evidence and fallback; never silently downgrade orchestration or unresolved discovery from flagship.
 5. Use the closest supported profile when a preferred label is unavailable and record the fallback; never silently run a different profile.
-6. Record the policy, resolved model id, all three mappings, check date/source, and any fallback in Project State.
+6. Record policy, actual model/effort for each adopted profile, comparable evidence, check date/source and fallback in Project State. Missing preparation proof leaves the established route working.
 7. Re-resolve at framework update, new or rotated orchestrator, model rejection/deprecation, and active-project Health Review at least every seven days.
 8. Pass the selected role profile explicitly to every new context when tools support it. A resumed current task keeps its accepted profile unless a re-brief changes it.
 

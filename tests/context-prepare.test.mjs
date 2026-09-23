@@ -45,6 +45,38 @@ async function workspace(t, selectors = false) {
   return { root, json, put, cli, prepare, run, plan, confirm, acknowledge, ready };
 }
 
+test("navigation handoff pins contracts, filters role-local rules and permits Candidate work", async t => {
+  const w = await workspace(t), pkg = await w.json("package.json");
+  await w.put("navigation-contract.md", "Preserve accepted output.\nPreparation is read-only.\n");
+  pkg.module.contractFiles = ["navigation-contract.md"];
+  pkg.navigation = { taskId: pkg.task.id, worker: pkg.task.worker, preparedBy: "preparer", outcome: "Preserve output and fix duplicate comparison",
+    references: [{ id: "contract", path: "navigation-contract.md", startLine: 1, endLine: 1, quote: "Preserve accepted output.", purpose: "Retained behavior", appliesTo: "task" },
+      { id: "code", path: "candidate.mjs", startLine: 1, endLine: 1, quote: "export function buildBundle(input)", purpose: "Implementation boundary", appliesTo: "task" }],
+    constraints: [{ text: "Preserve accepted output.", appliesTo: "task", referenceIds: ["contract"] },
+      { text: "Preparation is read-only.", appliesTo: "preparation", referenceIds: ["contract"] }], gaps: [] };
+  await w.put("package.json", pkg);
+  assert.equal(w.plan().status, "PLAN_READY"); assert.equal(w.confirm().status, "PREPARED");
+  const delivery = w.prepare("read", "--worker", pkg.task.worker);
+  assert.equal(delivery.navigation.constraints.length, 1);
+  assert.match(delivery.navigationSha256, /^[0-9a-f]{64}$/);
+  await w.acknowledge();
+  await w.put("candidate.mjs", (await readFile(path.join(w.root, "candidate.mjs"), "utf8")).replace("const key = entry.id;", "const key = entry.id.toLowerCase();"));
+  assert.equal(w.run("resume").status, "ACTION_COMPLETED");
+  assert.equal(w.run("accept").status, "VERIFIED");
+  await w.put("navigation-contract.md", "Changed critical contract.\n");
+  assert.equal(w.run("preflight").code, "PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
+});
+
+test("navigation cannot replace source meaning or silently omit required module contracts", async t => {
+  const w = await workspace(t), pkg = await w.json("package.json");
+  pkg.module.contractFiles = ["contract.md"];
+  pkg.navigation = { taskId: pkg.task.id, worker: pkg.task.worker, preparedBy: "preparer", outcome: "Scoped correction",
+    references: [{ id: "code", path: "candidate.mjs", startLine: 1, endLine: 1, quote: "export function", purpose: "Code found", appliesTo: "task" }],
+    constraints: [], gaps: [] };
+  await w.put("package.json", pkg);
+  assert.equal(w.plan().code, "NAVIGATION_CONTRACT_UNREAD");
+});
+
 test("ordinary package reaches action and acceptance after the worker changes Candidate", async t => {
   const w = await workspace(t);
   assert.equal(w.plan().status, "PLAN_READY");

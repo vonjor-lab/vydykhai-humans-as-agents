@@ -35,9 +35,20 @@ if (manifest.defaultAgentProfile?.reasoningEffort !== "xhigh") {
 }
 if (manifest.defaultAgentProfile?.refreshDays !== 7) fail("Default agent profile refreshDays must be 7");
 if (manifest.agentRoutingPolicy?.policy !== "role-routed") fail("Agent routing policy must be role-routed");
-if (manifest.agentRoutingPolicy?.modelPolicy !== "latest-available-flagship") {
-  fail("Agent routing model policy must be latest-available-flagship");
+if (manifest.agentRoutingPolicy?.modelPolicy !== "latest-available-flagship" || manifest.agentRoutingPolicy?.selectionPolicy !== "capability-and-cost") {
+  fail("Agent routing must preserve legacy modelPolicy and declare capability-and-cost selectionPolicy");
 }
+for (const role of ["orchestrator", "discovery"]) {
+  if (manifest.agentRoutingPolicy?.profiles?.[role]?.modelPolicy !== "latest-available-flagship") fail(`${role} must retain flagship reasoning`);
+}
+for (const role of ["preparation", "execution"]) {
+  const profile = manifest.agentRoutingPolicy?.profiles?.[role];
+  if (profile?.modelPolicy !== "lowest-proven-capable" || profile?.fallback !== "latest-available-flagship") fail(`${role} requires capability proof and a fallback`);
+}
+if (manifest.agentRoutingPolicy?.profiles?.preparation?.reasoningPolicy !== "retrieval-bounded" ||
+    manifest.agentRoutingPolicy?.profiles?.preparation?.preferredEffortWhenAvailable !== "low" ||
+    manifest.agentRoutingPolicy?.profiles?.preparation?.adoption !== "opt-in") fail("Preparation must remain a bounded opt-in profile");
+if (!manifest.managedPaths.includes("scripts/context-navigation.mjs")) fail("Missing context navigation validator");
 if (manifest.agentRoutingPolicy?.profiles?.orchestrator?.reasoningPolicy !== "maximum-available") {
   fail("Orchestrator reasoning policy must be maximum-available");
 }
