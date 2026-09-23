@@ -16,14 +16,47 @@ gap. Reuse a sufficient current packet; do not repeat an exhaustive search.
 - The executor implements and verifies the approved increment. It reads current
   code at the declared boundary and reports a real information gap via `CONSULT`
   to the orchestrator; it does not assign work or models to preparation itself.
-- Post-task preparation may draft index links or documentation from an exact
-  accepted diff and evidence under a separate bounded owner request. The executor
-  checks technical accuracy; the orchestrator accepts shared semantic changes.
-  New rationale, contracts and graph decisions are not mechanical documentation.
+- Preparation may draft index links or documentation from an exact Candidate
+  and evidence under a bounded owner request. The executor incorporates and
+  verifies required Module Contract changes before accepting that same Candidate.
+  Post-task clerical work cannot defer required docs beyond acceptance. The
+  orchestrator alone integrates shared meaning; new rationale is not clerical work.
 
 User communication remains through the orchestrator: explain the useful result
 and next step, not internal routing. Preparation uses the existing focused-task
 lease, Return Sync and cleanup, never a permanent new manager or Guard loop.
+
+## Fit With Existing Work
+
+Mode names describe work, not automatic model assignments. Preparation locates
+known evidence; solution Discovery resolves what should be done with it.
+
+| Situation | Route and completion |
+| --- | --- |
+| Current sufficient context | Direct execution; no preparer or additional approval. |
+| Known evidence is scattered | Owner-scoped Preparation, checked packet, then its intended consumer. |
+| Meaning or solution is unresolved | Bounded deep Discovery; preparation may supply facts, not the decision. |
+| Experimental proof is needed | Lab keeps baseline, variable, conditions and cap; preparation finds prior evidence, never substitutes a fixture for real-flow proof. |
+| Integration or repair | Focused Execution preserves the actual accepted mechanism; unknown architecture returns to Discovery, not guessed adapters. |
+| Maintenance | Same routing by question; prove the original flow improved and return to it, not maintenance for its own sake. |
+| Documentation and memory | Executor verifies required docs in the Candidate; orchestrator accepts reusable memory candidates. |
+| Guard, update or rotation | Existing liveness/activation rules; no retrieval timer or forced model/worker restart. Carry pending consultations and human control forward. |
+
+Lab is isolation, not a model tier: unresolved solution choices use Discovery;
+execution of an agreed experiment uses its proven execution profile or explicit
+human model choice. Its proof does not silently authorize production transfer.
+
+Research starts with the known scope, authoritative sources, explicit gaps and a
+permitted report route; it does not need the complete implementation packet that
+it is supposed to discover. Missing inputs do not authorize dependent mutation.
+Do not recursively require preparation of preparation. Reuse a Discovery packet
+when sufficient for implementation; no automatic extra retrieval stage.
+An unresolved owner decision goes to that owner, not another search round.
+Preparation has its own bounded retrieval result/lease, not ownership of the
+implementation Candidate. While it runs, the affected executor waits on that
+named dependency; the preparer never waits on the same executor. Return consumption
+resumes the existing consumer under current authority, not a competing task.
+Respect direct human control: a supplement supplies facts, not a new direction.
 
 ## Initial Handoff and Later Gaps
 
@@ -33,9 +66,11 @@ lease, Return Sync and cleanup, never a permanent new manager or Guard loop.
    reviews coverage, source meaning, citations and audience before confirmation.
    Invalid packets use the existing bounded repair/fallback path, not repeated
    full searches or delivery as if complete. Reuse valid findings on fallback.
-2. Initial delivery goes to a fresh executor without the preparer's transcript.
+2. A new implementation starts in a fresh executor without the preparer's transcript.
    The executor reads/acknowledges and starts authorized work in the same turn.
    Reuse the same worker for later supplements; do not replay finished work.
+   Preparation for a manager/Discovery decision returns scoped evidence to that
+   existing owner instead; it does not create an implementation task prematurely.
 3. At a real gap, the executor reports the exact missing fact, affected operation
    and retained progress to the orchestrator. Continue independent safe work.
    The orchestrator distinguishes missing evidence, new solution design and

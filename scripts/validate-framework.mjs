@@ -1008,7 +1008,8 @@ if (!orchestratorWorkflow.includes("no context message, no-op trace, or model wa
 if (
   !dailyAlignmentWorkflow.includes("Task-local debugging") ||
   !dailyAlignmentWorkflow.includes("Leave unaffected tasks asleep") ||
-  !dailyAlignmentWorkflow.includes("Task contexts never read the raw transcript")
+  !dailyAlignmentWorkflow.includes("Implementation contexts do not read raw transcripts") ||
+  !dailyAlignmentWorkflow.includes("neither publishes shared guidance nor bypasses source access or participant authority")
 ) {
   fail("Daily Alignment may leak into task execution or wake unaffected work");
 }

@@ -91,10 +91,10 @@ oscillate models automatically. Preserve explicit human model decisions.
 
 The optional `navigation` object in `context.package.v1` contains `taskId`,
 `worker`, a distinct `preparedBy`, `outcome`, `references`, `constraints`, `gaps`,
-and owner-issued `assignment`; see [Context Routing](context-routing.md) for its initial/supplement contract and cost comparison. Each reference declares `id`, workspace-relative `path`, one-based inclusive
-`startLine`/`endLine`, exact `quote`, `purpose`, `appliesTo` (`task` or
-`preparation`). Each constraint has `text`, `appliesTo`, `referenceIds`.
-Each gap has `text` and boolean `critical`; critical gaps block preparation.
+and owner-issued `assignment`; see [Context Routing](context-routing.md). Each reference declares `id`, workspace-relative `path` copied from the actual file inventory,
+exact `quote`, `purpose`, `appliesTo` (`task` or `preparation`). By default omit line numbers: the builder resolves a unique literal quote and computes inclusive `startLine`/`endLine` and hashes; no model-authored Markdown links. Ambiguous/missing quotes require source selection, never fuzzy matching.
+Explicit `startLine`/`endLine` remain supported and strictly checked, never silently repaired. Each constraint has `text`, `appliesTo`, `referenceIds`.
+Each gap has `text` and boolean `critical`; critical gaps block implementation handoff, not an authorized scoped research task to resolve them.
 For this route the owner declares nonempty `module.contractFiles` from the module
 map/graph independently of the preparer's found-code list. Each must have a
 task-wide cited quote; an omitted contract blocks. Review the complete applicable
@@ -104,7 +104,7 @@ The builder checks bounds/quotes and computes file hashes. Owner review still
 decides semantic coverage, correct audience and unresolved contradictions;
 structural checks cannot detect a wrongly classified natural-language rule.
 
-Only task-wide references/constraints reach `navigation.json` and worker `read`.
+Only task-wide references/constraints and assignment identity reach `navigation.json` and worker `read`; the preparer's question stays in the owner plan.
 Preparation-only read-only restrictions do not grant or remove executor rights;
 actual authority remains the current task. Real task-wide read-only rules stay.
 Navigation inputs are pinned by the existing plan except declared mutable

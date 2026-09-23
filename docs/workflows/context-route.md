@@ -32,7 +32,7 @@ In the existing brief, distinguish restoration, an increment, and an experiment;
 
 ## Choose Preparation Depth
 
-At shaping, material re-brief or a Discovery return, the orchestrator chooses preparation; the person need not know the modes. Ordinary continuation reuses the current route and contract.
+At shaping, material re-brief or a Discovery return, the orchestrator chooses preparation; the person need not know the modes. Ordinary continuation reuses the current route and contract. Apply [Context Routing](context-routing.md#fit-with-existing-work): factual retrieval can use PREPARATION; unresolved meaning/design uses deep DISCOVERY. Scoped research starts with explicit gaps, not a recursively required complete implementation packet.
 - **Direct execution:** the relevant vertical and consumer routes, Module Contracts, accepted baseline, current code and verification are current and the solution is Low-ready.
 - **Bounded Discovery:** a route, source qualification, Module Contract, accepted artifact, or current implementation is missing, stale, contradictory, or unproven; the request restores prior behavior; or several modules/systems create material unreviewed consequences. Recover the necessary understanding once, then return it. Age, file count or task length alone never requires research.
 - **Discovery with a bounded lead:** several execution tasks share one accepted outcome and decisions must remain coherent as their results arrive. Name the concrete cross-task obligation that a one-time brief cannot cover. A fresh large change can qualify; an old small task need not. If this need is uncertain, let bounded Discovery establish it first.

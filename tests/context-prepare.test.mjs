@@ -80,6 +80,28 @@ test("navigation cannot replace source meaning or silently omit required module 
   assert.equal(w.plan().code, "NAVIGATION_CONTRACT_UNREAD");
 });
 
+test("quote-only handoff is portable across workspaces and excludes the preparer's question", async t => {
+  const first = await workspace(t), second = await workspace(t);
+  const deliveries = [];
+  for (const w of [first, second]) {
+    const pkg = await w.json("package.json");
+    await w.put("contract.md", "Heading\nKeep accepted output.\n");
+    pkg.module.contractFiles = ["contract.md"];
+    pkg.navigation = { taskId: pkg.task.id, worker: pkg.task.worker, preparedBy: "preparer", outcome: "Preserve output",
+      assignment: { owner: pkg.owner, requestId: "initial", question: "Read-only research: do not implement.", phase: "initial", previous: null },
+      references: [{ id: "contract", path: "contract.md", quote: "Keep accepted output.", purpose: "Invariant", appliesTo: "task" }],
+      constraints: [], gaps: [] };
+    await w.put("package.json", pkg); await w.ready();
+    const nav = w.prepare("read", "--worker", pkg.task.worker).navigation;
+    assert.equal(nav.references[0].startLine, 2);
+    assert.equal(nav.references[0].endLine, 2);
+    assert.doesNotMatch(JSON.stringify(nav), /Read-only research|do not implement/);
+    deliveries.push(nav);
+  }
+  assert.notEqual(first.root, second.root);
+  assert.deepEqual(deliveries[0], deliveries[1], "no preparer-local absolute path or generated Markdown link");
+});
+
 test("nonportable preparer paths block before delivery or action", async t => {
   const w = await workspace(t), pkg = await w.json("package.json");
   for (const sourcePath of [path.join(w.root, "candidate.mjs"), "../candidate.mjs"]) {
@@ -280,7 +302,14 @@ writeFileSync("prepared/plan.json.superseded.json", "{}");
 });
 
 test("prepared experiment, human detour, retained regression and lost wake close through the existing cycle", async t => {
-  const w = await workspace(t, true); await w.ready();
+  const w = await workspace(t, true), initial = await w.json("package.json");
+  await w.put("contract.md", "Preserve buildBundle and the accepted JSON consumer.\n");
+  initial.module.contractFiles = ["contract.md"];
+  initial.navigation = { taskId: initial.task.id, worker: initial.task.worker, preparedBy: "preparer", outcome: "Scoped bundle experiment",
+    assignment: { owner: initial.owner, requestId: "lab-source-selection", question: "Retrieve only; do not implement.", phase: "initial", previous: null },
+    references: [{ id: "contract", path: "contract.md", quote: "Preserve buildBundle and the accepted JSON consumer.", purpose: "Protected baseline", appliesTo: "task" }],
+    constraints: [], gaps: [] };
+  await w.put("package.json", initial); await w.ready();
   const original = await readFile(path.join(w.root, "candidate.mjs"), "utf8");
   const intended = original.replace("const key = entry.id;", "const key = entry.id.toLowerCase();");
   await w.put("candidate.mjs", intended.replace("entry.label.trim()", "entry.label"));
