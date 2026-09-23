@@ -69,6 +69,13 @@ if (manifest.agentRoutingPolicy?.profiles?.execution?.preferredEffortWhenAvailab
   fail("Execution preferred effort mapping must be low");
 }
 if (manifest.agentRoutingPolicy?.refreshDays !== 7) fail("Agent routing refreshDays must be 7");
+const effort = manifest.agentRoutingPolicy?.effortPolicy;
+if (effort?.orchestrator?.default !== "low" || effort?.orchestrator?.recovery !== "high" ||
+    effort?.orchestrator?.escalateWhen !== "control-failure-after-one-targeted-correction" ||
+    effort?.orchestrator?.restoreWhen !== "verified-recovery-at-safe-boundary" ||
+    effort?.orchestrator?.onUnresolved !== "existing-blocker-or-confirmed-rotation" || effort?.discovery?.default !== "high") {
+  fail("Effort policy must declare Low orchestration, bounded High recovery and High Discovery");
+}
 if (manifest.orchestratorAdvisoryPolicy?.policy !== "control-only-advisory") {
   fail("Orchestrator advisory policy must be control-only-advisory");
 }

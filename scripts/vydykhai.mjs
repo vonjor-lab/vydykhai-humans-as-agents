@@ -170,6 +170,16 @@ async function loadManifest(root) {
     throw new Error(`Invalid default agent profile in ${file}`);
   }
   const routing = manifest.agentRoutingPolicy;
+  // Older installers require the legacy profile fields; effortPolicy overrides them.
+  if (routing?.effortPolicy !== undefined) {
+    const { orchestrator: control, discovery } = routing.effortPolicy || {};
+    if (control?.default !== "low" || control?.recovery !== "high" ||
+        control?.escalateWhen !== "control-failure-after-one-targeted-correction" ||
+        control?.restoreWhen !== "verified-recovery-at-safe-boundary" ||
+        control?.onUnresolved !== "existing-blocker-or-confirmed-rotation" || discovery?.default !== "high") {
+      throw new Error(`Invalid bounded effort policy in ${file}`);
+    }
+  }
   if (
     routing?.policy !== "role-routed" ||
     routing?.modelPolicy !== "latest-available-flagship" ||
@@ -621,8 +631,8 @@ function printDoctor(result, asJson) {
   const routing = result.agentRoutingPolicy;
   console.log(`Agent routing: ${routing.selectionPolicy || routing.modelPolicy} / ${routing.policy}`);
   console.log(
-    `Profiles: ORCHESTRATOR=${routing.profiles.orchestrator.reasoningPolicy}; ` +
-      `DISCOVERY=${routing.profiles.discovery.reasoningPolicy}; ` +
+    `Profiles: ORCHESTRATOR=${routing.effortPolicy ? `${routing.effortPolicy.orchestrator.default} (recovery=${routing.effortPolicy.orchestrator.recovery})` : routing.profiles.orchestrator.reasoningPolicy}; ` +
+      `DISCOVERY=${routing.effortPolicy?.discovery.default || routing.profiles.discovery.reasoningPolicy}; ` +
       `EXECUTION=${routing.profiles.execution.reasoningPolicy}`,
   );
   console.log(routing.profiles.preparation ?

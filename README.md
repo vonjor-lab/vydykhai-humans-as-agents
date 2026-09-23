@@ -59,7 +59,7 @@ When live task observation is unavailable, an agreed checkpoint can keep unfinis
 - Start with a rough goal. Your orchestrator helps shape it into a shared compass, brief, nearest DOD, and visible plan.
 - Each participant keeps one personal project orchestrator. The orchestrators coordinate what, why, when, and who through shared Git-backed state; focused task, discovery, lab, and maintenance contexts own the actual work.
 - Every focused context receives only the applicable goal, boundary, entity route, module documentation, memory, verification, human checkpoint, and return route. It reads `graph route -> Module Contract -> current code`; exact multi-part obligations use a checked envelope so none can disappear during summarization. The task continues autonomously inside that contract and consults the orchestrator only at a real boundary.
-- Reasoning follows the role: the orchestrator uses the strongest available profile, unresolved solution work uses deep bounded discovery, and a ready execution task uses an efficient profile.
+- Reasoning follows the work: flagship/Low for routine orchestration, temporary High for recovery, flagship/High for unresolved solution work, and a proven efficient model for ready execution.
 - Accepted corrections and lessons update shared project memory and the affected plan. A participant's durable learning can therefore guide the other orchestrators instead of remaining inside one chat.
 - Results are written to durable shared state before the orchestrator is notified. After productive handoff or a real wait, the orchestrator remains available instead of polling; a service interruption does not discard its next working step. Newer results and unrelated memory updates do not hide pending work; lost cross-context messages do not make a person recover or resend it.
 - Where an independent trigger is available, Project Guard checks meaningful events and a schedule without using a model while healthy. Routine checks read changes rather than the entire history. Unchanged checks stay silent; a stale local lock is removed only after safe reconciliation, and an unresponsive service task is transferred once instead of being woken repeatedly. A real mismatch starts a bounded repair or confirmed rotation without stopping unrelated safe work, and any question already awaiting the person returns to the foreground afterward.
@@ -128,8 +128,8 @@ Routine coordination is deliberately cheap. Current control facts live once in P
 
 Vydykhai keeps strong reasoning where decisions need it and can use a cheaper proven model for focused work:
 
-- **Orchestrator:** maximum available reasoning, mapped to `Ultra` where that label exists.
-- **Discovery:** deep bounded reasoning for research, product/architecture decisions, and unresolved UX or visual direction, mapped to `XHigh` where available.
+- **Orchestrator:** flagship/Low by default. If a control failure persists after one targeted correction, temporarily use High; return to Low after verified recovery.
+- **Discovery:** flagship/High for research, product/architecture decisions, and unresolved UX or visual direction.
 - **Execution:** efficient bounded reasoning for a fully briefed task, mapped to `Low`, on a model proven for that kind of work.
 - **Preparation (optional):** a low-cost model finds relevant code and earlier decisions under the orchestrator's direction. A fresh executor receives a checked packet; later information gaps return through the orchestrator without restarting the work. Existing sufficient context is reused; small tasks do not need another research pass.
 

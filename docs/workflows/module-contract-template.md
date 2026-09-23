@@ -21,6 +21,7 @@ Owner / decision gate: <owner or none>
 - Actor outcome: <what becomes possible for whom>
 - Responsibility: <what this module owns>
 - Accepted public boundary: <entry/input/output and revision; distinguish internal passes and independently accepted capability from unfinished parent>
+- Applicability: <supported input families and conditions, excluded cases, defined refusal behavior; an example is not a reusable capability>
 - Excludes: <nearby responsibilities it does not own>
 
 ## Inputs And Authority
@@ -51,6 +52,8 @@ Link the current `REQUIREMENT`, `DECISION`, `INVARIANT`, and relevant `LESSON` n
 - Known limits: <explicitly unproven behavior>
 - Retained examples: <source assertion -> frozen input/expected observation -> applicability; link reference-runner metadata when used>
 - New result: <task-promised examples plus retained examples on the exact Candidate; expectations change only through an explicit source decision>
+- Reusability evidence: <independently chosen held-out/edge inputs and clean-start repetitions on one fixed Candidate through the promised entry; disclose preprocessing, manual steps, saved intermediates, failures and untested boundaries>
+- Coverage inventory: <all required entities/stages derived from authoritative inputs, including failed/unsupported/unexamined members; not just the implementation's successful subset>
 
 ## Open Commitments
 

@@ -1,6 +1,6 @@
 # Orchestrator Advisory Workflow
 
-Goal: let a maximum-profile orchestrator use internal advisory agents for stronger control decisions without turning them into hidden project workers.
+Goal: let a flagship orchestrator on its resolved control profile use internal advisory agents for stronger control decisions without turning them into hidden project workers.
 
 ## 1. Define The Control Question
 

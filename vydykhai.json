@@ -26,6 +26,16 @@
     "policy": "role-routed",
     "modelPolicy": "latest-available-flagship",
     "selectionPolicy": "capability-and-cost",
+    "effortPolicy": {
+      "orchestrator": {
+        "default": "low",
+        "recovery": "high",
+        "escalateWhen": "control-failure-after-one-targeted-correction",
+        "restoreWhen": "verified-recovery-at-safe-boundary",
+        "onUnresolved": "existing-blocker-or-confirmed-rotation"
+      },
+      "discovery": { "default": "high" }
+    },
     "refreshDays": 7,
     "profiles": {
       "orchestrator": {
@@ -555,7 +565,7 @@
     {
       "id": "context-routing",
       "since": "1.32.0",
-      "action": "Resolve available models by role and proven task capability, not price alone. Cheap preparation is opt-in: reuse sufficient context, otherwise the orchestrator assigns and reviews a source-backed packet for a fresh executor. Later executor CONSULT goes through that owner to preparation and back to the same worker with retained progress. Read back actual model/effort and initial/supplement/retained-tests/Return behavior before claiming this route adopted. Compare whole-chain costs with unknown subscription usage explicit. Preserve ongoing work and human model choices; missing preparation proof does not block the established route.",
+      "action": "Resolve available models by role and proven task capability, not price alone. Use effortPolicy over legacy profiles: flagship/Low orchestration with bounded temporary High recovery after one failed targeted control correction, then Low after verified recovery; flagship/High Discovery. Read back actual effort and host switch/fallback capability at a safe boundary, never manufacture a live failure to prove escalation. Cheap preparation is opt-in: reuse sufficient context, otherwise the orchestrator assigns and reviews a source-backed packet for a fresh executor. Later executor CONSULT goes through that owner to preparation and back to the same worker with retained progress. Read back initial/supplement/retained-tests/Return behavior before claiming this route adopted. Use dated credit-rate coefficients as a whole-chain planning proxy with unknown subscription usage explicit. Preserve ongoing work and human model choices; missing preparation proof does not block the established route. Preserve donor applicability and proof limits; sample success cannot certify reusable readiness.",
       "reuseBy": ["targetBundle", "worker", "routingProfile", "sourceRange", "verificationBoundary"],
       "workflow": "docs/workflows/context-preparation.md"
     },

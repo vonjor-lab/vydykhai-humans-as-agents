@@ -19,6 +19,30 @@ function runCli(args, cwd = root) {
 }
 const run = runCli;
 
+test("invalid bounded effort settings are rejected, not silently routed as legacy", async t => {
+  const target = await mkdtemp(path.join(tmpdir(), "vydykhai-effort-"));
+  t.after(() => rm(target, { recursive: true, force: true }));
+  const installed = run(["install", target]);
+  assert.equal(installed.status, 0, installed.stderr);
+  const file = path.join(target, "vydykhai.json");
+  const original = JSON.parse(await readFile(file, "utf8"));
+  for (const mutate of [
+    p => { p.orchestrator.default = "ultra"; },
+    p => { p.orchestrator.recovery = "low"; },
+    p => { delete p.orchestrator.restoreWhen; },
+    p => { p.orchestrator.escalateWhen = "every-failed-test"; },
+    p => { p.orchestrator.onUnresolved = "retry-forever"; },
+    p => { p.discovery.default = "xhigh"; },
+  ]) {
+    const candidate = structuredClone(original);
+    mutate(candidate.agentRoutingPolicy.effortPolicy);
+    await writeFile(file, JSON.stringify(candidate));
+    const result = run(["doctor", target, "--offline"]);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Invalid bounded effort policy/);
+  }
+});
+
 test("install, doctor, conflict protection, and forced repair", async () => {
   const target = await mkdtemp(path.join(tmpdir(), "vydykhai-target-"));
   try {
@@ -90,8 +114,8 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.equal(linkedDoctor.status, 0, linkedDoctor.stderr);
     assert.match(linkedDoctor.stdout, /Integrity: OK/);
     assert.match(doctor.stdout, /Agent routing: capability-and-cost \/ role-routed/);
-    assert.match(doctor.stdout, /ORCHESTRATOR=maximum-available/);
-    assert.match(doctor.stdout, /DISCOVERY=deep-bounded/);
+    assert.match(doctor.stdout, /ORCHESTRATOR=low \(recovery=high\)/);
+    assert.match(doctor.stdout, /DISCOVERY=high/);
     assert.match(doctor.stdout, /EXECUTION=efficient-bounded/);
     assert.match(doctor.stdout, /Preparation: retrieval-bounded; opt-in; live adoption NOT_EVALUATED/);
     assert.match(doctor.stdout, /Orchestrator advisory: control-only-advisory; guard=unowned-project-work/);
@@ -119,6 +143,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const legacyManifest = JSON.parse(await readFile(legacyManifestPath, "utf8"));
     legacyManifest.agentRoutingPolicy.modelPolicy = "latest-available-flagship";
     delete legacyManifest.agentRoutingPolicy.selectionPolicy;
+    delete legacyManifest.agentRoutingPolicy.effortPolicy;
     delete legacyManifest.agentRoutingPolicy.profiles.preparation;
     for (const profile of Object.values(legacyManifest.agentRoutingPolicy.profiles)) {
       delete profile.modelPolicy; delete profile.fallback;
@@ -156,6 +181,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     const legacyDoctor = run(["doctor", target, "--offline"]);
     assert.match(legacyDoctor.stdout, /Production continuation: not declared by installed version/);
     assert.equal(legacyDoctor.status, 0, legacyDoctor.stderr);
+    assert.match(legacyDoctor.stdout, /ORCHESTRATOR=maximum-available; DISCOVERY=deep-bounded/);
     assert.match(legacyDoctor.stdout, /Vydykhai 1\.18\.0/);
     assert.match(legacyDoctor.stdout, /Memory: project-memory-graph v3; task brief <= 7 executable nodes/);
     assert.match(legacyDoctor.stdout, /Orchestrator advisory: not declared by installed version/);
@@ -197,6 +223,13 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.equal(manifest.agentRoutingPolicy.policy, "role-routed");
   assert.equal(manifest.agentRoutingPolicy.modelPolicy, "latest-available-flagship");
   assert.equal(manifest.agentRoutingPolicy.selectionPolicy, "capability-and-cost");
+  assert.deepEqual(manifest.agentRoutingPolicy.effortPolicy, {
+    orchestrator: { default: "low", recovery: "high",
+      escalateWhen: "control-failure-after-one-targeted-correction",
+      restoreWhen: "verified-recovery-at-safe-boundary",
+      onUnresolved: "existing-blocker-or-confirmed-rotation" },
+    discovery: { default: "high" },
+  });
   assert.equal(manifest.agentRoutingPolicy.profiles.preparation.adoption, "opt-in");
   assert.equal(manifest.agentRoutingPolicy.profiles.execution.modelPolicy, "lowest-proven-capable");
   assert.equal(manifest.agentRoutingPolicy.profiles.orchestrator.reasoningPolicy, "maximum-available");
