@@ -90,8 +90,8 @@ distinguishes missing evidence, environment failure and reasoning failure; do no
 oscillate models automatically. Preserve explicit human model decisions.
 
 The optional `navigation` object in `context.package.v1` contains `taskId`,
-`worker`, a distinct `preparedBy`, `outcome`, `references`, `constraints`, `gaps`.
-Each reference declares `id`, workspace-relative `path`, one-based inclusive
+`worker`, a distinct `preparedBy`, `outcome`, `references`, `constraints`, `gaps`,
+and owner-issued `assignment`; see [Context Routing](context-routing.md) for its initial/supplement contract and cost comparison. Each reference declares `id`, workspace-relative `path`, one-based inclusive
 `startLine`/`endLine`, exact `quote`, `purpose`, `appliesTo` (`task` or
 `preparation`). Each constraint has `text`, `appliesTo`, `referenceIds`.
 Each gap has `text` and boolean `critical`; critical gaps block preparation.
@@ -114,12 +114,12 @@ baseline, not a ban on the authorized edit. After edits use current-code
 The complete original semantic classifications remain mandatory; navigation is
 not a replacement for the Memory Brief, source coverage or owner confirmation.
 
-At approved handoff, launch a fresh executor with task and checked packet, not
+At the initial approved handoff, launch a fresh executor with task and checked packet, not
 the preparer's history. Switching models in the same conversation does not
 remove that history. Verify actual host read/write readiness on the normal tool
 path, then worker read/ack and first authorized action; no ACK-only pause.
 An unavailable fresh-context capability is an explicit fallback, not a false
-freshness claim. Match the final receipt to the current task/expected artifact
+freshness claim. Later gaps go through the orchestrator to preparation and back to the same worker with retained progress. Match the final receipt to the current task/expected artifact
 before routing its next action; an old successful report cannot close new work.
 
 Record native per-role input/cached/output, elapsed time, expanded reads, review,

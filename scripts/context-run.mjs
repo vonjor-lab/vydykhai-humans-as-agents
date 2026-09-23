@@ -164,6 +164,17 @@ export async function runContextTransition(request, services = {}) {
       requireThat(keys(task.packageApproval, ["plan", "approval"]) && text(task.packageApproval.plan) && text(task.packageApproval.approval), "PACKAGE_APPROVAL_INVALID");
       const planBytes = await bytes(task.packageApproval.plan), plan = parse(planBytes);
       schema(plan, "context.preparation-plan.v1", ["owner", "workspace", "semanticPackage", "inputFiles", "artifacts"]);
+      try {
+        await bytes(`${task.packageApproval.plan}.superseded.json`);
+        throw new ContextError("PACKAGE_SUPERSEDED");
+      } catch (e) { if (e.code !== "ENOENT") throw e; }
+      const previous = plan.semanticPackage?.navigation?.assignment?.previous;
+      if (previous && ["preflight", "resume", "accept"].includes(request.operation)) {
+        requireThat(ref(previous.plan), "PREPARATION_PARENT_INVALID");
+        const marker = await json(`${previous.plan.path}.superseded.json`);
+        requireThat(marker.schema === "context.supersession.v1" && ref(marker.successorPlan) &&
+          marker.successorPlan.path === task.packageApproval.plan && marker.successorPlan.sha256 === sha256(planBytes), "PREPARATION_PARENT_SUPERSEDED");
+      }
       const approval = await json(task.packageApproval.approval);
       schema(approval, "context.package-approval.v1", ["owner", "decision", "planSha256"]);
       requireThat(id(plan.owner) && plan.workspace === root && approval.owner === plan.owner && approval.decision === "approved" &&

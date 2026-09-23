@@ -5,7 +5,8 @@ import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { canonicalJson, sha256, checkPreparedContext } from "./memory-brief.mjs";
 import { parseContextJson, runContextTransition, artifactHash } from "./context-run.mjs";
-import { prepareNavigation } from "./context-navigation.mjs";
+import { prepareNavigation, checkPreparationAssignment } from "./context-navigation.mjs";
+import { estimateContextRoutes } from "./context-cost.mjs";
 
 const hash = v => sha256(canonicalJson(v));
 const encoded = v => canonicalJson(v) + "\n";
@@ -51,6 +52,16 @@ async function build(root, input, output) {
   const artifacts = new Map(), at = name => `${output}/${name}`;
   const add = (name, value) => { const p = at(name); artifacts.set(p, value); return reference(p, value); };
   const mutable = new Set([...pkg.task.candidateFiles, ...pkg.module.implementationFiles]);
+  if (pkg.navigation) {
+    await checkPreparationAssignment(pkg.navigation.assignment, pkg.owner, pkg.task, source);
+    const previous = pkg.navigation.assignment.previous;
+    if (previous) {
+      try {
+        const marker = await read(root, `${previous.plan.path}.superseded.json`);
+        need(marker.successorPlan?.path === `${output}/plan.json`, "PREPARATION_PARENT_SUPERSEDED");
+      } catch (e) { if (e.code !== "ENOENT") throw e; }
+    }
+  }
   const navigation = pkg.navigation === undefined ? null : await prepareNavigation(pkg.navigation, pkg.task,
     name => mutable.has(name) ? file(root, name) : source(name), pkg.module.contractFiles);
   if (navigation) add("navigation.json", navigation);
@@ -138,11 +149,12 @@ export async function prepareContext(args, services = {}) {
   let unlock;
   try {
     const [mode, ...rest] = args, options = {};
-    need(["plan", "confirm", "read", "ack", "bind"].includes(mode) && rest.length % 2 === 0, "PREPARATION_ARGUMENTS_INVALID");
+    need(["plan", "confirm", "read", "ack", "bind", "estimate"].includes(mode) && rest.length % 2 === 0, "PREPARATION_ARGUMENTS_INVALID");
     for (let i = 0; i < rest.length; i += 2) { need(/^--(input|output|owner|decision|worker|evidence|event)$/.test(rest[i]) && !Object.hasOwn(options, rest[i]), "PREPARATION_ARGUMENTS_INVALID"); options[rest[i]] = rest[i + 1]; }
-    const allowed = { plan: ["--input", "--output"], confirm: ["--output", "--owner", "--decision"], read: ["--output", "--worker"], ack: ["--output", "--worker", "--evidence"], bind: ["--output", "--owner", "--event"] };
+    const allowed = { plan: ["--input", "--output"], confirm: ["--output", "--owner", "--decision"], read: ["--output", "--worker"], ack: ["--output", "--worker", "--evidence"], bind: ["--output", "--owner", "--event"], estimate: ["--input"] };
     need(keys(options, allowed[mode]), "PREPARATION_ARGUMENTS_INVALID");
     const root = await realpath(process.cwd()), output = options["--output"];
+    if (mode === "estimate") return estimateContextRoutes(await read(root, options["--input"]));
     need(typeof output === "string" && /^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/.test(output) && !output.split("/").some(x => x === "." || x === ".."), "PACKAGE_OUTPUT_INVALID");
     const dir = path.resolve(root, output);
     need(await realpath(path.dirname(dir)) === path.dirname(dir), "PACKAGE_PATH_INVALID");
@@ -184,6 +196,16 @@ export async function prepareContext(args, services = {}) {
       await put("capsule.json", prepared.capsule); await put("source-receipt.json", prepared.sourceReceipt);
       const request = { ...built.request, operation: "preflight", capsule: reference(`${output}/capsule.json`, prepared.capsule) };
       await put("awaiting-worker.json", request);
+      const previous = built.navigation?.assignment.previous;
+      if (previous) {
+        const name = `${previous.plan.path}.superseded.json`;
+        const marker = { schema: "context.supersession.v1", successorPlan: reference(`${output}/plan.json`, plan) };
+        try { await writeFile(path.resolve(root, name), encoded(marker), { flag: "wx", mode: 0o600 }); }
+        catch (e) {
+          if (e.code !== "EEXIST") throw e;
+          need(hash(await read(root, name)) === hash(marker), "PREPARATION_PARENT_SUPERSEDED");
+        }
+      }
       return { status: "PREPARED", output, worker: built.task.owner, readback: "REQUIRED", sourceReceipt: prepared.sourceReceipt, stats: prepared.stats };
     }
     const pending = await read(root, `${output}/awaiting-worker.json`);

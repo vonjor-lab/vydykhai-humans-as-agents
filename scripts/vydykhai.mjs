@@ -59,6 +59,7 @@ Usage:
   node scripts/vydykhai.mjs context-run --input <context-request.json>
   node scripts/vydykhai.mjs adoption-plan [target] [--worker <worker-repo>] --json
   node scripts/vydykhai.mjs context-prepare <plan|confirm|read|ack|bind> --output <task-local-dir> ...
+  node scripts/vydykhai.mjs context-prepare estimate --input <cost-estimate.json>
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
 `;
 }

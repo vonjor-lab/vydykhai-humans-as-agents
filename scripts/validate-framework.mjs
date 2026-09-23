@@ -49,6 +49,7 @@ if (manifest.agentRoutingPolicy?.profiles?.preparation?.reasoningPolicy !== "ret
     manifest.agentRoutingPolicy?.profiles?.preparation?.preferredEffortWhenAvailable !== "low" ||
     manifest.agentRoutingPolicy?.profiles?.preparation?.adoption !== "opt-in") fail("Preparation must remain a bounded opt-in profile");
 if (!manifest.managedPaths.includes("scripts/context-navigation.mjs")) fail("Missing context navigation validator");
+if (!manifest.managedPaths.includes("scripts/context-cost.mjs")) fail("Missing owner-side context cost estimator");
 if (manifest.agentRoutingPolicy?.profiles?.orchestrator?.reasoningPolicy !== "maximum-available") {
   fail("Orchestrator reasoning policy must be maximum-available");
 }

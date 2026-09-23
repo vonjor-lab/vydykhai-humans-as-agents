@@ -131,7 +131,7 @@ Vydykhai keeps strong reasoning where decisions need it and can use a cheaper pr
 - **Orchestrator:** maximum available reasoning, mapped to `Ultra` where that label exists.
 - **Discovery:** deep bounded reasoning for research, product/architecture decisions, and unresolved UX or visual direction, mapped to `XHigh` where available.
 - **Execution:** efficient bounded reasoning for a fully briefed task, mapped to `Low`, on a model proven for that kind of work.
-- **Preparation (optional):** a low-cost model finds relevant code and earlier decisions, then hands a checked packet to a fresh executor. Existing sufficient context is reused; small tasks do not need another research pass.
+- **Preparation (optional):** a low-cost model finds relevant code and earlier decisions under the orchestrator's direction. A fresh executor receives a checked packet; later information gaps return through the orchestrator without restarting the work. Existing sufficient context is reused; small tasks do not need another research pass.
 
 The labels are environment mappings, not vendor requirements. Orchestration and unresolved Discovery retain flagship reasoning. Bootstrap records actual model/effort, capability evidence, date and fallback in Project State and rechecks them at setup, update, rotation, model rejection/deprecation and weekly while active. No automatic downgrade, memory rebuild or interruption of active work is required. A human may override a profile for a named scope. Reasoning depth never replaces tests, smoke, acceptance or human approval. Preparation can avoid repeated expensive searches; subscription savings depend on the complete accepted result and are not guaranteed by token prices.
 
