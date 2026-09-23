@@ -412,6 +412,10 @@ if (
   manifest.memoryPolicy?.entityDocumentationPolicy?.template !== "docs/workflows/module-contract-template.md" ||
   JSON.stringify(manifest.memoryPolicy?.entityDocumentationPolicy?.anchorReferenceFields) !== JSON.stringify(["contract", "implementation"]) ||
   JSON.stringify(manifest.memoryPolicy?.entityDocumentationPolicy?.taskReadOrder) !== JSON.stringify(["memory-route", "module-contracts", "current-code"]) ||
+  JSON.stringify(manifest.memoryPolicy?.entityDocumentationPolicy?.workModes) !== JSON.stringify(["consume", "change", "create"]) ||
+  JSON.stringify(manifest.memoryPolicy?.entityDocumentationPolicy?.consumerReadOrder) !== JSON.stringify(["memory-route", "public-contracts", "released-artifacts", "consumer-code-if-needed"]) ||
+  manifest.memoryPolicy?.entityDocumentationPolicy?.boundaryChangeGate !== "explicit-human-agreement" ||
+  manifest.memoryPolicy?.entityDocumentationPolicy?.releaseAcceptance !== "independent-consumer-without-producer-source" ||
   manifest.memoryPolicy?.entityDocumentationPolicy?.updateOwner !== "owning-task-same-candidate" ||
   manifest.memoryPolicy?.entityDocumentationPolicy?.orchestratorAction !== "verify-and-integrate-shared-memory-only" ||
   manifest.memoryPolicy?.entityDocumentationPolicy?.staleAction !== "memory-coverage-gap-or-bounded-discovery"
@@ -777,7 +781,12 @@ if (
   !moduleContractTemplate.includes("Accepted Decisions And Lessons") ||
   !moduleContractTemplate.includes("Open Commitments") ||
   !moduleContractTemplate.includes("Documentation impact: NONE") ||
-  !moduleContractTemplate.includes("graph route -> Module Contract -> current code") ||
+  !moduleContractTemplate.includes("## Consumer Contract") ||
+  !moduleContractTemplate.includes("## Maintainer Design") ||
+  !moduleContractTemplate.includes("**Consume:**") ||
+  !moduleContractTemplate.includes("**Change:**") ||
+  !moduleContractTemplate.includes("**Create:**") ||
+  !moduleContractTemplate.includes("independent consumer connection without producer source") ||
   !moduleContractTemplate.includes("same Candidate") ||
   !moduleContractTemplate.includes("never edits product code or module documentation itself") ||
   !projectMemoryGraphTemplate.includes("atomically rebuilds only the shared graph") ||

@@ -428,6 +428,10 @@
       "template": "docs/workflows/module-contract-template.md",
       "anchorReferenceFields": ["contract", "implementation"],
       "taskReadOrder": ["memory-route", "module-contracts", "current-code"],
+      "workModes": ["consume", "change", "create"],
+      "consumerReadOrder": ["memory-route", "public-contracts", "released-artifacts", "consumer-code-if-needed"],
+      "boundaryChangeGate": "explicit-human-agreement",
+      "releaseAcceptance": "independent-consumer-without-producer-source",
       "updateOwner": "owning-task-same-candidate",
       "orchestratorAction": "verify-and-integrate-shared-memory-only",
       "updateOn": [
@@ -562,6 +566,13 @@
     ".agents/skills/accept-work"
   ],
   "adoptionRequirements": [
+    {
+      "id": "module-boundaries",
+      "since": "1.32.0",
+      "action": "At the next safe boundary, map unfinished relevant work to existing modules and consume/change/create intent. Preserve accepted artifacts, direct human control and pauses. Propose public boundaries for unsealed capabilities and obtain the human agreement before changing them; an existing explicit development request is sufficient within its scope. Distinguish experimental success from packaged readiness. Rebrief affected Lab and integration tasks toward a versioned artifact, declared inputs/outputs/dependencies/failures and an independent consumer connection without producer source or internal edits. Reuse passing scoped evidence; missing packaging proof stays a named product obligation, not a framework installation failure or permission to repeat repairs. Update affected module-map/contract/graph routes through their existing owners. Prove one applicable consumer handoff using public documentation and fixed release identity, and one change request routed to its owner without changing that release. If no such task is ready, record due-on-resume instead of creating artificial work. No mass refactor, memory rebuild, new Guard or automatic product resume. Report kit activation separately from module readiness and retain the next human decision.",
+      "reuseBy": ["targetBundle", "moduleContract", "moduleRelease", "consumerBoundary", "taskScope"],
+      "workflow": "docs/workflows/module-contract-template.md"
+    },
     {
       "id": "context-routing",
       "since": "1.32.0",

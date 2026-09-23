@@ -11,7 +11,7 @@ gap. Reuse a sufficient current packet; do not repeat an exhaustive search.
   It receives a concise evidence/gap/decision summary, not search transcripts.
   It preserves the accepted applicability and proof limits of donor modules in briefs and graph integration; a passed example is not permission to claim a reusable chain.
 - The preparer finds and combines source-backed facts through map/index -> graph
-  and contracts -> relevant code. It labels unread, unavailable and contradictory
+  and public contracts -> released artifacts for consumption; maintainer design/code only for authorized development or an evidenced diagnostic question. It labels unread, unavailable and contradictory
   sources separately. It does not choose product direction, design a new solution,
   broaden authority, or declare history complete from a filename search.
 - The executor implements and verifies the approved increment. It reads current
@@ -38,7 +38,7 @@ known evidence; solution Discovery resolves what should be done with it.
 | Known evidence is scattered | Owner-scoped Preparation, checked packet, then its intended consumer. |
 | Meaning or solution is unresolved | Bounded deep Discovery; preparation may supply facts, not the decision. |
 | Experimental proof is needed | Lab keeps baseline, variable, conditions and cap; preparation finds prior evidence, never substitutes a fixture for real-flow proof. |
-| Integration or repair | Focused Execution preserves the actual accepted mechanism; unknown architecture returns to Discovery, not guessed adapters. |
+| Integration or repair | Map consume/change/create under the Module Contract: consume a fixed release through its public interface without producer-source reading; internal repair requires explicit change scope. Unknown design returns to Discovery, not guessed adapters. |
 | Maintenance | Same routing by question; prove the original flow improved and return to it, not maintenance for its own sake. |
 | Documentation and memory | Executor verifies required docs in the Candidate; orchestrator accepts reusable memory candidates. |
 | Guard, update or rotation | Existing liveness/activation rules; no retrieval timer or forced model/worker restart. Carry pending consultations and human control forward. |

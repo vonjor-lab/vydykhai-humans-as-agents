@@ -407,6 +407,10 @@ test("current manifest preserves updater compatibility fields", async () => {
     template: "docs/workflows/module-contract-template.md",
     anchorReferenceFields: ["contract", "implementation"],
     taskReadOrder: ["memory-route", "module-contracts", "current-code"],
+    workModes: ["consume", "change", "create"],
+    consumerReadOrder: ["memory-route", "public-contracts", "released-artifacts", "consumer-code-if-needed"],
+    boundaryChangeGate: "explicit-human-agreement",
+    releaseAcceptance: "independent-consumer-without-producer-source",
     updateOwner: "owning-task-same-candidate",
     orchestratorAction: "verify-and-integrate-shared-memory-only",
     updateOn: [

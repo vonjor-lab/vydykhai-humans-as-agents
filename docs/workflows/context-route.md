@@ -16,7 +16,7 @@ Resolve every cold-path Touch Set through this vertical spine:
 
 An anchor is a stable navigation address across human language, UI labels, code names, and historical aliases. A memory node is one independently applicable and supersedable assertion about one or more anchors. If one clause could change without the others, keep separate nodes. A recall commitment must attach to affected anchors and retain its owner, trigger/checkpoint, return or closure condition, evidence, and source; an unlinked “remember this” note is invalid.
 
-Every durable module and capability links a current [Module Contract](module-contract-template.md). For any task that touches one, read in this order: relevant graph route and memory nodes, current Module Contract and linked specification, then current code and tests. Documentation is a prepared map, not proof that the code still agrees. A mismatch among graph, documentation, accepted behavior, and implementation is a scoped `MEMORY_COVERAGE_GAP`, not permission to trust whichever source is easiest.
+Every durable module and capability links a current [Module Contract](module-contract-template.md). Classify consume/change/create under that contract: consumers read relevant graph obligations, public contract and released artifact/dependency evidence, not producer internals; authorized development adds maintainer design, current owned code and tests. A composite's public boundary stops automatic expansion into its internal tree, never hides applicable external obligations. Documentation is a prepared map, not proof that the code still agrees. A mismatch among graph, documentation, accepted behavior, and implementation is a scoped `MEMORY_COVERAGE_GAP`, not permission to trust whichever source is easiest.
 
 ## Three Routes
 
@@ -33,7 +33,7 @@ In the existing brief, distinguish restoration, an increment, and an experiment;
 ## Choose Preparation Depth
 
 At shaping, material re-brief or a Discovery return, the orchestrator chooses preparation; the person need not know the modes. Ordinary continuation reuses the current route and contract. Apply [Context Routing](context-routing.md#fit-with-existing-work): factual retrieval can use PREPARATION; unresolved meaning/design uses deep DISCOVERY. Scoped research starts with explicit gaps, not a recursively required complete implementation packet.
-- **Direct execution:** the relevant vertical and consumer routes, Module Contracts, accepted baseline, current code and verification are current and the solution is Low-ready.
+- **Direct execution:** the relevant vertical and consumer routes, Module Contracts, accepted baseline, public release (or owned code for authorized development) and verification are current and the solution is Low-ready.
 - **Bounded Discovery:** a route, source qualification, Module Contract, accepted artifact, or current implementation is missing, stale, contradictory, or unproven; the request restores prior behavior; or several modules/systems create material unreviewed consequences. Recover the necessary understanding once, then return it. Age, file count or task length alone never requires research.
 - **Discovery with a bounded lead:** several execution tasks share one accepted outcome and decisions must remain coherent as their results arrive. Name the concrete cross-task obligation that a one-time brief cannot cover. A fresh large change can qualify; an old small task need not. If this need is uncertain, let bounded Discovery establish it first.
 

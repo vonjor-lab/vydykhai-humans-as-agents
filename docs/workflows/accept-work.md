@@ -34,6 +34,7 @@ Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory 
 ## 2. Inspect Delivery
 
 Review changed behavior, files/artifacts, Module Contracts and other docs, tests, smoke, unresolved comments, and participant impact. Compare documentation with current code and accepted behavior; disagreement is evidence, not a reason to choose one silently. Ignore unrelated local changes unless they affect acceptance.
+For `consume`, prove the public connection and unchanged producer release, not a producer code review. For `change/create`, also require the human-agreed boundary, owned implementation/contract updates and versioned Candidate. Packaged readiness requires an independent consumer using only public documentation, the released artifact/endpoint and declared dependencies; private imports, hidden tuning, hand-carried intermediates or internal edits fail that claim. Readiness remains scoped pending rather than silently widening an integration task. See `module-contract-template.md#use-change-or-create`.
 
 ## 3. Verify Exact Current Code
 

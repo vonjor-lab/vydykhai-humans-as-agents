@@ -80,6 +80,43 @@ test("navigation cannot replace source meaning or silently omit required module 
   assert.equal(w.plan().code, "NAVIGATION_CONTRACT_UNREAD");
 });
 
+test("consumer connects a fixed release without a producer source tree or implementation in the handoff", async t => {
+  const w = await workspace(t), pkg = await w.json("package.json");
+  // Synthetic distributed artifact: no producer repository or maintainer docs are supplied.
+  const release = `// PRIVATE_IMPLEMENTATION_NOT_FOR_HANDOFF
+export function buildBundle(input) {
+  const entries = input.map(e => ({ id: e.id, label: e.label.trim() }));
+  const seen = new Set();
+  for (const e of entries) { const key = e.id.toLowerCase(); if (seen.has(key)) throw new Error('DUPLICATE_ID'); seen.add(key); }
+  entries.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  return { schema: 'bundle/v1', entries, count: entries.length };
+}\n`;
+  await w.put("bundle-release.mjs", release);
+  const contract = "Public bundle/v1 contract: buildBundle accepts id/label entries, trims labels, preserves id spelling, sorts by id, returns schema/entries/count, and rejects case-insensitive duplicate ids with DUPLICATE_ID. No state, provider calls or hidden configuration. Connect bundle-release.mjs unchanged.\n";
+  await w.put("public-contract.md", contract);
+  pkg.module.contractFiles = ["public-contract.md"];
+  pkg.dependencies = [{ id: "accepted-producer-release", path: "bundle-release.mjs", scope: pkg.task.scope }];
+  pkg.navigation = { taskId: pkg.task.id, worker: pkg.task.worker, preparedBy: "preparer", outcome: "Connect the accepted release without producer changes",
+    assignment: { owner: pkg.owner, requestId: "consume", question: "Find public connection instructions only; do not inspect producer internals", phase: "initial", previous: null },
+    references: [{ id: "public-contract", path: "public-contract.md", quote: contract.trim(), purpose: "Consumer interface", appliesTo: "task" }],
+    constraints: [{ text: "Consume the fixed release; internal development is out of scope.", appliesTo: "task", referenceIds: ["public-contract"] }], gaps: [] };
+  await w.put("package.json", pkg);
+  assert.equal(w.plan().status, "PLAN_READY"); assert.equal(w.confirm().status, "PREPARED");
+  const delivery = w.prepare("read", "--worker", pkg.task.worker);
+  assert.equal(delivery.status, "DELIVERED");
+  assert.doesNotMatch(JSON.stringify(delivery), /PRIVATE_IMPLEMENTATION|const seen|toLowerCase/);
+  assert.deepEqual(delivery.navigation.references.map(r => r.path), ["public-contract.md"]);
+  await w.put("worker-evidence.txt", "Read public contract and applicable obligations. Consumer connects the fixed release; no producer edits, private imports or CSV expansion.");
+  assert.equal(w.prepare("ack", "--worker", pkg.task.worker, "--evidence", "worker-evidence.txt").status, "ACKNOWLEDGED");
+  await w.put("candidate.mjs", "export { buildBundle } from './bundle-release.mjs';\n");
+  assert.equal(w.run("resume").status, "ACTION_COMPLETED");
+  assert.equal(w.run("accept").status, "VERIFIED");
+  assert.equal(await readFile(path.join(w.root, "bundle-release.mjs"), "utf8"), release);
+  // A consumer-side attempt to patch the release invalidates the existing route.
+  await w.put("bundle-release.mjs", release + "// unauthorized tuning\n");
+  assert.equal(w.run("preflight").code, "PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
+});
+
 test("quote-only handoff is portable across workspaces and excludes the preparer's question", async t => {
   const first = await workspace(t), second = await workspace(t);
   const deliveries = [];

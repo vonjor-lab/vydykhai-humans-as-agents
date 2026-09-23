@@ -26,7 +26,7 @@ Unrelated section changes do not invalidate that binding. Sources, oracle,
 verifier and declared dependencies retain their exact identities. Candidate
 implementation may change after preparation: acceptance verifies its current
 behavior against retained and new examples. Do not list mutable implementation
-as an immutable dependency unless that restriction is intended.
+as an immutable dependency unless that restriction is intended. In consume tasks, Candidate files are consumer wiring; the accepted producer release/contract is an immutable dependency, not mutable implementation. Pin bounded release identity/observed remote revision rather than scanning its source tree; hashing bytes is not model-context loading.
 
 Include agreed entry/mechanism, relevant upstream and consumer boundaries,
 actual runtime/test conditions and direct-human-control decisions in these
@@ -75,7 +75,7 @@ does not overwrite a previous packet or erase its pending state.
 Check context sufficiency for every task. Reuse an adequate current packet; use
 the opt-in `PREPARATION` profile when context is missing, stale or scattered.
 Start from the ordinary module map/index and entity-linked memory, then Module
-Contracts and relevant code. Missing map or prior decision is a visible gap, not
+Contracts: public-use sections and fixed releases for consume, maintainer design and owned code for change/create. Missing map or prior decision is a visible gap, not
 permission to fabricate a complete history. Mechanical file/symbol indexes should
 link existing contracts; do not create duplicate prose documentation or split
 proven code solely to meet a universal line count. Update affected contracts/map
@@ -98,7 +98,7 @@ Each gap has `text` and boolean `critical`; critical gaps block implementation h
 For this route the owner declares nonempty `module.contractFiles` from the module
 map/graph independently of the preparer's found-code list. Each must have a
 task-wide cited quote; an omitted contract blocks. Review the complete applicable
-contract, not just a keyword hit. Distinguish an unavailable source from an
+contract for the declared use/change mode, not just a keyword hit or all maintainer internals. Distinguish an unavailable source from an
 available but unread source: neither proves absence of the underlying decision.
 The builder checks bounds/quotes and computes file hashes. Owner review still
 decides semantic coverage, correct audience and unresolved contradictions;

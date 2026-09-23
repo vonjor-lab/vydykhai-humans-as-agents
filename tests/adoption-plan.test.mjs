@@ -31,6 +31,11 @@ test("ordinary install automatically exposes an actionable plan, not readiness",
   assert.equal(plan.target.version, manifest.version);
   assert.equal(plan.progressOwner, "Project State");
   assert.ok(plan.requirements.some(r => r.id === "prepared-work"));
+  const modules = plan.requirements.find(r => r.id === "module-boundaries");
+  assert.ok(modules);
+  assert.match(modules.action, /Preserve accepted artifacts, direct human control and pauses/);
+  assert.match(modules.action, /independent consumer connection without producer source/);
+  assert.match(modules.action, /due-on-resume/);
   assert.ok(plan.releases.every(r => r.path && r.heading && !r.notes));
 });
 
@@ -43,6 +48,14 @@ test("same target repeat/resume preserves plan and State completion/failed repai
   assert.deepEqual(JSON.parse(f.run(["adoption-plan", "--json"], f.installed)), plan);
   assert.equal(await readFile(path.join(f.target, "project-state.md"), "utf8"), state);
   assert.equal(plan.activeUse, "UNPROVEN_BY_INSTALLER");
+});
+
+test("module adoption binds public release and consumer scope without claiming activation", () => {
+  const p = planAdoption({ ...input, previousLock: { installedVersion: "1.31.0" } });
+  const requirement = p.requirements.find(r => r.id === "module-boundaries");
+  assert.ok(requirement);
+  assert.deepEqual(requirement.reuseBy, ["targetBundle", "moduleContract", "moduleRelease", "consumerBoundary", "taskScope"]);
+  assert.equal(p.activeUse, "UNPROVEN_BY_INSTALLER");
 });
 
 test("skipped releases are ordered and unknown baseline remains conservative on changed target", () => {
