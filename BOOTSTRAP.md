@@ -34,7 +34,7 @@ Resolve capability-and-cost profiles from the current agent environment; do not 
 1. `ORCHESTRATOR`: maximum available stable reasoning; map to `Ultra` when that label exists.
 2. `DISCOVERY`: deep bounded reasoning; map to `XHigh` when that label exists.
 3. `EXECUTION`: efficient bounded reasoning; map to `Low`. Use the lowest model proven for the task class, otherwise retain the accepted profile or explicit flagship fallback.
-4. `PREPARATION`: opt-in bounded retrieval at `Low`, using a proven low-cost model and `docs/workflows/context-preparation.md`. Resolve current availability, evidence and fallback; never silently downgrade orchestration or unresolved discovery from flagship.
+4. `PREPARATION`: opt-in bounded retrieval at `Low`, using a proven low-cost model and `docs/workflows/context-preparation.md`. The orchestrator owns initial/supplementary assignments and review under `context-routing.md`; the executor consults it, not the preparer. Resolve current availability, evidence and fallback; never silently downgrade orchestration or unresolved discovery from flagship.
 5. Use the closest supported profile when a preferred label is unavailable and record the fallback; never silently run a different profile.
 6. Record policy, actual model/effort for each adopted profile, comparable evidence, check date/source and fallback in Project State. Missing preparation proof leaves the established route working.
 7. Re-resolve at framework update, new or rotated orchestrator, model rejection/deprecation, and active-project Health Review at least every seven days.

@@ -1,11 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { prepareNavigation as validateNavigation } from "../scripts/context-navigation.mjs";
+import { prepareNavigation as validateNavigation, checkPreparationAssignment } from "../scripts/context-navigation.mjs";
+import { createHash } from "node:crypto";
 const prepareNavigation = (p, task, read, contracts = ["contract.md"]) => validateNavigation(p, task, read, contracts);
 
 const task = { id: "task-1", worker: "worker-1" };
 const read = async () => Buffer.from("Keep accepted output.\nPreparation is read-only.\n");
 const packet = () => ({ taskId: task.id, worker: task.worker, preparedBy: "preparer-1", outcome: "Extend without losing accepted output",
+  assignment: { owner: "owner", requestId: "request-1", question: "Find retained invariants", phase: "initial", previous: null },
   references: [
     { id: "contract", path: "contract.md", startLine: 1, endLine: 1, quote: "Keep accepted output.", purpose: "Invariant", appliesTo: "task" },
     { id: "local", path: "contract.md", startLine: 2, endLine: 2, quote: "Preparation is read-only.", purpose: "Local authority", appliesTo: "preparation" },
@@ -50,4 +52,30 @@ test("noncritical evidence limits stay visible", async () => {
 test("found code is not proof of an independently required module contract", async () => {
   await assert.rejects(prepareNavigation(packet(), task, read, []), { message: "NAVIGATION_CONTRACT_ROUTE_MISSING" });
   await assert.rejects(prepareNavigation(packet(), task, read, ["unread-contract.md"]), { message: "NAVIGATION_CONTRACT_UNREAD" });
+});
+
+test("only the assigned owner can request preparation; initial work has no parent", async () => {
+  const a = packet().assignment;
+  await checkPreparationAssignment(a, "owner", task, read);
+  await assert.rejects(checkPreparationAssignment(a, "other", task, read), /PREPARATION_ASSIGNMENT_INVALID/);
+  await assert.rejects(checkPreparationAssignment({ ...a, previous: {} }, "owner", task, read), /PREPARATION_PARENT_INVALID/);
+});
+
+test("supplements pin an approved parent and retain exact task, worker, scope and action", async () => {
+  const sha = data => createHash("sha256").update(data).digest("hex");
+  const fullTask = { ...task, scope: ["module"], action: { executable: "node", args: ["check.mjs"] } };
+  const plan = Buffer.from(JSON.stringify({ schema: "context.preparation-plan.v1", owner: "owner", semanticPackage: { task: fullTask } }));
+  const approval = Buffer.from(JSON.stringify({ schema: "context.package-approval.v1", owner: "owner", decision: "approved", planSha256: sha(plan) }));
+  const files = { plan, approval };
+  const a = { ...packet().assignment, phase: "supplement", previous: {
+    plan: { path: "plan", sha256: sha(plan) }, approval: { path: "approval", sha256: sha(approval) } } };
+  const readParent = async p => files[p];
+  await checkPreparationAssignment(a, "owner", fullTask, readParent);
+  for (const changed of [{ ...fullTask, worker: "other" }, { ...fullTask, id: "other" }, { ...fullTask, scope: ["wider"] }, { ...fullTask, action: {} }]) {
+    await assert.rejects(checkPreparationAssignment(a, "owner", changed, readParent), /PREPARATION_PARENT_MISMATCH/);
+  }
+  files.approval = Buffer.from(approval.toString().replace("approved", "revoked"));
+  await assert.rejects(checkPreparationAssignment(a, "owner", fullTask, readParent), /PREPARATION_PARENT_CHANGED/);
+  a.previous.approval.sha256 = sha(files.approval);
+  await assert.rejects(checkPreparationAssignment(a, "owner", fullTask, readParent), /PREPARATION_PARENT_MISMATCH/);
 });

@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { nativeActionCommand, hookEventKey } from "../scripts/context-hook.mjs";
 import { classifyGuard, createReturnRoute, evaluateProductionContinuation, readProductionContinuation,
   validateDurableOutbox } from "../scripts/vydykhai.mjs";
@@ -50,6 +51,7 @@ test("navigation handoff pins contracts, filters role-local rules and permits Ca
   await w.put("navigation-contract.md", "Preserve accepted output.\nPreparation is read-only.\n");
   pkg.module.contractFiles = ["navigation-contract.md"];
   pkg.navigation = { taskId: pkg.task.id, worker: pkg.task.worker, preparedBy: "preparer", outcome: "Preserve output and fix duplicate comparison",
+    assignment: { owner: pkg.owner, requestId: "initial", question: "Find relevant contracts and code", phase: "initial", previous: null },
     references: [{ id: "contract", path: "navigation-contract.md", startLine: 1, endLine: 1, quote: "Preserve accepted output.", purpose: "Retained behavior", appliesTo: "task" },
       { id: "code", path: "candidate.mjs", startLine: 1, endLine: 1, quote: "export function buildBundle(input)", purpose: "Implementation boundary", appliesTo: "task" }],
     constraints: [{ text: "Preserve accepted output.", appliesTo: "task", referenceIds: ["contract"] },
@@ -71,10 +73,62 @@ test("navigation cannot replace source meaning or silently omit required module 
   const w = await workspace(t), pkg = await w.json("package.json");
   pkg.module.contractFiles = ["contract.md"];
   pkg.navigation = { taskId: pkg.task.id, worker: pkg.task.worker, preparedBy: "preparer", outcome: "Scoped correction",
+    assignment: { owner: pkg.owner, requestId: "initial", question: "Find relevant contracts and code", phase: "initial", previous: null },
     references: [{ id: "code", path: "candidate.mjs", startLine: 1, endLine: 1, quote: "export function", purpose: "Code found", appliesTo: "task" }],
     constraints: [], gaps: [] };
   await w.put("package.json", pkg);
   assert.equal(w.plan().code, "NAVIGATION_CONTRACT_UNREAD");
+});
+
+test("nonportable preparer paths block before delivery or action", async t => {
+  const w = await workspace(t), pkg = await w.json("package.json");
+  for (const sourcePath of [path.join(w.root, "candidate.mjs"), "../candidate.mjs"]) {
+    pkg.module.contractFiles = [sourcePath];
+    pkg.navigation = { taskId: pkg.task.id, worker: pkg.task.worker, preparedBy: "preparer", outcome: "Scoped correction",
+      assignment: { owner: pkg.owner, requestId: "initial", question: "Find relevant sources", phase: "initial", previous: null },
+      references: [{ id: "code", path: sourcePath, startLine: 1, endLine: 1, quote: "export function", purpose: "Boundary", appliesTo: "task" }],
+      constraints: [], gaps: [] };
+    await w.put("package.json", pkg);
+    assert.equal(w.plan().code, "PACKAGE_PATH_INVALID");
+  }
+  await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
+});
+
+test("owner supplement retains progress and worker while retiring the old supported action route", async t => {
+  const w = await workspace(t); await w.ready();
+  const candidate = (await readFile(path.join(w.root, "candidate.mjs"), "utf8"))
+    .replace("const key = entry.id;", "const key = entry.id.toLowerCase();");
+  await w.put("candidate.mjs", candidate);
+  await w.put("consult.txt", "Need the owner-confirmed return boundary; retain current Candidate and task.");
+  await w.put("supplement.md", "Retain the current fix and the existing action boundary.\n");
+  const pin = async name => ({ path: name, sha256: createHash("sha256").update(await readFile(path.join(w.root, name))).digest("hex") });
+  const pkg = await w.json("package.json");
+  pkg.module.contractFiles = ["supplement.md"];
+  pkg.navigation = { taskId: pkg.task.id, worker: pkg.task.worker, preparedBy: "preparer", outcome: "Complete the same correction",
+    assignment: { owner: pkg.owner, requestId: "consult-1", question: "Resolve consult.txt without changing the task", phase: "supplement",
+      previous: { plan: await pin("prepared/plan.json"), approval: await pin("prepared/approval.json") } },
+    references: [{ id: "contract", path: "supplement.md", startLine: 1, endLine: 1,
+      quote: "Retain the current fix", purpose: "Owner-confirmed boundary", appliesTo: "task" }], constraints: [], gaps: [] };
+  await w.put("supplement.json", pkg);
+  const next = (mode, ...args) => w.cli("context-prepare", mode, "--output", "next", ...args);
+  assert.equal(next("plan", "--input", "supplement.json").status, "PLAN_READY");
+  assert.equal(next("confirm", "--owner", "foreign", "--decision", "approved").status, "BLOCKED");
+  assert.equal(w.run("preflight").status, "READY", "an unapproved supplement cannot retire the accepted route");
+  assert.equal(next("confirm", "--owner", pkg.owner, "--decision", "approved").status, "PREPARED");
+  assert.equal(next("confirm", "--owner", pkg.owner, "--decision", "approved").status, "PREPARED", "same exact confirmation is idempotent");
+  assert.equal(w.run("resume").code, "PACKAGE_SUPERSEDED");
+  assert.equal(next("read", "--worker", pkg.task.worker).status, "DELIVERED");
+  await w.put("next-readback.txt", "Same correction, same worker, current Candidate retained; supplementary boundary checked.");
+  assert.equal(next("ack", "--worker", pkg.task.worker, "--evidence", "next-readback.txt").status, "ACKNOWLEDGED");
+  assert.equal(w.cli("context-run", "--input", "next/resume.json").status, "ACTION_COMPLETED");
+  assert.equal(w.cli("context-run", "--input", "next/accept.json").status, "VERIFIED");
+  assert.equal(await readFile(path.join(w.root, "candidate.mjs"), "utf8"), candidate);
+  assert.equal(await readFile(path.join(w.root, "actions.log"), "utf8"), "called\n");
+  assert.equal((await w.json("next/plan.json")).semanticPackage.task.worker, pkg.task.worker);
+  assert.equal(w.cli("context-prepare", "plan", "--input", "supplement.json", "--output", "sibling").code, "PREPARATION_PARENT_SUPERSEDED");
+  const marker = await w.json("prepared/plan.json.superseded.json");
+  marker.successorPlan.sha256 = "0".repeat(64); await w.put("prepared/plan.json.superseded.json", marker);
+  assert.equal(w.cli("context-run", "--input", "next/resume.json").code, "PREPARATION_PARENT_SUPERSEDED");
 });
 
 test("ordinary package reaches action and acceptance after the worker changes Candidate", async t => {
@@ -206,6 +260,23 @@ writeFileSync("prepared/approval.json", JSON.stringify(approval));
   assert.equal(accepted.receipt, undefined); assert.equal(accepted.returnSync, undefined);
   assert.equal(w.run("resume").code, "PACKAGE_APPROVAL_MISMATCH");
   await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
+});
+
+test("supersession during verification cannot accept the stale package", async t => {
+  const w = await workspace(t);
+  const verifier = await readFile(path.join(w.root, "verify.mjs"), "utf8");
+  await w.put("verify.mjs", verifier + `
+import { writeFileSync } from "node:fs";
+writeFileSync("prepared/plan.json.superseded.json", "{}");
+`);
+  await w.ready();
+  await w.put("candidate.mjs", (await readFile(path.join(w.root, "candidate.mjs"), "utf8"))
+    .replace("const key = entry.id;", "const key = entry.id.toLowerCase();"));
+  const result = w.run("accept");
+  assert.equal(result.status, "BLOCKED");
+  assert.equal(result.code, "PACKAGE_SUPERSEDED");
+  assert.equal(result.receipt, undefined);
+  assert.equal(result.returnSync, undefined);
 });
 
 test("prepared experiment, human detour, retained regression and lost wake close through the existing cycle", async t => {

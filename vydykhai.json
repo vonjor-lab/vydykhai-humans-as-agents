@@ -535,6 +535,7 @@
     "scripts/context-hook.mjs",
     "scripts/context-prepare.mjs",
     "scripts/context-navigation.mjs",
+    "scripts/context-cost.mjs",
     "scripts/adoption-plan.mjs",
     "examples/context-preparation",
     "docs/AGENTS_CORE.md",
@@ -554,7 +555,7 @@
     {
       "id": "context-routing",
       "since": "1.32.0",
-      "action": "Resolve available models by role and proven task capability, not price alone. Cheap preparation is opt-in: reuse current sufficient context, otherwise prepare a source-backed navigation packet, review role applicability and gaps, and hand it to a fresh executor. Read back actual model/effort and one source-to-worker-to-retained-tests-to-Return cycle before claiming adoption. Preserve ongoing work and explicit human model choices; missing preparation proof does not block the established route.",
+      "action": "Resolve available models by role and proven task capability, not price alone. Cheap preparation is opt-in: reuse sufficient context, otherwise the orchestrator assigns and reviews a source-backed packet for a fresh executor. Later executor CONSULT goes through that owner to preparation and back to the same worker with retained progress. Read back actual model/effort and initial/supplement/retained-tests/Return behavior before claiming this route adopted. Compare whole-chain costs with unknown subscription usage explicit. Preserve ongoing work and human model choices; missing preparation proof does not block the established route.",
       "reuseBy": ["targetBundle", "worker", "routingProfile", "sourceRange", "verificationBoundary"],
       "workflow": "docs/workflows/context-preparation.md"
     },
