@@ -10,7 +10,7 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `1.32.0`
+Current version: `1.32.1`
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -96,7 +96,7 @@ The exact activation contract lives in [`docs/workflows/project-launch.md`](docs
 - Repo-scoped skills: [`.agents/skills`](.agents/skills)
 - Agent bootstrap contract: [`BOOTSTRAP.md`](BOOTSTRAP.md)
 
-Historical snapshots remain available through Git releases and tags. Current skills load only the current operating core.
+Historical snapshots remain available through Git releases and tags. Current skills route from the managed rules to the relevant workflow; the full overview is read when its meaning is needed.
 
 ## Install Into A Project
 
