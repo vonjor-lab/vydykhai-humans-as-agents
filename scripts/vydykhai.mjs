@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 import { compileExecutableBrief, validateApplicationReceipt } from "./memory-brief.mjs";
 import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
-import { planAdoption, assessWorkerAdoption, kitIdentity } from "./adoption-plan.mjs";
+import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, kitIdentity } from "./adoption-plan.mjs";
 import { classifyCheckpointReviews } from "./checkpoint-review.mjs";
 export { checkpointNoticeStillDue } from "./checkpoint-review.mjs";
 
@@ -57,7 +57,7 @@ Usage:
   node scripts/vydykhai.mjs memory-brief-compile --input <brief-input.json>
   node scripts/vydykhai.mjs memory-brief-validate --envelope <brief-envelope.json> --receipt <application-receipt.json>
   node scripts/vydykhai.mjs context-run --input <context-request.json>
-  node scripts/vydykhai.mjs adoption-plan [target] [--worker <worker-repo>] --json
+  node scripts/vydykhai.mjs adoption-plan [target] [--worker <worker-repo>] [--input <readiness-snapshot.json>] --json
   node scripts/vydykhai.mjs context-prepare <plan|confirm|read|ack|bind> --output <task-local-dir> ...
   node scripts/vydykhai.mjs context-prepare estimate --input <cost-estimate.json>
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
@@ -2080,10 +2080,14 @@ async function main() {
       }
       if (plan.workerCheck.status !== "KIT_MATCH") process.exitCode = plan.workerCheck.status === "LIMITED" ? 2 : 1;
     }
+    if (flags.input) {
+      plan.capabilityReadiness = assessCapabilityReadiness(JSON.parse(await readFile(path.resolve(flags.input), "utf8")));
+    }
     if (flags.json) console.log(JSON.stringify(plan, null, 2));
     else {
       printAdoption(plan);
       if (plan.workerCheck) console.log(`Worker kit: ${plan.workerCheck.status} (${plan.workerCheck.reason}); instruction readback is separate.`);
+      if (plan.capabilityReadiness) console.log(`Capability readiness: ${plan.capabilityReadiness.action}; gaps: ${plan.capabilityReadiness.gaps.join(", ") || "none"}`);
     }
     return;
   }

@@ -38,6 +38,63 @@ export function adoptionEvidenceScope(requirement, current, recorded = {}) {
     scopeSha256, acceptance: "NOT_ESTABLISHED", progressOwner: "Project State" };
 }
 
+// Read-only transition advice over the existing Project State evidence. The
+// caller supplies source-backed checks; this function never certifies their
+// truth, creates tasks, or treats a file name as semantic coverage.
+export function assessCapabilityReadiness(input) {
+  const required = ["code-map", "module-map", "module-contracts", "graph-routes", "verification"];
+  const statuses = new Set(["VERIFIED", "MISSING", "STALE", "CONTRADICTORY", "INACCESSIBLE", "CANDIDATE"]);
+  const filled = value => typeof value === "string" && value.trim().length > 0;
+  if (!input || !["launch", "reconnect", "update", "continue"].includes(input.trigger) ||
+      !filled(input.scope) || !input.bindings || typeof input.bindings !== "object" || Array.isArray(input.bindings) ||
+      (input.sourceRevision !== undefined && !filled(input.sourceRevision)) ||
+      (input.boundaryChange !== undefined && typeof input.boundaryChange !== "boolean") ||
+      (input.boundaryApproved !== undefined && typeof input.boundaryApproved !== "boolean") ||
+      required.some(id => !filled(input.bindings[id])) || !Array.isArray(input.checks) ||
+      input.checks.some(c => !c || !required.includes(c.id) || !statuses.has(c.status) ||
+        !filled(c.binding) || c.binding !== input.bindings[c.id] ||
+        (c.status === "VERIFIED" && (!filled(c.source) || !filled(c.checkedBinding)))) ||
+      new Set(input.checks.map(c => c.id)).size !== input.checks.length ||
+      (input.modules && (!Array.isArray(input.modules) || input.modules.some(m => !filled(m.id) ||
+        typeof m.requiredForConsumption !== "boolean" ||
+        !["EXPERIMENTAL", "CANDIDATE", "ACCEPTED", "DEPRECATED"].includes(m.behavior) ||
+        !["UNPROVEN", "PROVEN"].includes(m.packaging)) ||
+        new Set(input.modules.map(m => m.id)).size !== input.modules.length))) {
+    throw new Error("Invalid capability readiness input");
+  }
+  const relevantKey = hash({ scope: input.scope, bindings: Object.fromEntries(required.map(id => [id, input.bindings[id]])) });
+  const checks = new Map(input.checks.map(c => [c.id, c]));
+  const gaps = required.filter(id => checks.get(id)?.status !== "VERIFIED" || checks.get(id)?.checkedBinding !== input.bindings[id]);
+  const inaccessible = gaps.filter(id => checks.get(id)?.status === "INACCESSIBLE");
+  const actionable = gaps.filter(id => !inaccessible.includes(id));
+  const defectKey = hash({ scope: input.scope, gaps: actionable.map(id => [id, input.bindings[id]]) });
+  const proofSteps = ["moduleFound", "contextDelivered", "retainedAndNewAcceptance", "documentationUpdated", "semanticIntegration", "nextRetrieval"];
+  const proof = input.accepted?.routeProof;
+  const proofComplete = proofSteps.every(step => filled(proof?.[step]));
+  const accepted = input.accepted?.relevantKey === relevantKey && input.accepted.status === "ACCEPTED" &&
+    filled(input.accepted.acceptedBy) && proofComplete;
+  const packagingGaps = (input.modules || []).filter(module => module.requiredForConsumption &&
+    (module.behavior !== "ACCEPTED" || module.packaging !== "PROVEN" || !filled(module.connectionEvidence))).map(module => module.id);
+  const candidateOwner = input.owner;
+  const owner = candidateOwner?.scope === input.scope && candidateOwner.relevantKey === relevantKey &&
+    filled(candidateOwner.id) && ["PREPARED", "STARTED", "WORKING", "WAITING", "RETURNED"].includes(candidateOwner.status) &&
+    (candidateOwner.status !== "WAITING" || filled(candidateOwner.checkpoint)) ? candidateOwner : null;
+  let action;
+  if (input.boundaryChange && !input.boundaryApproved) action = "PROPOSE_MIGRATION";
+  else if (input.boundaryChange) action = owner ? "REUSE_OWNER" : "ASSIGN_MAINTENANCE";
+  else if (accepted && gaps.length === 0) action = "REUSE_ACCEPTED";
+  else if (owner) action = "REUSE_OWNER";
+  else if (actionable.length && input.repairAttemptedFor === defectKey) action = "WAIT_CHECKPOINT";
+  else if (actionable.length) action = "ASSIGN_MAINTENANCE";
+  else if (inaccessible.length) action = "LIMITED_ACCESS";
+  else action = "REVIEW_ROUTE_PROOF";
+  return { status: action === "REUSE_ACCEPTED" ? packagingGaps.length ? "ACCEPTED_WITH_LIMITS" : "ACCEPTED" : "PENDING", action,
+    relevantKey, defectKey, gaps, inaccessible, packagingGaps, owner: owner?.id || null,
+    dependentDispatch: action === "REUSE_ACCEPTED" && packagingGaps.length === 0 ? "READY" : "WAIT_FOR_APPLICABLE_PROOF",
+    independentWork: "CONTINUE_WITHIN_EXISTING_AUTHORITY",
+    note: "Project State owns progress; this classifier does not authenticate sources or certify semantic proof." };
+}
+
 export function planAdoption({ manifest, managedFiles, agentsBlockHash, sourceRevision, previousLock, changelog }) {
   if (!version(manifest.version)) throw new Error("Adoption target version must be semver");
   const target = kitIdentity(manifest, managedFiles, agentsBlockHash);

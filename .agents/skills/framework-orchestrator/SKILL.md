@@ -17,6 +17,7 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 - Use `docs/workflows/context-route.md` for direct execution, bounded Discovery or Lab. Preparation retrieves context; Discovery chooses a solution. A Lab result needs separately authorized production transfer. Use `docs/workflows/start-work.md` for a new or materially changed task map; approval is a gate for a new shared decision, not for continuing an already approved contract.
 - Use `docs/workflows/task-context-handoff-template.md#return-authorization` for a task return. Reconcile the durable outbox and exact external outcome before replay. Preserve the sole delivery owner; unknown outcomes and security denials do not authorize another route.
 - Use `docs/workflows/framework-activation.md` for updates and `docs/workflows/project-guard.md` for quiet independent Guard coverage. Rotation follows the proof and human switch in the orchestrator workflow. An ordinary small fix does not require loading all of these routes.
+- At launch, unknown-readiness reconnect or relevant update, use the activation workflow to inventory module/context prerequisites and assign one focused shared maintenance owner for gaps. Keep capability readiness distinct from kit installation; wait only on dependent new dispatch. Existing evidence is reused on a current hot path.
 
 ## Finish
 

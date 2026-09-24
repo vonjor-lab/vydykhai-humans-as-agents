@@ -8,6 +8,7 @@ Goal: turn one installation request into a proven shared operating project befor
 2. Run `node scripts/vydykhai.mjs doctor` when the kit is installed. `doctor` proves framework integrity only; it never proves live project readiness. Inventory Project State/graph schema before reuse; migrate old current-state artifacts side by side rather than appending new sections to them.
 3. If the kit is missing and the user supplied the canonical link, execute `BOOTSTRAP.md` yourself. If no repo exists, ask only unresolved host, owner, or visibility and prepare a private Git-backed repo when tools allow.
 4. Inventory existing briefs, tasks, board, Project State, memory, branches, PRs, environments, deployment instructions, and accepted operating rules before creating anything. Reuse current truth.
+   On first launch or reconnect without accepted capability evidence, start the scoped module/context readiness inventory in [Framework Activation](framework-activation.md) now. Identify an existing shared owner before assigning one focused diagnostic/documentation task; do not wait for a later module request. An accepted current inventory is reused rather than rerun.
 5. Use available repo-host, tracker, context, meeting, and operational tools directly. Ask the human only for missing access, trust, or a decision; never hand them setup commands.
 6. Use the first real Project State create/update plus readback as the tracker write test. Never create disposable probe issues, branches, or credentials.
 7. Resolve capability-and-cost profiles under the core: flagship/Low `ORCHESTRATOR` with bounded temporary High recovery and flagship/High `DISCOVERY`, proven efficient `EXECUTION` and opt-in retrieval `PREPARATION`; record actual mappings, capability evidence, source/date and fallback. No silent downgrade.
@@ -25,11 +26,11 @@ Record each gate as `PASS`, `LIMITED`, `BLOCKED`, or `NOT_REQUIRED`, with observ
 4. **Inputs:** an accessible route from meetings, recordings, transcripts, chat, docs, or approved manual notes into durable shared state. Prefer direct access for each relevant orchestrator; otherwise name one intake owner and a traceable approval route.
 5. **Operations for the first DOD:** only required environments/services, current deployed baseline or revision, protected pointers, merge/deploy authority, backup/rollback route, and stop conditions. Future-only access is `NOT_REQUIRED`; secret values never enter shared state.
 6. **Course:** accepted goal, users/actors, first useful outcome, nearest DOD, non-goals, initial `now / next / blocked / done` route, and named open decisions.
-7. **Control loop:** Project State v2, Project Memory Graph v4 or a declared compatible v3 migration boundary, active registered orchestrator, external Project Guard, Governor baseline, DOD Control Line, tracker projection, Execution Lease and Return Sync mapping, and one exact next-best-action. First live Return Sync proof is recorded automatically when the first task returns.
+7. **Control loop:** Project State v2, Project Memory Graph v4 or a declared compatible v3 migration boundary, active registered orchestrator, external Project Guard, Governor baseline, DOD Control Line, tracker projection, Execution Lease and Return Sync mapping, and one exact next-best-action. First live Return Sync proof is recorded automatically when the first task returns. Record module/context capability readiness separately from kit integrity: evidence, missing scope, one maintenance owner and next checkpoint. Dependent new dispatch waits for its prerequisites; unrelated authorized work does not.
 
 Use one overall result:
 
-- `PROJECT_READY`: every gate needed by the first DOD passes.
+- `PROJECT_READY`: every gate needed by the first DOD passes, including capability prerequisites for its first task; an unproven map cannot be silently counted as ready.
 - `PROJECT_READY_WITH_LIMITS`: named gaps do not affect the first route; state the safe boundary and repair owner.
 - `NEEDS_DECISION`: a real human choice about goal, ownership, host, privacy, or authority remains.
 - `BLOCKED_BY_ACCESS`: missing access prevents the first safe route.
