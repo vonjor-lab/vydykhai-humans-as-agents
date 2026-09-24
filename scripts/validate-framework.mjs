@@ -790,7 +790,6 @@ if (
   !moduleContractTemplate.includes("same Candidate") ||
   !moduleContractTemplate.includes("never edits product code or module documentation itself") ||
   !projectMemoryGraphTemplate.includes("atomically rebuilds only the shared graph") ||
-  !orchestratorSkill.includes("never edits product code or module documentation itself") ||
   !acceptWorkflow.includes("Missing required documentation is `NEEDS_FIXES`")
 ) {
   fail("Module Contract is missing purpose, interfaces, algorithm, consumers, commitments, or task-owned update rules");
@@ -808,7 +807,6 @@ if (
 if (!orchestratorWorkflow.includes("Return Sync")) fail("Orchestrator workflow is missing closed-loop task return");
 if (
   !projectLaunchWorkflow.includes("Source Coverage Ledger") ||
-  !projectLaunchSkill.includes("Source Coverage Ledger") ||
   !projectLaunchWorkflow.includes("ordinary unhinted real-task questions")
 ) {
   fail("Existing-project launch is missing source-bounded historical memory reconciliation");
@@ -829,10 +827,6 @@ if (
   !projectLaunchWorkflow.includes("PROJECT_READY_WITH_LIMITS") ||
   !projectLaunchWorkflow.includes("independent scheduler") ||
   !projectLaunchWorkflow.includes("Project Guard") ||
-  !projectLaunchSkill.includes("one machine cannot certify another") ||
-  !projectLaunchSkill.includes("Project Guard") ||
-  !projectLaunchSkill.includes("never leave two active contexts") ||
-  !orchestratorSkill.includes("Project Activation Receipt") ||
   !orchestratorWorkflow.includes("Project Activation gates pass")
 ) {
   fail("Project activation is missing live evidence, participant ownership, or first-dispatch enforcement");
@@ -878,10 +872,8 @@ if (!orchestratorWorkflow.includes("Boundary consultation (`CONSULT`)")) {
 if (
   !orchestratorWorkflow.includes("Work Hygiene Check") ||
   !orchestratorWorkflow.includes("one machine cannot certify the team") ||
-  !orchestratorSkill.includes("Work Hygiene Check") ||
   !projectStateTemplate.includes("Work hygiene:") ||
-  !acceptWorkflow.includes("Artifact disposition") ||
-  !acceptWorkSkill.includes("Artifact disposition")
+  !acceptWorkflow.includes("Artifact disposition")
 ) {
   fail("Framework is missing work-hygiene ownership, state, or terminal disposition rules");
 }
@@ -935,12 +927,7 @@ if (
   !projectGuardWorkflow.includes("one fresh bounded owner") ||
   !orchestratorWorkflow.includes("external Project Guard") ||
   !orchestratorWorkflow.includes("productive handoff or concrete wait") ||
-  !projectGuardWorkflow.includes("--activity") ||
-  !orchestratorSkill.includes("production-continuation.md") ||
-  !orchestratorSkill.includes("project-owned Project Guard") ||
-  !orchestratorSkill.includes("semantic condition set") ||
-  !orchestratorSkill.includes("focused service task") ||
-  !orchestratorSkill.includes("Pending Human Action")
+  !projectGuardWorkflow.includes("--activity")
 ) {
   fail("Project Guard is missing independent liveness, silent healthy path, attention continuity, or anomaly escalation");
 }
@@ -968,9 +955,7 @@ if (
 if (
   !orchestratorWorkflow.includes("PR #<pr> → <canonical work reference>") ||
   !orchestratorWorkflow.includes("Bare task, PR, and context numbers are not meaningful references") ||
-  !orchestratorSkill.includes("Never substitute a PR or context id for work identity") ||
   !projectLaunchWorkflow.includes("[ORCHESTRATOR] <project> — Vydykhai <version>") ||
-  !projectLaunchSkill.includes("[ORCHESTRATOR] <project> — Vydykhai <version>") ||
   !taskHandoffTemplate.includes("Title: <work-id> [<track>] [<mode>] — <short outcome")
 ) {
   fail("Context naming or human-facing reference contract is incomplete");
@@ -993,7 +978,6 @@ if (
   !orchestratorWorkflow.includes("CONTROL_ONLY") ||
   !orchestratorWorkflow.includes("ROUTE_TO_FOCUSED_CONTEXT") ||
   !orchestratorWorkflow.includes("focused-context receipt") ||
-  !orchestratorSkill.includes("control cycle") ||
   !agentsCore.includes("project evidence") ||
   !projectStateTemplate.includes("Work origin:")
 ) {
@@ -1002,10 +986,7 @@ if (
 if (
   !orchestratorWorkflow.includes("open commitment") ||
   !orchestratorWorkflow.includes("process each bounded source range once") ||
-  !orchestratorWorkflow.includes("id counts and synthetic PASS alone are insufficient") ||
-  !orchestratorSkill.includes("first-class `COMMITMENT`") ||
-  !orchestratorSkill.includes("memory-brief-envelope.md") ||
-  !orchestratorSkill.includes("ordinary unhinted real-task queries")
+  !orchestratorWorkflow.includes("id counts and synthetic PASS alone are insufficient")
 ) {
   fail("Orchestrator is missing recall-commitment retrieval or semantic backfill proof");
 }
@@ -1065,8 +1046,7 @@ if (
 if (
   !acceptWorkflow.includes("durable task/tracker outbox") ||
   !acceptWorkflow.includes("RECEIVED -> CONSUMED -> ROUTED") ||
-  !acceptWorkflow.includes("OUTCOME_UNKNOWN") ||
-  !acceptWorkSkill.includes("durable task/tracker outbox")
+  !acceptWorkflow.includes("OUTCOME_UNKNOWN")
 ) {
   fail("Acceptance is missing durable return or uncertain-side-effect handling");
 }
@@ -1104,7 +1084,7 @@ for (const entry of await readdir(skillsRoot, { withFileTypes: true })) {
   if (!skill.startsWith("---\n")) fail(`${skillFile} has no YAML frontmatter`);
   if (!skill.includes(`name: ${entry.name}\n`)) fail(`${skillFile} name does not match directory`);
   if (!/description: .+/.test(skill)) fail(`${skillFile} has no description`);
-  if (!skill.includes("docs/FRAMEWORK.md")) fail(`${skillFile} does not load the stable framework core`);
+  if (!skill.includes("AGENTS.md")) fail(`${skillFile} does not identify the shared entrypoint`);
   if (!skill.includes("docs/workflows/")) fail(`${skillFile} does not load an environment-neutral workflow`);
   if (skill.includes("COLLABORATION_FRAMEWORK_2026-06-10")) fail(`${skillFile} still loads the dated framework path`);
   if (lineCount(skill) > 100) fail(`${skillFile} exceeds 100 lines (${lineCount(skill)})`);

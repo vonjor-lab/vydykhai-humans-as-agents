@@ -1,6 +1,6 @@
 # Vydykhai Workflows
 
-These environment-neutral workflows are conditional references for the repo-scoped skills under `.agents/skills`. The canonical operating core is `docs/FRAMEWORK.md`; optional adapter metadata does not change skill behavior.
+These environment-neutral workflows are conditional references for the repo-scoped skills under `.agents/skills`. The managed `AGENTS.md` supplies shared rules. `docs/FRAMEWORK.md` is the human overview and a reference when framework meaning is unresolved; skills route to the relevant event workflow. Optional adapter metadata does not change skill behavior.
 
 ## Human Interface
 
