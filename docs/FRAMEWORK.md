@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 1.32.1 | Status: canonical operating core
+Version: 1.32.2 | Status: canonical operating core
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 
@@ -70,7 +70,7 @@ Distributed Vydykhai requires one shared writable Git-backed repo and durable tr
 Project launch records `PASS / LIMITED / BLOCKED / NOT_REQUIRED` for home/kit, shared sync, people, inputs, first-DOD operations, course, and control loop. The first real Project State write/readback proves tracker access; disposable probe artifacts are forbidden.
 Coordination input may be direct for each relevant orchestrator or pass through a named intake owner into an approved traceable delta. Fathom is recommended; another recorder, chat, docs, manual notes, or a shared agent-accessible notebook is valid by capability.
 Operational readiness covers only the current DOD: environment owners, current deployed baseline/revision, safe protected pointers, merge/deploy authority, non-destructive check, recovery route, and stop conditions. It never requests all credentials, stores secret values, or infers production authority.
-Only an evidence-backed receipt returns `PROJECT_READY`; non-critical gaps are `PROJECT_READY_WITH_LIMITS`, a real choice is `NEEDS_DECISION`, and access that blocks the first safe route is `BLOCKED_BY_ACCESS`. Missing participants block only overlapping work.
+At first launch, unknown-readiness reconnect or a relevant update, the orchestrator inventories the accessible responsibility-to-contract-to-implementation/test-to-consumer map and records separate capability readiness in Project State. It assigns one focused shared owner to verify or repair missing documentation before dependent new dispatch, reusing accepted evidence and leaving independent authorized work active. Existing architecture may be described within setup; changing a boundary requires a human-approved migration proposal. A kit version or candidate documents alone do not prove the route. Only an evidence-backed receipt returns `PROJECT_READY`; non-critical gaps are `PROJECT_READY_WITH_LIMITS`, a real choice is `NEEDS_DECISION`, and access that blocks the first safe route is `BLOCKED_BY_ACCESS`. Missing participants block only overlapping work.
 
 ## Role-Routed Agent Profiles
 Choose by proven capability and total cost, not price/version alone. `selectionPolicy` and `effortPolicy` are authoritative; legacy model/profile fields remain for old updaters, not current dispatch:

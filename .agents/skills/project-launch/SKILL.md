@@ -10,6 +10,7 @@ Activate or reconnect one project with evidence. `doctor` establishes installed-
 ## Read route
 
 Read `AGENTS.md` once, then `docs/workflows/project-launch.md`. Read `docs/workflows/start-work.md` only when an initial goal needs decomposition, and `docs/workflows/project-guard.md` when selecting or proving Guard coverage. `docs/FRAMEWORK.md` is a human overview for unresolved meaning, not a routine prerequisite.
+At first launch or unknown-readiness reconnect, route the module/context readiness inventory through `docs/workflows/framework-activation.md`; reuse current accepted evidence on ordinary continuation.
 
 ## Boundaries
 

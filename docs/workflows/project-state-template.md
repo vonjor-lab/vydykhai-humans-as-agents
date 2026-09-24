@@ -21,6 +21,7 @@ DOD Control Line: <current DOD -> last accepted visible proof -> exact remaining
 Memory coverage: <graph/schema/watermark -> CURRENT/NEXT/CROSS_DOMAIN/PRIOR_MISS probes -> PASS, gap, or migration>
 Project Memory Graph: <current canonical link> | Last memory delta: <memory event id / NO_CHANGE / checked; routine control events do not advance it>
 Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current / pending / window / PR>
+Capability adoption: <module/context readiness accepted with limits / pending / blocked> | Scope/revision: <source-backed identity> | Evidence/gaps: <links and inaccessible areas> | Shared owner: <task/participant or none> | Next: <checkpoint or human decision> | Dependent dispatch: <ready / waiting for applicable proof>
 Framework context readback: <active orchestrator own cwd> | HEAD: <accepted project revision> | Doctor: <installed/source/schema/integrity> | Core reread: <PASS / gap> | Result: <PASS / ACTUAL_CONTEXT_COHERENCE>
 Agent routing: <capability-and-cost policy> | Resolved: <ORCHESTRATOR / DISCOVERY / EXECUTION / optional PREPARATION model-effort mappings> | Checked: <date/source/capability evidence> | Fallback: <none/pending/reason>
 Project activation: <PROJECT_READY | PROJECT_READY_WITH_LIMITS | NEEDS_DECISION | BLOCKED_BY_ACCESS> | Checked: <date/event>
