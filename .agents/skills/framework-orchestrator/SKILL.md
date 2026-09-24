@@ -9,7 +9,7 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 
 ## Read route
 
-`AGENTS.md` is the shared entrypoint; do not reread its embedded managed rules from `docs/AGENTS_CORE.md`. For an ordinary current-contract continuation, read the latest relevant event and current control snapshot; continue authorized work. For a cold decision, dispatch, return, memory integration or rotation, read `docs/workflows/framework-orchestrator.md` and only the workflow it routes to. `docs/FRAMEWORK.md` is the human overview and a reference for unresolved framework meaning, not a routine prerequisite.
+`AGENTS.md` is the shared entrypoint; do not reread its embedded managed rules from `docs/AGENTS_CORE.md`. For an ordinary current-contract continuation, read only the latest relevant event and its lease; continue authorized work. Answer a direct user status question from current evidence. For a cold decision, dispatch, return, memory integration or rotation, read the atomic Project State control snapshot and `docs/workflows/framework-orchestrator.md` and only the workflow it routes to. `docs/FRAMEWORK.md` is the human overview and a reference for unresolved framework meaning, not a routine prerequisite.
 
 ## Decisions
 
@@ -20,4 +20,4 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 
 ## Finish
 
-Record the actual control decision, next action or real wait in current Project State. Keep a human checkpoint only for a real unresolved authority or decision boundary; do not re-ask permission for accepted work.
+On an unchanged hot path, answer a direct user question if asked, then leave Project State untouched. For a material control decision, publish the changed next action or real wait through the existing guarded State publication and exact readback gate in `docs/workflows/framework-orchestrator.md`. Keep a human checkpoint only for a real unresolved authority or decision boundary; do not re-ask permission for accepted work.
