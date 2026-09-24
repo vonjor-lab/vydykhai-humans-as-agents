@@ -67,7 +67,10 @@ export function assessCapabilityReadiness(input) {
   const gaps = required.filter(id => checks.get(id)?.status !== "VERIFIED" || checks.get(id)?.checkedBinding !== input.bindings[id]);
   const inaccessible = gaps.filter(id => checks.get(id)?.status === "INACCESSIBLE");
   const actionable = gaps.filter(id => !inaccessible.includes(id));
-  const defectKey = hash({ scope: input.scope, gaps: actionable.map(id => [id, input.bindings[id]]) });
+  // One unresolved adoption defect per shared scope. Evidence revisions and
+  // partial repairs cannot reset its retry history; a reviewed new condition
+  // may explicitly clear the recorded attempt in Project State.
+  const defectKey = hash({ scope: input.scope, defect: "module-context-readiness" });
   const proofSteps = ["moduleFound", "contextDelivered", "retainedAndNewAcceptance", "documentationUpdated", "semanticIntegration", "nextRetrieval"];
   const proof = input.accepted?.routeProof;
   const proofComplete = proofSteps.every(step => filled(proof?.[step]));
@@ -76,16 +79,17 @@ export function assessCapabilityReadiness(input) {
   const packagingGaps = (input.modules || []).filter(module => module.requiredForConsumption &&
     (module.behavior !== "ACCEPTED" || module.packaging !== "PROVEN" || !filled(module.connectionEvidence))).map(module => module.id);
   const candidateOwner = input.owner;
-  const owner = candidateOwner?.scope === input.scope && candidateOwner.relevantKey === relevantKey &&
+  const owner = candidateOwner?.scope === input.scope &&
     filled(candidateOwner.id) && ["PREPARED", "STARTED", "WORKING", "WAITING", "RETURNED"].includes(candidateOwner.status) &&
     (candidateOwner.status !== "WAITING" || filled(candidateOwner.checkpoint)) ? candidateOwner : null;
+  const ownerNeedsReconciliation = candidateOwner && !owner;
   let action;
   if (input.boundaryChange && !input.boundaryApproved) action = "PROPOSE_MIGRATION";
-  else if (input.boundaryChange) action = owner ? "REUSE_OWNER" : "ASSIGN_MAINTENANCE";
-  else if (accepted && gaps.length === 0) action = "REUSE_ACCEPTED";
+  else if (accepted && gaps.length === 0 && !input.boundaryChange) action = "REUSE_ACCEPTED";
   else if (owner) action = "REUSE_OWNER";
-  else if (actionable.length && input.repairAttemptedFor === defectKey) action = "WAIT_CHECKPOINT";
-  else if (actionable.length) action = "ASSIGN_MAINTENANCE";
+  else if (ownerNeedsReconciliation) action = "RECONCILE_OWNER";
+  else if ((actionable.length || input.boundaryChange) && input.repairAttemptedFor === defectKey) action = "WAIT_CHECKPOINT";
+  else if (actionable.length || input.boundaryChange) action = "ASSIGN_MAINTENANCE";
   else if (inaccessible.length) action = "LIMITED_ACCESS";
   else action = "REVIEW_ROUTE_PROOF";
   return { status: action === "REUSE_ACCEPTED" ? packagingGaps.length ? "ACCEPTED_WITH_LIMITS" : "ACCEPTED" : "PENDING", action,

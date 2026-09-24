@@ -53,12 +53,20 @@ test("shared owner requires identity and waiting checkpoint; unchanged defect do
   const owner = { id: "existing-task", scope: base.scope, relevantKey, status: "WORKING" };
   assert.equal(check({ trigger: "update", owner }).action, "REUSE_OWNER");
   assert.equal(check({ owner }).owner, "existing-task");
-  assert.equal(check({ owner: { ...owner, id: "" } }).action, "ASSIGN_MAINTENANCE");
-  assert.equal(check({ owner: { ...owner, status: "WAITING" } }).action, "ASSIGN_MAINTENANCE");
+  assert.equal(check({ owner: { ...owner, id: "" } }).action, "RECONCILE_OWNER");
+  assert.equal(check({ owner: { ...owner, status: "WAITING" } }).action, "RECONCILE_OWNER");
   assert.equal(check({ owner: { ...owner, status: "WAITING", checkpoint: "approved-source-arrives" } }).action, "REUSE_OWNER");
+  const changedBindings = { ...bindings, "code-map": "relevant:code-map:r2" };
+  const changedChecks = ids.map(id => ({ id, status: "MISSING", binding: changedBindings[id] }));
+  const continued = check({ bindings: changedBindings, checks: changedChecks, owner });
+  assert.equal(continued.action, "REUSE_OWNER");
+  assert.equal(continued.owner, "existing-task");
+  assert.notEqual(continued.relevantKey, relevantKey);
   const defectKey = check({}).defectKey;
   assert.equal(check({ trigger: "update", sourceRevision: "new-kit-HEAD", repairAttemptedFor: defectKey }).action, "WAIT_CHECKPOINT");
-  assert.equal(check({ bindings: { ...bindings, "code-map": "relevant:code-map:r2" }, repairAttemptedFor: defectKey }).action, "ASSIGN_MAINTENANCE");
+  const afterFailedRepair = check({ bindings: changedBindings, checks: changedChecks, repairAttemptedFor: defectKey });
+  assert.equal(afterFailedRepair.action, "WAIT_CHECKPOINT");
+  assert.equal(afterFailedRepair.defectKey, defectKey);
 });
 
 test("new boundary decision outranks accepted evidence; independent work continues", () => {
@@ -67,6 +75,8 @@ test("new boundary decision outranks accepted evidence; independent work continu
   assert.equal(pending.dependentDispatch, "WAIT_FOR_APPLICABLE_PROOF");
   assert.equal(pending.independentWork, "CONTINUE_WITHIN_EXISTING_AUTHORITY");
   assert.equal(check({ boundaryChange: true, boundaryApproved: true, checks: verified, accepted: accepted() }).action, "ASSIGN_MAINTENANCE");
+  assert.equal(check({ boundaryChange: true, boundaryApproved: true, checks: verified,
+    repairAttemptedFor: check({}).defectKey }).action, "WAIT_CHECKPOINT");
 });
 
 test("packaging proof is separate and gates only a selected consuming module", () => {
