@@ -174,15 +174,12 @@ test("source helper is pure; no timer, model, provider, file writer or dispatche
 
 test("entrypoints choose supported coverage and preserve one return notification owner", async () => {
   for (const name of ["BOOTSTRAP.md", "docs/AGENTS_CORE.md", "docs/workflows/project-launch.md",
-    ".agents/skills/project-launch/SKILL.md", ".agents/skills/framework-orchestrator/SKILL.md",
-    ".agents/skills/start-work/SKILL.md", "docs/workflows/framework-orchestrator.md"]) {
+    "docs/workflows/framework-orchestrator.md"]) {
     const source = await readFile(new URL(`../${name}`, import.meta.url), "utf8");
     assert.match(source, /checkpoint-review-without-runtime-observation/, name);
   }
   for (const name of ["BOOTSTRAP.md", "docs/AGENTS_CORE.md", "docs/workflows/start-work.md",
-    "docs/workflows/accept-work.md", ".agents/skills/project-launch/SKILL.md",
-    ".agents/skills/start-work/SKILL.md", ".agents/skills/accept-work/SKILL.md",
-    ".agents/skills/framework-orchestrator/SKILL.md"]) {
+    "docs/workflows/accept-work.md"]) {
     const source = await readFile(new URL(`../${name}`, import.meta.url), "utf8");
     assert.match(source, /single accepted.*owner/, name);
     assert.match(source, /never parallel Guard delivery/, name);

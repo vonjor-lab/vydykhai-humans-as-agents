@@ -86,11 +86,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
-      /not the canonical framework maintenance context/,
-    );
-    assert.match(
-      await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
-      /Work Hygiene Check/,
+      /docs\/workflows\/framework-orchestrator\.md/,
     );
     assert.equal(lock.creator.name, "Alexander Rozhnov");
     assert.equal(lock.creator.nameRu, "Александр Рожнов");
@@ -638,8 +634,8 @@ test("acceptance contract separates local repair, readiness delivery and approva
   assert.match(workflow, /These are task verdicts, not raw tool statuses/);
   assert.match(workflow, /never bypass a failed gate or replay an uncertain action/);
   assert.match(workflow, /A local `NEEDS_FIXES` returns to correction and verification within scope\/burn/);
-  assert.match(skill, /A local `NEEDS_FIXES` self-check returns to corrective work/);
-  assert.match(skill, /Use the task verdicts in `docs\/workflows\/accept-work.md`/);
+  assert.match(skill, /Resolve ordinary failures inside scope/);
+  assert.match(skill, /docs\/workflows\/accept-work.md/);
   assert.match(workflow, /`OUTCOME_UNKNOWN`:.*Freeze replay and reconcile exact evidence/);
   assert.doesNotMatch(workflow, /or reliable verification is missing/);
   const reporting = workflow.split("## 6. Finish In The Task Context")[1].split("Only after technical acceptance")[0];
@@ -676,15 +672,11 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   const alignmentWorkflow = await readFile(path.join(root, "docs/workflows/daily-alignment.md"), "utf8");
   const handoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
 
-  assert.match(orchestratorSkill, /Hot path:[\s\S]*EXECUTION_STALLED/);
-  assert.match(orchestratorSkill, /\[ORCHESTRATOR\] <project> — Vydykhai <version>/);
-  assert.match(orchestratorSkill, /Never substitute a PR or context id for work identity/);
-  assert.match(orchestratorSkill, /Never implement, debug, fix product code/);
-  assert.match(orchestratorSkill, /active orchestrator's own working directory/);
-  assert.match(orchestratorSkill, /ACTUAL_CONTEXT_COHERENCE/);
-  assert.match(alignmentSkill, /Do not use for task-local failures/);
-  assert.match(acceptSkill, /owning execution context/);
-  assert.match(acceptSkill, /do not perform project-wide orchestration/);
+  assert.match(orchestratorSkill, /ordinary current-contract continuation/);
+  assert.match(orchestratorSkill, /docs\/workflows\/framework-orchestrator\.md/);
+  assert.match(orchestratorSkill, /Task contexts own implementation and proof/);
+  assert.match(alignmentSkill, /Routine progress, task-local failure/);
+  assert.match(acceptSkill, /The task proves its accepted increment/);
 
   assert.match(orchestratorWorkflow, /Working inside scope: stay quiet/);
   assert.match(orchestratorWorkflow, /Material external delta:[\s\S]*Do not wake unaffected work/);

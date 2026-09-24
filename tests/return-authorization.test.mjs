@@ -36,9 +36,11 @@ test("launch, work, acceptance, updates and control share the same return contra
     "docs/workflows/project-launch.md", "docs/workflows/start-work.md",
     "docs/workflows/accept-work.md", "docs/workflows/framework-orchestrator.md",
     "docs/workflows/framework-activation.md", "docs/workflows/project-guard.md",
-    ".agents/skills/start-work/SKILL.md", ".agents/skills/accept-work/SKILL.md",
-    ".agents/skills/framework-orchestrator/SKILL.md",
   ]) assert.match(await read(name), /task-context-handoff-template\.md#return-authorization/, name);
+  for (const name of ["start-work", "accept-work", "framework-orchestrator"]) {
+    const entry = await read(`.agents/skills/${name}/SKILL.md`);
+    assert.match(entry, new RegExp(`docs/workflows/${name}\\.md`), name);
+  }
   const guard = await read("docs/workflows/project-guard.md");
   assert.match(guard, /`WAKE` is a liveness recommendation, not permission to disclose/);
   assert.match(guard, /Structural outbox\/Guard checks do not authenticate recipients/);
