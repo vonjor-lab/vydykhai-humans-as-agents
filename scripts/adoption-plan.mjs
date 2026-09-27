@@ -86,6 +86,9 @@ export function assessCapabilityReadiness(input) {
   let action;
   if (input.boundaryChange && !input.boundaryApproved) action = "PROPOSE_MIGRATION";
   else if (accepted && gaps.length === 0 && !input.boundaryChange) action = "REUSE_ACCEPTED";
+  else if (owner?.status === "RETURNED") action = "REVIEW_MAINTENANCE_RETURN";
+  else if (owner?.status === "PREPARED") action = "START_OWNER";
+  else if (owner?.status === "WAITING") action = "WAIT_OWNER";
   else if (owner) action = "REUSE_OWNER";
   else if (ownerNeedsReconciliation) action = "RECONCILE_OWNER";
   else if ((actionable.length || input.boundaryChange) && input.repairAttemptedFor === defectKey) action = "WAIT_CHECKPOINT";
@@ -97,6 +100,57 @@ export function assessCapabilityReadiness(input) {
     dependentDispatch: action === "REUSE_ACCEPTED" && packagingGaps.length === 0 ? "READY" : "WAIT_FOR_APPLICABLE_PROOF",
     independentWork: "CONTINUE_WITHIN_EXISTING_AUTHORITY",
     note: "Project State owns progress; this classifier does not authenticate sources or certify semantic proof." };
+}
+
+// A compact obligation in the existing State, not another progress ledger.
+// Lease state/owner/wait remain authoritative. This checks routing, not truth
+// of the supplied evidence or the runtime liveness of an agent.
+export function readCapabilityAdoption(content, leases) {
+  const lines = content.match(/^Capability adoption:.*$/gm) || [];
+  const framework = content.match(/^Framework:\s*(\d+\.\d+\.\d+)\b/m)?.[1];
+  const required = framework && compare(framework, "1.32.3") >= 0;
+  const issues = [];
+  const fail = detail => issues.push(`Capability adoption: ${detail}`);
+  if (!lines.length && !required) return { coverage: "LEGACY_UNVERIFIED", value: null, issues };
+  if (lines.length !== 1) {
+    fail("expected one structured record in Control Snapshot");
+    return { coverage: "INVALID", value: null, issues };
+  }
+  let value;
+  try { value = JSON.parse(lines[0].slice("Capability adoption:".length).trim()); }
+  catch {
+    if (!required && !lines[0].includes("{")) return { coverage: "LEGACY_UNVERIFIED", value: null, issues };
+  }
+  const concrete = v => typeof v === "string" && v.trim() && !/[\r\n]|<[^>]*>/.test(v) &&
+    !/^(none|unknown|pending|tbd)$/i.test(v.trim());
+  if (!value || value.schemaVersion !== 1 || !concrete(value.scope) || !concrete(value.evidence) ||
+      !["PENDING", "ACCEPTED", "ACCEPTED_WITH_LIMITS"].includes(value.status)) {
+    fail("invalid record; schemaVersion, scope, evidence and status are required");
+    return { coverage: "INVALID", value: value ?? null, issues };
+  }
+  if (value.status !== "PENDING") {
+    if (value.status === "ACCEPTED_WITH_LIMITS" && !concrete(value.limits)) fail("accepted limits must be explicit");
+    if (value.work != null || value.phase != null) fail("accepted result must not retain unfinished maintenance work");
+  } else if (!concrete(value.work) || !["INVENTORY", "REPAIR", "PROOF"].includes(value.phase)) {
+    fail("pending adoption needs an existing work key and INVENTORY, REPAIR or PROOF phase");
+  } else {
+    const matches = leases.filter(([work]) => work === value.work || work.startsWith(`${value.work} `));
+    if (matches.length !== 1) fail(`scope ${value.scope} requires routing: work must resolve to one lease`);
+    else {
+      const [, state, owner, , , , checkpoint] = matches[0];
+      if (!concrete(owner)) fail(`scope ${value.scope} requires routing: lease owner is unresolved`);
+      if (["CLOSED", "RETURNED", "OUTCOME_UNKNOWN"].includes(state)) {
+        fail(`scope ${value.scope} requires routing: ${state} is not continuing adoption`);
+      } else if (state === "PREPARED") {
+        fail(`scope ${value.scope} requires routing: reserved owner has not started`);
+      } else if (state === "WAITING") {
+        if (!concrete(checkpoint)) fail(`scope ${value.scope} requires routing: wait has no checkpoint`);
+      } else if (!["STARTED", "WORKING"].includes(state)) {
+        fail(`scope ${value.scope} requires routing: invalid lease state`);
+      }
+    }
+  }
+  return { coverage: issues.length ? "INVALID" : "STRUCTURE_ONLY", value, issues };
 }
 
 export function planAdoption({ manifest, managedFiles, agentsBlockHash, sourceRevision, previousLock, changelog }) {

@@ -18,6 +18,7 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 - Use `docs/workflows/task-context-handoff-template.md#return-authorization` for a task return. Reconcile the durable outbox and exact external outcome before replay. Preserve the sole delivery owner; unknown outcomes and security denials do not authorize another route.
 - Use `docs/workflows/framework-activation.md` for updates and `docs/workflows/project-guard.md` for quiet independent Guard coverage. Rotation follows the proof and human switch in the orchestrator workflow. An ordinary small fix does not require loading all of these routes.
 - At launch, unknown-readiness reconnect or relevant update, use the activation workflow to inventory module/context prerequisites and assign one focused shared maintenance owner for gaps. Keep capability readiness distinct from kit installation; wait only on dependent new dispatch. Existing evidence is reused on a current hot path.
+- On maintenance Return or cold reconnect, reconcile pending adoption with its actual lease. Inventory is a checkpoint: accept proven readiness, continue bounded documentation with the same owner, or retain one real wait. A finished installer is not a continuing adoption owner; use `framework-activation.md#consume-the-inventory-and-continue`.
 
 ## Finish
 

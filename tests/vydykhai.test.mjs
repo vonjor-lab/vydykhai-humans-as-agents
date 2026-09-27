@@ -82,7 +82,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.32.2");
+    assert.equal(lock.installedVersion, "1.32.3");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -204,7 +204,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.32\.2/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.32\.3/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -809,6 +809,26 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     assert.equal(healthyResult.memoryGraphTargetVersion, 4);
     assert.equal(healthyResult.memoryMigrationRequired, true);
     assert.equal(healthyResult.memoryValidationScope, "structure-and-references-only");
+    assert.equal(healthyResult.capabilityAdoption.coverage, "LEGACY_UNVERIFIED");
+    const adoption = { schemaVersion: 1, status: "PENDING", scope: "shared-context",
+      evidence: "inventory-return", work: "MAINT-2", phase: "INVENTORY" };
+    const withAdoption = healthyState.replace("## Control Snapshot", `## Control Snapshot\nFramework: 1.32.3\nCapability adoption: ${JSON.stringify(adoption)}`);
+    const addOwner = state => withAdoption.replace("## Pending Return Inbox",
+      `| MAINT-2 [SYSTEM] - preparation | ${state} | maint-worker | repo | base | setup | human-decision-1 | outbox |\n## Pending Return Inbox`);
+    for (const state of ["CLOSED", "RETURNED", "PREPARED", "WORKING", "WAITING"]) {
+      await writeFile(statePath, addOwner(state));
+      const checked = JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+      const routable = ["CLOSED", "RETURNED", "PREPARED"].includes(state);
+      assert.equal(checked.publicationReady, !routable, state);
+      assert.equal(checked.capabilityAdoption.issues.length > 0, routable, state);
+      if (state === "CLOSED") {
+        const guard = JSON.parse(run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+        assert.equal(guard.action, "WAKE", "active independent product work cannot mask closed maintenance");
+      }
+    }
+    await writeFile(statePath, healthyState.replace("## Control Snapshot", "## Control Snapshot\nFramework: 1.32.3"));
+    assert.equal(JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout).publicationReady, false);
+    await writeFile(statePath, healthyState);
     const checkpoint = { id: "CP-CLI-1", owner: "task-one", dueAt: new Date(Date.now() - 60000).toISOString(),
       expected: "verified task result", receiptId: "RETURN-CLI-1", authority: "accepted-task-contract" };
     const checkpointState = healthyState.replace("Project Guard: ACTIVE", "Project Guard: LIMITED").replace(

@@ -5,7 +5,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { assessCapabilityReadiness } from "../scripts/adoption-plan.mjs";
+import { assessCapabilityReadiness, readCapabilityAdoption } from "../scripts/adoption-plan.mjs";
+import { classifyGuard } from "../scripts/vydykhai.mjs";
 import { planAdoption } from "../scripts/adoption-plan.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -55,7 +56,7 @@ test("shared owner requires identity and waiting checkpoint; unchanged defect do
   assert.equal(check({ owner }).owner, "existing-task");
   assert.equal(check({ owner: { ...owner, id: "" } }).action, "RECONCILE_OWNER");
   assert.equal(check({ owner: { ...owner, status: "WAITING" } }).action, "RECONCILE_OWNER");
-  assert.equal(check({ owner: { ...owner, status: "WAITING", checkpoint: "approved-source-arrives" } }).action, "REUSE_OWNER");
+  assert.equal(check({ owner: { ...owner, status: "WAITING", checkpoint: "approved-source-arrives" } }).action, "WAIT_OWNER");
   const changedBindings = { ...bindings, "code-map": "relevant:code-map:r2" };
   const changedChecks = ids.map(id => ({ id, status: "MISSING", binding: changedBindings[id] }));
   const continued = check({ bindings: changedBindings, checks: changedChecks, owner });
@@ -94,11 +95,83 @@ test("1.32.1 update exposes one diagnostic requirement while repeated plan retri
   const changelog = await readFile(path.join(root, "docs/COLLABORATION_FRAMEWORK_CHANGELOG.md"), "utf8");
   const input = { manifest, managedFiles: { "core.md": "bundle" }, agentsBlockHash: "core", sourceRevision: "kit-source", changelog };
   const first = planAdoption({ ...input, previousLock: { installedVersion: "1.32.1" } });
-  assert.deepEqual(first.releases.map(r => r.version), ["1.32.2"]);
+  assert.deepEqual(first.releases.map(r => r.version), ["1.32.2", "1.32.3"]);
   assert.ok(first.requirements.some(r => r.id === "module-boundaries" && r.action.includes("first inventory")));
   const repeated = planAdoption({ ...input, previousLock: { installedVersion: "1.32.2", adoptionPlan: first } });
   assert.equal(repeated.id, first.id);
   assert.deepEqual(repeated.releases, first.releases);
+});
+
+test("returned inventory demands parent review, not another assignment or a passive owner", () => {
+  const owner = { id: "maintenance", scope: base.scope, status: "RETURNED" };
+  for (const trigger of ["update", "reconnect", "continue"]) {
+    const result = check({ trigger, owner });
+    assert.equal(result.action, "REVIEW_MAINTENANCE_RETURN");
+    assert.equal(result.owner, owner.id);
+    assert.equal(result.dependentDispatch, "WAIT_FOR_APPLICABLE_PROOF");
+  }
+  assert.equal(check({ owner: { ...owner, status: "PREPARED" } }).action, "START_OWNER");
+  assert.equal(check({ owner: { ...owner, status: "CLOSED" } }).action, "RECONCILE_OWNER");
+  const repaired = check({ owner, checks: verified });
+  assert.equal(repaired.action, "REVIEW_MAINTENANCE_RETURN", "returned files are not accepted route proof");
+  assert.equal(check({ owner, checks: verified, accepted: accepted() }).action, "REUSE_ACCEPTED");
+});
+
+const obligation = { schemaVersion: 1, status: "PENDING", scope: base.scope,
+  evidence: "inventory-receipt", work: "MAINT-1", phase: "INVENTORY" };
+const adoptionState = value => `Framework: 1.32.3\nCapability adoption: ${JSON.stringify(value)}`;
+const lease = (state, checkpoint = "inventory-return") =>
+  [["MAINT-1 [SYSTEM] - preparation", state, "maintenance", "repo", "baseline", "setup", checkpoint, "outbox"]];
+
+test("update replay closes inventory, repair, proof and retrieval with the same maintenance work", () => {
+  const owner = { id: "maintenance", scope: base.scope, status: "WORKING" };
+  const evaluate = (record, state) => readCapabilityAdoption(adoptionState(record), lease(state));
+  assert.deepEqual(evaluate(obligation, "WORKING").issues, []);
+  assert.ok(evaluate(obligation, "RETURNED").issues.some(i => /requires routing/.test(i)));
+  assert.ok(evaluate(obligation, "CLOSED").issues.length, "a finished installer cannot own pending capability");
+  assert.equal(check({ owner: { ...owner, status: "RETURNED" } }).action, "REVIEW_MAINTENANCE_RETURN");
+  const repair = { ...obligation, phase: "REPAIR", evidence: "reviewed-inventory-followup" };
+  assert.deepEqual(evaluate(repair, "WORKING").issues, []);
+  assert.equal(check({ owner }).action, "REUSE_OWNER");
+  assert.deepEqual(evaluate({ ...repair, phase: "PROOF", evidence: "repaired-docs" }, "WORKING").issues, []);
+  assert.equal(check({ checks: verified }).action, "REVIEW_ROUTE_PROOF");
+  const complete = { schemaVersion: 1, status: "ACCEPTED", scope: base.scope, evidence: "reviewed-route-and-retrieval-proof" };
+  assert.deepEqual(evaluate(complete, "CLOSED").issues, []);
+  assert.equal(check({ checks: verified, accepted: accepted() }).action, "REUSE_ACCEPTED");
+});
+
+test("pending capability cannot hide behind product continuation; existing Guard routes once", () => {
+  const stalled = readCapabilityAdoption(adoptionState(obligation), lease("CLOSED"));
+  const result = { ok: false, stateIssues: stalled.issues, graphIssues: [] };
+  const first = classifyGuard(result, "Project Guard: ACTIVE | Incident: none");
+  assert.equal(first.action, "WAKE");
+  assert.equal(classifyGuard(result, "", { acceptedIncidentId: first.incidentId }).action, "NOOP");
+  const progressing = readCapabilityAdoption(adoptionState({ ...obligation, phase: "REPAIR" }), lease("WORKING"));
+  assert.equal(classifyGuard({ ok: true, stateIssues: progressing.issues, graphIssues: [] }, "").action, "NOOP");
+});
+
+test("capability waits preserve pauses, access and repair limits without restarting work", () => {
+  for (const checkpoint of ["human-pause-1", "participant-access-1", "repair-limit-decision-1"]) {
+    assert.deepEqual(readCapabilityAdoption(adoptionState(obligation), lease("WAITING", checkpoint)).issues, []);
+    assert.equal(check({ owner: { id: "maintenance", scope: base.scope, status: "WAITING", checkpoint } }).action, "WAIT_OWNER");
+  }
+  assert.ok(readCapabilityAdoption(adoptionState(obligation), lease("WAITING", "none")).issues.length);
+  for (const state of ["PREPARED", "OUTCOME_UNKNOWN", "CLOSED", "RETURNED"]) {
+    assert.ok(readCapabilityAdoption(adoptionState(obligation), lease(state)).issues.length);
+  }
+  assert.ok(readCapabilityAdoption(adoptionState(obligation), []).issues.length);
+  assert.ok(readCapabilityAdoption(adoptionState(obligation), [...lease("WORKING"), ...lease("WORKING")]).issues.length);
+});
+
+test("legacy snapshots remain explicit unverified; new activation requires a structured obligation", () => {
+  assert.equal(readCapabilityAdoption("Framework: 1.32.2\nCapability adoption: pending", []).coverage, "LEGACY_UNVERIFIED");
+  assert.equal(readCapabilityAdoption("Framework: 1.32.3", []).coverage, "INVALID");
+  assert.equal(readCapabilityAdoption("Framework: 1.32.3\nCapability adoption: pending", []).coverage, "INVALID");
+  assert.equal(readCapabilityAdoption(adoptionState(obligation) + "\nCapability adoption: {}", []).coverage, "INVALID");
+  const limits = { schemaVersion: 1, status: "ACCEPTED_WITH_LIMITS", scope: base.scope, evidence: "accepted-scoped-proof" };
+  assert.ok(readCapabilityAdoption(adoptionState(limits), []).issues.length);
+  assert.equal(readCapabilityAdoption(adoptionState({ ...limits, limits: "unavailable-participant" }), []).coverage, "STRUCTURE_ONLY");
+  assert.ok(readCapabilityAdoption(adoptionState({ ...obligation, status: "ACCEPTED" }), lease("CLOSED")).issues.length);
 });
 
 test("CLI classifies a transient Project State export without writing adoption progress", async t => {
