@@ -165,12 +165,13 @@ export function assessCapabilityReadiness(input, { requireArchitecture = true } 
 // A compact obligation in the existing State, not another progress ledger.
 // Lease state/owner/wait remain authoritative. This checks routing, not truth
 // of the supplied evidence or the runtime liveness of an agent.
-export function readCapabilityAdoption(content, leases) {
+export function readCapabilityAdoption(content, leases, { now = Date.now() } = {}) {
   const lines = content.match(/^Capability adoption:.*$/gm) || [];
   const framework = content.match(/^Framework:\s*(\d+\.\d+\.\d+)\b/m)?.[1];
   const required = framework && compare(framework, "1.32.3") >= 0;
   const evidenceRequired = framework && compare(framework, "1.32.4") >= 0;
   const preparationRequired = framework && compare(framework, "1.32.6") >= 0;
+  const followThroughRequired = framework && compare(framework, "1.32.7") >= 0;
   const issues = [];
   const fail = detail => issues.push(`Capability adoption: ${detail}`);
   if (!lines.length && !required) return { coverage: "LEGACY_UNVERIFIED", value: null, issues };
@@ -206,6 +207,9 @@ export function readCapabilityAdoption(content, leases) {
         if (!concrete(value.plan) || !concrete(value.notice)) fail(`scope ${value.scope} requires routing: missing visible preparation plan`);
         if (!preparation.codeMapped && value.status !== "PENDING") fail("project code mapping is not complete; partial acceptance is not completion");
       }
+      if (followThroughRequired) {
+        issues.push(...checkPreparationSteps(value, preparation, leases, content, now));
+      }
       if (value.status !== "PENDING" && (status === "PENDING" ||
           (value.status === "ACCEPTED" && status !== "ACCEPTED"))) {
         fail("claimed acceptance lacks project architecture coverage, independently verified artifacts, route proof or declared limits");
@@ -239,6 +243,70 @@ export function readCapabilityAdoption(content, leases) {
   }
   if (readiness && issues.length) readiness.dependentDispatch = "WAIT_FOR_APPLICABLE_PROOF";
   return { coverage: issues.length ? "INVALID" : "STRUCTURE_ONLY", value, readiness, issues };
+}
+
+// Use actual leases and their existing checkpoint format, not a second queue.
+// A due checkpoint asks the manager to review; it never authorizes execution.
+function checkPreparationSteps(value, preparation, leases, content, now) {
+  const required = ["codeMapped", "modular"].filter(key => !preparation[key]);
+  if (!required.length) return [];
+  const issues = [];
+  const fail = detail => issues.push(`Capability adoption: scope ${value.scope} requires routing: ${detail}`);
+  const concrete = v => typeof v === "string" && !!v.trim() && !/[\r\n]|<[^>]*>/.test(v) &&
+    !/^(none|unknown|pending|tbd)$/i.test(v.trim());
+  const steps = value.steps;
+  if (!Array.isArray(steps) || !steps.length) {
+    fail("each preparation NO needs an actionable step, not plan links alone");
+    return issues;
+  }
+  for (const key of required) {
+    if (steps.filter(step => Array.isArray(step?.covers) && step.covers.includes(key)).length !== 1) {
+      fail(`${key} needs exactly one next step`);
+    }
+  }
+  for (const step of steps) {
+    if (!step || !Array.isArray(step.covers) || !step.covers.length ||
+        step.covers.some(key => !required.includes(key)) || new Set(step.covers).size !== step.covers.length ||
+        !concrete(step.work) || !concrete(step.action)) {
+      fail("invalid preparation step"); continue;
+    }
+    const matches = leases.filter(([work]) => work === step.work || work.startsWith(step.work + " "));
+    if (matches.length !== 1 || matches[0].length !== 8) {
+      fail("preparation step must resolve to one complete lease"); continue;
+    }
+    const [, state, owner, , , , checkpointText] = matches[0];
+    if (!concrete(owner) || !["STARTED", "WORKING", "WAITING"].includes(state)) {
+      fail("preparation step needs actual execution or an explicit wait, not a reserved or finished owner"); continue;
+    }
+    let checkpoint;
+    try { checkpoint = JSON.parse(checkpointText); } catch { /* Report the missing agreed checkpoint below. */ }
+    const fields = ["id", "owner", "dueAt", "expected", "receiptId", "authority"];
+    if (!checkpoint || fields.some(key => !concrete(checkpoint[key])) ||
+        Object.keys(checkpoint).some(key => !fields.includes(key)) ||
+        !owner.split(/\s+\/\s+/).includes(checkpoint.owner) ||
+        !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(checkpoint.dueAt) ||
+        !Number.isFinite(Date.parse(checkpoint.dueAt)) ||
+        new Date(checkpoint.dueAt).toISOString().replace(".000Z", "Z") !== checkpoint.dueAt.replace(".000Z", "Z")) {
+      fail("preparation lease needs its agreed owner, expected result, authority and finite review checkpoint"); continue;
+    }
+    if (step.decisionId !== undefined) {
+      const attention = (content.match(/^Human attention:.*$/gm) || []);
+      const line = attention[0] || "";
+      const id = line.match(/\|\s*ID:\s*([^|]+)/)?.[1]?.trim();
+      if (state !== "WAITING" || !concrete(step.decisionId) || attention.length !== 1 ||
+          !/^Human attention:\s*PENDING\b/.test(line) || id !== step.decisionId ||
+          ["Request", "Source", "Resume after"].some(key => !concrete(line.match(new RegExp("\\|\\s*" + key + ":\\s*([^|]+)"))?.[1]?.trim()))) {
+        fail("preparation decision must be the actual visible pending human action"); continue;
+      }
+      // A genuinely unanswered human gate stays quiet. Its source and relevance
+      // are reviewed by the manager, not inferred from a timer or unrelated reply.
+      continue;
+    }
+    if (!Number.isFinite(now) || Date.parse(checkpoint.dueAt) <= now) {
+      fail("preparation review checkpoint is due; reconcile the step without overriding pauses");
+    }
+  }
+  return issues;
 }
 
 export function planAdoption({ manifest, managedFiles, agentsBlockHash, sourceRevision, previousLock, changelog }) {
