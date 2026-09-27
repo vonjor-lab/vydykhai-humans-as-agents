@@ -113,6 +113,18 @@ export function assessCapabilityReadiness(input, { requireArchitecture = true } 
     ...(architecture.key ? { architectureKey: architecture.key } : {}) });
   const checks = new Map(input.checks.map(c => [c.id, c]));
   const gaps = required.filter(id => checks.get(id)?.status !== "VERIFIED" || checks.get(id)?.checkedBinding !== input.bindings[id]);
+  // Two independent project-level facts. Partial/local evidence remains useful
+  // input, but cannot turn either answer into yes.
+  const assessment = input.architecture;
+  const fullCoverage = !!assessment && assessment.scope === assessment.project &&
+    filled(assessment.reviewedBy) && filled(assessment.review) &&
+    assessment.inventory.areas.every(area => assessment.coverage.some(row => row.area === area && row.access === "AVAILABLE"));
+  const preparation = {
+    codeMapped: fullCoverage && !["code-map", "module-map"].some(id => gaps.includes(id)),
+    modular: fullCoverage && !["module-map", "module-contracts"].some(id => gaps.includes(id)) &&
+      assessment.coverage.every(row => row.modularity === "ENCAPSULATED" && row.documentation === "CURRENT"),
+  };
+  preparation.required = [!preparation.codeMapped && "COMPLETE_PROJECT_MAP", !preparation.modular && "ASSESS_AND_PLAN_MODULES"].filter(Boolean);
   const inaccessible = gaps.filter(id => checks.get(id)?.status === "INACCESSIBLE");
   const actionable = gaps.filter(id => !inaccessible.includes(id));
   // One unresolved adoption defect per shared scope. Evidence revisions and
@@ -144,7 +156,7 @@ export function assessCapabilityReadiness(input, { requireArchitecture = true } 
   else if (inaccessible.length) action = "LIMITED_ACCESS";
   else action = "REVIEW_ROUTE_PROOF";
   return { status: action === "REUSE_ACCEPTED" ? packagingGaps.length || architecture.limits.length ? "ACCEPTED_WITH_LIMITS" : "ACCEPTED" : "PENDING", action,
-    relevantKey, defectKey, gaps, inaccessible, packagingGaps, architecture, owner: owner?.id || null,
+    relevantKey, defectKey, gaps, inaccessible, packagingGaps, architecture, preparation, owner: owner?.id || null,
     dependentDispatch: action === "REUSE_ACCEPTED" && packagingGaps.length === 0 && architecture.limits.length === 0 ? "READY" : "WAIT_FOR_APPLICABLE_PROOF",
     independentWork: "CONTINUE_WITHIN_EXISTING_AUTHORITY",
     note: "Project State owns progress; this classifier does not authenticate sources or certify semantic proof." };
@@ -158,6 +170,7 @@ export function readCapabilityAdoption(content, leases) {
   const framework = content.match(/^Framework:\s*(\d+\.\d+\.\d+)\b/m)?.[1];
   const required = framework && compare(framework, "1.32.3") >= 0;
   const evidenceRequired = framework && compare(framework, "1.32.4") >= 0;
+  const preparationRequired = framework && compare(framework, "1.32.6") >= 0;
   const issues = [];
   const fail = detail => issues.push(`Capability adoption: ${detail}`);
   if (!lines.length && !required) return { coverage: "LEGACY_UNVERIFIED", value: null, issues };
@@ -186,9 +199,13 @@ export function readCapabilityAdoption(content, leases) {
       // Reuse the existing classifier; no second artifact ledger or owner state.
       const result = assessCapabilityReadiness({ ...value.readiness, trigger: "continue", scope: value.scope, owner: undefined },
         { requireArchitecture: !!framework && compare(framework, "1.32.5") >= 0 });
-      const { status, gaps, inaccessible, packagingGaps, architecture, dependentDispatch } = result;
-      readiness = { status, gaps, inaccessible, packagingGaps, architecture,
+      const { status, gaps, inaccessible, packagingGaps, architecture, preparation, dependentDispatch } = result;
+      readiness = { status, gaps, inaccessible, packagingGaps, architecture, preparation,
         dependentDispatch: value.status === "PENDING" ? "WAIT_FOR_APPLICABLE_PROOF" : dependentDispatch };
+      if (preparationRequired && preparation.required.length) {
+        if (!concrete(value.plan) || !concrete(value.notice)) fail(`scope ${value.scope} requires routing: missing visible preparation plan`);
+        if (!preparation.codeMapped && value.status !== "PENDING") fail("project code mapping is not complete; partial acceptance is not completion");
+      }
       if (value.status !== "PENDING" && (status === "PENDING" ||
           (value.status === "ACCEPTED" && status !== "ACCEPTED"))) {
         fail("claimed acceptance lacks project architecture coverage, independently verified artifacts, route proof or declared limits");
