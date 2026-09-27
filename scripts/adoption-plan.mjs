@@ -38,10 +38,54 @@ export function adoptionEvidenceScope(requirement, current, recorded = {}) {
     scopeSha256, acceptance: "NOT_ESTABLISHED", progressOwner: "Project State" };
 }
 
+// Metadata for the existing module map, not a new progress ledger. The inventory
+// is established from project sources before selecting an individual task route.
+export function assessArchitectureCoverage(value) {
+  const filled = v => typeof v === "string" && v.trim().length > 0;
+  const gaps = [], limits = [], improvements = [];
+  if (value === undefined) return { status: "PENDING", gaps: ["project assessment missing"], limits, improvements,
+    key: null, productMutation: "NOT_AUTHORIZED" };
+  if (!value || !filled(value.project) || !filled(value.scope) || !filled(value.inventory?.source) ||
+      !Array.isArray(value.inventory.areas) || !value.inventory.areas.length ||
+      value.inventory.areas.some(id => !filled(id)) || new Set(value.inventory.areas).size !== value.inventory.areas.length ||
+      !filled(value.source) || !Array.isArray(value.coverage) ||
+      new Set(value.coverage.map(row => row?.area)).size !== value.coverage.length ||
+      value.coverage.some(row => !row || !value.inventory.areas.includes(row.area) ||
+        !["AVAILABLE", "INACCESSIBLE"].includes(row.access) ||
+        !["ENCAPSULATED", "PARTIAL", "TANGLED", "UNKNOWN"].includes(row.modularity) ||
+        !["CURRENT", "GAPS", "UNKNOWN"].includes(row.documentation) || !filled(row.evidence) ||
+        (row.access === "INACCESSIBLE" && (row.modularity !== "UNKNOWN" || row.documentation !== "UNKNOWN"))) ||
+      (value.proposal !== undefined && (!filled(value.proposal?.source) ||
+        !["PROPOSED", "APPROVED", "DEFERRED"].includes(value.proposal.disposition) ||
+        (value.proposal.disposition !== "PROPOSED" && !filled(value.proposal.decision))))) {
+    throw new Error("Invalid architecture assessment");
+  }
+  if (value.scope !== value.project) gaps.push("assessment does not cover the declared project");
+  if (!filled(value.reviewedBy) || !filled(value.review)) gaps.push("project coverage review missing");
+  for (const area of value.inventory.areas) {
+    const row = value.coverage.find(row => row.area === area);
+    if (!row) { gaps.push(`${area}: not assessed`); continue; }
+    if (row.access === "INACCESSIBLE") {
+      limits.push(area);
+      if (!filled(row.followUp)) gaps.push(`${area}: access owner/checkpoint missing`);
+      continue;
+    }
+    if (row.modularity === "UNKNOWN" || row.documentation === "UNKNOWN") gaps.push(`${area}: assessment incomplete`);
+    if (["PARTIAL", "TANGLED"].includes(row.modularity)) improvements.push(area);
+    if ((row.modularity !== "ENCAPSULATED" || row.documentation !== "CURRENT") && !filled(row.followUp)) {
+      gaps.push(`${area}: finding has no owned follow-up`);
+    }
+  }
+  if (improvements.length && !value.proposal) gaps.push("modularity findings need a user-facing proposal");
+  return { status: gaps.length ? "PENDING" : limits.length ? "COMPLETE_WITH_LIMITS" : "COMPLETE",
+    gaps, limits, improvements, key: hash({ ...value, inventory: { ...value.inventory, areas: [...value.inventory.areas].sort() },
+      coverage: [...value.coverage].sort((a, b) => a.area.localeCompare(b.area)) }), productMutation: "NOT_AUTHORIZED" };
+}
+
 // Read-only transition advice over the existing Project State evidence. The
 // caller supplies source-backed checks; this function never certifies their
 // truth, creates tasks, or treats a file name as semantic coverage.
-export function assessCapabilityReadiness(input) {
+export function assessCapabilityReadiness(input, { requireArchitecture = true } = {}) {
   const required = ["code-map", "module-map", "module-contracts", "graph-routes", "verification"];
   const statuses = new Set(["VERIFIED", "MISSING", "STALE", "CONTRADICTORY", "INACCESSIBLE", "CANDIDATE"]);
   const filled = value => typeof value === "string" && value.trim().length > 0;
@@ -62,7 +106,11 @@ export function assessCapabilityReadiness(input) {
         new Set(input.modules.map(m => m.id)).size !== input.modules.length))) {
     throw new Error("Invalid capability readiness input");
   }
-  const relevantKey = hash({ scope: input.scope, bindings: Object.fromEntries(required.map(id => [id, input.bindings[id]])) });
+  const architecture = requireArchitecture || input.architecture !== undefined
+    ? assessArchitectureCoverage(input.architecture) : { status: "LEGACY_UNVERIFIED", gaps: [], limits: [], improvements: [], key: null };
+  const architecturePending = architecture.status === "PENDING";
+  const relevantKey = hash({ scope: input.scope, bindings: Object.fromEntries(required.map(id => [id, input.bindings[id]])),
+    ...(architecture.key ? { architectureKey: architecture.key } : {}) });
   const checks = new Map(input.checks.map(c => [c.id, c]));
   const gaps = required.filter(id => checks.get(id)?.status !== "VERIFIED" || checks.get(id)?.checkedBinding !== input.bindings[id]);
   const inaccessible = gaps.filter(id => checks.get(id)?.status === "INACCESSIBLE");
@@ -85,19 +133,19 @@ export function assessCapabilityReadiness(input) {
   const ownerNeedsReconciliation = candidateOwner && !owner;
   let action;
   if (input.boundaryChange && !input.boundaryApproved) action = "PROPOSE_MIGRATION";
-  else if (accepted && gaps.length === 0 && !input.boundaryChange) action = "REUSE_ACCEPTED";
+  else if (accepted && gaps.length === 0 && !architecturePending && !input.boundaryChange) action = "REUSE_ACCEPTED";
   else if (owner?.status === "RETURNED") action = "REVIEW_MAINTENANCE_RETURN";
   else if (owner?.status === "PREPARED") action = "START_OWNER";
   else if (owner?.status === "WAITING") action = "WAIT_OWNER";
   else if (owner) action = "REUSE_OWNER";
   else if (ownerNeedsReconciliation) action = "RECONCILE_OWNER";
-  else if ((actionable.length || input.boundaryChange) && input.repairAttemptedFor === defectKey) action = "WAIT_CHECKPOINT";
-  else if (actionable.length || input.boundaryChange) action = "ASSIGN_MAINTENANCE";
+  else if ((actionable.length || architecturePending || input.boundaryChange) && input.repairAttemptedFor === defectKey) action = "WAIT_CHECKPOINT";
+  else if (actionable.length || architecturePending || input.boundaryChange) action = "ASSIGN_MAINTENANCE";
   else if (inaccessible.length) action = "LIMITED_ACCESS";
   else action = "REVIEW_ROUTE_PROOF";
-  return { status: action === "REUSE_ACCEPTED" ? packagingGaps.length ? "ACCEPTED_WITH_LIMITS" : "ACCEPTED" : "PENDING", action,
-    relevantKey, defectKey, gaps, inaccessible, packagingGaps, owner: owner?.id || null,
-    dependentDispatch: action === "REUSE_ACCEPTED" && packagingGaps.length === 0 ? "READY" : "WAIT_FOR_APPLICABLE_PROOF",
+  return { status: action === "REUSE_ACCEPTED" ? packagingGaps.length || architecture.limits.length ? "ACCEPTED_WITH_LIMITS" : "ACCEPTED" : "PENDING", action,
+    relevantKey, defectKey, gaps, inaccessible, packagingGaps, architecture, owner: owner?.id || null,
+    dependentDispatch: action === "REUSE_ACCEPTED" && packagingGaps.length === 0 && architecture.limits.length === 0 ? "READY" : "WAIT_FOR_APPLICABLE_PROOF",
     independentWork: "CONTINUE_WITHIN_EXISTING_AUTHORITY",
     note: "Project State owns progress; this classifier does not authenticate sources or certify semantic proof." };
 }
@@ -136,13 +184,14 @@ export function readCapabilityAdoption(content, leases) {
         throw new Error("Missing or mismatched readiness scope");
       }
       // Reuse the existing classifier; no second artifact ledger or owner state.
-      const result = assessCapabilityReadiness({ ...value.readiness, trigger: "continue", scope: value.scope, owner: undefined });
-      const { status, gaps, inaccessible, packagingGaps, dependentDispatch } = result;
-      readiness = { status, gaps, inaccessible, packagingGaps,
+      const result = assessCapabilityReadiness({ ...value.readiness, trigger: "continue", scope: value.scope, owner: undefined },
+        { requireArchitecture: !!framework && compare(framework, "1.32.5") >= 0 });
+      const { status, gaps, inaccessible, packagingGaps, architecture, dependentDispatch } = result;
+      readiness = { status, gaps, inaccessible, packagingGaps, architecture,
         dependentDispatch: value.status === "PENDING" ? "WAIT_FOR_APPLICABLE_PROOF" : dependentDispatch };
       if (value.status !== "PENDING" && (status === "PENDING" ||
           (value.status === "ACCEPTED" && status !== "ACCEPTED"))) {
-        fail("claimed acceptance lacks independently verified artifacts, route proof or declared packaging limits");
+        fail("claimed acceptance lacks project architecture coverage, independently verified artifacts, route proof or declared limits");
       }
     } catch {
       fail("readiness needs scoped bindings and checks from the current adoption inventory");

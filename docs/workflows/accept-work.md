@@ -83,7 +83,7 @@ Check:
 - whether its observable questions match the judgment that person owns rather than delegating technical verification;
 - recipient-side exact-artifact/revision proof and agreed receipt check; for runnable data-backed work, exact environment, schema/migration revision, reproducible safe data source, recipient access, and a representative scenario;
 - tests, exact-current-code smoke, docs, and durable handoff;
-- whether every touched durable module/capability has a current Module Contract and any behavioral documentation impact is included in the same Candidate and accurate.
+- whether every touched durable module/capability has a current Module Contract and matching module-map entry in the same Candidate; new responsibilities join the project inventory, algorithm rationale and boundary/dependency changes are documented, and proposed modules/findings are not silently promoted or dropped. This checks affected coverage, not another full audit.
 
 ## 5. Classify
 

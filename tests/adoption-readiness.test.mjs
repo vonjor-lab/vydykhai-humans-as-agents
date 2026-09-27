@@ -14,7 +14,8 @@ const ids = ["code-map", "module-map", "module-contracts", "graph-routes", "veri
 const bindings = Object.fromEntries(ids.map(id => [id, `relevant:${id}:r1`]));
 const verified = ids.map(id => ({ id, status: "VERIFIED", binding: bindings[id], checkedBinding: bindings[id], source: `source:${id}` }));
 const base = { trigger: "launch", scope: "shared-top-level", sourceRevision: "HEAD-1", bindings, checks: [] };
-const check = input => assessCapabilityReadiness({ ...base, ...input });
+// Pre-assessment snapshots remain readable; current activation is tested separately.
+const check = input => assessCapabilityReadiness({ ...base, ...input }, { requireArchitecture: false });
 const proof = Object.fromEntries(["moduleFound", "contextDelivered", "retainedAndNewAcceptance", "documentationUpdated", "semanticIntegration", "nextRetrieval"].map(k => [k, `evidence:${k}`]));
 const accepted = () => ({ relevantKey: check({ checks: verified }).relevantKey, status: "ACCEPTED", acceptedBy: "project-owner", routeProof: proof });
 
@@ -95,7 +96,7 @@ test("1.32.1 update exposes one diagnostic requirement while repeated plan retri
   const changelog = await readFile(path.join(root, "docs/COLLABORATION_FRAMEWORK_CHANGELOG.md"), "utf8");
   const input = { manifest, managedFiles: { "core.md": "bundle" }, agentsBlockHash: "core", sourceRevision: "kit-source", changelog };
   const first = planAdoption({ ...input, previousLock: { installedVersion: "1.32.1" } });
-  assert.deepEqual(first.releases.map(r => r.version), ["1.32.2", "1.32.3", "1.32.4"]);
+  assert.deepEqual(first.releases.map(r => r.version), ["1.32.2", "1.32.3", "1.32.4", "1.32.5"]);
   assert.ok(first.requirements.some(r => r.id === "module-boundaries" && r.action.includes("first inventory")));
   const repeated = planAdoption({ ...input, previousLock: { installedVersion: "1.32.2", adoptionPlan: first } });
   assert.equal(repeated.id, first.id);
