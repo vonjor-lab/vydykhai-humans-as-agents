@@ -2087,13 +2087,13 @@ async function main() {
       if (plan.workerCheck.status !== "KIT_MATCH") process.exitCode = plan.workerCheck.status === "LIMITED" ? 2 : 1;
     }
     if (flags.input) {
-      plan.capabilityReadiness = assessCapabilityReadiness(JSON.parse(await readFile(path.resolve(flags.input), "utf8")));
+      plan.capabilityReadiness = assessCapabilityReadiness(JSON.parse(await readFile(path.resolve(flags.input), "utf8")), { requireArchitecture: true });
     }
     if (flags.json) console.log(JSON.stringify(plan, null, 2));
     else {
       printAdoption(plan);
       if (plan.workerCheck) console.log(`Worker kit: ${plan.workerCheck.status} (${plan.workerCheck.reason}); instruction readback is separate.`);
-      if (plan.capabilityReadiness) console.log(`Capability readiness: ${plan.capabilityReadiness.action}; gaps: ${plan.capabilityReadiness.gaps.join(", ") || "none"}`);
+      if (plan.capabilityReadiness) console.log(`Capability readiness: ${plan.capabilityReadiness.action}; gaps: ${[...plan.capabilityReadiness.gaps, ...plan.capabilityReadiness.architecture.gaps].join(", ") || "none"}`);
     }
     return;
   }
