@@ -21,7 +21,7 @@ DOD Control Line: <current DOD -> last accepted visible proof -> exact remaining
 Memory coverage: <graph/schema/watermark -> CURRENT/NEXT/CROSS_DOMAIN/PRIOR_MISS probes -> PASS, gap, or migration>
 Project Memory Graph: <current canonical link> | Last memory delta: <memory event id / NO_CHANGE / checked; routine control events do not advance it>
 Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current / pending / window / PR>
-Capability adoption: <module/context readiness accepted with limits / pending / blocked> | Scope/revision: <source-backed identity> | Evidence/gaps: <links and inaccessible areas> | Shared owner: <task/participant or none> | Next: <checkpoint or human decision> | Dependent dispatch: <ready / waiting for applicable proof>
+Capability adoption: {"schemaVersion":1,"status":"PENDING","scope":"<shared capability scope>","evidence":"<durable inventory or last reviewed result>","work":"<existing maintenance work key>","phase":"INVENTORY"}
 Framework context readback: <active orchestrator own cwd> | HEAD: <accepted project revision> | Doctor: <installed/source/schema/integrity> | Core reread: <PASS / gap> | Result: <PASS / ACTUAL_CONTEXT_COHERENCE>
 Agent routing: <capability-and-cost policy> | Resolved: <ORCHESTRATOR / DISCOVERY / EXECUTION / optional PREPARATION model-effort mappings> | Checked: <date/source/capability evidence> | Fallback: <none/pending/reason>
 Project activation: <PROJECT_READY | PROJECT_READY_WITH_LIMITS | NEEDS_DECISION | BLOCKED_BY_ACCESS> | Checked: <date/event>
@@ -112,6 +112,24 @@ The existing next action follows [Production Continuation](production-continuati
 Update this body after activation, dispatch or resume, material re-brief, human detour/correction, blocker, Return Sync consumption, acceptance, merge, alignment, health review, framework/schema update, rotation, or a Human attention transition. Build one next authoritative record, validate it, publish once, and read it back once; do not publish intermediate `prepared`, Guard, or formatting snapshots merely to make a later snapshot valid. `control-check --json` returns the Candidate hashes; after publication export the body again and run `control-check --expect-state-sha <candidate-sha256>` before declaring it current. Keep the accepted body or immutable revision reference until readback passes. `Work origin` records the latest material control decision or independent adapter check; compliant advisory analysis remains control-only and creates no per-run history. A routine transition that passes deterministic validation does not require a fresh Governor or Graph write. Governor authority is bound to its semantic incident and evidence, not every later snapshot hash; a prior receipt never closes a changed anomaly or authorizes live work. After one bounded `REPAIR`, rerun deterministic checks: PASS closes the incident without another model audit; the same remaining condition becomes `CONTROL_DEGRADED`, stops background retries, preserves the last accepted state, and surfaces one plain-language checkpoint. Run `node scripts/vydykhai.mjs control-check --state <exported-state.md> --graph <exported-graph.md>` before declaring activation, schema migration, or rotation cutover; an external runner uses `guard-check` on events and schedule. Framework activation additionally requires the active orchestrator's own cwd/HEAD and live/offline doctor readback; a maintenance or verification worktree cannot satisfy it.
 
 `control-check --json` separates `publicationReady` from operational `ok`. A complete snapshot may record Guard `LIMITED` with `publicationReady: true` and the limitation in `operationalIssues`; `ok` stays false, exit remains nonzero and Guard still evaluates the incident. Publish/read back that honest snapshot only within existing authority and keep its exact limitation, repair/wait and independent next work visible. Never roll it back merely to show an older healthy Guard or rebuild memory because of that status. Any other State/graph/outbox defect or expected-hash mismatch keeps `publicationReady: false`. This narrow publication result is not a general structural validator, activation success, semantic memory proof or permission to act; `guard-check` additionally evaluates live observation and can still require repair.
+
+## Capability Adoption
+
+For activation on 1.32.3 or later, `Capability adoption` is one single-line JSON record in Control Snapshot. Keep `schemaVersion: 1`, stable `scope`, and a durable `evidence` reference.
+`PENDING` names its existing `work` and `phase` (`INVENTORY`, `REPAIR`, `PROOF`); the matching Execution Lease owns actual state, owner and next receipt/wait checkpoint. Do not duplicate those fields here.
+`RETURNED`, `CLOSED`, unstarted or missing leases cannot silently hold pending adoption. A human/access/failed-repair wait stays `PENDING` with a `WAITING` lease and concrete checkpoint. Follow [activation continuation](framework-activation.md#consume-the-inventory-and-continue).
+
+After reviewed route/retrieval proof, use `ACCEPTED`, or `ACCEPTED_WITH_LIMITS`
+with explicit `limits`, and remove `work`/`phase`. Unresolved accessible map work
+is not an accepted limit. Independent consumer packaging can remain due at first
+consumption as an explicit scoped limit. Record the detailed source bindings,
+classifier export and proof in the linked evidence, not another control ledger.
+`control-check` validates this link to the lease; it cannot authenticate semantic
+acceptance or runtime activity. Older absent/prose records report
+`LEGACY_UNVERIFIED`, not adoption success; normalize the existing record from
+receipts once at the next authorized activation, without reinstalling or rescanning
+history. Missing/malformed records after new activation block its completion.
+The existing Guard routes a stranded obligation using its normal deduplicated incident handling; valid work and named waits remain quiet.
 
 ## Canonical Return Route Receipt
 

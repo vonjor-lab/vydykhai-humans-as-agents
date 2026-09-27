@@ -23,6 +23,24 @@ Give kit installation its own completed result. Track capability adoption separa
 Before mutation, use the existing [launch Action Receipt](framework-orchestrator.md)
 to establish the visible maintenance owner; internal advice is not that owner.
 Do not auto-pin service workers or move foreground on dispatch.
+
+### Consume the inventory and continue
+
+The maintenance contract owns preparation through usable documentation and scoped proof, not just kit installation or a list of missing files. Use `INVENTORY`, `REPAIR`, then `PROOF` as phases of that same work. Inventory is a checkpoint, not a failed repair attempt or permission to close the adoption obligation.
+Return evidence through the authorized durable route even when partial. Keep inventory and artifacts in durable project/tracker storage; a temporary local file alone is not a restart-safe handoff.
+
+On that Return, before ending the control turn, the orchestrator reviews current sources and consumes the result into one concrete disposition:
+
+- Accepted applicable evidence: record the capability result and its limits.
+- Accessible documentation gaps: rebrief/resume the same owner for bounded missing work within update authority. Reuse the inventory; do not request another general audit, create a duplicate owner, or ask for routine permission.
+- Architecture choice, human pause, unavailable access or exhausted repair: retain that work as `WAITING` on the named decision/access checkpoint. Surface the question only when human action is needed. Do not auto-resume paused work.
+
+`adoption-plan --input` distinguishes `START_OWNER`, `REUSE_OWNER`, `WAIT_OWNER` and `REVIEW_MAINTENANCE_RETURN`. A returned owner needs parent review, not passive reuse. A closed/mismatched owner needs reconciliation before assignment. If transport or outcome is unknown, preserve the exact delivery boundary rather than issuing a duplicate dispatch. The classifier advises; the orchestrator executes the authorized action and reads back its actual receipt.
+
+Keep the existing `Capability adoption` record linked to its Execution Lease until acceptance. Normalize old prose from existing receipts once on activation; no new history scan. Consume a return and publish the next phase/action atomically; do not mark it routed with only "inventory pending" or "owner selected". A running product task does not discharge this separate obligation.
+On update completion, maintenance Return, and cold reconnect, reconcile it against the actual lease/receipt. Normal hot-path turns need no new scan. A scheduled wait uses the existing agreed checkpoint review if available, never a new Guard.
+Explain the result simply: "Version installed; preparation continues in this task", "Ready, with these limits", or the one concrete blocking decision.
+
 `install` and `update` copy the kit and automatically expose the target adoption
 plan stored in `.vydykhai-lock.json`. In the installed workspace consume:
 
@@ -70,22 +88,11 @@ Review that conflict separately and pause only affected work. After installation
 and applicable skills and acknowledges its actual target, outcome, remaining action and boundaries in the existing receipt.
 Prove affected behavior before claiming effective adoption. No compulsory rotation, scheduler or blanket project pause. Apply Execution Readiness and `task-context-handoff-template.md#return-authorization` in the actual worker; preserve current sources, recipient, report scope, denials and approvals. The existing adapter adopts readiness/exact-turn observations and the missing-cwd, denied-report and empty-view replay under `production-continuation.md`; legacy observations cannot certify that coverage. A kit update neither grants host permission nor restarts rejected transfers. Reuse the unfinished-worker inventory, not another migration.
 
-The executor applies the accepted kit update and returns exact-code evidence.
-After authorized merge, the **active orchestrator itself** reads its own cwd,
-accepted project HEAD, updated core, installed/source versions, title and Project
-State, and runs its own live and offline doctor. Doctor checks kit integrity only;
-a maintenance worktree cannot certify active use or another participant.
-Preserve prior accepted operation if actual-context coherence is unavailable.
-Rotate only for an evidenced need through the existing confirmed rotation route.
+The executor applies the accepted kit update and returns exact-code evidence. After authorized merge, the **active orchestrator itself** reads its own cwd, accepted project HEAD, updated core, installed/source versions, title and Project State, and runs its own live and offline doctor. Doctor checks kit integrity only; a maintenance worktree cannot certify active use or another participant.
+Preserve prior accepted operation if actual-context coherence is unavailable. Rotate only for an evidenced need through the existing confirmed rotation route.
 
-Reconcile shared meaning bidirectionally with each relevant participant through
-the existing Shared Sync Contract and source coverage ledger. Each supplies a
-source-backed delta, explicit no-change or scoped gap and checks their own
-retrieval/readiness. One integration owner reconciles sources and advances the
-shared semantic watermark only after actual integration. Never copy private
-transcripts/secrets or let one machine certify another. An absent participant
-leaves that dependent scope pending; unrelated safe work continues. On return,
-consume the new delta and recheck affected scopes, not everyone's history again.
+Reconcile shared meaning bidirectionally with each relevant participant through the existing Shared Sync Contract and source coverage ledger. Each supplies a source-backed delta, explicit no-change or scoped gap and checks their own retrieval/readiness. One integration owner reconciles sources and advances the shared semantic watermark only after actual integration. Never copy private transcripts/secrets or let one machine certify another.
+An absent participant leaves that dependent scope pending; unrelated safe work continues. On return, consume the new delta and recheck affected scopes, not everyone's history again.
 
 The global watermark records integration/readback provenance; it is not a reuse
 key. Bind team-memory evidence to selected meaning/route (`sharedMeaningScope`),
@@ -116,21 +123,11 @@ actual event and installed timer evidence plus a silent repeat under
 
 ## Reuse evidence, finish or give one checkpoint
 
-Project State remains the authority for receipts, progress, acceptance and repair
-attempts. Record requirement id, relevant source/boundary references, evidence,
-limits and the next action in the existing update transition. Manifest `reuseBy`
-names applicability dimensions; `adoptionEvidenceScope` only compares those
-identities. Even a match means review existing evidence, never automatic success.
-Unrelated State edits do not invalidate it; missing/changed relevant identity
-requires scoped review. This planner does not parse receipts or enforce progress.
+Project State remains the authority for receipts, progress, acceptance and repair attempts. Record requirement id, relevant source/boundary references, evidence, limits and the next action in the existing update transition. Manifest `reuseBy` names applicability dimensions; `adoptionEvidenceScope` only compares those identities. Even a match means review existing evidence, never automatic success.
+Unrelated State edits do not invalidate it; missing/changed relevant identity requires scoped review. The planner does not execute transitions. `control-check` checks the recorded adoption-to-lease link, not semantic truth or actual agent activity.
 
-Reuse an accepted unchanged result and its limits. Preserve one bounded repair
-attempt per unchanged semantic defect across plan ids, retries and restarts;
-the defect identity is not the snapshot or plan hash. After one failed repair,
-stop retries, retain prior accepted operation, and roll back only the changed
-service bundle where safe. Never broadly roll back product code. Show one exact
-needs-access/decision checkpoint and retain the pending question/next productive
-action. Only materially changed evidence reopens the affected review.
+Reuse an accepted unchanged result and its limits. Preserve one bounded repair attempt per unchanged semantic defect across plan ids, retries and restarts; the defect identity is not the snapshot or plan hash. After one failed repair, stop retries, retain prior accepted operation, and roll back only the changed service bundle where safe. Never broadly roll back product code.
+Show one exact needs-access/decision checkpoint and retain the pending question/next productive action. Only materially changed evidence reopens the affected review.
 
 The active orchestrator remains the manager and records accepted target activation
 **with explicit limitations** or the exact pending boundary. Failed critical

@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 import { compileExecutableBrief, validateApplicationReceipt } from "./memory-brief.mjs";
 import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
-import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, kitIdentity } from "./adoption-plan.mjs";
+import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, readCapabilityAdoption, kitIdentity } from "./adoption-plan.mjs";
 import { classifyCheckpointReviews } from "./checkpoint-review.mjs";
 export { checkpointNoticeStillDue } from "./checkpoint-review.mjs";
 
@@ -1794,6 +1794,10 @@ async function controlCheck(
   const state = stateContent ?? await readFile(statePath, "utf8");
   const graph = await readFile(graphPath, "utf8");
   const stateIssues = validateProjectState(state, manifest);
+  const controlSnapshot = section(state, "## Control Snapshot", ["## Current DOD"]);
+  const capabilityAdoption = readCapabilityAdoption(controlSnapshot,
+    tableRows(section(state, "## Execution Leases", ["## Pending Return Inbox"]), /^Work$/i));
+  stateIssues.push(...capabilityAdoption.issues);
   const graphIssues = validateMemoryGraph(graph, manifest);
   const actualMemoryGraphVersion = memoryGraphVersion(graph);
   const stateSha256 = sha256(state);
@@ -1823,6 +1827,7 @@ async function controlCheck(
     policy: manifest.controlLoopPolicy.policy,
     publicationPolicy: manifest.controlStatePublicationPolicy?.policy || null,
     continuationPolicy: manifest.continuationPolicy || null,
+    capabilityAdoption,
     projectStateVersion: manifest.controlLoopPolicy.projectStateVersion,
     memoryGraphVersion: actualMemoryGraphVersion || manifest.memoryPolicy.graphVersion,
     memoryGraphTargetVersion: manifest.memoryPolicy.graphVersion,
@@ -1879,6 +1884,7 @@ export function classifyGuard(
     /human attention .* requires resurfacing/,
     /^Production continuation: .* requires routing/,
     /^Lease activity: .* requires routing/,
+    /^Capability adoption: .* requires routing/,
   ];
   const issues = [...result.stateIssues, ...result.graphIssues, ...(result.outbox?.issues || [])];
   const initialRequiredAction = issues.length > 0 && issues.every((issue) => wakeOnly.some((pattern) => pattern.test(issue)))
