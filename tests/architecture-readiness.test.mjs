@@ -169,6 +169,8 @@ test("installed CLI routes incomplete architecture to the existing owner and reu
   const missing = await run(data);
   assert.equal(missing.action, "ASSIGN_MAINTENANCE");
   assert.equal(missing.architecture.status, "PENDING");
+  assert.deepEqual(missing.preparation, { codeMapped: false, modular: false,
+    required: ["COMPLETE_PROJECT_MAP", "ASSESS_AND_PLAN_MODULES"] });
   data.owner = { id: "existing-maintenance", scope: data.scope, status: "WORKING" };
   assert.equal((await run(data)).action, "REUSE_OWNER");
   data.architecture = architecture();
@@ -179,6 +181,11 @@ test("installed CLI routes incomplete architecture to the existing owner and reu
   assert.equal((await run(data)).action, "REVIEW_MAINTENANCE_RETURN");
   const complete = await run(accept(data));
   assert.equal(complete.action, "REUSE_ACCEPTED");
+  assert.equal(complete.preparation.codeMapped, true);
+  assert.equal(complete.preparation.modular, false);
+  const human = spawnSync(process.execPath, [cli, "adoption-plan", dir, "--input", inputPath], { encoding: "utf8" });
+  assert.equal(human.status, 0, human.stderr);
+  assert.match(human.stdout, /Whole project mapped: YES; modular architecture confirmed: NO/);
   assert.equal(complete.architecture.productMutation, "NOT_AUTHORIZED");
   assert.equal(await readFile(lockPath, "utf8"), lock, "classification must not rewrite installed state");
 });

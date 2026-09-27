@@ -2093,7 +2093,11 @@ async function main() {
     else {
       printAdoption(plan);
       if (plan.workerCheck) console.log(`Worker kit: ${plan.workerCheck.status} (${plan.workerCheck.reason}); instruction readback is separate.`);
-      if (plan.capabilityReadiness) console.log(`Capability readiness: ${plan.capabilityReadiness.action}; gaps: ${[...plan.capabilityReadiness.gaps, ...plan.capabilityReadiness.architecture.gaps].join(", ") || "none"}`);
+      if (plan.capabilityReadiness) {
+        const readiness = plan.capabilityReadiness;
+        console.log(`Whole project mapped: ${readiness.preparation.codeMapped ? "YES" : "NO"}; modular architecture confirmed: ${readiness.preparation.modular ? "YES" : "NO"}`);
+        console.log(`Capability readiness: ${readiness.action}; gaps: ${[...readiness.gaps, ...readiness.architecture.gaps].join(", ") || "none"}`);
+      }
     }
     return;
   }
