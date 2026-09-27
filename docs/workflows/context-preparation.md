@@ -79,7 +79,7 @@ Contracts: public-use sections and fixed releases for consume, maintainer design
 permission to fabricate a complete history. Mechanical file/symbol indexes should
 link existing contracts; do not create duplicate prose documentation or split
 proven code solely to meet a universal line count. Update affected contracts/map
-links with the owning increment; reusable semantic changes remain owner-reviewed.
+links with the owning increment; reusable semantic changes remain owner-reviewed. Stop retrieval at an accepted public boundary, including composites: deliver its relevant obligations, not every child's source or algorithm history. Changing a composite needs its own maintainer context plus child public contracts; expand inside a child only for a separately scoped change or evidenced diagnostic question. Cheap retrieval is not permission to scan every closed module.
 
 Preparation is a profile for bounded evidence retrieval in an ordinary focused
 Discovery context with its existing lease/Return Sync, not a new management role.
