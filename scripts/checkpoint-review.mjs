@@ -6,7 +6,7 @@ const concrete = value => typeof value === "string" && !!value.trim() && value.t
 const activeStates = new Set(["PREPARED", "STARTED", "WORKING"]);
 const knownStates = new Set([...activeStates, "WAITING", "RETURNED", "CLOSED", "OUTCOME_UNKNOWN"]);
 
-// A deadline observes a missing receipt, never the runtime or the meaning of a pause.
+// A deadline observes a missing receipt or unsettled checkpoint, never runtime.
 // The adapter authenticates sources and delivery; this pure classifier grants neither.
 export function classifyCheckpointReviews({ leases, orchestrator, outbox }, {
   now = Date.now(), notifiedIncidentIds = [], uncertainIncidentIds = [], attentionIncidentIds = [],
@@ -61,11 +61,19 @@ export function classifyCheckpointReviews({ leases, orchestrator, outbox }, {
       binding: digest([work, lease.state, lease.owner, checkpoint, orchestrator]) };
     if (!outboxReady) { limited("outbox unavailable or malformed; absence is not established"); continue; }
     const receipt = outbox.returns.find(record => record.id === checkpoint.receiptId);
+    let reason = "expected-receipt-not-observed-by-agreed-checkpoint";
     if (receipt) {
       if (!receipt.fields?.["Task / context / PR / commit / artifact"]?.split(/\s+\/\s+/).includes(checkpoint.owner)) {
         limited("expected receipt has a different producer context"); continue;
       }
-      reviews.push({ ...entry, status: "RECEIPT_PRESENT", reason: "use-existing-return-route-not-a-deadline-notice" }); continue;
+      const route = outbox.routes.find(record => record.id === checkpoint.receiptId);
+      if (!route) {
+        reviews.push({ ...entry, status: "RECEIPT_PRESENT", reason: "use-existing-return-route-not-a-deadline-notice" }); continue;
+      }
+      // Consumption must settle or advance the lease. Do not redeliver the Return
+      // or infer a stopped worker from its still-active recorded checkpoint.
+      reason = "routed-receipt-still-has-active-checkpoint";
+      entry.binding = digest([entry.binding, receipt, route]);
     }
     if (Date.parse(checkpoint.dueAt) > now) {
       reviews.push({ ...entry, status: "QUIET", reason: "checkpoint-not-due" }); continue;
@@ -79,7 +87,7 @@ export function classifyCheckpointReviews({ leases, orchestrator, outbox }, {
       reviews.push({ ...entry, status: attentionIncidentIds.includes(incidentId) ? "ATTENTION_RECORDED" : "NEEDS_ATTENTION",
         reason: "prior-notice-unresolved-do-not-resend", preservePending: true }); continue;
     }
-    reviews.push({ ...entry, status: "REVIEW_DUE", reason: "expected-receipt-not-observed-by-agreed-checkpoint" });
+    reviews.push({ ...entry, status: "REVIEW_DUE", reason });
   }
   const due = reviews.filter(review => review.status === "REVIEW_DUE");
   return {
