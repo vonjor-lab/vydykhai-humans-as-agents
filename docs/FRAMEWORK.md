@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 1.32.7 | Status: canonical operating core
+Version: 1.32.8 | Status: canonical operating core
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 
@@ -32,8 +32,8 @@ Two common modes fail when used alone:
 Vydykhai combines them: design the compass and task contract top-down, let agents execute autonomously, and ask humans only at named checkpoints.
 
 ## Operating Model
-
 - The product compass holds the goal, users, desired outcome, DOD, non-goals, constraints, and current decisions. It may evolve, but never silently.
+- Preparation keeps the whole transition visible: accepted modules, current work and deferred groups. Each unresolved area has an existing owner or explicit wait with a review point; finishing one module cannot erase the rest. Reuse accepted maps and consume fixed module releases through public contracts, without repeatedly reading producer internals. Proposed restructuring still needs human agreement.
 - The canonical framework maintenance context evolves universal rules, releases, and tooling only; it never installs into product repositories or operates their orchestrators. Separately, each participant has one active Framework Orchestrator for a product stream. It organizes that project and never implements product code.
 - Research, lab, implementation, and project maintenance run in separate focused contexts. These are the only contexts that perform project work.
 - A shared Git-backed project repo carries the framework and project files. GitHub Repo + Issues/Projects/PRs is the recommended durable sync space; an equivalent tracker is valid only when every participant and orchestrator can reach the same linked state. Local copies and chat history are evidence, not the source of truth.

@@ -172,6 +172,7 @@ export function readCapabilityAdoption(content, leases, { now = Date.now() } = {
   const evidenceRequired = framework && compare(framework, "1.32.4") >= 0;
   const preparationRequired = framework && compare(framework, "1.32.6") >= 0;
   const followThroughRequired = framework && compare(framework, "1.32.7") >= 0;
+  const areaRoutingRequired = framework && compare(framework, "1.32.8") >= 0;
   const issues = [];
   const fail = detail => issues.push(`Capability adoption: ${detail}`);
   if (!lines.length && !required) return { coverage: "LEGACY_UNVERIFIED", value: null, issues };
@@ -208,7 +209,7 @@ export function readCapabilityAdoption(content, leases, { now = Date.now() } = {
         if (!preparation.codeMapped && value.status !== "PENDING") fail("project code mapping is not complete; partial acceptance is not completion");
       }
       if (followThroughRequired) {
-        issues.push(...checkPreparationSteps(value, preparation, leases, content, now));
+        issues.push(...checkPreparationSteps(value, preparation, leases, content, now, areaRoutingRequired));
       }
       if (value.status !== "PENDING" && (status === "PENDING" ||
           (value.status === "ACCEPTED" && status !== "ACCEPTED"))) {
@@ -247,7 +248,7 @@ export function readCapabilityAdoption(content, leases, { now = Date.now() } = {
 
 // Use actual leases and their existing checkpoint format, not a second queue.
 // A due checkpoint asks the manager to review; it never authorizes execution.
-function checkPreparationSteps(value, preparation, leases, content, now) {
+function checkPreparationSteps(value, preparation, leases, content, now, areaRoutingRequired = false) {
   const required = ["codeMapped", "modular"].filter(key => !preparation[key]);
   if (!required.length) return [];
   const issues = [];
@@ -259,9 +260,27 @@ function checkPreparationSteps(value, preparation, leases, content, now) {
     fail("each preparation NO needs an actionable step, not plan links alone");
     return issues;
   }
+  const assessment = value.readiness?.architecture;
+  const unresolved = areaRoutingRequired ? (assessment?.inventory.areas || []).filter(area => {
+    const row = assessment.coverage.find(row => row.area === area);
+    return !row || row.access !== "AVAILABLE" || row.modularity !== "ENCAPSULATED" || row.documentation !== "CURRENT";
+  }) : [];
   for (const key of required) {
-    if (steps.filter(step => Array.isArray(step?.covers) && step.covers.includes(key)).length !== 1) {
+    const count = steps.filter(step => Array.isArray(step?.covers) && step.covers.includes(key)).length;
+    if (key === "modular" && unresolved.length) {
+      if (!count) fail("modular needs area-scoped preparation steps");
+    } else if (count !== 1) {
       fail(`${key} needs exactly one next step`);
+    }
+  }
+  if (areaRoutingRequired) {
+    // Coverage lives on existing steps; lease state remains the only progress ledger.
+    for (const area of unresolved) {
+      const covering = steps.filter(step => Array.isArray(step?.covers) && step.covers.includes("modular") &&
+        Array.isArray(step.areas) && step.areas.includes(area));
+      if (covering.length !== 1) { fail(`${area}: unresolved area needs exactly one preparation step`); continue; }
+      const row = assessment.coverage.find(row => row.area === area);
+      if (row && row.followUp !== covering[0].work) fail(`${area}: followUp must name its covering step work`);
     }
   }
   for (const step of steps) {
@@ -269,6 +288,12 @@ function checkPreparationSteps(value, preparation, leases, content, now) {
         step.covers.some(key => !required.includes(key)) || new Set(step.covers).size !== step.covers.length ||
         !concrete(step.work) || !concrete(step.action)) {
       fail("invalid preparation step"); continue;
+    }
+    if (areaRoutingRequired && (step.covers.includes("modular") && unresolved.length
+      ? !Array.isArray(step.areas) || !step.areas.length || new Set(step.areas).size !== step.areas.length ||
+        step.areas.some(area => !unresolved.includes(area))
+      : step.areas !== undefined)) {
+      fail("modular steps must name only their unresolved inventory areas; other steps omit areas"); continue;
     }
     const matches = leases.filter(([work]) => work === step.work || work.startsWith(step.work + " "));
     if (matches.length !== 1 || matches[0].length !== 8) {
