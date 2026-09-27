@@ -22,4 +22,6 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 
 ## Finish
 
+Keep the whole preparation plan visible, not just the current product task. Under the activation workflow, every unresolved inventory area belongs to one live or explicitly waiting step; grouped areas may share one existing owner. On partial Return, carry the remaining areas and their review checkpoint forward before closing maintenance. Reuse accepted mapping; do not rescan the project or read accepted module internals merely to consume a public release.
+
 On an unchanged hot path, answer a direct user question if asked, then leave Project State untouched. For a material control decision, publish the changed next action or real wait through the existing guarded State publication and exact readback gate in `docs/workflows/framework-orchestrator.md`. Keep a human checkpoint only for a real unresolved authority or decision boundary; do not re-ask permission for accepted work.

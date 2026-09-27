@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.32.7",
+  "version": "1.32.8",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -597,7 +597,7 @@
     {
       "id": "own-transition",
       "since": "1.30.0",
-      "action": "One active orchestrator owns prepare/apply-prove/resume at a named safe checkpoint; reuse one maintenance executor and preserve baseline, pending human action and productive next step. Normalize the existing Capability adoption record from durable receipts into the structured Project State field and link pending work to its actual Execution Lease. Inventory is a checkpoint, not completion: on its Return, review the evidence and accept scoped readiness, resume bounded documentation/proof with the same owner, or retain an explicit human/access/failed-repair wait. Do not leave a finished installer as the pending owner. From 1.32.7 every preparation NO needs steps bound to an actual lease and finite agreed review checkpoint; a plan URL alone is insufficient. Reconcile tactical deferrals at stage completion, and present a concrete safe proposal now if historical intent conflicts; explicit pauses remain authoritative. Read back actual dispatch/start or the visible pending question, not just a future promise. Verify with control-check before completing activation; independent work and pauses continue. Reuse the returned inventory, not another installation, audit, Guard or duplicate task.",
+      "action": "One active orchestrator owns prepare/apply-prove/resume at a named safe checkpoint; reuse existing maintenance and preserve accepted baseline, pending human action and productive work. Normalize Capability adoption from durable receipts, not another audit. From 1.32.8 reconcile every unresolved architecture area into exactly one area-scoped modular step, with its row followUp naming that step work and a real execution/wait lease plus finite agreed review checkpoint. Group related areas; a local product step cannot cover unrelated obligations or retain a closed owner. Keep one codeMapped step for unfinished inventory and preserve source-backed completeness review. Before inventory or for global verification use one generic modular step without areas. Show the whole user-facing plan: ready modules, current work, deferred groups and safe return conditions. Preserve deferral evidence and actual pending Human attention/decisionId; review never grants refactoring or overrides pauses. On partial Return carry remaining areas to a continuing owner before closure. Verify meaningful scope as parent and declared routing with control-check; structural validity is not semantic or product proof. Read back actual start or concrete wait. Independent work continues; no new Guard, timer, full mapping pass, duplicate task or automatic product resume.",
       "reuseBy": [
         "acceptedBaseline",
         "transitionOwner"
