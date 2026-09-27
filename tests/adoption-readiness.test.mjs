@@ -95,7 +95,7 @@ test("1.32.1 update exposes one diagnostic requirement while repeated plan retri
   const changelog = await readFile(path.join(root, "docs/COLLABORATION_FRAMEWORK_CHANGELOG.md"), "utf8");
   const input = { manifest, managedFiles: { "core.md": "bundle" }, agentsBlockHash: "core", sourceRevision: "kit-source", changelog };
   const first = planAdoption({ ...input, previousLock: { installedVersion: "1.32.1" } });
-  assert.deepEqual(first.releases.map(r => r.version), ["1.32.2", "1.32.3"]);
+  assert.deepEqual(first.releases.map(r => r.version), ["1.32.2", "1.32.3", "1.32.4"]);
   assert.ok(first.requirements.some(r => r.id === "module-boundaries" && r.action.includes("first inventory")));
   const repeated = planAdoption({ ...input, previousLock: { installedVersion: "1.32.2", adoptionPlan: first } });
   assert.equal(repeated.id, first.id);
@@ -123,20 +123,68 @@ const adoptionState = value => `Framework: 1.32.3\nCapability adoption: ${JSON.s
 const lease = (state, checkpoint = "inventory-return") =>
   [["MAINT-1 [SYSTEM] - preparation", state, "maintenance", "repo", "baseline", "setup", checkpoint, "outbox"]];
 
+const currentState = value => `Framework: 1.32.4\nCapability adoption: ${JSON.stringify(value)}`;
+const readiness = { bindings, checks: verified, accepted: accepted() };
+
+test("published readiness cannot substitute graph routes for the other artifact checks", () => {
+  const graphOnly = { bindings, checks: verified.filter(c => c.id === "graph-routes") };
+  const pending = readCapabilityAdoption(currentState({ ...obligation, readiness: graphOnly }), lease("WORKING"));
+  assert.deepEqual(pending.issues, []);
+  assert.deepEqual(pending.readiness.gaps, ids.filter(id => id !== "graph-routes"));
+  assert.equal(pending.readiness.dependentDispatch, "WAIT_FOR_APPLICABLE_PROOF");
+  for (const status of ["ACCEPTED", "ACCEPTED_WITH_LIMITS"]) {
+    const claimed = { schemaVersion: 1, scope: base.scope, evidence: "graph-route-receipt", status,
+      limits: "packaging not yet proven", readiness: { ...graphOnly, accepted: accepted() } };
+    assert.equal(readCapabilityAdoption(currentState(claimed), []).coverage, "INVALID");
+  }
+});
+
+test("current adoption needs scoped evidence and complete leases, not an installation claim", () => {
+  assert.equal(readCapabilityAdoption(currentState(obligation), lease("WORKING")).coverage, "INVALID");
+  const record = { ...obligation, readiness };
+  assert.equal(readCapabilityAdoption(currentState(record), lease("WORKING")).coverage, "STRUCTURE_ONLY");
+  assert.equal(readCapabilityAdoption(currentState(record), [lease("WORKING")[0].slice(0, 7)]).coverage, "INVALID");
+  assert.equal(readCapabilityAdoption(currentState({ ...record, readiness: { ...readiness, scope: "narrower-task" } }), lease("WORKING")).coverage, "INVALID");
+  assert.equal(readCapabilityAdoption(currentState({ ...record, readiness: { bindings, checks: "bad" } }), lease("WORKING")).coverage, "INVALID");
+});
+
+test("source-bound acceptance, proof and packaging limits survive published State readback", () => {
+  const complete = { schemaVersion: 1, status: "ACCEPTED", scope: base.scope, evidence: "durable-proof", readiness };
+  assert.equal(readCapabilityAdoption(currentState(complete), []).readiness.dependentDispatch, "READY");
+  const missingProof = { ...readiness, accepted: { ...accepted(), routeProof: { ...proof, nextRetrieval: "" } } };
+  assert.equal(readCapabilityAdoption(currentState({ ...complete, readiness: missingProof }), []).coverage, "INVALID");
+  const packaging = { ...readiness, modules: [{ id: "producer", requiredForConsumption: true, behavior: "ACCEPTED", packaging: "UNPROVEN" }] };
+  assert.equal(readCapabilityAdoption(currentState({ ...complete, readiness: packaging }), []).coverage, "INVALID");
+  const limited = readCapabilityAdoption(currentState({ ...complete, status: "ACCEPTED_WITH_LIMITS", limits: "producer connection unproven", readiness: packaging }), []);
+  assert.deepEqual(limited.issues, []);
+  assert.equal(limited.readiness.dependentDispatch, "WAIT_FOR_APPLICABLE_PROOF");
+  const malformed = readCapabilityAdoption(currentState({ ...complete, work: "old-work" }), []);
+  assert.equal(malformed.coverage, "INVALID");
+  assert.equal(malformed.readiness.dependentDispatch, "WAIT_FOR_APPLICABLE_PROOF");
+  const stale = { ...readiness, checks: verified.map(c => c.id === "code-map" ? { ...c, checkedBinding: "old-map" } : c) };
+  assert.equal(readCapabilityAdoption(currentState({ ...complete, readiness: stale }), []).coverage, "INVALID");
+});
+
 test("update replay closes inventory, repair, proof and retrieval with the same maintenance work", () => {
   const owner = { id: "maintenance", scope: base.scope, status: "WORKING" };
-  const evaluate = (record, state) => readCapabilityAdoption(adoptionState(record), lease(state));
+  const evaluate = (record, state) => readCapabilityAdoption(currentState({ readiness: { bindings, checks: [] }, ...record }), lease(state));
   assert.deepEqual(evaluate(obligation, "WORKING").issues, []);
+  assert.deepEqual(evaluate(obligation, "WORKING").readiness.gaps, ids);
   assert.ok(evaluate(obligation, "RETURNED").issues.some(i => /requires routing/.test(i)));
   assert.ok(evaluate(obligation, "CLOSED").issues.length, "a finished installer cannot own pending capability");
   assert.equal(check({ owner: { ...owner, status: "RETURNED" } }).action, "REVIEW_MAINTENANCE_RETURN");
-  const repair = { ...obligation, phase: "REPAIR", evidence: "reviewed-inventory-followup" };
+  const repair = { ...obligation, phase: "REPAIR", evidence: "reviewed-inventory-followup",
+    readiness: { bindings, checks: verified.filter(c => c.id === "graph-routes") } };
   assert.deepEqual(evaluate(repair, "WORKING").issues, []);
+  assert.deepEqual(evaluate(repair, "WORKING").readiness.gaps, ids.filter(id => id !== "graph-routes"));
   assert.equal(check({ owner }).action, "REUSE_OWNER");
-  assert.deepEqual(evaluate({ ...repair, phase: "PROOF", evidence: "repaired-docs" }, "WORKING").issues, []);
+  const provedDocs = { ...repair, phase: "PROOF", evidence: "repaired-docs", readiness: { bindings, checks: verified } };
+  assert.deepEqual(evaluate(provedDocs, "WORKING").issues, []);
+  assert.equal(evaluate(provedDocs, "WORKING").readiness.dependentDispatch, "WAIT_FOR_APPLICABLE_PROOF");
   assert.equal(check({ checks: verified }).action, "REVIEW_ROUTE_PROOF");
-  const complete = { schemaVersion: 1, status: "ACCEPTED", scope: base.scope, evidence: "reviewed-route-and-retrieval-proof" };
+  const complete = { schemaVersion: 1, status: "ACCEPTED", scope: base.scope, evidence: "reviewed-route-and-retrieval-proof", readiness };
   assert.deepEqual(evaluate(complete, "CLOSED").issues, []);
+  assert.equal(evaluate(complete, "CLOSED").readiness.dependentDispatch, "READY");
   assert.equal(check({ checks: verified, accepted: accepted() }).action, "REUSE_ACCEPTED");
 });
 

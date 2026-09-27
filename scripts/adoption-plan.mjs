@@ -109,6 +109,7 @@ export function readCapabilityAdoption(content, leases) {
   const lines = content.match(/^Capability adoption:.*$/gm) || [];
   const framework = content.match(/^Framework:\s*(\d+\.\d+\.\d+)\b/m)?.[1];
   const required = framework && compare(framework, "1.32.3") >= 0;
+  const evidenceRequired = framework && compare(framework, "1.32.4") >= 0;
   const issues = [];
   const fail = detail => issues.push(`Capability adoption: ${detail}`);
   if (!lines.length && !required) return { coverage: "LEGACY_UNVERIFIED", value: null, issues };
@@ -128,6 +129,25 @@ export function readCapabilityAdoption(content, leases) {
     fail("invalid record; schemaVersion, scope, evidence and status are required");
     return { coverage: "INVALID", value: value ?? null, issues };
   }
+  let readiness = null;
+  if (evidenceRequired || value.readiness !== undefined) {
+    try {
+      if (!value.readiness || (value.readiness.scope !== undefined && value.readiness.scope !== value.scope)) {
+        throw new Error("Missing or mismatched readiness scope");
+      }
+      // Reuse the existing classifier; no second artifact ledger or owner state.
+      const result = assessCapabilityReadiness({ ...value.readiness, trigger: "continue", scope: value.scope, owner: undefined });
+      const { status, gaps, inaccessible, packagingGaps, dependentDispatch } = result;
+      readiness = { status, gaps, inaccessible, packagingGaps,
+        dependentDispatch: value.status === "PENDING" ? "WAIT_FOR_APPLICABLE_PROOF" : dependentDispatch };
+      if (value.status !== "PENDING" && (status === "PENDING" ||
+          (value.status === "ACCEPTED" && status !== "ACCEPTED"))) {
+        fail("claimed acceptance lacks independently verified artifacts, route proof or declared packaging limits");
+      }
+    } catch {
+      fail("readiness needs scoped bindings and checks from the current adoption inventory");
+    }
+  }
   if (value.status !== "PENDING") {
     if (value.status === "ACCEPTED_WITH_LIMITS" && !concrete(value.limits)) fail("accepted limits must be explicit");
     if (value.work != null || value.phase != null) fail("accepted result must not retain unfinished maintenance work");
@@ -137,6 +157,7 @@ export function readCapabilityAdoption(content, leases) {
     const matches = leases.filter(([work]) => work === value.work || work.startsWith(`${value.work} `));
     if (matches.length !== 1) fail(`scope ${value.scope} requires routing: work must resolve to one lease`);
     else {
+      if (matches[0].length !== 8) fail(`scope ${value.scope} requires routing: lease must retain all eight columns`);
       const [, state, owner, , , , checkpoint] = matches[0];
       if (!concrete(owner)) fail(`scope ${value.scope} requires routing: lease owner is unresolved`);
       if (["CLOSED", "RETURNED", "OUTCOME_UNKNOWN"].includes(state)) {
@@ -150,7 +171,8 @@ export function readCapabilityAdoption(content, leases) {
       }
     }
   }
-  return { coverage: issues.length ? "INVALID" : "STRUCTURE_ONLY", value, issues };
+  if (readiness && issues.length) readiness.dependentDispatch = "WAIT_FOR_APPLICABLE_PROOF";
+  return { coverage: issues.length ? "INVALID" : "STRUCTURE_ONLY", value, readiness, issues };
 }
 
 export function planAdoption({ manifest, managedFiles, agentsBlockHash, sourceRevision, previousLock, changelog }) {

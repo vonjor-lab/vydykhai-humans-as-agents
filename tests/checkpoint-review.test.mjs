@@ -89,8 +89,29 @@ test("a result, blocker or checkpoint follows the existing Return route, never a
     assert.deepEqual(result.pendingReturnIds, [checkpoint.receiptId]);
   }
   const routed = check(state(), `${receipt()}\n${route()}`);
-  assert.equal(routed.action, "NOOP"); assert.deepEqual(routed.pendingReturnIds, []);
+  assert.equal(routed.action, "REVIEW_DUE"); assert.deepEqual(routed.pendingReturnIds, []);
   assert.equal(routed.taskCompletion, "NOT_EVALUATED", "receipt presence is not parent closure");
+});
+
+test("routed result cannot indefinitely mask an unchanged active checkpoint", () => {
+  const outbox = `${receipt()}\n${route()}`;
+  const stale = check(state(), outbox);
+  assert.equal(stale.action, "REVIEW_DUE");
+  assert.equal(stale.reviews[0].reason, "routed-receipt-still-has-active-checkpoint");
+  assert.equal(check(state(), outbox, { now: now - 3600000 }).action, "NOOP", "preserve agreed deadline");
+  const id = stale.reviews[0].incidentId;
+  assert.equal(id, check().reviews[0].incidentId, "no second incident for the same checkpoint");
+  assert.equal(checkpointNoticeStillDue(check().reviews[0], stale), false, "new evidence cancels the old missing-result notice");
+  const sent = { notifiedIncidentIds: [id], noticeTimes: { [id]: new Date(now).toISOString() } };
+  assert.equal(check(state(), outbox, sent).action, "NOOP");
+  assert.equal(check(state(), outbox, { ...sent, now: now + 3600000 }).action, "NEEDS_ATTENTION");
+  assert.equal(check(state(), outbox, { ...sent, now: now + 3600000, attentionIncidentIds: [id] }).action, "NOOP");
+  for (const status of ["WAITING", "RETURNED", "CLOSED"]) {
+    assert.equal(check(state([lease({ state: status })], { state: "WAITING", owner: "manager-one", resumeWhen: "reviewed next human checkpoint" }), outbox).action, "NOOP");
+  }
+  assert.equal(check(state([lease({ state: "OUTCOME_UNKNOWN" })]), outbox).action, "LIMITED", "uncertain work is not resumed");
+  const next = { ...checkpoint, id: "CP-2", receiptId: "RETURN-2", dueAt: "2026-01-02T00:00:00Z", authority: "reviewed-repair-contract" };
+  assert.equal(check(state([lease({ checkpointText: JSON.stringify(next) })]), outbox).action, "NOOP");
 });
 
 test("unavailable, malformed and mismatched evidence is never an empty healthy source", () => {
@@ -162,8 +183,11 @@ test("closed-loop simulation: missed checkpoint, single notice, root reconciliat
   content = state([lease({ state: "WAITING" })], { state: "WAITING", resumeWhen: "input availability restored" });
   assert.equal(check(content, outbox, { ...delivered, now: now + 86400000 }).action, "NOOP");
   // Only a sourced change in the task contract arms a new checkpoint.
-  content = state([lease({ checkpointText: JSON.stringify({ ...checkpoint, id: "CP-2", authority: "input-restored-approved-resume" }) })]);
-  outbox = `${receipt()}\n${route()}`;
+  content = state([lease({ checkpointText: JSON.stringify({ ...checkpoint, id: "CP-2", receiptId: "RETURN-2", authority: "input-restored-approved-resume" }) })]);
+  outbox = receipt("RETURN-2");
+  assert.equal(check(content, outbox).action, "NOOP", "ordinary Return delivers the new result");
+  outbox += `\n${createReturnRoute({ returnReceiptId: "RETURN-2", consumer: "manager-one", routedNextAction: "task accepted and closed", evidence: "checked-result" })}`;
+  content = state([lease({ state: "CLOSED" })], { state: "WAITING", owner: "manager-one", resumeWhen: "human accepts delivered result" });
   assert.equal(check(content, outbox).action, "NOOP"); assert.equal(queueCalls, 1);
 });
 

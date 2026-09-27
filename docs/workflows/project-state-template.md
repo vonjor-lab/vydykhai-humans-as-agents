@@ -21,7 +21,7 @@ DOD Control Line: <current DOD -> last accepted visible proof -> exact remaining
 Memory coverage: <graph/schema/watermark -> CURRENT/NEXT/CROSS_DOMAIN/PRIOR_MISS probes -> PASS, gap, or migration>
 Project Memory Graph: <current canonical link> | Last memory delta: <memory event id / NO_CHANGE / checked; routine control events do not advance it>
 Framework: <installed version> | Upstream: <url> | Latest seen: <version> | Checked: <date/result> | Update: <current / pending / window / PR>
-Capability adoption: {"schemaVersion":1,"status":"PENDING","scope":"<shared capability scope>","evidence":"<durable inventory or last reviewed result>","work":"<existing maintenance work key>","phase":"INVENTORY"}
+Capability adoption: {"schemaVersion":1,"status":"PENDING","scope":"<shared capability scope>","evidence":"<durable inventory or last reviewed result>","work":"<existing maintenance work key>","phase":"INVENTORY","readiness":{"bindings":{"code-map":"<relevant code-map identity>","module-map":"<relevant module-map identity>","module-contracts":"<relevant contract identity>","graph-routes":"<relevant graph route identity>","verification":"<relevant verification identity>"},"checks":[]}}
 Framework context readback: <active orchestrator own cwd> | HEAD: <accepted project revision> | Doctor: <installed/source/schema/integrity> | Core reread: <PASS / gap> | Result: <PASS / ACTUAL_CONTEXT_COHERENCE>
 Agent routing: <capability-and-cost policy> | Resolved: <ORCHESTRATOR / DISCOVERY / EXECUTION / optional PREPARATION model-effort mappings> | Checked: <date/source/capability evidence> | Fallback: <none/pending/reason>
 Project activation: <PROJECT_READY | PROJECT_READY_WITH_LIMITS | NEEDS_DECISION | BLOCKED_BY_ACCESS> | Checked: <date/event>
@@ -115,21 +115,21 @@ Update this body after activation, dispatch or resume, material re-brief, human 
 
 ## Capability Adoption
 
-For activation on 1.32.3 or later, `Capability adoption` is one single-line JSON record in Control Snapshot. Keep `schemaVersion: 1`, stable `scope`, and a durable `evidence` reference.
-`PENDING` names its existing `work` and `phase` (`INVENTORY`, `REPAIR`, `PROOF`); the matching Execution Lease owns actual state, owner and next receipt/wait checkpoint. Do not duplicate those fields here.
+For current activation, `Capability adoption` is one single-line JSON record in Control Snapshot. Keep `schemaVersion: 1`, stable `scope`, and a durable `evidence` reference.
+`PENDING` names its existing `work` and `phase` (`INVENTORY`, `REPAIR`, `PROOF`); its complete eight-column Execution Lease owns actual state, owner and next receipt/wait checkpoint. Do not duplicate those fields here. From 1.32.4, add `readiness` with the existing classifier's `bindings`, `checks`, optional `modules` and accepted proof from [activation](framework-activation.md); trigger/scope come from this record, ownership from the lease. Store metadata/references only, not source bodies. Five independent artifact bindings are required; absent checks remain gaps. Graph routes do not certify implementation mapping.
 `RETURNED`, `CLOSED`, unstarted or missing leases cannot silently hold pending adoption. A human/access/failed-repair wait stays `PENDING` with a `WAITING` lease and concrete checkpoint. Follow [activation continuation](framework-activation.md#consume-the-inventory-and-continue).
 
 After reviewed route/retrieval proof, use `ACCEPTED`, or `ACCEPTED_WITH_LIMITS`
 with explicit `limits`, and remove `work`/`phase`. Unresolved accessible map work
 is not an accepted limit. Independent consumer packaging can remain due at first
-consumption as an explicit scoped limit. Record the detailed source bindings,
-classifier export and proof in the linked evidence, not another control ledger.
-`control-check` validates this link to the lease; it cannot authenticate semantic
+consumption as an explicit scoped limit. `readiness.accepted` contains the existing
+classifier's relevantKey, ACCEPTED status, acceptedBy and six routeProof references; keep detailed evidence at their sources, not another ledger.
+`control-check` validates the lease link and readiness claims; it cannot authenticate semantic
 acceptance or runtime activity. Older absent/prose records report
 `LEGACY_UNVERIFIED`, not adoption success; normalize the existing record from
 receipts once at the next authorized activation, without reinstalling or rescanning
 history. Missing/malformed records after new activation block its completion.
-The existing Guard routes a stranded obligation using its normal deduplicated incident handling; valid work and named waits remain quiet.
+The existing Guard routes a stranded obligation using its normal deduplicated incident handling; valid work and named waits remain quiet. When consuming an enrolled receipt, settle its checkpoint or replace it with a sourced new obligation and new expected receipt, updating the next action in the same transition. A still-active old checkpoint becomes due for reconciliation at its agreed deadline, not permission to restart work.
 
 ## Canonical Return Route Receipt
 

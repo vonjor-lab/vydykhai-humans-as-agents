@@ -5,7 +5,7 @@ import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { readLeaseActivityScope, readProductionContinuation, createReturnSync } from "../scripts/vydykhai.mjs";
+import { readLeaseActivityScope, readProductionContinuation, createReturnSync, createReturnRoute } from "../scripts/vydykhai.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -82,7 +82,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.32.3");
+    assert.equal(lock.installedVersion, "1.32.4");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -204,7 +204,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.32\.3/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.32\.4/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -828,6 +828,21 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     }
     await writeFile(statePath, healthyState.replace("## Control Snapshot", "## Control Snapshot\nFramework: 1.32.3"));
     assert.equal(JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout).publicationReady, false);
+    const artifactIds = ["code-map", "module-map", "module-contracts", "graph-routes", "verification"];
+    const artifactBindings = Object.fromEntries(artifactIds.map(id => [id, `scope:${id}:r1`]));
+    const graphOnly = { bindings: artifactBindings, checks: [{ id: "graph-routes", status: "VERIFIED",
+      source: "reviewed-route-document", binding: artifactBindings["graph-routes"], checkedBinding: artifactBindings["graph-routes"] }] };
+    const latestAdoption = { ...adoption, phase: "REPAIR", readiness: graphOnly };
+    const currentAdoptionState = addOwner("WORKING").replace("Framework: 1.32.3", "Framework: 1.32.4")
+      .replace(JSON.stringify(adoption), JSON.stringify(latestAdoption));
+    await writeFile(statePath, currentAdoptionState);
+    const partialReadiness = JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+    assert.equal(partialReadiness.publicationReady, true, "honest pending adoption preserves independent work");
+    assert.deepEqual(partialReadiness.capabilityAdoption.readiness.gaps, artifactIds.filter(id => id !== "graph-routes"));
+    assert.equal(partialReadiness.capabilityAdoption.readiness.dependentDispatch, "WAIT_FOR_APPLICABLE_PROOF");
+    const falseAcceptance = { schemaVersion: 1, status: "ACCEPTED", scope: adoption.scope, evidence: "route-only", readiness: graphOnly };
+    await writeFile(statePath, currentAdoptionState.replace(JSON.stringify(latestAdoption), JSON.stringify(falseAcceptance)));
+    assert.equal(JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout).publicationReady, false);
     await writeFile(statePath, healthyState);
     const checkpoint = { id: "CP-CLI-1", owner: "task-one", dueAt: new Date(Date.now() - 60000).toISOString(),
       expected: "verified task result", receiptId: "RETURN-CLI-1", authority: "accepted-task-contract" };
@@ -860,6 +875,18 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     assert.equal(received.action, "NOOP", "existing result cancels checkpoint notification");
     assert.equal(received.checkpointReview.reviews[0].status, "RECEIPT_PRESENT");
     assert.deepEqual(received.outbox.pendingReturnIds, [checkpoint.receiptId], "existing courier still sees the pending result");
+    await writeFile(outboxPath, (await readFile(outboxPath, "utf8")) + "\n" + createReturnRoute({
+      returnReceiptId: checkpoint.receiptId, consumer: "root-one", routedNextAction: "continue preparation", evidence: "reviewed-inventory" }));
+    const consumed = JSON.parse(runCli(checkpointArgs).stdout);
+    assert.equal(consumed.action, "REVIEW_DUE", "consumed receipt cannot hide an unchanged active checkpoint");
+    assert.equal(consumed.checkpointReview.reviews[0].reason, "routed-receipt-still-has-active-checkpoint");
+    assert.equal(consumed.checkpointReview.reviews[0].incidentId, noticeId);
+    assert.deepEqual(consumed.outbox.pendingReturnIds, [], "do not redeliver the consumed Return");
+    assert.equal(JSON.parse(runCli([...checkpointArgs, "--woken-incident", noticeId, "--notice-at", new Date().toISOString()]).stdout).action, "NOOP");
+    const resumedCheckpoint = { ...checkpoint, id: "CP-CLI-2", receiptId: "RETURN-CLI-2",
+      dueAt: new Date(Date.now() + 60000).toISOString(), authority: "reviewed-repair-resume-receipt" };
+    await writeFile(statePath, checkpointState.replace(JSON.stringify(checkpoint), JSON.stringify(resumedCheckpoint)));
+    assert.equal(JSON.parse(runCli(checkpointArgs).stdout).action, "NOOP", "actual continuation clears the old checkpoint without a duplicate task");
     await writeFile(outboxPath, "");
     await writeFile(statePath, healthyState);
     const routineState = healthyState.replace("Snapshot as of: event-7", "Snapshot as of: event-8")
