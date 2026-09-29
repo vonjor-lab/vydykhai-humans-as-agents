@@ -19,6 +19,14 @@ Before dispatching, re-briefing, or materially resuming a stale or paused task, 
 
 If a future option is useful but unnecessary for the nearest DOD, recommend keeping it out of current work. After human confirmation, return an `IDEA / ADD or REFINE` candidate with its value, touch keys, source, and recall trigger. If work deliberately steps aside, record the detour owner, target DOD/lease, return condition, and review-by before changing sequence.
 
+### Lead The Module Boundary Decision
+
+Use the shared [Module Delivery Cycle](module-delivery.md) for the outcome, ownership, context boundary and proof. Its [boundary decision](module-delivery.md#locate-before-editing) is mandatory when a promised reusable capability lacks a module, needs hidden intervention or draws consumer work into producer internals. Preserve accepted releases, reuse approved authority and give the user one concrete repair proposal; do not add a parallel manager or restart independent work.
+
+### Weekly Architecture Review
+
+Follow [Weekly Architecture Review](module-delivery.md#weekly-architecture-review) inside the existing Health Review. Keep its allowance-window binding and owned return obligation in Project State; do not run it as a prerequisite for each task.
+
 ## 2. Decide Whether To Discover
 
 Use [Context Route](context-route.md#choose-preparation-depth) to choose direct execution, bounded `DISCOVERY`, or Discovery with a bounded lead. Recover missing/stale/conflicting understanding before replacement work; age alone is not a trigger. A lead is justified by ongoing cross-task coherence that a one-time brief cannot cover, not task size. Use Research Context when product code is unnecessary; use a disposable Lab only when a working proof materially improves the decision.

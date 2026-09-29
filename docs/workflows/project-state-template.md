@@ -32,7 +32,7 @@ Task return mapping: durable outbox <tracker event/hook> | Durable discovery <ev
 Orchestrator rotation: <stable / repair / candidate / awaiting confirmation / cutover incomplete / complete> | Candidate / previous: <links or none>
 Tracker projection: <board/view> | Last reconciled: <event/date>
 Scope freshness: <policy days> | Last project-level check: <date/event/result>
-Work hygiene: <last checked/result; unresolved artifact disposition or none>
+Work hygiene: <last checked/result; architecture review quota/window identity + reset source/time or agreed window + bounded budget; completed date + evidence + next due; unresolved disposition/boundary deviations or none; due review linked to the same owned Detours And Recall obligation under start-work.md#weekly-architecture-review>
 Operational sources: <safe pointer ids and runbooks needed by current DOD, never values>
 Updated from durable event: <event/link/date>
 

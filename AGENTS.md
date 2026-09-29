@@ -6,6 +6,7 @@ This repository is the canonical source for the universal Vydykhai team-autopilo
 
 ## Maintenance Rules
 
+- Continue the approved efficiency transition from `docs/FRAMEWORK_TRANSITION_PLAN.md`. Preserve its rationale, remaining gates and evidence limits across handoffs; update progress after verification. This is a maintainer plan, not another installed runtime workflow.
 - Treat `vydykhai.json` as the machine-readable version and managed-path manifest.
 - Keep `docs/FRAMEWORK.md` and `docs/FRAMEWORK_RU.md` aligned in meaning and version.
 - Record conceptual changes in `docs/COLLABORATION_FRAMEWORK_CHANGELOG.md`.

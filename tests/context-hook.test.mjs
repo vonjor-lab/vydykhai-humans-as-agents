@@ -73,6 +73,65 @@ test("callback protocol denies pending source, then allows host-owned action onc
   assert.equal(receipt.acceptance, "NOT_ESTABLISHED");
 });
 
+test("lost post observation blocks another call id and changed request without replay", async t => {
+  const f = await setup(t); f.run(f.event); await f.review();
+  assert.equal(f.run(f.tool()), null);
+  const host = spawnSync("/bin/sh", ["-c", f.command], { encoding: "utf8" });
+  assert.equal(host.status, 0);
+  assert.match(f.run(f.tool("retry")).hookSpecificOutput.permissionDecisionReason, /HOOK_ACTION_PENDING_RECONCILE/);
+  const previousRequest = f.state.request.sha256;
+  f.state.request = await f.put("new-hook-request.json", { ...f.request, operation: "preflight",
+    task: await f.put("next-task.json", f.task) });
+  assert.notEqual(f.state.request.sha256, previousRequest);
+  await f.put("hook-state.json", f.state);
+  assert.match(f.run(f.tool("new-request")).hookSpecificOutput.permissionDecisionReason, /HOOK_ACTION_PENDING_RECONCILE/);
+  assert.equal(f.run(f.tool("read", "cat actions.log")), null);
+  assert.equal(await readFile(path.join(f.root, "actions.log"), "utf8"), "called\n");
+  const post = { ...f.tool(), hook_event_name: "PostToolUse", tool_response: { exit_code: 0, output: host.stdout } };
+  assert.equal(f.run(post), null); // Late evidence closes only that observation gap.
+  assert.ok(denied(f.run(f.tool()))); // Old invocation stays consumed.
+  assert.equal(f.run(f.tool("deliberate-next")), null); // A different call still needs host authority.
+});
+
+test("pending action survives a new session and turn without blocking unrelated tools", async t => {
+  const f = await setup(t); f.run(f.event); await f.review();
+  const original = f.tool();
+  assert.equal(f.run(original), null);
+  f.event.session_id = "successor-session"; f.event.turn_id = "successor-turn";
+  f.run(f.event); await f.review();
+  assert.match(f.run(f.tool("new-id")).hookSpecificOutput.permissionDecisionReason, /HOOK_ACTION_PENDING_RECONCILE/);
+  assert.equal(f.run(f.tool("read", "cat hook-state.json")), null);
+  assert.equal(f.run({ ...original, hook_event_name: "PostToolUse", tool_response: { observed: "late original response" } }), null);
+  assert.equal(f.run(f.tool("after-observation")), null);
+  await noAction(f);
+});
+
+test("invalid or conflicting observation cannot free a pending managed command", async t => {
+  for (const mode of ["wrong-binding", "invalid-json", "conflicting-post", "damaged-admission", "wrong-identity"]) {
+    const f = await setup(t); f.run(f.event); await f.review();
+    assert.equal(f.run(f.tool()), null);
+    const key = hash({ session: f.event.session_id, tool: "call-1" });
+    if (mode === "wrong-binding") await f.put(`hook-metadata/observation-${key}.json`, {
+      schema: "context.hook-observation.v1", admissionSha256: "0".repeat(64),
+      responseSha256: hash("response"), acceptance: "NOT_ESTABLISHED" });
+    if (mode === "invalid-json") await f.put(`hook-metadata/observation-${key}.json`, "{");
+    if (mode === "conflicting-post") {
+      const post = { ...f.tool(), hook_event_name: "PostToolUse", tool_response: "first" };
+      assert.equal(f.run(post), null);
+      assert.match(f.run({ ...post, tool_response: "different" }).systemMessage, /HOOK_OBSERVATION_CONFLICT/);
+    }
+    if (mode === "damaged-admission") await f.put(`hook-metadata/admission-${key}.json`, {});
+    if (mode === "wrong-identity") {
+      const admission = JSON.parse(await readFile(path.join(f.root, "hook-metadata", `admission-${key}.json`), "utf8"));
+      admission.identity.tool = "forged-call";
+      await f.put(`hook-metadata/admission-${key}.json`, admission);
+    }
+    assert.ok(denied(f.run(f.tool("retry"))), mode);
+    assert.equal(f.run(f.tool("read", "cat hook-state.json")), null);
+    await noAction(f);
+  }
+});
+
 test("new input invalidates managed preparation while unchanged callbacks and recovery stay quiet", async t => {
   const f = await setup(t); f.run(f.event); await f.review();
   assert.equal(f.run(f.tool()), null);
@@ -134,7 +193,7 @@ test("new materially different prompt cannot reuse a valid old source classifica
   await noAction(f);
 });
 
-test("concurrent callback processes create one admission and one post receipt without executing commands", async t => {
+for (const secondId of ["call-1", "call-2"]) test(`concurrent call-1/${secondId} admits one pending action and deduplicates its post receipt`, async t => {
   const f = await setup(t); f.run(f.event); await f.review();
   const concurrent = async event => {
     const input = JSON.stringify(event);
@@ -145,9 +204,10 @@ test("concurrent callback processes create one admission and one post receipt wi
       }); child.stdin.end(input);
     });
   };
-  const outcomes = await Promise.all([concurrent(f.tool()), concurrent(f.tool())]);
+  const calls = [f.tool(), f.tool(secondId)];
+  const outcomes = await Promise.all(calls.map(concurrent));
   assert.equal(outcomes.filter(x => x === null).length, 1); assert.equal(outcomes.filter(denied).length, 1);
-  const post = { ...f.tool(), hook_event_name: "PostToolUse", tool_response: { observed: "synthetic callback only" } };
+  const post = { ...calls[outcomes.findIndex(x => x === null)], hook_event_name: "PostToolUse", tool_response: { observed: "synthetic callback only" } };
   assert.deepEqual(await Promise.all([concurrent(post), concurrent(post)]), [null, null]);
   assert.equal((await readdir(path.join(f.root, "hook-metadata"))).filter(n => n.startsWith("observation-")).length, 1);
   await noAction(f);

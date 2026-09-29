@@ -3,6 +3,7 @@ import { access, lstat, readFile, realpath } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { canonicalJson, sha256, compileExecutableBrief, checkPreparedContext } from "./memory-brief.mjs";
+import { moduleAccessPolicy } from "./module-access.mjs";
 
 const CAPABILITY = "retained-progress-v1";
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -191,10 +192,21 @@ export async function runContextTransition(request, services = {}) {
     const identity = await bytes(task.identity.path);
     requireThat(sha256(identity) === task.identity.sha256, "WORKSPACE_IDENTITY_MISMATCH");
     const module = await pinned(task.module);
-    schema(module, "context.module.v1", ["publicBoundary", "implementationFiles", "retainedExampleIds", "oracle", "verificationScript", "verificationCommand"]);
+    schema(module, "context.module.v1", ["publicBoundary", "implementationFiles", "retainedExampleIds", "oracle", "verificationScript", "verificationCommand",
+      ...(Object.hasOwn(module, "access") ? ["access"] : [])]);
     requireThat(id(module.publicBoundary) && list(module.implementationFiles, text) && unique(module.implementationFiles) &&
       list(module.retainedExampleIds, id) && unique(module.retainedExampleIds) && ref(module.oracle) && ref(module.verificationScript));
     requireThat(module.implementationFiles.every(f => task.candidateFiles.includes(f)), "CANDIDATE_BOUNDARY_MISSING");
+    const checkModuleAccess = async () => {
+      if (!Object.hasOwn(module, "access")) return;
+      let policy;
+      try {
+        policy = moduleAccessPolicy(module.access, module.publicBoundary, task.candidateFiles);
+        module.implementationFiles.forEach(policy.assertMutation);
+      } catch (e) { throw new ContextError(/^(?:MODULE|CONSUMED_MODULE)_[A-Z_]+$/.test(e.message) ? e.message : "MODULE_ACCESS_INVALID"); }
+      for (const r of policy.immutable) requireThat(sha256(await bytes(r.path)) === r.sha256, "MODULE_RELEASE_CHANGED");
+    };
+    await checkModuleAccess();
     commandShape(task.action);
     commandShape(module.verificationCommand);
     requireThat(keys(task.memory, ["publicBoundary", "items", "atomicInput"]) && task.memory.publicBoundary === module.publicBoundary,
@@ -377,6 +389,7 @@ export async function runContextTransition(request, services = {}) {
       review.meaningDigest === snapshot.meaningDigest && review.contentDigest === capsule.contentDigest &&
       review.publicBoundary === module.publicBoundary, "MEMORY_REVIEW_MISMATCH");
     const recheck = async (phase = "BEFORE_ACTION", references = []) => {
+      await checkModuleAccess();
       requireThat(sha256(await bytes(request.task.path)) === request.task.sha256 &&
         sha256(await bytes(task.identity.path)) === task.identity.sha256, `TASK_CHANGED_${phase}`);
       const latest = await intake();
@@ -384,11 +397,13 @@ export async function runContextTransition(request, services = {}) {
         latest.dependencyDigest === snapshot.dependencyDigest, `CONTEXT_CHANGED_${phase}`);
       gate("bind", { ...prepared, envelope, atomicRender }, latest);
       for (const reference of references) requireThat(sha256(await bytes(reference.path)) === reference.sha256, "ARTIFACT_HASH_MISMATCH");
-      if (phase === "DURING_VERIFICATION") await checkPackageApproval();
+      if (phase !== "BEFORE_ACTION") await checkPackageApproval();
     };
     await recheck();
     const basis = { sourceDigest: snapshot.sourceDigest, dependencyDigest: snapshot.dependencyDigest,
-      unknownHistory: "outside declared exports", requiredAssertionIds: bound.requiredAssertionIds };
+      unknownHistory: "outside declared exports", requiredAssertionIds: bound.requiredAssertionIds,
+      moduleAccess: Object.hasOwn(module, "access") ? "DECLARED_BOUNDARIES" : "LEGACY_UNCHECKED",
+      processIsolation: "NOT_ENFORCED", replayProtection: "CALLER_OWNED" };
     if (request.operation === "prepare") return { status: "PREPARED", operation: "prepare", enforcement: "reference", coverageBasis: basis, capsule, sourceReceipt, stats };
     requireThat(request.readback !== null, "WORKER_READBACK_REQUIRED");
     const readback = await pinned(request.readback);
@@ -401,6 +416,7 @@ export async function runContextTransition(request, services = {}) {
       action: { ...task.action, cwd: await resolvePath(task.action.cwd, true) }, stats };
     if (request.operation === "resume") {
       const result = await command(task.action, root, resolvePath, stats);
+      await recheck("DURING_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef]);
       return { status: "ACTION_COMPLETED", operation: "resume", enforcement: "reference", coverageBasis: basis,
         action: { commandSha256: result.commandSha256, stdoutSha256: result.stdoutSha256, exitCode: result.exitCode,
           executable: result.executable, cwd: result.cwd }, sourceReceipt, stats };
@@ -455,8 +471,8 @@ export async function runContextTransition(request, services = {}) {
     return { status: error instanceof ContextError && error.limited ? "LIMITED" : "BLOCKED",
       code: error instanceof ContextError ? error.code : "CONTEXT_IO_OR_INPUT_INVALID",
       reference: error instanceof ContextError && /^[A-Za-z0-9_.:/-]{1,256}$/.test(error.reference || "") ? error.reference : null,
-      actionOutcome: stats.dependentCommands ? "OUTCOME_UNKNOWN" : "NOT_INVOKED",
-      replayRequiresReconciliation: stats.dependentCommands > 0, enforcement: "reference", sourceReceipt, stats };
+      actionOutcome: stats.commands ? "OUTCOME_UNKNOWN" : "NOT_INVOKED",
+      replayRequiresReconciliation: stats.commands > 0, enforcement: "reference", sourceReceipt, stats };
   }
 }
 

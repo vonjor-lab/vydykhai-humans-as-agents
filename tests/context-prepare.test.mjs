@@ -94,27 +94,84 @@ export function buildBundle(input) {
   await w.put("bundle-release.mjs", release);
   const contract = "Public bundle/v1 contract: buildBundle accepts id/label entries, trims labels, preserves id spelling, sorts by id, returns schema/entries/count, and rejects case-insensitive duplicate ids with DUPLICATE_ID. No state, provider calls or hidden configuration. Connect bundle-release.mjs unchanged.\n";
   await w.put("public-contract.md", contract);
+  await w.put("connection-proof.md", "Fixture release accepted for the declared bundle/v1 examples; not a claim of universal input coverage.\n");
+  const pin = async name => ({ path: name, sha256: createHash("sha256").update(await readFile(path.join(w.root, name))).digest("hex") });
+  pkg.schema = "context.package.v2";
+  pkg.moduleAccess = { schema: "context.module-access.v1", modules: [
+    { id: "buildBundle", intent: "create", contractFiles: ["public-contract.md"], privatePaths: ["candidate.mjs"], release: null },
+    { id: "releasedBundle", intent: "consume", contractFiles: ["public-contract.md"], privatePaths: ["producer"],
+      release: { artifact: await pin("bundle-release.mjs"), connection: await pin("connection-proof.md") } }
+  ] };
   pkg.module.contractFiles = ["public-contract.md"];
-  pkg.dependencies = [{ id: "accepted-producer-release", path: "bundle-release.mjs", scope: pkg.task.scope }];
+  pkg.dependencies = [{ id: "accepted-producer-release", path: "bundle-release.mjs", scope: pkg.task.scope },
+    { id: "accepted-connection", path: "connection-proof.md", scope: pkg.task.scope }];
   pkg.navigation = { taskId: pkg.task.id, worker: pkg.task.worker, preparedBy: "preparer", outcome: "Connect the accepted release without producer changes",
     assignment: { owner: pkg.owner, requestId: "consume", question: "Find public connection instructions only; do not inspect producer internals", phase: "initial", previous: null },
     references: [{ id: "public-contract", path: "public-contract.md", quote: contract.trim(), purpose: "Consumer interface", appliesTo: "task" }],
     constraints: [{ text: "Consume the fixed release; internal development is out of scope.", appliesTo: "task", referenceIds: ["public-contract"] }], gaps: [] };
+  // Reject leakage even when the preparer labels it as its own read-only context.
+  for (const forbidden of ["producer/internal.mjs", "bundle-release.mjs"]) {
+    const attack = structuredClone(pkg);
+    attack.navigation.references.push({ id: "leak", path: forbidden, quote: "PRIVATE", purpose: "Cheap search", appliesTo: "preparation" });
+    await w.put("attack.json", attack);
+    const blocked = w.cli("context-prepare", "plan", "--input", "attack.json", "--output", "rejected");
+    assert.equal(blocked.code, "CONSUMED_MODULE_CONTEXT_FORBIDDEN");
+    await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
+  }
   await w.put("package.json", pkg);
   assert.equal(w.plan().status, "PLAN_READY"); assert.equal(w.confirm().status, "PREPARED");
   const delivery = w.prepare("read", "--worker", pkg.task.worker);
   assert.equal(delivery.status, "DELIVERED");
   assert.doesNotMatch(JSON.stringify(delivery), /PRIVATE_IMPLEMENTATION|const seen|toLowerCase/);
+  assert.deepEqual(delivery.moduleAccess, pkg.moduleAccess);
+  assert.match(delivery.moduleAccessSha256, /^[a-f0-9]{64}$/);
   assert.deepEqual(delivery.navigation.references.map(r => r.path), ["public-contract.md"]);
   await w.put("worker-evidence.txt", "Read public contract and applicable obligations. Consumer connects the fixed release; no producer edits, private imports or CSV expansion.");
   assert.equal(w.prepare("ack", "--worker", pkg.task.worker, "--evidence", "worker-evidence.txt").status, "ACKNOWLEDGED");
   await w.put("candidate.mjs", "export { buildBundle } from './bundle-release.mjs';\n");
-  assert.equal(w.run("resume").status, "ACTION_COMPLETED");
-  assert.equal(w.run("accept").status, "VERIFIED");
+  const resumed = w.run("resume"), accepted = w.run("accept");
+  assert.equal(resumed.status, "ACTION_COMPLETED");
+  assert.equal(accepted.status, "VERIFIED");
+  assert.equal(accepted.coverageBasis.moduleAccess, "DECLARED_BOUNDARIES");
+  assert.equal(accepted.receipt.productAcceptance, "NOT_ESTABLISHED");
   assert.equal(await readFile(path.join(w.root, "bundle-release.mjs"), "utf8"), release);
-  // A consumer-side attempt to patch the release invalidates the existing route.
-  await w.put("bundle-release.mjs", release + "// unauthorized tuning\n");
+  const supplement = structuredClone(pkg);
+  supplement.schema = "context.package.v1";
+  delete supplement.moduleAccess;
+  supplement.navigation.assignment = { owner: pkg.owner, requestId: "downgrade", question: "Additional fact", phase: "supplement",
+    previous: { plan: await pin("prepared/plan.json"), approval: await pin("prepared/approval.json") } };
+  await w.put("downgrade.json", supplement);
+  assert.equal(w.cli("context-prepare", "plan", "--input", "downgrade.json", "--output", "downgrade").code, "MODULE_ACCESS_REBRIEF_REQUIRED");
+  assert.equal(w.run("preflight").status, "READY", "a rejected supplement leaves the approved task usable");
+  // Arbitrary native actions are not sandboxed; detect a changed release after
+  // the action and freeze replay instead of reporting a completed transition.
+  await w.put("action.mjs", "import { appendFileSync } from 'node:fs'; appendFileSync('bundle-release.mjs', '// unauthorized tuning\\n');\n");
+  const mutated = w.run("resume");
+  assert.equal(mutated.code, "MODULE_RELEASE_CHANGED");
+  assert.equal(mutated.actionOutcome, "OUTCOME_UNKNOWN");
+  assert.equal(mutated.replayRequiresReconciliation, true);
   assert.equal(w.run("preflight").code, "PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
+});
+
+test("legacy packets remain executable but cannot report declared module boundaries", async t => {
+  const w = await workspace(t); await w.ready();
+  const result = w.run("preflight");
+  assert.equal(result.status, "READY");
+  assert.equal(result.coverageBasis.moduleAccess, "LEGACY_UNCHECKED");
+});
+
+test("the shipped modular example reaches retained/new verification on its owned change", async t => {
+  const w = await workspace(t);
+  await w.put("package.json", await w.json("package-modular.json"));
+  await w.ready();
+  const candidate = (await readFile(path.join(w.root, "candidate.mjs"), "utf8"))
+    .replace("const key = entry.id;", "const key = entry.id.toLowerCase();");
+  await w.put("candidate.mjs", candidate);
+  assert.equal(w.run("resume").status, "ACTION_COMPLETED");
+  const result = w.run("accept");
+  assert.equal(result.status, "VERIFIED", JSON.stringify(result));
+  assert.equal(result.coverageBasis.moduleAccess, "DECLARED_BOUNDARIES");
+  assert.equal(result.receipt.productAcceptance, "NOT_ESTABLISHED");
 });
 
 test("quote-only handoff is portable across workspaces and excludes the preparer's question", async t => {
@@ -203,7 +260,9 @@ test("ordinary package reaches action and acceptance after the worker changes Ca
   assert.equal(failedCheck.code, "BEHAVIOR_MISMATCH", "unfixed Candidate must fail N1");
   assert.equal(failedCheck.stats.verificationCommands, 1);
   assert.equal(failedCheck.stats.dependentCommands, 0);
-  assert.equal(failedCheck.actionOutcome, "NOT_INVOKED");
+  assert.equal(failedCheck.actionOutcome, "OUTCOME_UNKNOWN", "the verifier ran; its failure cannot certify absent side effects");
+  assert.equal(failedCheck.replayRequiresReconciliation, true);
+  await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
   assert.equal(failedCheck.returnSync, undefined, "a failed local check is not a terminal task return");
   const before = await readFile(path.join(w.root, "candidate.mjs"), "utf8");
   await w.put("candidate.mjs", before.replace("const key = entry.id;", "const key = entry.id.toLowerCase();"));
