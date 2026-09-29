@@ -30,7 +30,7 @@ Use one cycle: goal -> applicable decisions -> module boundaries -> sufficient c
 | 2. Verify technical boundaries and continuity | Demonstrate supported access limits, retained checkpoint/next action, sole Return delivery, duplicate suppression and reconciliation after uncertainty. Record unguarded native-tool/host boundaries honestly. | CANDIDATE_READY for the reference/protocol route; current native-host enforcement and adoption remain unproven |
 | 3. Test known control failures | Frozen sanitized cases compare current and simplified instructions. Preserve real stops and human authority while reducing unjustified stops. Distinguish static lint, executable state tests and actual model behavior. | COMPLETE for the frozen decision screen: C01-C08, 16 Astra Low attempts, 24/24 checks per arm; not a real multi-turn delivery proof or model-routing calibration |
 | 4. Run one useful transition pilot | Reuse the existing inventory; package one bounded capability from raw input with independent cases, no hidden repair, then connect it through public artifacts twice without producer source. Preserve accepted releases. | COMPLETE for bounded functional feasibility: four attempts used, one explicitly approved documentation correction, two independently tested connections and retained-code continuation. Native finalization and usage gaps prevent a clean whole-loop/economy claim. |
-| 5. Accept migration and publication | Update discovers missing preparation, assigns a safe checkpoint, verifies real adoption and resumes the outstanding outcome. Review whole-chain benefit and limitations before release. | OFFLINE_REHEARSAL_PASSED: old installed updater, one preparation owner, v1-to-v2 task continuation and one routed Return. Live owner adoption and release decision remain pending; this file grants neither publication nor product installation. |
+| 5. Accept migration and publication | Update discovers missing preparation, assigns a safe checkpoint, verifies real adoption and resumes the outstanding outcome. Review whole-chain benefit and limitations before release. | RELEASE_AUTHORIZED after the offline rehearsal, fixed decision screen and bounded module pilot. On 2026-09-29 the user accepted publication before live project adoption; adoption remains mandatory during each project's update and is not yet proven. Publication completion requires remote source/tag/Release/archive/updater readback. No product operations are authorized here. |
 
 Do not mark a stage complete solely because its instructions or tests exist. Record observed evidence and remaining gaps here. Later stages may reuse existing proven mechanisms; this plan does not authorize rebuilding Guard or memory wholesale.
 
@@ -68,7 +68,7 @@ Do not mark a stage complete solely because its instructions or tests exist. Rec
 - Budget correction: the producer used 280,925 combined tokens. A free native mock showed that the configured counter does not enforce gross input/output usage. The earlier enforcement claim is withdrawn, not the recorded usage or rubric scores. After a verified spending hold, the user separately approved the remaining three runs at 90 seconds without a gross-token ceiling. All four invocations are used; no retries or extra judges. Two native processes hit the wall limit: A continuation retained verified work but no final/usage event; B retained final text and usage in the stream, not a normal exit. Known usage for three attempts is 494,648 combined; the full token total and subscription effect remain UNKNOWN. Do not repeat durable completed work to obtain a cleaner report.
 - At executable-pilot completion, the next gate was Stage 5 adoption/continuation evidence on an authorized host, whole-chain cost review and result-retention/documentation-navigation checks. Preparation PATH, absent-map wording and a free verifier's config error were experiment defects, not new universal architecture requirements. The original framework candidate remained frozen; all 320 deterministic tests passed. Publication and product installation remained separately gated.
 - Stage 5 isolated rehearsal on 2026-09-29 passed through the actual old installed updater and new installed CLI. Missing preparation remained owned at a safe checkpoint; a reviewed supplement migrated the retained task from legacy to declared module boundaries, passed old/new examples and routed one durable Return without repeating the action. Branch, HEAD, dirty code, human pause and pending question survived. All 321 tests passed with zero failures or skips; framework validation, whitespace and frozen-input checks passed. No paid call or installed-rule change was needed. See [the update rehearsal and whole-chain review](evidence/update-continuation-2026-09-29.md).
-- Remaining decision: accept the candidate's release/adoption scope without promoting deterministic fixture decisions into autonomous project behavior or subscription savings. The isolated rehearsal closes the joined technical regression, not the live owner's activation gate. No further speculative model run, Guard/memory rebuild, or repeat of completed pilot work is planned; additional evidence collection would require its own explicit scope and budget. Project activation stays with its project owner after an authorized release/candidate handoff.
+- Accepted release scope on 2026-09-29: publish the verified universal kit now, retaining live project-owner activation as a mandatory check during each project's update. The isolated rehearsal closes the joined technical regression, not autonomous project behavior or subscription savings. No further speculative model run, Guard/memory rebuild, or repeat of completed pilot work is planned; additional evidence collection requires its own scope and budget. Project activation stays with its project owner.
 
 ## Boundary And Continuity Evidence
 
@@ -133,7 +133,7 @@ The pre-split core contained event mechanics as well as invariants. This routing
 
 Keep the current published version until a candidate passes the agreed gates. Decide minor versus major from actual compatibility impact, not text size or ambition. Release, merge, paid evaluation, product refactoring, deployment and project installation retain their respective authorization boundaries.
 
-Benefit sought: repeated use of retained capabilities with less total work and fewer regressions. Evidence required: executable checks plus observed control and product use. Complexity limit: no new permanent roles, competing memory stores, timers or redundant acceptance loops without demonstrated necessity. Current verdict: simplify; no release claim yet.
+Benefit sought: repeated use of retained capabilities with less total work and fewer regressions. Release evidence: executable checks, the fixed control-decision screen and bounded module use. Live project adoption and whole-chain allowance remain unproven and must be evaluated during project rollout. Complexity limit: no new permanent roles, competing memory stores, timers or redundant acceptance loops without demonstrated necessity. Current verdict: simplify; publication authorized, completion must be read back.
 
 ### Candidate Review
 
@@ -168,13 +168,14 @@ not an independent paid model judgment.
 
 ### Release Packaging
 
-The user subsequently requested publication. Version metadata, citation date,
-changelog and current-version test expectations are prepared for **1.33.0**.
-The remaining explicit scope question is whether to publish the verified
-universal kit now and retain actual project-owner adoption as a mandatory check
-during each project's update. Until that decision, the PR remains draft; no tag,
-Release, project inspection or project installation is authorized by this note.
+On 2026-09-29 the user explicitly confirmed publishing **1.33.0** now, with
+actual project-owner adoption retained as a mandatory check during each project's
+update. Version metadata, citation date, changelog and current-version test
+expectations are aligned. Merge, tag and GitHub Release are authorized after
+checks; project inspection, installation and new paid calls are not included.
 Do not mark live adoption or allowance savings as proven by the offline rehearsal.
+Record publication completion in the existing PR after fresh remote readback;
+authorization and local metadata alone do not prove publication.
 
 The measured candidate is preserved at commit
 `16bbcf593be8c0277bcfc7dff1f1d16225ad74fb`. The original freeze is unchanged.
