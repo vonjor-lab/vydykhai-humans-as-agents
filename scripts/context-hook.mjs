@@ -60,6 +60,33 @@ async function lock(dir) {
   throw new Error("HOOK_BUSY_RECONCILE"); // Never steal a crashed/concurrent owner's lock.
 }
 
+function checkAdmission(value, key) {
+  need(keys(value, ["schema", "identity", "requestSha256", "eventSetSha256", "sourceDigest", "outcome"]) &&
+    value.schema === "context.hook-admission.v1" && value.outcome === "AWAITING_NATIVE_OBSERVATION" &&
+    [value.requestSha256, value.eventSetSha256, value.sourceDigest].every(digest), "HOOK_ADMISSION_INVALID");
+  const i = value.identity;
+  need(keys(i, ["eventKey", "session", "turn", "tool", "commandSha256"]) &&
+    [i.session, i.turn, i.tool].every(text) && digest(i.commandSha256) &&
+    i.eventKey === hookEventKey({ session_id: i.session, turn_id: i.turn }) &&
+    key === invocationKey({ session_id: i.session, tool_use_id: i.tool }), "HOOK_ADMISSION_INVALID");
+}
+
+async function checkPendingAction(dir, names, commandSha256) {
+  // The directory lock covers all call/session ids in this retained metadata window.
+  for (const name of names.filter(n => /^admission-[a-f0-9]{64}\.json$/.test(n))) {
+    const key = name.slice("admission-".length, -".json".length), admission = await json(path.join(dir, name));
+    checkAdmission(admission, key);
+    if (admission.identity.commandSha256 !== commandSha256) continue;
+    const conflict = await optional(path.join(dir, `observation-conflict-${key}.json`));
+    need(conflict === null, "HOOK_OBSERVATION_CONFLICT");
+    const observation = await optional(path.join(dir, `observation-${key}.json`));
+    need(observation !== null, "HOOK_ACTION_PENDING_RECONCILE");
+    need(keys(observation, ["schema", "admissionSha256", "responseSha256", "acceptance"]) &&
+      observation.schema === "context.hook-observation.v1" && observation.admissionSha256 === hash(admission) &&
+      digest(observation.responseSha256) && observation.acceptance === "NOT_ESTABLISHED", "HOOK_OBSERVATION_INVALID");
+  }
+}
+
 // Library preflight is read-only: shared context checks plus transport-to-source binding.
 export async function preflightHook(state, root, events, services = {}) {
   need(keys(state, ["schema", "request", "eventBindings"]) && state.schema === "context.hook-state.v1" &&
@@ -119,10 +146,13 @@ export async function handleContextHook(event, options, services = {}) {
     const prior = await optional(admissionFile);
     if (kind === "PostToolUse") {
       need(prior && hash(prior.identity) === hash(identity), "HOOK_ADMISSION_MISSING");
+      checkAdmission(prior, key);
       need(Object.hasOwn(event, "tool_response"), "HOOK_RESPONSE_MISSING");
       const receipt = { schema: "context.hook-observation.v1", admissionSha256: hash(prior),
         responseSha256: hash(event.tool_response), acceptance: "NOT_ESTABLISHED" };
       const file = path.join(dir, `observation-${key}.json`), existing = await optional(file);
+      if (existing !== null && hash(existing) !== hash(receipt)) await save(path.join(dir, `observation-conflict-${key}.json`), {
+        admissionSha256: hash(prior), observedSha256: hash(existing), conflictingSha256: hash(receipt) });
       need(existing === null || hash(existing) === hash(receipt), "HOOK_OBSERVATION_CONFLICT");
       if (!existing) await save(file, receipt);
       return quiet(); // No stdout copy, result rewriting, verification or action invocation.
@@ -150,6 +180,7 @@ export async function handleContextHook(event, options, services = {}) {
       if (record.session === event.session_id) events.push(record);
     }
     need(events.some(e => e.key === eventKey), "HOOK_CURRENT_INPUT_UNSEEN");
+    await checkPendingAction(dir, names, identity.commandSha256);
     const result = await preflightHook(state, options.workspace, events, services);
     need(result.status === "READY", result.code || "HOOK_PREFLIGHT_LIMITED");
     need(nativeActionCommand(result.action) === options.command, "HOOK_ACTION_MISMATCH");

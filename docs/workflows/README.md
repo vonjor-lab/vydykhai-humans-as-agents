@@ -2,6 +2,8 @@
 
 These environment-neutral workflows are conditional references for the repo-scoped skills under `.agents/skills`. The managed `AGENTS.md` supplies shared rules. `docs/FRAMEWORK.md` is the human overview and a reference when framework meaning is unresolved; skills route to the relevant event workflow. Optional adapter metadata does not change skill behavior.
 
+Use the core's Event Routes to select only the current procedure. This index is not a startup checklist; current-contract continuation reuses its valid brief and checkpoint.
+
 ## Human Interface
 
 People normally stay in a personal Framework Orchestrator context and speak naturally:
@@ -17,6 +19,8 @@ The orchestrator selects the required skill and workflow.
 
 ## Workflows
 
+- `module-delivery.md`: shared outcome-to-module cycle, artifact ownership and evidence; read for activation or a material boundary decision, not every continuation.
+- `module-context.md`: supported context-package boundary checks and their explicit host-enforcement limits.
 - `project-launch.md`: prove project readiness, connect shared sync and participants, then activate Project State, compass, and first DOD.
 - `project-guard.md`: run the project-owned event and schedule safety check outside the active orchestrator context.
 - `framework-orchestrator.md`: restore state, dispatch, supervise, recover, rotate, and choose next-best-action.
@@ -24,6 +28,8 @@ The orchestrator selects the required skill and workflow.
 - `context-route.md`: navigate from goals through modules, entities, current meaning and affected consumers; decide direct execution versus bounded discovery.
 - `context-routing.md`: orchestrator-owned low-cost retrieval and supplements across Discovery, Lab, implementation and maintenance; reuse evidence without another management layer.
 - `context-preparation.md`: build, approve and deliver an implementation packet with source-backed citations and current worker readback.
+- `framework-activation.md`: prepare, prove adoption in the actual contexts and resume; preserve unfinished work and any still-due mapping/modularity plan.
+- `production-continuation.md`: reconcile observed progress and durable outcomes before continuing or repairing a stalled handoff.
 - `memory-brief-envelope.md`: preserve indivisible ordered clauses or repeated rows through dispatch and prove item-level application.
 - `daily-alignment.md`: reconcile meeting/event/local deltas across participants.
 - `accept-work.md`: accept work against current intent and exact-current-code evidence.

@@ -6,12 +6,12 @@ manual hash graph, test helper, provider call or hook installation is required.
 
 ## Inputs and ownership
 
-Use `examples/context-preparation/package.json` as the input shape. All paths are
+Use `examples/context-preparation/package-modular.json` as the current input shape (`package.json` is the legacy v1 fixture). All paths are
 relative to the current workspace. Run from that workspace with the installed
 `scripts/vydykhai.mjs` entry. Copy the example into a separate scratch workspace
 to exercise it; its Candidate deliberately lacks the new case-insensitive fix.
 
-The `context.package.v1` input declares owner, task/worker/scope/action/Candidate
+New prepared implementation tasks use [module-bound packages](module-context.md) (`context.package.v2`); compatible `context.package.v1` declares owner, task/worker/scope/action/Candidate
 files, module boundary/oracle/verifier, original complete event exports, explicit
 event and assertion dispositions, relevant dependencies and existing shared
 artifacts. Every assertion names a unique literal source quote, scope, reason,
@@ -40,7 +40,7 @@ undeclared environment change, and it does not intercept arbitrary native tools.
 Agent-side command sequence (replace paths/identities with the actual task):
 
 ```sh
-node scripts/vydykhai.mjs context-prepare plan --input package.json --output prepared
+node scripts/vydykhai.mjs context-prepare plan --input package-modular.json --output prepared
 node scripts/vydykhai.mjs context-prepare confirm --output prepared --owner module-owner --decision approved
 node scripts/vydykhai.mjs context-prepare read --output prepared --worker bundle-worker
 node scripts/vydykhai.mjs context-prepare ack --output prepared --worker bundle-worker --evidence worker-evidence.txt

@@ -73,3 +73,50 @@ test("structural route: completeness and cheap preparation cannot override accep
   assert.match(completion, /no seven-node or two-hop ceiling for relevant obligations/);
   assert.match(completion, /stops automatic internal-tree expansion/);
 });
+
+test("shared module cycle is reachable without duplicating it across event entrypoints", async () => {
+  for (const file of ["docs/workflows/start-work.md", "docs/workflows/accept-work.md",
+    "docs/workflows/context-routing.md", ".agents/skills/start-work/SKILL.md", ".agents/skills/framework-orchestrator/SKILL.md"]) {
+    assert.match(await source(file), /module-delivery\.md/);
+  }
+  const cycle = await source("docs/workflows/module-delivery.md");
+  for (const heading of ["One Outcome, One Cycle", "Distinct Sources Of Truth", "Locate Before Editing",
+    "Prepare Or Discover", "Prove The Promised Boundary", "Retain And Continue", "Weekly Architecture Review"]) {
+    assert.ok(cycle.includes("## " + heading));
+  }
+  assert.match(cycle, /not necessarily a new task, model call or artifact/);
+  assert.match(cycle, /module-context\.md/);
+});
+
+test("module cycle preserves autonomy, human authority and outcome ownership", async () => {
+  const cycle = await source("docs/workflows/module-delivery.md");
+  assert.match(cycle, /orchestrator must raise a boundary decision itself/);
+  assert.match(cycle, /detection -> operation selection -> recheck\/alternative -> termination -> observable output/);
+  assert.match(cycle, /Do not mandate a dispatcher/);
+  assert.match(cycle, /human may change direction/);
+  assert.match(cycle, /independent safe work continues/);
+  assert.match(cycle, /Return delivery is not product acceptance/);
+  assert.match(cycle, /A helper slice cannot close the whole module/);
+  assert.match(cycle, /timeout does not prove impossibility/);
+  assert.match(cycle, /finite/i);
+  assert.match(await source("docs/workflows/module-contract-template.md"), /Control coverage:/);
+});
+
+test("weekly review retains budget, renewal and continuation without another service", async () => {
+  const cycle = await source("docs/workflows/module-delivery.md");
+  for (const phrase of ["confirmed weekly allowance renewal", "not seven days", "previous forecast alone",
+    "Low remaining capacity", "Urgent safety/contract", "Explicit pauses remain paused",
+    "Guard remains liveness-only", "not closed-module source", "A clean result stays quiet",
+    "replace the same obligation", "no extra timer", "human's choice"]) assert.ok(cycle.includes(phrase), phrase);
+  assert.match(await source("docs/workflows/project-state-template.md"), /Work hygiene:.*quota\/window identity/);
+  for (const file of ["docs/AGENTS_CORE.md", "docs/workflows/framework-orchestrator.md", "docs/workflows/project-state-template.md"]) {
+    assert.match(await source(file), /start-work\.md#weekly-architecture-review/);
+  }
+});
+
+test("new module route discloses legacy and host limits rather than claiming universal enforcement", async () => {
+  const doc = await source("docs/workflows/module-context.md");
+  for (const phrase of ["context.package.v2", "LEGACY_UNCHECKED", "not an OS sandbox", "omitted module",
+    "safe rebrief", "not a global project stop"]) assert.ok(doc.includes(phrase), phrase);
+  for (const file of ["docs/FRAMEWORK.md", "docs/FRAMEWORK_RU.md"]) assert.match(await source(file), /module-delivery\.md/);
+});

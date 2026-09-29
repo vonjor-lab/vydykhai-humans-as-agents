@@ -1,11 +1,13 @@
 # Framework Update Activation
 
 An ordinary update request, or an already authorized update at its safe window,
-owns **prepare → apply/prove → resume**. The person does not need to name a
+owns **prepare → apply/prove → resume**, applying the shared [Module Delivery Cycle](module-delivery.md). The person does not need to name a
 capability or ask for activation separately. Existing merge, access, native trust
 and memory/rotation cutover confirmations still apply.
 
 ## Prepare one transition
+
+For new prepared implementation work, prove [module-bound packet adoption](module-context.md#limits-and-adoption) in the existing transition: actual supported kit, public-only delivery, rejected private-context attempt, retained/new verification and consumed Return. Reuse proven evidence. Legacy packets stay explicitly unchecked until a safe rebrief; missing boundaries keep a scoped owner/checkpoint, never a second installer or global product stop.
 
 The active project orchestrator owns the transition in existing Project State:
 accepted baseline, target plan id, one focused maintenance executor, safe named

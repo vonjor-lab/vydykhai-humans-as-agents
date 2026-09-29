@@ -5,7 +5,7 @@ description: Turn a raw goal, meeting insight, broad product theme, changed comp
 
 # Start Work
 
-Shape a new or materially changed goal into a scoped brief and task map. Continue already approved work within its current contract without another plan or tracker approval.
+Shape a new or materially changed goal using `docs/workflows/module-delivery.md`: locate, contract, prepare, deliver, prove and retain. This is the shared cycle, not an extra stage. Continue already approved work within its current contract without another plan or tracker approval.
 
 ## Read route
 

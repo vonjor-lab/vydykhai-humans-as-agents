@@ -57,6 +57,7 @@ Public entry: <export/API/command and supported protocol/schema versions>
 - Dependencies and state: <declared modules/services, owned storage, migrations, runtime resources and safe permission pointers; no secret values>
 - Failures and side effects: <typed errors/unsupported cases, timeouts, retry/idempotency/cancellation where relevant; no silent partial success>
 - Models and tuning: <declared internal model dependency, nondeterminism and supported settings, or none; no consumer-supplied hidden repair step>
+- Execution ownership: <who selects operations, retries, alternatives and termination inside the boundary; required human decisions are explicit inputs/checkpoints, never hidden per-run repair>
 - Compatibility: <supported consumer/provider versions, breaking-change decision, rollback and diagnostics available without private-source inspection>
 
 ## Accepted Decisions And Lessons
@@ -73,6 +74,7 @@ Link consumer-applicable `REQUIREMENT`, `DECISION`, `INVARIANT`, and `LESSON` no
 - New result: <task-promised examples plus retained examples on the exact Candidate; expectations change only through an explicit source decision>
 - Reusability evidence: <independently chosen held-out/edge inputs and clean-start repetitions on one fixed Candidate through the promised entry; disclose preprocessing, manual steps, saved intermediates, failures and untested boundaries>
 - Coverage inventory: <all required entities/stages derived from authoritative inputs, including failed/unsupported/unexamined members; not just the implementation's successful subset>
+- Control coverage: <applicable requirement/failure -> detector -> selected operation -> recheck/alternative -> termination/output; evidence for autonomous, operator-assisted and unknown paths; required only for claimed autonomous multi-stage behavior>
 - Independent connection: <clean consumer uses only contract + released artifact/public endpoint + declared dependencies; no producer source tree, private import, manual intermediate or module patch; unchanged artifact/revision proof>
 
 ## Open Commitments
@@ -83,7 +85,7 @@ Link unresolved `COMMITMENT` nodes with owner, return/checkpoint condition, and 
 
 Implementation map: <owned code/tests/build entry; not a prerequisite for consuming the module>
 ### Algorithm And Invariants
-Describe important algorithm stages, rationale, rejected approaches, assumptions and internal invariants needed for authorized changes. Tie each material choice to its source decision and retained tests; state applicability and known failure cases so future work does not repeat rejected solutions. Link detailed specifications instead of copying them. Consumers need the applicable externally visible obligations above, not every internal design discussion.
+Describe important algorithm stages, rationale, rejected approaches, assumptions and internal invariants needed for authorized changes. Tie each material choice to its source decision and retained tests; state applicability and known failure cases so future work does not repeat rejected solutions. For iterative behavior include operation selection, feedback across stages, repeat-state handling, termination and distinct technical/search/constraint failures where applicable. Trace known manual successes to source evidence; manual invocation of a documented public entry is not proof of manual geometry/data repair. An interface wrapper alone does not establish autonomous control. Link detailed specifications instead of copying them. Consumers need the applicable externally visible obligations above, not every internal design discussion.
 
 ## Change Log
 
@@ -102,7 +104,7 @@ For a composite, name the accepted child releases and prove the combined input-t
 - **Change:** require an explicit human development/fix request or approved bounded scope covering the module. Read maintainer rationale, relevant history, implementation and tests after the public contract. Produce a new Candidate/version, preserve the accepted release and prove retained plus new behavior; do not silently mutate the installed accepted module while integrating it.
 - **Create:** first show why existing capabilities cannot satisfy the request, propose responsibility, input/output, owned state and public dependencies, and obtain the human boundary agreement. Build and package through the same acceptance path; a name or documentation alone does not make code encapsulated.
 
-Every brief tells the person which module is used or changed and what stays untouched. Reuse an explicit existing boundary agreement for ordinary connections; new/split/merged boundaries, changed public behavior or authority require agreement before mutation. An already explicit development request need not be asked again. Human review owns product/boundary choices, not technical proof.
+Every brief tells the person which module is used or changed and what stays untouched. Apply [boundary leadership](start-work.md#lead-the-module-boundary-decision) before a missing boundary or hidden operator control becomes another local patch. Reuse an explicit existing boundary agreement for ordinary connections; new/split/merged boundaries, changed public behavior or authority require agreement before mutation. An already explicit development request need not be asked again. Human review owns product/boundary choices, not technical proof.
 
 For a connection failure, first check public input validity, configuration, version and environment using external diagnostics. Cheap preparation retrieves missing known facts; unresolved design uses Discovery. Reading internals needs an evidenced diagnostic question, and editing still needs the bounded change authority. Preserve the frozen failed input and accepted release; do not quietly convert a connection task into algorithm development. Continue independent safe work and retain explicit pauses.
 

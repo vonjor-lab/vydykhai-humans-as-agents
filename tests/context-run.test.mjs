@@ -472,6 +472,36 @@ test("verification cannot accept a candidate modified while its command runs", a
   const f = await fixture(t, { verificationMode: "mutate-candidate" }); await f.prepare();
   const result = await f.run("accept"); assert.equal(result.code, "CANDIDATE_CHANGED_DURING_VERIFICATION");
   assert.equal(result.stats.verificationCommands, 1); assert.equal(result.receipt, undefined);
+  assert.equal(result.actionOutcome, "OUTCOME_UNKNOWN");
+  assert.equal(result.replayRequiresReconciliation, true);
+});
+
+test("resume reconciles changed meaning after the invoked action without claiming completion", async t => {
+  const f = await fixture(t, { actionBody: "import { appendFileSync } from 'node:fs'; appendFileSync('sources.json', ' ');\n" });
+  await f.prepare();
+  const result = await f.run("resume");
+  assert.equal(result.status, "BLOCKED");
+  assert.equal(result.code, "CONTEXT_CHANGED_DURING_ACTION");
+  assert.equal(result.stats.dependentCommands, 1);
+  assert.equal(result.actionOutcome, "OUTCOME_UNKNOWN");
+  assert.equal(result.replayRequiresReconciliation, true);
+});
+
+test("reference process access is explicitly unisolated, even after all context checks pass", async t => {
+  // Prove the limit with harmless synthetic data; this is not a sandbox escape test.
+  const f = await fixture(t);
+  const outside = await realpath(await mkdtemp(path.join(tmpdir(), "vydykhai-outside-")));
+  t.after(() => rm(outside, { recursive: true, force: true }));
+  const target = path.join(outside, "marker.txt");
+  await writeFile(target, "synthetic marker");
+  await f.put("action.mjs", `import { readFileSync, writeFileSync } from 'node:fs';
+writeFileSync('outside-read.txt', readFileSync(${JSON.stringify(target)}));\n`);
+  await f.prepare();
+  const result = await f.run("resume");
+  assert.equal(result.status, "ACTION_COMPLETED");
+  assert.equal(await readFile(path.join(f.root, "outside-read.txt"), "utf8"), "synthetic marker");
+  assert.equal(result.coverageBasis.processIsolation, "NOT_ENFORCED");
+  assert.equal(result.coverageBasis.replayProtection, "CALLER_OWNED");
 });
 
 test("verification cannot accept changed task, source or relevant conditions even when behavior passes", async t => {

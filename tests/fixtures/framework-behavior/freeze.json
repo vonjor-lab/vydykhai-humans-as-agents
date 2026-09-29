@@ -1,0 +1,400 @@
+{
+  "schema": "framework.behavior-freeze.v1",
+  "baseline": {
+    "revision": "72086069e853e785392d8ec722b03a4b1bacba75",
+    "files": [
+      {
+        "path": ".agents/skills/accept-work/SKILL.md",
+        "sha256": "9c795696f3ce7cb8b4e02d7132ce6cc8f8936c6107bce1485a719a4f4845b53b",
+        "bytes": 1554
+      },
+      {
+        "path": ".agents/skills/daily-alignment/SKILL.md",
+        "sha256": "8df6051467dc0fcc504f79e4cffe034c17c1bdb6792cd7d60bb708e48c50595d",
+        "bytes": 1193
+      },
+      {
+        "path": ".agents/skills/framework-orchestrator/SKILL.md",
+        "sha256": "e2a77e60aff5d54fc9a7cef68434a4e2ba219751e7d4cfb4c511b845fcab701d",
+        "bytes": 4621
+      },
+      {
+        "path": ".agents/skills/project-launch/SKILL.md",
+        "sha256": "31e801791ed6977afeb473de8e4c0fcda38de65bd2c8f281969948c98e9822f6",
+        "bytes": 1474
+      },
+      {
+        "path": ".agents/skills/start-work/SKILL.md",
+        "sha256": "0fafb872e885aa7e28dcabbd6d741167261c697c92248c707a73dafea985e63f",
+        "bytes": 1838
+      },
+      {
+        "path": "docs/AGENTS_CORE.md",
+        "sha256": "75b461ab795fcecec61702de05e47b4d52791125d7ff90caf32d509df48acb3e",
+        "bytes": 25426
+      },
+      {
+        "path": "docs/FRAMEWORK_RU.md",
+        "sha256": "a9f1c2883b87a22ebefe71df449f99dbca3367298b02c123f9538416f98e01c5",
+        "bytes": 98781
+      },
+      {
+        "path": "docs/FRAMEWORK.md",
+        "sha256": "0105fd7286db1f0205117ddf4e74f9da4ccbbe76664162cbe0eef92396055d92",
+        "bytes": 59615
+      },
+      {
+        "path": "docs/VYDYKHAI_NOTICE.md",
+        "sha256": "d8ab8c3830a6455ff24834da7dfee55b22c3b72300b53a70066ecb473ab57441",
+        "bytes": 940
+      },
+      {
+        "path": "docs/workflows/accept-work.md",
+        "sha256": "158873a8dbd6908e32eb1d3b720256a7a5a7ab915ff013e80af4a3aba1a6c93d",
+        "bytes": 16604
+      },
+      {
+        "path": "docs/workflows/alignment-issue-template.md",
+        "sha256": "4ef86bb8dfdeeb3350b86a049adca2bd9bc4997680dff6a856fb499a6dc3ae14",
+        "bytes": 1225
+      },
+      {
+        "path": "docs/workflows/brief-patch-template.md",
+        "sha256": "2c95ca7671b300a43dc778bfbabaa76e096c44eac1559e73d68441e62f1e8198",
+        "bytes": 1367
+      },
+      {
+        "path": "docs/workflows/context-hook-adapter.md",
+        "sha256": "4dc264bcf6e82d8602193e014c42f502ba0bed0350c67d17e7e1f08e87dab3c3",
+        "bytes": 7401
+      },
+      {
+        "path": "docs/workflows/context-preparation.md",
+        "sha256": "a867adc9823ca55bb68abf6971d18736c231151575f346a5c56e8b3c9a8798ba",
+        "bytes": 10945
+      },
+      {
+        "path": "docs/workflows/context-route.md",
+        "sha256": "f5d197cdb424129a220888f2d8680e04bb98e57551c4627af615aaa14c552625",
+        "bytes": 33625
+      },
+      {
+        "path": "docs/workflows/context-routing.md",
+        "sha256": "1e0bf726d5846a9b989afa74383ba58c1d8683382ee1b037f59ab4f33062cb2b",
+        "bytes": 11814
+      },
+      {
+        "path": "docs/workflows/daily-alignment.md",
+        "sha256": "bc7e0c13267f40014585c1e7c7c113e8e267d1ef4ac95fc2c74d63723b5c19e7",
+        "bytes": 5357
+      },
+      {
+        "path": "docs/workflows/framework-activation.md",
+        "sha256": "747113d50a67e0019d95566f070b9b9ca9d4aef872ab8f825b2b6803902e21f7",
+        "bytes": 24366
+      },
+      {
+        "path": "docs/workflows/framework-orchestrator.md",
+        "sha256": "71c14c4aaf2b2b9827c23ded252af19ea1c0f3d5b07b57880d75cbf771183d30",
+        "bytes": 39002
+      },
+      {
+        "path": "docs/workflows/idea-memory-template.md",
+        "sha256": "14cf6c12c701b9ccb41ba20bfb3b142c03634516d431b5949015a55c9ee0e38a",
+        "bytes": 2412
+      },
+      {
+        "path": "docs/workflows/intent-trail-template.md",
+        "sha256": "42dfb5de025395d6c3e574a6cc46b9f81905da227b925d3efeaf94f966fb1027",
+        "bytes": 3128
+      },
+      {
+        "path": "docs/workflows/local-alignment-packet.md",
+        "sha256": "69f2d65c07e160662f13adc40507779b23b95536cb3fb2cda8415b01e1e4cb37",
+        "bytes": 1278
+      },
+      {
+        "path": "docs/workflows/memory-brief-envelope.md",
+        "sha256": "cff4cee89e9c3a85be6233bc2671ac1ca198e5abad55c5ffe80a4a920db55b3f",
+        "bytes": 4720
+      },
+      {
+        "path": "docs/workflows/module-contract-template.md",
+        "sha256": "834ba741513932f8c0f26fb83f5e9b769f64beed81a1fc504e6abc4239147d2a",
+        "bytes": 19897
+      },
+      {
+        "path": "docs/workflows/orchestrator-advisory.md",
+        "sha256": "d2a548a30139d4c5b89632f338ed05bfb4ba85828e71d57a9ac1d49824b4ad73",
+        "bytes": 2922
+      },
+      {
+        "path": "docs/workflows/production-continuation.md",
+        "sha256": "687a300bab1d8f7fef163febe8a314645e76d62c2d2b406f0af045f0b61c93d8",
+        "bytes": 15114
+      },
+      {
+        "path": "docs/workflows/project-guard.md",
+        "sha256": "716262b2c9a6dad3fa1f5d1d80a276713e86cbabd260b651208670f250233aa3",
+        "bytes": 24302
+      },
+      {
+        "path": "docs/workflows/project-launch.md",
+        "sha256": "a3f5339b7f368f2abe4ffc9bb7dcfa4daf596123fb34b488a929d079764bafc6",
+        "bytes": 15035
+      },
+      {
+        "path": "docs/workflows/project-memory-graph-template.md",
+        "sha256": "e1fda43cd5a01a9c22b1fb0860458fa21568bdde3bfb0ff32c6aed98282f6114",
+        "bytes": 14056
+      },
+      {
+        "path": "docs/workflows/project-state-template.md",
+        "sha256": "ab8e9485cac9f847de3d2190b05fb7ddd35984348630b06c08fd534fa915a7d5",
+        "bytes": 18646
+      },
+      {
+        "path": "docs/workflows/README.md",
+        "sha256": "f23bf2263327caf06b1547fc563c25914f289f4d458708ee72efbfb92fa26484",
+        "bytes": 3639
+      },
+      {
+        "path": "docs/workflows/start-work.md",
+        "sha256": "a899ab7c16cdebd2cc6f6a501c63b8af9a21d35f6ea672c3e42a9d498782c45e",
+        "bytes": 14512
+      },
+      {
+        "path": "docs/workflows/task-context-handoff-template.md",
+        "sha256": "65e61f3228241ac651d409c17fa468a1fec9dbb92f51fef59e03df91346f6c29",
+        "bytes": 17902
+      },
+      {
+        "path": "docs/workflows/team-alignment-delta.md",
+        "sha256": "63146d07c91d9e5133542f1d82bb3bf84dec6846c8e92bca2db0d38585c4b2c5",
+        "bytes": 1118
+      },
+      {
+        "path": "vydykhai.json",
+        "sha256": "7b17e60bde240e767ff52f632ebc9b1d80e3d1b58f5ba7090fa77f5c52b23189",
+        "bytes": 27146
+      }
+    ]
+  },
+  "candidate": {
+    "files": [
+      {
+        "path": ".agents/skills/accept-work/SKILL.md",
+        "sha256": "9c795696f3ce7cb8b4e02d7132ce6cc8f8936c6107bce1485a719a4f4845b53b",
+        "bytes": 1554
+      },
+      {
+        "path": ".agents/skills/daily-alignment/SKILL.md",
+        "sha256": "8df6051467dc0fcc504f79e4cffe034c17c1bdb6792cd7d60bb708e48c50595d",
+        "bytes": 1193
+      },
+      {
+        "path": ".agents/skills/framework-orchestrator/SKILL.md",
+        "sha256": "3b064f25282e0eb6c9e50ae84b01575724ffe3dc3d2306844721de4c8b6374da",
+        "bytes": 4965
+      },
+      {
+        "path": ".agents/skills/project-launch/SKILL.md",
+        "sha256": "31e801791ed6977afeb473de8e4c0fcda38de65bd2c8f281969948c98e9822f6",
+        "bytes": 1474
+      },
+      {
+        "path": ".agents/skills/start-work/SKILL.md",
+        "sha256": "93fa4cadad166e465a049de4b289ed0cff24fdaef3923ed271a6aae556a1f925",
+        "bytes": 1947
+      },
+      {
+        "path": "docs/AGENTS_CORE.md",
+        "sha256": "2f86bac2cca780038604d4fc361b07f6a7de0bf4451bd677ccc305c6a216dbe9",
+        "bytes": 12288
+      },
+      {
+        "path": "docs/FRAMEWORK_RU.md",
+        "sha256": "71c96fbe4d1d3c090a7f8c480e11f0145b07e85b80ad7f74d80186e34cd9f10e",
+        "bytes": 99342
+      },
+      {
+        "path": "docs/FRAMEWORK.md",
+        "sha256": "c9945c02fde4758789c516ea610222ef302f3a5814c6ad9b5b128468a6fd9a70",
+        "bytes": 59927
+      },
+      {
+        "path": "docs/VYDYKHAI_NOTICE.md",
+        "sha256": "d8ab8c3830a6455ff24834da7dfee55b22c3b72300b53a70066ecb473ab57441",
+        "bytes": 940
+      },
+      {
+        "path": "docs/workflows/accept-work.md",
+        "sha256": "99497cb87a3275bb881eb59b7ae72181ceeb76844ce3ae6a5936b636802135ea",
+        "bytes": 17549
+      },
+      {
+        "path": "docs/workflows/alignment-issue-template.md",
+        "sha256": "4ef86bb8dfdeeb3350b86a049adca2bd9bc4997680dff6a856fb499a6dc3ae14",
+        "bytes": 1225
+      },
+      {
+        "path": "docs/workflows/brief-patch-template.md",
+        "sha256": "2c95ca7671b300a43dc778bfbabaa76e096c44eac1559e73d68441e62f1e8198",
+        "bytes": 1367
+      },
+      {
+        "path": "docs/workflows/context-hook-adapter.md",
+        "sha256": "ff200f645871de3ba515a5d8195f4d9741cf94da90b35247279ae28aaaf24f79",
+        "bytes": 8304
+      },
+      {
+        "path": "docs/workflows/context-preparation.md",
+        "sha256": "d71521dd60891c4dbe93e7ba062e6a0de4723974f96847eece45665aec93385e",
+        "bytes": 11117
+      },
+      {
+        "path": "docs/workflows/context-route.md",
+        "sha256": "668e580744fd1fb644ed81214ee5252ec3364f5210130baf0c93009529472c73",
+        "bytes": 34258
+      },
+      {
+        "path": "docs/workflows/context-routing.md",
+        "sha256": "0855ae55b6fb05f177c5bee665a64141dd2e99cec22f620d2a785cb768ef51e0",
+        "bytes": 12374
+      },
+      {
+        "path": "docs/workflows/daily-alignment.md",
+        "sha256": "bc7e0c13267f40014585c1e7c7c113e8e267d1ef4ac95fc2c74d63723b5c19e7",
+        "bytes": 5357
+      },
+      {
+        "path": "docs/workflows/framework-activation.md",
+        "sha256": "e0802a914224b81aeda955f9595b75a07ed86b5d80852e545ab9a2feb5fe1f36",
+        "bytes": 24885
+      },
+      {
+        "path": "docs/workflows/framework-orchestrator.md",
+        "sha256": "3e8fd21cc50374e94a23f50aeaf669bb1e09264d3c42c716c6b491fa2ef77249",
+        "bytes": 39626
+      },
+      {
+        "path": "docs/workflows/idea-memory-template.md",
+        "sha256": "14cf6c12c701b9ccb41ba20bfb3b142c03634516d431b5949015a55c9ee0e38a",
+        "bytes": 2412
+      },
+      {
+        "path": "docs/workflows/intent-trail-template.md",
+        "sha256": "42dfb5de025395d6c3e574a6cc46b9f81905da227b925d3efeaf94f966fb1027",
+        "bytes": 3128
+      },
+      {
+        "path": "docs/workflows/local-alignment-packet.md",
+        "sha256": "69f2d65c07e160662f13adc40507779b23b95536cb3fb2cda8415b01e1e4cb37",
+        "bytes": 1278
+      },
+      {
+        "path": "docs/workflows/memory-brief-envelope.md",
+        "sha256": "cff4cee89e9c3a85be6233bc2671ac1ca198e5abad55c5ffe80a4a920db55b3f",
+        "bytes": 4720
+      },
+      {
+        "path": "docs/workflows/module-context.md",
+        "sha256": "3be91f49ce621da8ce657b193de2585203bb7c8673e55b1914407ff44d5bb918",
+        "bytes": 5620
+      },
+      {
+        "path": "docs/workflows/module-contract-template.md",
+        "sha256": "07732f3bf3085639fdb73894bbd8181e07a03bc984521f3609e8c5ca98d5cbbc",
+        "bytes": 20889
+      },
+      {
+        "path": "docs/workflows/module-delivery.md",
+        "sha256": "62b8ec57e8478d454188b8826e273496737c24896940b82ff83f157ad3f11d93",
+        "bytes": 12458
+      },
+      {
+        "path": "docs/workflows/orchestrator-advisory.md",
+        "sha256": "d2a548a30139d4c5b89632f338ed05bfb4ba85828e71d57a9ac1d49824b4ad73",
+        "bytes": 2922
+      },
+      {
+        "path": "docs/workflows/production-continuation.md",
+        "sha256": "687a300bab1d8f7fef163febe8a314645e76d62c2d2b406f0af045f0b61c93d8",
+        "bytes": 15114
+      },
+      {
+        "path": "docs/workflows/project-guard.md",
+        "sha256": "716262b2c9a6dad3fa1f5d1d80a276713e86cbabd260b651208670f250233aa3",
+        "bytes": 24302
+      },
+      {
+        "path": "docs/workflows/project-launch.md",
+        "sha256": "a3f5339b7f368f2abe4ffc9bb7dcfa4daf596123fb34b488a929d079764bafc6",
+        "bytes": 15035
+      },
+      {
+        "path": "docs/workflows/project-memory-graph-template.md",
+        "sha256": "e1fda43cd5a01a9c22b1fb0860458fa21568bdde3bfb0ff32c6aed98282f6114",
+        "bytes": 14056
+      },
+      {
+        "path": "docs/workflows/project-state-template.md",
+        "sha256": "a1489db4e26230df55561f37cb3b58d369181cbeda23a813fb9b5d773a4a0b14",
+        "bytes": 18906
+      },
+      {
+        "path": "docs/workflows/README.md",
+        "sha256": "a73959fedfca2f8623210dd74d6507ca5ff164eefa32b7f8fcec823508e91b66",
+        "bytes": 4376
+      },
+      {
+        "path": "docs/workflows/start-work.md",
+        "sha256": "7bb2516cc039803534ad5c43b1154f6709e96dde5846b1d43049b51892c7c633",
+        "bytes": 15310
+      },
+      {
+        "path": "docs/workflows/task-context-handoff-template.md",
+        "sha256": "68d80c5359734a2a28aa05e7d168e79038452152383f60562e3b8f4f79ebac2c",
+        "bytes": 18077
+      },
+      {
+        "path": "docs/workflows/team-alignment-delta.md",
+        "sha256": "63146d07c91d9e5133542f1d82bb3bf84dec6846c8e92bca2db0d38585c4b2c5",
+        "bytes": 1118
+      },
+      {
+        "path": "vydykhai.json",
+        "sha256": "1110a6558bb4fba7f61daa0466236f656ea4faf71ac238009d72712ea45209ab",
+        "bytes": 27809
+      }
+    ]
+  },
+  "inputs": [
+    {
+      "path": "scripts/prepare-framework-eval.mjs",
+      "sha256": "4f0c5829ff9bd11177ff8e2397c3cdc4f3a65cb8ce8480b3a84eaffef000226a",
+      "bytes": 10123
+    },
+    {
+      "path": "tests/fixtures/framework-behavior/cases.json",
+      "sha256": "3575d2ddf3e9b1596ee94fc769e2222e1ce16f1eb12bfe4eefa40153141731a3",
+      "bytes": 12557
+    },
+    {
+      "path": "tests/fixtures/framework-behavior/prompt.md",
+      "sha256": "9f2ad1fc0441221e8d471309ccd00a50de94bf12d51520044dd1c2ff36459914",
+      "bytes": 1264
+    },
+    {
+      "path": "tests/fixtures/framework-behavior/README.md",
+      "sha256": "f43b09157b1141b8b9bdb0a0803e527162bd6697188a90a52c5002d018cc6344",
+      "bytes": 5477
+    },
+    {
+      "path": "tests/fixtures/framework-behavior/rubric.json",
+      "sha256": "342faa89f6b7c91183e46ba7941216eb2185c221b1eb271d450583f23279e68c",
+      "bytes": 7153
+    }
+  ],
+  "sha256": "53b4569f95da9c5761b82c67f64c982635529144c9f2dc7c1da086a3bf2f4eb4"
+}

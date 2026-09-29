@@ -1,6 +1,6 @@
 # Owner-Controlled Context Routing
 
-This extends [Context Preparation](context-preparation.md), not the management
+This implements the preparation branch of [Module Delivery](module-delivery.md) through [Context Preparation](context-preparation.md), not another management
 hierarchy. Context readiness is checked at every start and material information
 gap. Reuse a sufficient current packet; do not repeat an exhaustive search.
 
@@ -22,6 +22,8 @@ gap. Reuse a sufficient current packet; do not repeat an exhaustive search.
   verifies required Module Contract changes before accepting that same Candidate.
   Post-task clerical work cannot defer required docs beyond acceptance. The
   orchestrator alone integrates shared meaning; new rationale is not clerical work.
+
+Inspecting already authorized sources and edit/test paths is local execution, not a new preparation request. Reuse supplied contracts, citations and checks. Escalate only when these sources cannot answer a necessary question, disagree materially, or require an undeclared source/boundary. Retain progress and use the owner-approved supplement route. This does not expand packet access, authorize a new retrieval agent, or permit producer-source exploration for a consumed module.
 
 User communication remains through the orchestrator: explain the useful result
 and next step, not internal routing. Preparation uses the existing focused-task

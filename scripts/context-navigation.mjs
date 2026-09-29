@@ -11,7 +11,7 @@ const need = (v, code) => { if (!v) throw new Error(code); };
 const hash = bytes => createHash("sha256").update(bytes).digest("hex");
 const ref = v => keys(v, ["path", "sha256"]) && text(v.path) && /^[a-f0-9]{64}$/.test(v.sha256);
 
-export async function checkPreparationAssignment(assignment, owner, task, read) {
+export async function checkPreparationAssignment(assignment, owner, task, read, moduleAccess = null) {
   need(keys(assignment, ["owner", "requestId", "question", "phase", "previous"]) && assignment.owner === owner &&
     text(assignment.requestId) && text(assignment.question) && ["initial", "supplement"].includes(assignment.phase), "PREPARATION_ASSIGNMENT_INVALID");
   if (assignment.phase === "initial") {
@@ -25,6 +25,7 @@ export async function checkPreparationAssignment(assignment, owner, task, read) 
   need(plan.schema === "context.preparation-plan.v1" && plan.owner === owner &&
     approval.schema === "context.package-approval.v1" && approval.owner === owner && approval.decision === "approved" &&
     approval.planSha256 === previous.plan.sha256 && isDeepStrictEqual(plan.semanticPackage?.task, task), "PREPARATION_PARENT_MISMATCH");
+  if (plan.semanticPackage?.moduleAccess) need(isDeepStrictEqual(plan.semanticPackage.moduleAccess, moduleAccess), "MODULE_ACCESS_REBRIEF_REQUIRED");
 }
 
 export async function prepareNavigation(navigation, task, read, requiredContracts) {

@@ -1,6 +1,6 @@
 # Accept Work Workflow
 
-Goal: decide whether delivered work satisfies current intent and can safely move forward.
+Goal: prove the promised boundary in the shared [Module Delivery Cycle](module-delivery.md#prove-the-promised-boundary), then retain accepted progress and continue. Tool verification is not parent completion.
 
 ## 1. Reconstruct Baseline
 
@@ -35,6 +35,7 @@ Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory 
 
 Review changed behavior, files/artifacts, Module Contracts and other docs, tests, smoke, unresolved comments, and participant impact. Compare documentation with current code and accepted behavior; disagreement is evidence, not a reason to choose one silently. Ignore unrelated local changes unless they affect acceptance.
 For `consume`, prove the public connection and unchanged producer release, not a producer code review. For `change/create`, also require the human-agreed boundary, owned implementation/contract updates and versioned Candidate. Packaged readiness requires an independent consumer using only public documentation, the released artifact/endpoint and declared dependencies; private imports, hidden tuning, hand-carried intermediates or internal edits fail that claim. Readiness remains scoped pending rather than silently widening an integration task. See `module-contract-template.md#use-change-or-create`.
+For claimed autonomous multi-stage behavior, check the brief's control coverage: detection, operation selection, feedback, alternatives and termination are owned inside the module, not supplied by a supervising task or human between stages. A saved intermediate proves only the downstream boundary it actually exercises. Retain useful assisted demonstrations as evidence, but never promote them to autonomous acceptance. Newly added rejection gates or internal helper tests do not establish the full successful input-to-output path. Uncovered required transitions stay `NEEDS_FIXES` or pending evidence within the agreed scope; ask the orchestrator to resolve only genuinely new scope/authority, not to approve each ordinary correction. Independent consumer proof still uses public contracts, not internal control inspection.
 
 ## 3. Verify Exact Current Code
 
