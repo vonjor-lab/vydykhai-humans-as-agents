@@ -157,14 +157,36 @@ contracts, reevaluate it as 2.0 before publication. Under the reviewed changes i
 does not. Evidence breadth or a hoped-for productivity improvement does not by
 itself determine a major version.
 
-The PR remains draft pending project-owner activation evidence and a release
-decision. `Unreleased` and the installed development version remain unchanged
-to preserve the exact frozen evaluation candidate; the proposed release number
-is not an already published version. Version/tag/release metadata will be aligned
-once publication is authorized, recording packaging-only differences from the
-measured candidate rather than silently repinning historical evidence.
+At PR creation, it remained draft pending project-owner activation evidence and a
+release decision. `Unreleased` and the development version were retained to
+preserve the exact frozen evaluation candidate, not to claim publication.
 
 CI checks out release history so old-updater tests do not silently skip for
 missing objects. This reuses the existing validation job; no additional workflow,
 timer or inference request is introduced. The final review is maintainer review,
 not an independent paid model judgment.
+
+### Release Packaging
+
+The user subsequently requested publication. Version metadata, citation date,
+changelog and current-version test expectations are prepared for **1.33.0**.
+The remaining explicit scope question is whether to publish the verified
+universal kit now and retain actual project-owner adoption as a mandatory check
+during each project's update. Until that decision, the PR remains draft; no tag,
+Release, project inspection or project installation is authorized by this note.
+Do not mark live adoption or allowance savings as proven by the offline rehearsal.
+
+The measured candidate is preserved at commit
+`16bbcf593be8c0277bcfc7dff1f1d16225ad74fb`. The original freeze is unchanged.
+All 37 instruction files were compared against their frozen hashes at that
+commit. The release differs only in the version field of `vydykhai.json` and
+the version headers in `docs/FRAMEWORK.md` and `docs/FRAMEWORK_RU.md`; the other
+34 instruction files, baseline and five evaluation inputs are byte-identical.
+Use the measured commit to reproduce the original exact-byte freeze check;
+running it on the version-bumped tree correctly detects metadata drift.
+
+Release validation now recognizes the four exact existing 1.32.8 migration
+references without allowing stale current-version claims elsewhere. A regression
+checks both accepted thresholds and rejected stale references. All **322** local
+tests passed, as did framework validation and whitespace checks. These packaging
+checks added no paid model calls and changed no installed operating rule.

@@ -1122,13 +1122,22 @@ const historicalVersionFiles = new Set([
   "docs/COLLABORATION_FRAMEWORK_2026-06-10.md",
   "docs/COLLABORATION_FRAMEWORK_RU_2026-06-10.md",
 ]);
+// Migration thresholds stay fixed when the current release advances.
+const migrationVersionReferences = new Map([
+  ["docs/workflows/framework-activation.md", [/\bFrom 1\.32\.8\b/, /\bOn adoption of 1\.32\.8\b/]],
+  ["docs/workflows/module-contract-template.md", [/\bFrom 1\.32\.8\b/]],
+  ["docs/workflows/project-state-template.md", [/\bFrom 1\.32\.8\b/]],
+]);
 for (const relative of runtimeFiles) {
   if (historicalVersionFiles.has(relative) || !existsSync(path.join(root, relative))) continue;
   const lines = (await text(relative)).split("\n");
   for (const [index, line] of lines.entries()) {
-    const versionLine = line
+    let versionLine = line
       .replace(/PolyForm(?:[- ]Small[- ]Business(?:[- ]License)?)[- ]1\.0\.0/gi, "")
       .replace(/small-business\/1\.0\.0/gi, "");
+    for (const reference of migrationVersionReferences.get(relative) || []) {
+      versionLine = versionLine.replace(reference, "");
+    }
     for (const match of versionLine.matchAll(/\bv?(\d+\.\d+(?:\.\d+)?)\b/g)) {
       if (match[1] !== manifest.version) {
         fail(`Unexpected historical version ${match[0]} in active file ${relative}:${index + 1}`);
