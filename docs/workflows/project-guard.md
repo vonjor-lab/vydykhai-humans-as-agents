@@ -35,6 +35,8 @@ Use the same runner for both routes:
 
 The schedule is a liveness fallback, not a second planning ritual. It targets the project pointer, never a hard-coded orchestrator context, so rotation does not orphan it. An unchanged healthy state or already delivered incident must not wake the orchestrator, start a model, append a visible message, or change the pending human request.
 
+A native heartbeat that first invokes a model and only then runs the checker is a model-backed fallback, even if its final answer is empty. Record that cost/capability limit; it cannot prove the deterministic no-model path. Prefer the existing independently permitted runner checking current receipts/deadlines/activity before admitting a model wake. If the host offers no pre-model filter, retain LIMITED coverage and one bounded human-approved fallback scope with its end condition; do not silently claim zero-cost monitoring, disable useful recovery, install a second timer or migrate the live runner from framework maintenance. Adoption proof counts actual model invocations on an unchanged check, not visible messages.
+
 ## 3. Decide Without Waking A Model
 
 First compare durable state with actual context activity and run `guard-check`. Apply [Production Continuation](production-continuation.md) to the existing next action: fresh owner evidence distinguishes productive execution, legitimate waiting, and an idle continuation; missing visibility is `LIMITED`. A known active manager defers wake-only input without consuming it; safety mismatches still audit:

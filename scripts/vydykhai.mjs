@@ -23,6 +23,8 @@ import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
 import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, readCapabilityAdoption, kitIdentity } from "./adoption-plan.mjs";
 import { classifyCheckpointReviews } from "./checkpoint-review.mjs";
+import { evaluateTaskIdentity } from "./task-continuity.mjs";
+export { evaluateTaskIdentity } from "./task-continuity.mjs";
 export { checkpointNoticeStillDue } from "./checkpoint-review.mjs";
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -1350,33 +1352,40 @@ export function evaluateExecutionReadiness(checks) {
   return { status, nextAction, blocked, unresolved };
 }
 
-function evaluateExecutionObservation(view) {
+function evaluateExecutionObservation(view, work) {
   const limited = (reason, nextAction = "RECOVER_OBSERVATION") => ({ coverage: "LIMITED", reason, nextAction });
+  let resultPending = false;
   if (Object.hasOwn(view, "terminal")) {
     const terminal = view.terminal;
     if (view.status !== "IDLE" || !concreteLine(view.turnId) || terminal?.turnId !== view.turnId ||
         !concreteLine(terminal.evidence)) return limited("terminal evidence is missing or belongs to another turn");
     if (terminal.status === "RESULT") {
-      return { coverage: "COVERED", signal: "terminal result awaits reconciliation", nextAction: "RECONCILE_RESULT" };
-    }
-    if (terminal.status === "BLOCKED" && concreteLine(terminal.resumeWhen)) {
+      resultPending = true;
+    } else if (terminal.status === "BLOCKED" && concreteLine(terminal.resumeWhen)) {
       return { coverage: "COVERED", signal: "observed blocker awaits routing", nextAction: "RESOLVE_BLOCKER" };
+    } else return limited("current turn outcome is unavailable or unresolved");
+  }
+  if (!resultPending) {
+    const readiness = evaluateExecutionReadiness(Object.hasOwn(view, "readiness") ? view.readiness ?? null : undefined);
+    if (readiness.status === "LIMITED") return limited("execution readiness is incomplete", readiness.nextAction);
+    if (readiness.status === "BLOCKED") {
+      const boundaries = readiness.blocked.map((field) => `${field}:${view.readiness[field].status}`).join(", ");
+      return { coverage: "COVERED", signal: `execution boundary ${boundaries} needs repair`,
+        nextAction: readiness.nextAction };
     }
-    return limited("current turn outcome is unavailable or unresolved");
   }
-  const readiness = evaluateExecutionReadiness(Object.hasOwn(view, "readiness") ? view.readiness ?? null : undefined);
-  if (readiness.status === "LIMITED") return limited("execution readiness is incomplete", readiness.nextAction);
-  if (readiness.status === "BLOCKED") {
-    const boundaries = readiness.blocked.map((field) => `${field}:${view.readiness[field].status}`).join(", ");
-    return { coverage: "COVERED", signal: `execution boundary ${boundaries} needs repair`,
-      nextAction: readiness.nextAction };
-  }
-  return { coverage: "COVERED", signal: null, nextAction: null };
+  const taskIdentity = evaluateTaskIdentity(Object.hasOwn(view, "taskIdentity") ? view.taskIdentity ?? null : undefined,
+    { work: work?.split(/\s/)[0], context: view.context, turnId: view.turnId });
+  const identity = { identityCoverage: taskIdentity.coverage, identityKey: taskIdentity.observationKey };
+  if (taskIdentity.coverage === "LIMITED") return { ...limited(taskIdentity.reason, taskIdentity.nextAction), ...identity };
+  if (taskIdentity.nextAction) return { coverage: "COVERED", signal: taskIdentity.reason, nextAction: taskIdentity.nextAction, ...identity };
+  if (resultPending) return { coverage: "COVERED", signal: "terminal result awaits reconciliation", nextAction: "RECONCILE_RESULT", ...identity };
+  return { coverage: "COVERED", signal: null, nextAction: null, ...identity };
 }
 
 export function evaluateProductionContinuation(content, activity, { now = Date.now(), maxAgeSeconds = 300 } = {}) {
   const record = readProductionContinuation(content);
-  const limited = (reason) => ({ ...record, coverage: "LIMITED", signal: null, orchestratorActive: false,
+  const limited = (reason) => ({ ...record, coverage: "LIMITED", identityCoverage: "NOT_EVALUATED", signal: null, orchestratorActive: false,
     issues: [...record.issues, `Production continuation: activity LIMITED (${reason})`] });
   if (record.issues.length) return limited("invalid next action");
   if (!activity || activity.schemaVersion !== 1 || activity.continuationKey !== record.key) return limited("missing or stale action binding");
@@ -1388,11 +1397,13 @@ export function evaluateProductionContinuation(content, activity, { now = Date.n
   const orchestratorActive = activity.orchestrator.status === "ACTIVE";
   let signal = null;
   let nextAction = null;
+  let identityCoverage = "NOT_EVALUATED";
   if (record.value.state === "READY" && !orchestratorActive) signal = "ready step has no active coordinator";
   if (record.value.state === "WORKING") {
     if (!known(activity.owner, record.value.owner)) return limited("task activity unavailable");
-    const execution = evaluateExecutionObservation(activity.owner);
-    if (execution.coverage === "LIMITED") return { ...limited(execution.reason), nextAction: execution.nextAction };
+    const execution = evaluateExecutionObservation(activity.owner, record.value.work);
+    identityCoverage = execution.identityCoverage || "NOT_EVALUATED";
+    if (execution.coverage === "LIMITED") return { ...limited(execution.reason), nextAction: execution.nextAction, identityCoverage };
     signal = execution.signal;
     nextAction = execution.nextAction;
     if (!signal && activity.owner.status === "IDLE") signal = "task is idle without a routed continuation";
@@ -1402,7 +1413,7 @@ export function evaluateProductionContinuation(content, activity, { now = Date.n
         !concreteLine(activity.wait.evidence)) return limited("wait condition unavailable");
     if (activity.wait.status === "CHANGED") signal = "wait condition changed";
   }
-  return { ...record, coverage: "COVERED", signal, nextAction, orchestratorActive,
+  return { ...record, coverage: "COVERED", identityCoverage, signal, nextAction, orchestratorActive,
     issues: signal ? [`Production continuation: ${record.value.id} requires routing (${signal})`] : [] };
 }
 
@@ -1457,9 +1468,9 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
       return limited(`conflicting activity for ${lease.work}`);
     }
     if (lease.state !== "WAITING" && activity.owner?.context === view.context) {
-      const primary = evaluateExecutionObservation(activity.owner);
-      const current = evaluateExecutionObservation(view);
-      if (["coverage", "signal", "nextAction", "reason"].some((field) => primary[field] !== current[field])) {
+      const primary = evaluateExecutionObservation(activity.owner, lease.work);
+      const current = evaluateExecutionObservation(view, lease.work);
+      if (["coverage", "identityCoverage", "identityKey", "signal", "nextAction", "reason"].some((field) => primary[field] !== current[field])) {
         return limited(`conflicting execution evidence for ${lease.work}`);
       }
     }
@@ -1482,10 +1493,12 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
   if (entries.size !== live.length) return limited("not all live leases were observed");
   const issues = [];
   const nextActions = [];
+  const taskIdentities = [];
   for (const { lease, view, dependencies } of entries.values()) {
     if (lease.state !== "WAITING") {
-      const execution = evaluateExecutionObservation(view);
-      if (execution.coverage === "LIMITED") return limited(`${lease.work}: ${execution.reason}`);
+      const execution = evaluateExecutionObservation(view, lease.work);
+      taskIdentities.push({ work: lease.work, context: view.context, coverage: execution.identityCoverage || "NOT_EVALUATED" });
+      if (execution.coverage === "LIMITED") return { ...limited(`${lease.work}: ${execution.reason}`), taskIdentities };
       if (execution.nextAction) nextActions.push({ work: lease.work, context: view.context, action: execution.nextAction });
       if (execution.signal || view.status === "IDLE") {
         issues.push(`Lease activity: ${lease.work} requires routing (${execution.signal || "idle without a wait"})`);
@@ -1514,7 +1527,7 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
   }
   for (const work of [...entries.keys()].sort()) visit(work);
   for (const cycle of [...cycles].sort()) issues.push(`Lease activity: circular wait ${cycle}`);
-  return { ...result("COVERED", issues), nextActions };
+  return { ...result("COVERED", issues), nextActions, taskIdentities };
 }
 
 function memoryGraphVersion(content) {

@@ -45,6 +45,8 @@ Do not mark a stage complete solely because its instructions or tests exist. Rec
 
 ## Current Checkpoint
 
+- Post-release review, 2026-10-01: a separately reviewed sanitized compatibility case exposed stale human annotations winning after compaction, including a readback made earlier in the same turn. Corrective 1.33.1 candidate and self-review are complete: 342 tests passed, zero failures/skips, including the real published 1.33.0 updater and installed identity-route replay; framework validation and whitespace checks passed. See `docs/evidence/task-continuity-review-2026-10-01.md`. Existing worker/Guard adoption requirements explicitly carry the new proof; native context/scheduler behavior remains project-owner proof, not installer success. Retain published comparisons without repinning. Same-token coefficient estimates are model effects, not causal framework or subscription savings. Publication needs explicit authorization and remote boundary checks; no product adoption or paid runs are authorized here.
+
 - Existing unpublished work already contains a shared module cycle and `context.package.v2` declared-boundary checks. Preserve that work; it is not universal host enforcement or demonstrated product efficiency.
 - Before the core refactor, `docs/AGENTS_CORE.md` contained 3,645 whitespace-separated words. This is an instruction-size baseline, not input-token or allowance measurement.
 - Completed increment: split invariant core from conditional procedures, retain a coverage map and test installed routes/anchors plus hot/cold safeguards. The core is now 1,557 words, 57.3% smaller than the pre-split candidate. This is not an allowance or behavioral-effectiveness claim.
