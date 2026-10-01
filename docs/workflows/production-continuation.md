@@ -34,6 +34,31 @@ A partial final answer is not automatically a checkpoint. Apply the task contrac
 
 A native error may end a task before it writes Return Sync. Reconcile fresh native terminal status with its existing lease and saved evidence; absence of a return is not completion. Restore the same task when safe, or record the actual access/usage gate and resume condition; do not repeatedly launch replacements against an unavailable service or replay an uncertain action. An absent, disabled or unproven Guard adapter leaves automatic recovery LIMITED, regardless of local checker tests. State that limitation plainly without stopping independent work or pretending a model can resume while its harness is unavailable.
 
+## Current Task Identity
+
+Use the existing task checkpoint and execution lease, not a new memory graph, plan or controller. At dispatch/material rebrief retain a compact current assignment: stable work key, revision of the approved outcome, checkpoint reference, latest applicable human event, owner, Candidate, remaining outcome, limits and next safe action. Revise identity only for a material change; source timestamps and old annotations do not become new instructions when replayed after compaction. The transport's chat message order is not the authority order.
+
+After restoration, the worker reads that current checkpoint and exact newer permitted events before acting or answering. Its readback records the current identity and turn, not the whole source conversation. Ordinary same-contract tool calls reuse it. Missing/conflicting evidence requires bounded recovery of that source, not guessed approval, a full-history reread or a new model just to recite the checklist. A side answer does not settle the active assignment or its Return obligation.
+
+The existing activity adapter may supply `owner.taskIdentity` (and the same projection in applicable `leases[]`). `current` comes from the authenticated current checkpoint/lease plus `contextEpoch`, the observed native context restoration/compaction boundary; `seen` comes from the exact worker turn's readback after that boundary. A readback before compaction in the same turn is stale. Never construct both from the manager's own expectation, relabel old readback as current or invent an unobservable epoch:
+
+```json
+{
+  "schemaVersion": 1,
+  "current": {"work":"WORK-1","owner":"worker","revision":"brief-2","checkpoint":"checkpoint-2","humanEvent":"human-2","contextEpoch":"compaction-2","evidence":"current-checkpoint-and-native-epoch"},
+  "seen": {"work":"WORK-1","revision":"brief-2","checkpoint":"checkpoint-2","humanEvent":"human-2","contextEpoch":"compaction-2","turnId":"turn-2","evidence":"actual-turn-readback"},
+  "failedRestorations": []
+}
+```
+
+`evaluateTaskIdentity` is exported by the installed CLI and feeds existing production/whole-lease routing. A mismatch yields `RESTORE_CURRENT_TASK`. After one failed targeted restoration, retain `{turnId,evidence}` in `failedRestorations` from the existing incident/checkpoint history; a repeated mismatch yields `REBRIEF_FRESH_CONTEXT`. Do not reset that history on unrelated edits, new timer ticks or relabeling the same assignment. These are routing recommendations, not permission to create a chat, replace the root manager or repeat an external action. Missing, wrong-turn, wrong-owner or malformed evidence is `LIMITED / RECOVER_OBSERVATION`. Absent enrollment is `NOT_REQUESTED`, not proof of this protection; legacy recovery still works. Matching identity is not semantic or product acceptance.
+
+Read `continuation.identityCoverage` separately from legacy activity coverage; whole-lease results expose corresponding `taskIdentities` when evaluated. `COVERED` here means the comparison had valid observations, even if it found a mismatch: inspect the routing action too. The helper's `observationKey` compares actual identity fields across projections, not merely their matching verdicts; it excludes evidence wording and is not an authentication token. An unevaluated wait/blocker remains `NOT_EVALUATED`, not a successful identity check.
+
+At repeated loss, the manager reviews one bounded transfer to a fresh focused context under existing human/host authority: keep the same outcome and fixed Candidate, reconcile uncertain actions and pending Returns, stop the old owner's execution at a safe boundary, move the sole lease/return ownership, then prove the new owner read back the checkpoint and took its first authorized action. Never run both owners. If transfer is unavailable or needs consent, retain one concrete wait/question and continue independent work. Root-orchestrator rotation keeps its separate confirmation procedure. A new module/Discovery assignment in a context already exhibiting repeated identity loss needs this review before dispatch, not another same-chat retry. A large context or one successful compaction alone does not justify replacement.
+
+Real access blockers, unavailable external outcomes and explicit human waits take precedence. Active-manager deferral and the existing incident budget still apply; a fresh chat does not reset the incident budget. Record the observed failure and recovery in the current health scope; historical HEALTHY or acknowledged recovery does not reset recurrence. Installation tests prove only the classifier. Live adoption must demonstrate current checkpoint -> compaction -> actual readback -> next authorized action/Return, preservation of a new human pause, and a quiet subsequent check. Without that host proof the continuation guarantee remains LIMITED; do not block independent product work or claim interception of arbitrary native finals.
+
 ## Fresh Activity, No Model
 
 The project-owned adapter reads fresh native activity, calls `readProductionContinuation(state)` from the installed CLI, and supplies `guard-check --activity <observation.json>`. This is a bounded observation, not a new shared artifact or scheduler. Build it during each existing check; do not relabel cached evidence with a fresh timestamp.

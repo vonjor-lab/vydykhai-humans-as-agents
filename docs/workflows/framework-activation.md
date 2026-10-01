@@ -73,10 +73,9 @@ retain the prior plan reference and carry forward scoped progress from State.
 
 ## Apply and prove the applicable requirements
 
-At task launch, material resume, reopen/restoration or branch/workspace change,
-compare the actual worker kit with the accepted project target, not an arbitrary
-latest remote release. Use the current accepted updater so an old worker's CLI
-cannot silently omit this check:
+For changed continuation rules, reuse the existing unfinished-worker and Guard requirements at a safe boundary: bind the current assignment/checkpoint and actual restoration epoch, prove readback after compaction plus continued action/Return, and preserve an explicit human pause. `production-continuation.md#current-task-identity` defines the optional observation. Missing native evidence stays a scoped LIMITED guarantee, not a forced new task or project stop. Verify that an unchanged installed scheduled check invokes no model; an approved model-backed heartbeat remains a named fallback with its existing end condition, never zero-cost proof. Do not create a second timer or reinstall the graph to obtain these receipts.
+
+At task launch, material resume, reopen/restoration or branch/workspace change, compare the actual worker kit with the accepted project target, not an arbitrary latest remote release. Use the current accepted updater so an old worker's CLI cannot silently omit this check:
 
 ```sh
 node /accepted-project/scripts/vydykhai.mjs adoption-plan /accepted-project --worker /worker-repo --json

@@ -1,8 +1,8 @@
 # Owner-Controlled Context Routing
 
-This implements the preparation branch of [Module Delivery](module-delivery.md) through [Context Preparation](context-preparation.md), not another management
-hierarchy. Context readiness is checked at every start and material information
-gap. Reuse a sufficient current packet; do not repeat an exhaustive search.
+When comparing operating versions, separate model-rate substitution from workflow efficiency. Reprice the same observed input/cached/output tokens using dated official coefficients to estimate the model-only effect; do not treat that scenario as actual subscription attribution. Compare preparation, execution, review, recovery and coordination on equivalent accepted outcomes for the workflow effect. If workload, effort or concurrency changed, label the remaining token-volume/composition difference unallocated, not framework savings. Account-wide limit snapshots cannot identify a task's share during parallel work. A cheaper model can conceal repeated work; record avoidable stops, human corrections and retained outcomes alongside tokens. Reuse existing receipts, not an extra periodic measurement agent.
+
+This implements the preparation branch of [Module Delivery](module-delivery.md) through [Context Preparation](context-preparation.md), not another management hierarchy. Context readiness is checked at every start and material information gap. Reuse a sufficient current packet; do not repeat an exhaustive search.
 
 ## Responsibilities
 
