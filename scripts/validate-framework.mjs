@@ -524,7 +524,7 @@ if (!manifest.managedPaths.includes("scripts/context-hook.mjs")) {
 if (!manifest.managedPaths.includes("scripts/context-prepare.mjs") || !manifest.managedPaths.includes("examples/context-preparation")) {
   fail("Managed paths must include context preparation and its ordinary input example.");
 }
-if (!manifest.managedPaths.includes("scripts/adoption-plan.mjs") ||
+if (!manifest.managedPaths.includes("scripts/adoption-plan.mjs") || !manifest.managedPaths.includes("scripts/team-sync.mjs") ||
     !Array.isArray(manifest.adoptionRequirements) || !manifest.adoptionRequirements.length ||
     manifest.adoptionRequirements.some(r => !r.id || !r.since || !r.action || !r.reuseBy?.length ||
       !existsSync(path.join(root, r.workflow || "missing-workflow")))) {

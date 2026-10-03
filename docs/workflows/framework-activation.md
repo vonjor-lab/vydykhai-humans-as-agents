@@ -10,7 +10,7 @@ and memory/rotation cutover confirmations still apply.
 
 For new prepared implementation work, prove [module-bound packet adoption](module-context.md#limits-and-adoption) in the existing transition: actual supported kit, public-only delivery, rejected private-context attempt, retained/new verification and consumed Return. Reuse proven evidence. Legacy packets stay explicitly unchecked until a safe rebrief; missing boundaries keep a scoped owner/checkpoint, never a second installer or global product stop.
 
-The active project orchestrator owns the transition in existing Project State:
+The active project orchestrator owns the transition in existing Project State. For each changed capability, include review of existing affected artifacts, repair or justified NO_CHANGE, and application proof in that transition. Found architectural gaps need an owned refactoring proposal and safe checkpoint; changed boundaries still require agreement. Do not mark adoption done at installation, leave gaps as passive notes, or repeat an unchanged full audit:
 accepted baseline, target plan id, one focused maintenance executor, safe named
 checkpoint, Pending Human Action and productive next action. Reuse an existing
 update task/branch; no competing updaters. Keep old workers on their accepted
@@ -101,12 +101,12 @@ Prove affected behavior before claiming effective adoption. No compulsory rotati
 The executor applies the accepted kit update and returns exact-code evidence. After authorized merge, the **active orchestrator itself** reads its own cwd, accepted project HEAD, updated core, installed/source versions, title and Project State, and runs its own live and offline doctor. Doctor checks kit integrity only; a maintenance worktree cannot certify active use or another participant.
 Preserve prior accepted operation if actual-context coherence is unavailable. Rotate only for an evidenced need through the existing confirmed rotation route.
 
-Reconcile shared meaning bidirectionally with each relevant participant through the existing Shared Sync Contract and source coverage ledger. Each supplies a source-backed delta, explicit no-change or scoped gap and checks their own retrieval/readiness. One integration owner reconciles sources and advances the shared semantic watermark only after actual integration. Never copy private transcripts/secrets or let one machine certify another.
-An absent participant leaves that dependent scope pending; unrelated safe work continues. On return, consume the new delta and recheck affected scopes, not everyone's history again.
+Reconcile shared meaning bidirectionally with each relevant participant through the existing Shared Sync Contract and source coverage ledger. Include applicable design lessons, maps, contracts and shared rules/skills, not just graph nodes. Each supplies a source-backed delta, explicit no-change or scoped gap and their own retrieval/application receipt for current applicable artifacts under [Team Alignment Delta](team-alignment-delta.md#sync-proof). One integration owner reconciles sources and advances the shared semantic watermark only after actual integration. Never copy private transcripts/secrets or let one machine certify another.
+An absent participant leaves that dependent scope pending with the existing owner and concrete checkpoint; unrelated safe work continues. On return, consume the new delta and recheck affected scopes, not everyone's history again. The current `adoption-plan --input` checks `readiness.teamSync`; from 1.34.1 `control-check` rejects accepted capability claims with missing/stale sync proof. CURRENT means declared receipt coverage, not authenticated participant identity or proven semantic correctness. Old snapshots remain explicitly unchecked.
 
 The global watermark records integration/readback provenance; it is not a reuse
 key. Bind team-memory evidence to selected meaning/route (`sharedMeaningScope`),
-participant, source range, Module Contract and adopted target bundle. A changed bundle reviews the changed mechanism, not everyone's history. An unrelated semantic edit may
+participant, source range, Module Contract, applicable artifact revisions and adopted target bundle. A changed bundle reviews the changed mechanism, not everyone's history. An unrelated semantic edit may
 advance the global watermark without invalidating this selected evidence.
 
 Reuse existing graph, Module Contracts, source coverage and retrieval evidence

@@ -2112,7 +2112,7 @@ async function main() {
       if (plan.workerCheck.status !== "KIT_MATCH") process.exitCode = plan.workerCheck.status === "LIMITED" ? 2 : 1;
     }
     if (flags.input) {
-      plan.capabilityReadiness = assessCapabilityReadiness(JSON.parse(await readFile(path.resolve(flags.input), "utf8")), { requireArchitecture: true });
+      plan.capabilityReadiness = assessCapabilityReadiness(JSON.parse(await readFile(path.resolve(flags.input), "utf8")), { requireArchitecture: true, requireTeamSync: true });
     }
     if (flags.json) console.log(JSON.stringify(plan, null, 2));
     else {
@@ -2122,6 +2122,7 @@ async function main() {
         const readiness = plan.capabilityReadiness;
         console.log(`Whole project mapped: ${readiness.preparation.codeMapped ? "YES" : "NO"}; modular architecture confirmed: ${readiness.preparation.modular ? "YES" : "NO"}`);
         console.log(`Capability readiness: ${readiness.action}; gaps: ${[...readiness.gaps, ...readiness.architecture.gaps].join(", ") || "none"}`);
+        console.log(`Team sync: ${readiness.teamSync.status}; gaps: ${readiness.teamSync.gaps.map(g => `${g.participant || "scope"}: ${g.reason}`).join("; ") || "none"}; declared receipts only.`);
       }
     }
     return;

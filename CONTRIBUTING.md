@@ -27,6 +27,8 @@ Give one short review in the existing PR or change discussion: **Benefit / Evide
 
 A lesson that fails this gate belongs in project instructions, an issue for further evidence, or an existing mechanism's example rather than the universal runtime.
 
+Every behavior-changing update must carry its adoption work in an existing `adoptionRequirements` entry, not only release notes: what existing project artifacts/participants to review, the safe checkpoint and owner, how to repair or propose refactoring for actual gaps, and what observed result closes the transition. Reuse current evidence or record source-backed NO_CHANGE when no repair is needed. Refactoring is conditional on findings and scope authority, never mandatory churn. Include shared publication and affected participants' retrieval/application readback for changed shared meaning, maps, contracts or rules. Test a missing/stale-proof case as well as successful continuation; keep any live-adoption gap explicit. A release without this route is not ready, even if its files and unit tests are correct.
+
 ## Publication Completion
 
 Merge is not release: main/update availability may precede the public GitHub Release. Report that interval as unpublished or publication incomplete, not a failed installation. Once publishing is authorized, finish the missing authorized steps; never move a conflicting released tag or create another version to hide a mismatch.

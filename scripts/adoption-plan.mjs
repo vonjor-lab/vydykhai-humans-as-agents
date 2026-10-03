@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { assessTeamSync } from "./team-sync.mjs";
 
 const stable = value => JSON.stringify(value, (_, v) => v && typeof v === "object" && !Array.isArray(v)
   ? Object.fromEntries(Object.keys(v).sort().map(k => [k, v[k]])) : v);
@@ -85,7 +86,7 @@ export function assessArchitectureCoverage(value) {
 // Read-only transition advice over the existing Project State evidence. The
 // caller supplies source-backed checks; this function never certifies their
 // truth, creates tasks, or treats a file name as semantic coverage.
-export function assessCapabilityReadiness(input, { requireArchitecture = true } = {}) {
+export function assessCapabilityReadiness(input, { requireArchitecture = true, requireTeamSync = false } = {}) {
   const required = ["code-map", "module-map", "module-contracts", "graph-routes", "verification"];
   const statuses = new Set(["VERIFIED", "MISSING", "STALE", "CONTRADICTORY", "INACCESSIBLE", "CANDIDATE"]);
   const filled = value => typeof value === "string" && value.trim().length > 0;
@@ -109,8 +110,11 @@ export function assessCapabilityReadiness(input, { requireArchitecture = true } 
   const architecture = requireArchitecture || input.architecture !== undefined
     ? assessArchitectureCoverage(input.architecture) : { status: "LEGACY_UNVERIFIED", gaps: [], limits: [], improvements: [], key: null };
   const architecturePending = architecture.status === "PENDING";
+  const teamSync = assessTeamSync(input.teamSync, { required: requireTeamSync });
+  if (input.teamSync && input.teamSync.scope !== input.scope) throw new Error("Mismatched team sync scope");
+  const syncPending = ["MISSING", "PENDING"].includes(teamSync.status);
   const relevantKey = hash({ scope: input.scope, bindings: Object.fromEntries(required.map(id => [id, input.bindings[id]])),
-    ...(architecture.key ? { architectureKey: architecture.key } : {}) });
+    ...(architecture.key ? { architectureKey: architecture.key } : {}), ...(teamSync.key ? { teamSyncKey: teamSync.key } : {}) });
   const checks = new Map(input.checks.map(c => [c.id, c]));
   const gaps = required.filter(id => checks.get(id)?.status !== "VERIFIED" || checks.get(id)?.checkedBinding !== input.bindings[id]);
   // Two independent project-level facts. Partial/local evidence remains useful
@@ -145,18 +149,19 @@ export function assessCapabilityReadiness(input, { requireArchitecture = true } 
   const ownerNeedsReconciliation = candidateOwner && !owner;
   let action;
   if (input.boundaryChange && !input.boundaryApproved) action = "PROPOSE_MIGRATION";
-  else if (accepted && gaps.length === 0 && !architecturePending && !input.boundaryChange) action = "REUSE_ACCEPTED";
+  else if (accepted && gaps.length === 0 && !architecturePending && !syncPending && !input.boundaryChange) action = "REUSE_ACCEPTED";
   else if (owner?.status === "RETURNED") action = "REVIEW_MAINTENANCE_RETURN";
   else if (owner?.status === "PREPARED") action = "START_OWNER";
   else if (owner?.status === "WAITING") action = "WAIT_OWNER";
   else if (owner) action = "REUSE_OWNER";
   else if (ownerNeedsReconciliation) action = "RECONCILE_OWNER";
-  else if ((actionable.length || architecturePending || input.boundaryChange) && input.repairAttemptedFor === defectKey) action = "WAIT_CHECKPOINT";
+  else if ((actionable.length || architecturePending || input.boundaryChange || syncPending) && input.repairAttemptedFor === defectKey) action = "WAIT_CHECKPOINT";
   else if (actionable.length || architecturePending || input.boundaryChange) action = "ASSIGN_MAINTENANCE";
   else if (inaccessible.length) action = "LIMITED_ACCESS";
+  else if (syncPending) action = "RECONCILE_TEAM_SYNC";
   else action = "REVIEW_ROUTE_PROOF";
   return { status: action === "REUSE_ACCEPTED" ? packagingGaps.length || architecture.limits.length ? "ACCEPTED_WITH_LIMITS" : "ACCEPTED" : "PENDING", action,
-    relevantKey, defectKey, gaps, inaccessible, packagingGaps, architecture, preparation, owner: owner?.id || null,
+    relevantKey, defectKey, gaps, inaccessible, packagingGaps, architecture, preparation, teamSync, owner: owner?.id || null,
     dependentDispatch: action === "REUSE_ACCEPTED" && packagingGaps.length === 0 && architecture.limits.length === 0 ? "READY" : "WAIT_FOR_APPLICABLE_PROOF",
     independentWork: "CONTINUE_WITHIN_EXISTING_AUTHORITY",
     note: "Project State owns progress; this classifier does not authenticate sources or certify semantic proof." };
@@ -200,9 +205,10 @@ export function readCapabilityAdoption(content, leases, { now = Date.now() } = {
       }
       // Reuse the existing classifier; no second artifact ledger or owner state.
       const result = assessCapabilityReadiness({ ...value.readiness, trigger: "continue", scope: value.scope, owner: undefined },
-        { requireArchitecture: !!framework && compare(framework, "1.32.5") >= 0 });
-      const { status, gaps, inaccessible, packagingGaps, architecture, preparation, dependentDispatch } = result;
-      readiness = { status, gaps, inaccessible, packagingGaps, architecture, preparation,
+        { requireArchitecture: !!framework && compare(framework, "1.32.5") >= 0,
+          requireTeamSync: !!framework && compare(framework, "1.34.1") >= 0 });
+      const { status, gaps, inaccessible, packagingGaps, architecture, preparation, teamSync, dependentDispatch } = result;
+      readiness = { status, gaps, inaccessible, packagingGaps, architecture, preparation, teamSync,
         dependentDispatch: value.status === "PENDING" ? "WAIT_FOR_APPLICABLE_PROOF" : dependentDispatch };
       if (preparationRequired && preparation.required.length) {
         if (!concrete(value.plan) || !concrete(value.notice)) fail(`scope ${value.scope} requires routing: missing visible preparation plan`);
@@ -213,7 +219,7 @@ export function readCapabilityAdoption(content, leases, { now = Date.now() } = {
       }
       if (value.status !== "PENDING" && (status === "PENDING" ||
           (value.status === "ACCEPTED" && status !== "ACCEPTED"))) {
-        fail("claimed acceptance lacks project architecture coverage, independently verified artifacts, route proof or declared limits");
+        fail("claimed acceptance lacks project architecture coverage, independently verified artifacts, route proof, participant sync or declared limits");
       }
     } catch {
       fail("readiness needs scoped bindings and checks from the current adoption inventory");

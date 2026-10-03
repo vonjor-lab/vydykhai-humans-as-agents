@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.34.0",
+  "version": "1.34.1",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -563,6 +563,7 @@
     "scripts/module-access.mjs",
     "scripts/context-cost.mjs",
     "scripts/adoption-plan.mjs",
+    "scripts/team-sync.mjs",
     "examples/context-preparation",
     "docs/AGENTS_CORE.md",
     "docs/FRAMEWORK.md",
@@ -609,8 +610,9 @@
     {
       "id": "own-transition",
       "since": "1.30.0",
-      "action": "One active orchestrator owns prepare/apply-prove/resume at a named safe checkpoint; reuse existing maintenance and preserve accepted baseline, pending human action and productive work. Normalize Capability adoption from durable receipts, not another audit. From 1.32.8 reconcile every unresolved architecture area into exactly one area-scoped modular step, with its row followUp naming that step work and a real execution/wait lease plus finite agreed review checkpoint. Group related areas; a local product step cannot cover unrelated obligations or retain a closed owner. Keep one codeMapped step for unfinished inventory and preserve source-backed completeness review. Before inventory or for global verification use one generic modular step without areas. Show the whole user-facing plan: ready modules, current work, deferred groups and safe return conditions. Preserve deferral evidence and actual pending Human attention/decisionId; review never grants refactoring or overrides pauses. On partial Return carry remaining areas to a continuing owner before closure. Verify meaningful scope as parent and declared routing with control-check; structural validity is not semantic or product proof. Read back actual start or concrete wait. Independent work continues; no new Guard, timer, full mapping pass, duplicate task or automatic product resume.",
+      "action": "One active orchestrator owns prepare/apply-prove/resume at a named safe checkpoint; reuse existing maintenance and preserve accepted baseline, pending human action and productive work. For each changed capability, review affected existing artifacts and participants, record owned repair or evidence-backed NO_CHANGE, propose necessary refactoring at a safe checkpoint, and verify actual application before closure. No second user reminder is needed; product boundary changes still require agreement. Normalize Capability adoption from durable receipts, not another audit. From 1.32.8 reconcile every unresolved architecture area into exactly one area-scoped modular step, with its row followUp naming that step work and a real execution/wait lease plus finite agreed review checkpoint. Group related areas; a local product step cannot cover unrelated obligations or retain a closed owner. Keep one codeMapped step for unfinished inventory and preserve source-backed completeness review. Before inventory or for global verification use one generic modular step without areas. Show the whole user-facing plan: ready modules, current work, deferred groups and safe return conditions. Preserve deferral evidence and actual pending Human attention/decisionId; review never grants refactoring or overrides pauses. On partial Return carry remaining areas to a continuing owner before closure. Verify meaningful scope as parent and declared routing with control-check; structural validity is not semantic or product proof. Read back actual start or concrete wait. Independent work continues; no new Guard, timer, full mapping pass, duplicate task or automatic product resume.",
       "reuseBy": [
+        "targetBundle",
         "acceptedBaseline",
         "transitionOwner"
       ],
@@ -630,7 +632,7 @@
     {
       "id": "team-memory",
       "since": "1.30.0",
-      "action": "Reconcile relevant participants through existing sync: source-backed delta/no-change/gap, one integration owner, shared watermark and each participant own retrieval/readiness; unavailable scope stays pending. Read back graph storage format, location, physical capacity or uncertainty and pending unintegrated deltas under memory-storage.md. Preserve meaning through stable-id revisions, linked history and explicit conflict resolution. A full document requires a visible retained delta, owner/checkpoint and lossless storage expansion; never silently omit or mark an unwritten update integrated. Prove actual stored readback and ordinary retrieval before closing the update. Reuse the existing maintenance owner; no automatic whole-graph rebuild or extra Guard loop.",
+      "action": "Reconcile relevant participants through existing sync: source-backed delta/no-change/gap, one integration owner, shared watermark and each participant own retrieval/readiness; unavailable scope stays pending. Include reusable design knowledge, code/module maps, contracts and shared rules/skills, not only graph nodes. Export existing registry, applicable artifact revisions and contribution/integration plus recipient retrieval/application receipts as readiness.teamSync under team-alignment-delta.md; verify actual contents and provenance. Sent packets or old recipient rules cannot close adoption. Preserve the existing owner and concrete checkpoint for missing participants; independent work continues. Read back graph storage format, location, physical capacity or uncertainty and pending unintegrated deltas under memory-storage.md. Preserve meaning through stable-id revisions, linked history and explicit conflict resolution. A full document requires a visible retained delta, owner/checkpoint and lossless storage expansion; never silently omit or mark an unwritten update integrated. Prove actual stored readback and ordinary retrieval before closing the update. Reuse the existing maintenance owner; no automatic whole-graph rebuild or extra Guard loop.",
       "reuseBy": [
         "targetBundle",
         "participant",

@@ -132,6 +132,22 @@ test("published-kit update retains unfinished work through preparation, verifica
   owner.status = "RETURNED";
   assert.equal((await assess()).action, "REVIEW_MAINTENANCE_RETURN");
   delete readiness.owner;
+  assert.equal((await assess()).action, "WAIT_CHECKPOINT", "missing sync retains the same failed-repair checkpoint");
+  await put("participant-registry.txt", "synthetic-maintainer is the only participant in this isolated fixture.\n");
+  const sharedRefs = ids.map(id => ({ id, revision: readiness.bindings[id] }));
+  for (const [id, body] of Object.entries(artifacts)) {
+    assert.equal(await readFile(path.join(target, `project-docs/${id}.md`), "utf8"), body);
+  }
+  assert.match(artifacts["graph-routes"], /CSV remains deferred/);
+  await put("sync-readback.txt", "Fixture retrieval: buildBundle is in candidate.mjs, has one public contract, and CSV remains deferred. Application: keep the current candidate, preserve id spelling and reject case-insensitive duplicates; do not implement CSV. This is a synthetic no-mutation rehearsal, not an agent result.\n");
+  readiness.teamSync = { scope: readiness.scope, registrySource: "participant-registry.txt",
+    artifacts: ids.map(id => ({ id, revision: readiness.bindings[id], source: `project-docs/${id}.md` })),
+    participants: [{ id: "synthetic-maintainer", sourceRange: "fixture:through-documentation", artifacts: ids }],
+    receipts: [{ participant: "synthetic-maintainer",
+      contribution: { disposition: "DELTA", sourceRange: "fixture:through-documentation", artifacts: sharedRefs,
+        evidence: "project-docs/graph-routes.md", integration: "sync-readback.txt" },
+      readback: { artifacts: sharedRefs, evidence: "sync-readback.txt", retrieval: "sync-readback.txt",
+        application: "sync-readback.txt" } }] };
   assert.equal((await assess()).action, "REVIEW_ROUTE_PROOF", "five documents alone cannot finish adoption");
 
   // Upgrade the same task at its safe checkpoint; do not recreate its code.

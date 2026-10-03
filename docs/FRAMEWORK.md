@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 1.34.0 | Status: canonical operating core
+Version: 1.34.1 | Status: canonical operating core
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 
@@ -202,7 +202,7 @@ Guard adapters reuse the canonical outbox parser, refresh sources incrementally,
 ### 5. Align
 Use `$daily-alignment` only in an orchestrator after a meaningful meeting or external event that materially changes another participant's safe next action. Task-local debugging, routine progress, urgency, a locally resolved blocker, and ordinary continue are not alignment events.
 
-Missing participants do not block unrelated work. Work touching their active surface or contract continues only within explicit cautions or waits for their packet.
+Missing participants do not block unrelated work. Work touching their active surface or contract continues only within explicit cautions or waits for their packet and applicable readback. [Sync proof](workflows/team-alignment-delta.md#sync-proof) covers shared publication and each affected participant's retrieval/application of current graph routes, maps, contracts and rules, including reusable design knowledge. A sent packet alone is not synchronization; reuse unchanged scoped proof.
 
 Intersect each material delta with active, queued, and paused tasks. Leave unaffected tasks asleep. Send an affected active task only `what changed / applies to / preserved / action`: compatible work continues; an invalidating change pauses only the affected boundary for `PATCH_REQUIRED` or `REBRIEF_REQUIRED`. Tasks never process raw meeting inputs.
 

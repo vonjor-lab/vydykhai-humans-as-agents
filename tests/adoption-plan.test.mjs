@@ -60,7 +60,7 @@ test("module adoption binds public release and consumer scope without claiming a
 
 test("skipped releases are ordered and unknown baseline remains conservative on changed target", () => {
   const p = planAdoption({ ...input, previousLock: { installedVersion: "1.27.0" } });
-  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1", "1.30.2", "1.30.3", "1.30.4", "1.31.0", "1.32.0", "1.32.1", "1.32.2", "1.32.3", "1.32.4", "1.32.5", "1.32.6", "1.32.7", "1.32.8", "1.33.0", "1.33.1", "1.34.0"]);
+  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1", "1.30.2", "1.30.3", "1.30.4", "1.31.0", "1.32.0", "1.32.1", "1.32.2", "1.32.3", "1.32.4", "1.32.5", "1.32.6", "1.32.7", "1.32.8", "1.33.0", "1.33.1", "1.34.0", "1.34.1"]);
   const unknown = planAdoption(input);
   const changed = planAdoption({ ...input, managedFiles: { "core.md": "changed" }, previousLock: { installedVersion: manifest.version, adoptionPlan: unknown } });
   assert.equal(changed.reviewFromVersion, null);
@@ -165,6 +165,26 @@ test("worker identity changes require review; planner grants no inheritance or r
   const plan = planAdoption(input);
   assert.equal(plan.completed, undefined); assert.equal(plan.repairAttempts, undefined);
   assert.match(plan.requirements.find(r => r.id === "resume-or-checkpoint").action, /never reset attempts/);
+});
+
+test("changed-feature adoption includes owned review/repair and bidirectional proof without a new owner", async t => {
+  const f = await fixture(t); f.run(["install", f.target]);
+  const plan = JSON.parse(f.run(["adoption-plan", "--json"], f.installed));
+  const transition = plan.requirements.find(r => r.id === "own-transition");
+  assert.match(transition.action, /each changed capability/);
+  assert.match(transition.action, /evidence-backed NO_CHANGE/);
+  assert.match(transition.action, /refactoring at a safe checkpoint/);
+  assert.match(transition.action, /verify actual application before closure/);
+  assert.match(transition.action, /product boundary changes still require agreement/);
+  const scope = { targetBundle: "kit-1", acceptedBaseline: "project-1", transitionOwner: "same-owner" };
+  const prior = adoptionEvidenceScope(transition, scope);
+  assert.equal(adoptionEvidenceScope(transition, { ...scope, targetBundle: "kit-2" }, prior).status, "REVIEW_CHANGED_SCOPE");
+  const memory = plan.requirements.find(r => r.id === "team-memory");
+  assert.match(memory.action, /readiness\.teamSync/);
+  assert.match(memory.action, /design knowledge, code\/module maps, contracts and shared rules\/skills/);
+  assert.match(memory.action, /recipient retrieval\/application/);
+  assert.match(memory.action, /Sent packets or old recipient rules cannot close adoption/);
+  assert.equal(plan.activeUse, "UNPROVEN_BY_INSTALLER");
 });
 
 // Contract/scenario coverage only: these assertions cannot prove model compliance

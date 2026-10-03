@@ -179,6 +179,16 @@ test("installed CLI routes incomplete architecture to the existing owner and reu
   data.architecture.proposal = { source: "proposal:r1", disposition: "PROPOSED" };
   data.owner.status = "RETURNED";
   assert.equal((await run(data)).action, "REVIEW_MAINTENANCE_RETURN");
+  assert.equal((await run(accept(data))).teamSync.status, "MISSING", "architecture proof alone cannot certify participant sync");
+  const refs = [{ id: "module-map", revision: bindings["module-map"] }];
+  data.teamSync = { scope: data.scope, registrySource: "fixture:single-owner-registry",
+    artifacts: [{ ...refs[0], source: "fixture:module-map" }],
+    participants: [{ id: "project-orchestrator", sourceRange: "fixture:through-assessment", artifacts: ["module-map"] }],
+    receipts: [{ participant: "project-orchestrator",
+      contribution: { disposition: "NO_CHANGE", sourceRange: "fixture:through-assessment", artifacts: refs,
+        evidence: "fixture:source-review" },
+      readback: { artifacts: refs, evidence: "fixture:own-readback", retrieval: "fixture:planning-module-query",
+        application: "fixture:preserve-proposed-boundary-without-refactoring" } }] };
   const complete = await run(accept(data));
   assert.equal(complete.action, "REUSE_ACCEPTED");
   assert.equal(complete.preparation.codeMapped, true);

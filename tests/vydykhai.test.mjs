@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { readLeaseActivityScope, readProductionContinuation, createReturnSync, createReturnRoute } from "../scripts/vydykhai.mjs";
+import { assessCapabilityReadiness } from "../scripts/adoption-plan.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -82,7 +83,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.34.0");
+    assert.equal(lock.installedVersion, "1.34.1");
     assert.match(agents, /three context layers isolated/i);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
@@ -204,7 +205,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
 
     const repaired = run(["install", target, "--force"]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.34\.0/);
+    assert.match(await readFile(corePath, "utf8"), /Version: 1\.34\.1/);
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -843,6 +844,37 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
     const falseAcceptance = { schemaVersion: 1, status: "ACCEPTED", scope: adoption.scope, evidence: "route-only", readiness: graphOnly };
     await writeFile(statePath, currentAdoptionState.replace(JSON.stringify(latestAdoption), JSON.stringify(falseAcceptance)));
     assert.equal(JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout).publicationReady, false);
+    const refs = [{ id: "rules", revision: "rules-r1" }];
+    const synced = { trigger: "update", scope: adoption.scope, bindings: artifactBindings,
+      checks: artifactIds.map(id => ({ id, status: "VERIFIED", source: `fixture:${id}`,
+        binding: artifactBindings[id], checkedBinding: artifactBindings[id] })),
+      architecture: { project: "example", scope: "example", source: "fixture:module-map",
+        reviewedBy: "maint-worker", review: "fixture:coverage-review", inventory: { source: "fixture:outline", areas: ["flow"] },
+        coverage: [{ area: "flow", access: "AVAILABLE", modularity: "ENCAPSULATED", documentation: "CURRENT", evidence: "fixture:flow" }] },
+      teamSync: { scope: adoption.scope, registrySource: "fixture:registry",
+        artifacts: [{ ...refs[0], source: "fixture:shared-rules" }],
+        participants: [{ id: "maint-worker", sourceRange: "fixture:event-7", artifacts: ["rules"] }],
+        receipts: [{ participant: "maint-worker",
+          contribution: { disposition: "NO_CHANGE", sourceRange: "fixture:event-7", artifacts: refs, evidence: "fixture:source-review" },
+          readback: { artifacts: refs, evidence: "fixture:own-readback", retrieval: "fixture:rule-query", application: "fixture:next-task-rule" } }] } };
+    synced.accepted = { status: "ACCEPTED", acceptedBy: "maint-worker", relevantKey: assessCapabilityReadiness(synced).relevantKey,
+      routeProof: Object.fromEntries(["moduleFound", "contextDelivered", "retainedAndNewAcceptance", "documentationUpdated",
+        "semanticIntegration", "nextRetrieval"].map(k => [k, `fixture:${k}`])) };
+    const syncRecord = { schemaVersion: 1, scope: adoption.scope, status: "ACCEPTED", evidence: "fixture:current-proof", readiness: synced };
+    const syncState = leaseState => addOwner(leaseState).replace("Framework: 1.32.3", "Framework: 1.34.1")
+      .replace(JSON.stringify(adoption), JSON.stringify(syncRecord));
+    await writeFile(statePath, syncState("CLOSED"));
+    assert.equal(JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout).publicationReady, true);
+    delete synced.teamSync.receipts[0].readback;
+    await writeFile(statePath, syncState("CLOSED"));
+    const unsynced = JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout);
+    assert.equal(unsynced.publicationReady, false, "missing recipient proof cannot support accepted capability");
+    assert.equal(unsynced.capabilityAdoption.readiness.teamSync.status, "PENDING");
+    Object.assign(syncRecord, { status: "PENDING", work: "MAINT-2", phase: "PROOF" });
+    await writeFile(statePath, syncState("WAITING"));
+    assert.equal(JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout).publicationReady, true);
+    assert.equal(JSON.parse(run(["guard-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout).action, "NOOP",
+      "owned sync wait must not restart work or disturb the independent active task");
     await writeFile(statePath, healthyState);
     const checkpoint = { id: "CP-CLI-1", owner: "task-one", dueAt: new Date(Date.now() - 60000).toISOString(),
       expected: "verified task result", receiptId: "RETURN-CLI-1", authority: "accepted-task-contract" };
