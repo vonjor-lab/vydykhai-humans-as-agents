@@ -96,7 +96,7 @@ test("1.32.1 update exposes one diagnostic requirement while repeated plan retri
   const changelog = await readFile(path.join(root, "docs/COLLABORATION_FRAMEWORK_CHANGELOG.md"), "utf8");
   const input = { manifest, managedFiles: { "core.md": "bundle" }, agentsBlockHash: "core", sourceRevision: "kit-source", changelog };
   const first = planAdoption({ ...input, previousLock: { installedVersion: "1.32.1" } });
-  assert.deepEqual(first.releases.map(r => r.version), ["1.32.2", "1.32.3", "1.32.4", "1.32.5", "1.32.6", "1.32.7", "1.32.8", "1.33.0", "1.33.1", "1.34.0"]);
+  assert.deepEqual(first.releases.map(r => r.version), ["1.32.2", "1.32.3", "1.32.4", "1.32.5", "1.32.6", "1.32.7", "1.32.8", "1.33.0", "1.33.1", "1.34.0", "1.34.1"]);
   assert.ok(first.requirements.some(r => r.id === "module-boundaries" && r.action.includes("first inventory")));
   const repeated = planAdoption({ ...input, previousLock: { installedVersion: "1.32.2", adoptionPlan: first } });
   assert.equal(repeated.id, first.id);

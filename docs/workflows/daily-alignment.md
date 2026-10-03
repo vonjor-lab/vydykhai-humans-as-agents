@@ -2,7 +2,7 @@
 
 Goal: reconcile material meeting, event, and local-work changes asynchronously.
 
-Run only from an orchestrator context when the input may change another participant's safe next action. Task-local debugging, routine progress, urgency, a locally resolved blocker, and ordinary continue are not alignment events.
+Run only from an orchestrator context when the input may change another participant's safe next action. This includes reusable design lessons, maps, contracts and shared rules/skills, not only code or DOD changes. Task-local debugging, routine progress, urgency, a locally resolved blocker, and ordinary continue are not alignment events.
 
 ## Durable State
 
@@ -60,6 +60,8 @@ Missing participants do not block unrelated work.
 
 Source or tracker gaps are `SYNC_LIMITED`, not implicit coverage. Do not publish `READY` for overlapping work until the required source and packet coverage exist; state what remains safe meanwhile.
 
+A posted packet proves neither integration nor consumption. Before READY, verify actual shared publication and each affected participant's own retrieval/application against the applicable current artifact revisions, using [Sync Proof](team-alignment-delta.md#sync-proof). Retain the existing owner/checkpoint while contributions or readbacks are pending; do not certify another participant from the sender's environment. An unrelated graph revision does not invalidate unchanged scoped proof. Reconcile on a material shared change, participant return, update adoption or the existing health checkpoint, never by waking models on every poll.
+
 ## 5. Publish Delta And Dashboard Together
 
 When shared guidance changes:
@@ -68,13 +70,15 @@ When shared guidance changes:
 2. Create a Brief Patch or re-brief signal when needed.
 3. Rebuild the Alignment Window body from all current packets/deltas.
 4. Update Project State: latest delta, participant rows, DOD Control Line, affected Execution Leases or detour/recall return gates, task/sequence impact, and next action.
-5. Intersect the delta with active, queued, and paused tasks.
+5. Intersect the delta with active, queued, and paused tasks. Integrate approved knowledge into the common graph and project documentation: link entities, scope, rationale and examples; keep experimental proposals distinct from accepted rules. Share approved procedural skill sources only when applicable and authorized, not another person's private global settings, plugins, secrets or entire chat history.
 6. Leave unaffected tasks asleep. For an affected active task, send only `what changed / applies to / preserved / action`: a compatible patch continues execution; an invalidating change pauses only the affected boundary for `PATCH_REQUIRED` or `REBRIEF_REQUIRED`.
 7. Mark affected queued or paused tasks `PATCH_REQUIRED` or `REBRIEF_REQUIRED`; age alone is only a re-read signal.
 
 Preserve an optional extension as an `IDEA` candidate. Record every material reusable delta in Pending Memory Events before advancing the graph watermark; `NO_CHANGE` is an alignment receipt and does not rewrite Graph. Keep task-local pivots in their task and return reusable `INVARIANT`, `DECISION`, `LESSON`, or safe `POINTER` candidates. A meeting correction or repeated owner explanation triggers orchestrator-owned Memory Reflection: retrieve related nodes, classify `ABSENT / RETRIEVAL_MISS / APPLICATION_MISS / VERIFICATION_MISS`, integrate the smallest atomic event, rerun the affected executable Brief, and intersect it with active/queued work. Re-read the graph watermark and unseen events, never overwrite another participant or copy secret values, keep inferred wider applicability `PROVISIONAL`, and link sources instead of messages.
 
 Do not leave a new delta behind an old dashboard.
+
+Close the sync only after the source-backed contribution is integrated (or reviewed NO_CHANGE) and the receiving participant's readback is recorded. If a new design rule or other shared artifact changes the next task's constraints, name its application there; receipt text alone cannot establish correct interpretation. Reuse the same delta/participant receipts and source ledger rather than a second synchronization registry. Unfinished repair or refactoring remains owned at its safe return condition; a tactical task cannot silently retire it.
 
 Implementation contexts do not read raw transcripts, participant packets, or the Alignment Window as part of normal execution. The orchestrator distills only the applicable delta. Owner-scoped Preparation/Discovery may retrieve permitted sources for that synthesis under `context-routing.md`; it neither publishes shared guidance nor bypasses source access or participant authority.
 

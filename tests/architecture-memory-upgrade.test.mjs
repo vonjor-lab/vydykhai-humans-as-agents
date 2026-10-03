@@ -6,11 +6,12 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 
-test("published 1.33.1 updater retains unfinished work and exposes storage/alignment adoption without claiming it", async t => {
+for (const [version, baseline] of [["1.33.1", "3854bafcdbd2ac9a30f7fb1baeba102b53e8c53c"],
+  ["1.34.0", "87af6e9b8b05a7e3216692dafc257e5932f65805"]]) {
+test(`published ${version} updater retains unfinished work and exposes storage/alignment/sync adoption without claiming it`, async t => {
   const repository = fileURLToPath(new URL("../", import.meta.url));
-  const baseline = "3854bafcdbd2ac9a30f7fb1baeba102b53e8c53c";
   const archive = spawnSync("git", ["archive", baseline], { cwd: repository, maxBuffer: 16 * 1024 * 1024 });
-  if (archive.status !== 0) return t.skip("Published 1.33.1 source unavailable; no network fetch performed");
+  if (archive.status !== 0) return t.skip(`Published ${version} source unavailable; no network fetch performed`);
   const root = await mkdtemp(path.join(tmpdir(), "vydykhai-architecture-memory-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const old = path.join(root, "published"), target = path.join(root, "project");
@@ -42,6 +43,7 @@ test("published 1.33.1 updater retains unfinished work and exposes storage/align
   const plan = json(["adoption-plan", target, "--json"]);
   assert.equal(plan.activeUse, "UNPROVEN_BY_INSTALLER");
   assert.match(plan.requirements.find(r => r.id === "team-memory").action, /capacity/);
+  assert.match(plan.requirements.find(r => r.id === "team-memory").action, /recipient retrieval\/application receipts/);
   assert.match(plan.requirements.find(r => r.id === "prepared-work").action, /context\.package\.v3/);
   for (const [name, body] of Object.entries(saved)) assert.equal(await readFile(path.join(target, name), "utf8"), body);
   const legacy = json(["context-run", "--input", "prepared/preflight.json"]);
@@ -74,3 +76,4 @@ test("published 1.33.1 updater retains unfinished work and exposes storage/align
   for (const [name, body] of Object.entries(saved)) assert.equal(await readFile(path.join(target, name), "utf8"), body);
   t.diagnostic("Actual published updater and installed commands; no live project migration or model behavior claimed.");
 });
+}
