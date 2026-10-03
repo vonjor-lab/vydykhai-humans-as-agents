@@ -11,7 +11,7 @@ relative to the current workspace. Run from that workspace with the installed
 `scripts/vydykhai.mjs` entry. Copy the example into a separate scratch workspace
 to exercise it; its Candidate deliberately lacks the new case-insensitive fix.
 
-New prepared implementation tasks use [module-bound packages](module-context.md) (`context.package.v2`); compatible `context.package.v1` declares owner, task/worker/scope/action/Candidate
+New prepared implementation tasks use [module-bound packages](module-context.md) (`context.package.v3`, including goal/necessity alignment); compatible `context.package.v1` declares owner, task/worker/scope/action/Candidate
 files, module boundary/oracle/verifier, original complete event exports, explicit
 event and assertion dispositions, relevant dependencies and existing shared
 artifacts. Every assertion names a unique literal source quote, scope, reason,

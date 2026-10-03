@@ -13,6 +13,8 @@ Use one cycle: goal -> applicable decisions -> module boundaries -> sufficient c
 
 ## Decisions To Preserve
 
+Current follow-up (2026-10-03): after the bounded architecture/retention correction and separate project lesson review, the user authorized finishing review, merging and publishing 1.34.0. The candidate binds task necessity to goal/invariant/consumer evidence and separates logical memory from physical storage capacity; see [scope, replay and limits](evidence/architecture-memory-integrity-2026-10-03.md). Finish public source/tag/Release/archive/updater readback before claiming publication. No paid model budgets or product operations are reopened. Live adoption and demonstrated efficiency remain pending; preserve the earlier frozen evaluation artifacts.
+
 - The memory graph records decisions, reasons, rejected paths and recall obligations. The map locates responsibilities and evidence. A consumer contract exposes use and limitations; maintainer documentation explains algorithms and rationale. Link them instead of duplicating their contents.
 - Consume accepted modules through fixed public contracts/artifacts without producer-source context. A composite owns its wiring and end-to-end outcome. Opening internals requires an authorized change; a wrapper or assisted example is not proof of autonomy. Modules need not be separate services.
 - Keep unconditional instructions small. Load event mechanics only when relevant. Remove redundant rules before adding roles, recurring checks or coordination steps.

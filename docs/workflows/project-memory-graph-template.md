@@ -1,10 +1,12 @@
 # Project Memory Graph Template
 
+This is one **logical** graph, not a single-document size limit. Use [Memory Retention And Storage](memory-storage.md) for stable-id updates, capacity checks, visible pending writes and lossless storage expansion. An inline graph and a verified multipart snapshot use the same meaning/schema; a successful file split is not semantic acceptance.
+
 Use one shared graph per project or product stream. Project State is current control memory; this graph is reusable semantic and decision memory; linked briefs, meetings, messages, tasks, PRs, code, and accepted artifacts are episodic evidence. Use [Context Route](context-route.md) for goal-to-evidence navigation and [Module Contract](module-contract-template.md) for the current purpose, interfaces, algorithm, and verification of durable modules and capabilities.
 
 Graph v4 separates a stable entity map from atomic current meaning. The entity map answers what this thing is, where it belongs, what it consumes or produces, and what depends on it. Memory nodes answer what is currently required, decided, learned, promised, or safely locatable about those entities. Do not turn an entity anchor into a long knowledge document or copy raw history into current memory.
 
-Build an existing project's v4 Candidate beside its accepted graph. Graph v3 remains readable during migration. Cut over only after source coverage, natural retrieval, task-application, and update replay pass. Rebuild the graph body atomically from integrated events. Never append current meaning after the end marker or make chat history, module documentation, or a visualization another competing memory graph.
+Build an existing project's v4 Candidate beside its accepted graph. Graph v3 remains readable during migration. Cut over only after source coverage, natural retrieval, task-application, and update replay pass. Publish the logical graph snapshot atomically from integrated events, whether stored inline or through a verified manifest. Never append current meaning after the end marker or make chat history, module documentation, or a visualization another competing memory graph.
 
 ```md
 <!-- vydykhai:project-memory-graph v4 -->

@@ -60,7 +60,7 @@ test("module adoption binds public release and consumer scope without claiming a
 
 test("skipped releases are ordered and unknown baseline remains conservative on changed target", () => {
   const p = planAdoption({ ...input, previousLock: { installedVersion: "1.27.0" } });
-  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1", "1.30.2", "1.30.3", "1.30.4", "1.31.0", "1.32.0", "1.32.1", "1.32.2", "1.32.3", "1.32.4", "1.32.5", "1.32.6", "1.32.7", "1.32.8", "1.33.0", "1.33.1"]);
+  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1", "1.30.2", "1.30.3", "1.30.4", "1.31.0", "1.32.0", "1.32.1", "1.32.2", "1.32.3", "1.32.4", "1.32.5", "1.32.6", "1.32.7", "1.32.8", "1.33.0", "1.33.1", "1.34.0"]);
   const unknown = planAdoption(input);
   const changed = planAdoption({ ...input, managedFiles: { "core.md": "changed" }, previousLock: { installedVersion: manifest.version, adoptionPlan: unknown } });
   assert.equal(changed.reviewFromVersion, null);
@@ -120,19 +120,20 @@ test("actual historical updater copies new kit; new entry retrieves unknown plan
 
 test("single-user graph reuse versus real gap compares scope only, never semantic success", () => {
   const r = manifest.adoptionRequirements.find(r => r.id === "team-memory");
-  const current = { participant: "local", sourceRange: "range-1", moduleContract: "contract-1", sharedMeaningScope: "selected-meaning-1", sharedWatermark: "global-1" };
+  const current = { targetBundle: "kit", participant: "local", sourceRange: "range-1", moduleContract: "contract-1", sharedMeaningScope: "selected-meaning-1", sharedWatermark: "global-1" };
   const first = adoptionEvidenceScope(r, current);
   const reused = adoptionEvidenceScope(r, { ...current, sharedWatermark: "global-2" }, first);
   assert.equal(reused.status, "REVIEW_EXISTING_EVIDENCE"); assert.equal(reused.acceptance, "NOT_ESTABLISHED");
   assert.equal(adoptionEvidenceScope(r, { ...current, sourceRange: "new-gap" }, first).status, "REVIEW_CHANGED_SCOPE");
   assert.equal(adoptionEvidenceScope(r, { ...current, sharedMeaningScope: "selected-meaning-2" }, first).status, "REVIEW_CHANGED_SCOPE");
   assert.equal(adoptionEvidenceScope(r, { ...current, moduleContract: "contract-2" }, first).status, "REVIEW_CHANGED_SCOPE");
+  assert.equal(adoptionEvidenceScope(r, { ...current, targetBundle: "kit-with-storage-policy" }, first).status, "REVIEW_CHANGED_SCOPE");
 });
 
 test("absent participant leaves its scope missing; arriving delta changes only its applicability", () => {
   const r = manifest.adoptionRequirements.find(r => r.id === "team-memory");
   assert.equal(adoptionEvidenceScope(r, { participant: "remote" }).status, "MISSING_SCOPE");
-  const local = { participant: "local", sourceRange: "local-1", moduleContract: "contract", sharedMeaningScope: "selected-meaning" };
+  const local = { targetBundle: "kit", participant: "local", sourceRange: "local-1", moduleContract: "contract", sharedMeaningScope: "selected-meaning" };
   const prior = adoptionEvidenceScope(r, local);
   assert.equal(adoptionEvidenceScope(r, { ...local, participant: "remote", sourceRange: "remote-delta" }, prior).status, "REVIEW_CHANGED_SCOPE");
   assert.equal(adoptionEvidenceScope(r, local, prior).status, "REVIEW_EXISTING_EVIDENCE");
@@ -158,7 +159,7 @@ test("checkpoint adoption is included from 1.30.4 and actual delivery ownership 
 
 test("worker identity changes require review; planner grants no inheritance or repair reset", () => {
   const r = manifest.adoptionRequirements.find(r => r.id === "prepared-work");
-  const scope = { sourceRange: "range", moduleContract: "contract", worker: "old", verificationBoundary: "boundary" };
+  const scope = { targetBundle: "kit", sourceRange: "range", moduleContract: "contract", worker: "old", verificationBoundary: "boundary" };
   const previous = adoptionEvidenceScope(r, scope);
   assert.equal(adoptionEvidenceScope(r, { ...scope, worker: "new" }, previous).status, "REVIEW_CHANGED_SCOPE");
   const plan = planAdoption(input);
