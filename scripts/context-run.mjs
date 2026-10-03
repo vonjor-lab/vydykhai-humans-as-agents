@@ -4,6 +4,7 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { canonicalJson, sha256, compileExecutableBrief, checkPreparedContext } from "./memory-brief.mjs";
 import { moduleAccessPolicy } from "./module-access.mjs";
+import { prepareAlignment } from "./context-alignment.mjs";
 
 const CAPABILITY = "retained-progress-v1";
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -160,6 +161,7 @@ export async function runContextTransition(request, services = {}) {
       [task.sourceSet, task.classifications, task.dependencies].every(text) && ref(task.module) && ref(task.memoryReview) &&
       list(task.newExampleIds, id, false) && unique(task.newExampleIds) && list(task.candidateFiles, text) && unique(task.candidateFiles) &&
       typeof task.allowLocalOverlay === "boolean");
+    let alignmentCoverage = "LEGACY_UNCHECKED";
     const checkPackageApproval = async () => {
       if (!Object.hasOwn(task, "packageApproval")) return;
       requireThat(keys(task.packageApproval, ["plan", "approval"]) && text(task.packageApproval.plan) && text(task.packageApproval.approval), "PACKAGE_APPROVAL_INVALID");
@@ -185,6 +187,18 @@ export async function runContextTransition(request, services = {}) {
       // This one explicit decision is provenance for all exact derived reviews.
       // No derived review is an additional independently made approval.
       for (const r of [...plan.inputFiles, ...plan.artifacts]) requireThat(await readArtifactHash(r) === r.sha256, "PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
+      if (plan.semanticPackage?.schema === "context.package.v3") {
+        const artifact = name => {
+          const r = plan.artifacts.find(r => r.path === `${path.posix.dirname(request.task.path)}/${name}.json`);
+          requireThat(r, "ALIGNMENT_REQUIRED"); return pinned(r);
+        };
+        const navigation = await artifact("navigation"), alignment = await artifact("alignment");
+        let checked;
+        try { checked = await prepareAlignment(plan.semanticPackage, navigation, bytes, parse); }
+        catch (e) { throw new ContextError(/^ALIGNMENT_[A-Z_]+$/.test(e.message) ? e.message : "ALIGNMENT_INVALID"); }
+        requireThat(hash(alignment) === hash(checked), "ALIGNMENT_CHANGED");
+        alignmentCoverage = checked.coverage;
+      }
     };
     await checkPackageApproval();
     if (task.enforcement !== "reference" || !task.requiredCapabilities.includes(CAPABILITY) ||
@@ -403,6 +417,7 @@ export async function runContextTransition(request, services = {}) {
     const basis = { sourceDigest: snapshot.sourceDigest, dependencyDigest: snapshot.dependencyDigest,
       unknownHistory: "outside declared exports", requiredAssertionIds: bound.requiredAssertionIds,
       moduleAccess: Object.hasOwn(module, "access") ? "DECLARED_BOUNDARIES" : "LEGACY_UNCHECKED",
+      alignment: alignmentCoverage,
       processIsolation: "NOT_ENFORCED", replayProtection: "CALLER_OWNED" };
     if (request.operation === "prepare") return { status: "PREPARED", operation: "prepare", enforcement: "reference", coverageBasis: basis, capsule, sourceReceipt, stats };
     requireThat(request.readback !== null, "WORKER_READBACK_REQUIRED");

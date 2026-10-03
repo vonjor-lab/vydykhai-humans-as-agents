@@ -24,6 +24,7 @@ import { prepareContext } from "./context-prepare.mjs";
 import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, readCapabilityAdoption, kitIdentity } from "./adoption-plan.mjs";
 import { classifyCheckpointReviews } from "./checkpoint-review.mjs";
 import { evaluateTaskIdentity } from "./task-continuity.mjs";
+import { readMemoryGraph, memoryStorageCommand } from "./memory-storage.mjs";
 export { evaluateTaskIdentity } from "./task-continuity.mjs";
 export { checkpointNoticeStillDue } from "./checkpoint-review.mjs";
 
@@ -58,6 +59,8 @@ Usage:
   node scripts/vydykhai.mjs guard-check --mode checkpoints --state <project-state.md> --graph <project-memory-graph.md> --outbox <durable-outbox.md> [--woken-incident <id> --notice-at <UTC-time> | --uncertain-incident <id>] [--accepted-incident <id>] [--json]
   node scripts/vydykhai.mjs memory-brief-compile --input <brief-input.json>
   node scripts/vydykhai.mjs memory-brief-validate --envelope <brief-envelope.json> --receipt <application-receipt.json>
+  node scripts/vydykhai.mjs memory-storage plan --input <current-graph> --candidate <next-graph> --limit <number|unknown> --unit <utf8-bytes|unicode-points|utf16-units>
+  node scripts/vydykhai.mjs memory-storage pack --input <graph> --output <new-directory> --part-bytes <number>
   node scripts/vydykhai.mjs context-run --input <context-request.json>
   node scripts/vydykhai.mjs adoption-plan [target] [--worker <worker-repo>] [--input <readiness-snapshot.json>] --json
   node scripts/vydykhai.mjs context-prepare <plan|confirm|read|ack|bind> --output <task-local-dir> ...
@@ -1805,7 +1808,8 @@ async function controlCheck(
 ) {
   const manifest = await loadManifest(SCRIPT_ROOT);
   const state = stateContent ?? await readFile(statePath, "utf8");
-  const graph = await readFile(graphPath, "utf8");
+  const storedGraph = await readMemoryGraph(graphPath);
+  const graph = storedGraph.text;
   const stateIssues = validateProjectState(state, manifest);
   const controlSnapshot = section(state, "## Control Snapshot", ["## Current DOD"]);
   const capabilityAdoption = readCapabilityAdoption(controlSnapshot,
@@ -1846,6 +1850,7 @@ async function controlCheck(
     memoryGraphTargetVersion: manifest.memoryPolicy.graphVersion,
     memoryMigrationRequired: actualMemoryGraphVersion !== manifest.memoryPolicy.graphVersion,
     memoryValidationScope: "structure-and-references-only",
+    memoryStorage: { ...storedGraph.storage, index: undefined },
     statePath,
     graphPath,
     stateSha256,
@@ -2044,6 +2049,13 @@ async function main() {
     const result = await prepareContext(rest, { createReturnSync, parseDurableOutboxComment });
     console.log(JSON.stringify(result, null, 2));
     process.exitCode = result.status === "BLOCKED" ? 1 : 0;
+    return;
+  }
+  if (command === "memory-storage") {
+    const result = await memoryStorageCommand(rest);
+    console.log(JSON.stringify(result, null, 2));
+    process.exitCode = result.status === "BLOCKED" || result.status === "EXPAND_STORAGE_REQUIRED" ? 1 :
+      ["CAPACITY_UNKNOWN", "EXPANSION_DUE"].includes(result.status) ? 2 : 0;
     return;
   }
   if (command === "context-run") {

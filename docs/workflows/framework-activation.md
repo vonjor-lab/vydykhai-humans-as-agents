@@ -1,4 +1,5 @@
 # Framework Update Activation
+During `prepared-work` and `team-memory` adoption, read back the actual goal/necessity route, accepted graph storage location/capacity and pending unintegrated meaning under [Module-Bound Context](module-context.md) and [Memory Retention And Storage](memory-storage.md). Verify one new-boundary rejection or accepted necessity review on the supported path and one retained delta through write/readback/retrieval. Reuse the existing owner/checkpoint; missing proof is an owned limitation, not another full migration, silent success or global stop. A full storage document requires a visible lossless expansion plan before its delta can be called integrated. Old workers remain explicitly unchecked until safe rebrief; do not overwrite their progress.
 
 An ordinary update request, or an already authorized update at its safe window,
 owns **prepare → apply/prove → resume**, applying the shared [Module Delivery Cycle](module-delivery.md). The person does not need to name a
@@ -105,7 +106,7 @@ An absent participant leaves that dependent scope pending; unrelated safe work c
 
 The global watermark records integration/readback provenance; it is not a reuse
 key. Bind team-memory evidence to selected meaning/route (`sharedMeaningScope`),
-participant, source range and Module Contract. An unrelated semantic edit may
+participant, source range, Module Contract and adopted target bundle. A changed bundle reviews the changed mechanism, not everyone's history. An unrelated semantic edit may
 advance the global watermark without invalidating this selected evidence.
 
 Reuse existing graph, Module Contracts, source coverage and retrieval evidence

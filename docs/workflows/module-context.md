@@ -4,7 +4,7 @@ This is the executable declaration for the [Module Delivery Cycle](module-delive
 
 ## Shape
 
-New prepared implementation tasks use `context.package.v2`: the v1 fields plus mandatory `navigation` and `moduleAccess`. Research that is supposed to resolve unknown boundaries does not require this implementation package first. Existing v1 packets remain readable; their receipts report module access as unchecked.
+New prepared implementation tasks use `context.package.v3`: the v2 fields (`navigation` and `moduleAccess`) plus the source-bound `alignment` below. Research that is supposed to resolve unknown boundaries does not require this implementation package first. Existing v1/v2 packets remain readable; v1 reports module access unchecked, and both report alignment unchecked. Adopt only at a safe rebrief, not by restarting current workers.
 
 Example addition to the package (hashes are generated from actual files, not these illustrative values):
 
@@ -37,6 +37,22 @@ Example addition to the package (hashes are generated from actual files, not the
 ```
 
 The example is an excerpt, not a complete runnable package. The existing package supplies task, module, sources, dependencies, classifications, sharedArtifacts, owner and navigation.
+
+## Goal And Necessity Before Implementation
+
+The orchestrator selects the accepted goal, applicable platform invariants, current public mechanisms and combined consumer acceptance from the existing brief/graph/contracts. Do not derive requirements solely from the chosen implementation or the requested screen. Keep deferrals and their owner/return gates in the existing classified source memory; a future platform improvement is neither permission to expand today's task nor cancellation of today's invariants.
+
+The v3 `alignment` fields are:
+
+- `goalRef`, nonempty `invariantRefs`, `acceptanceRef`: task-wide navigation reference ids containing the goal, applicable architecture constraints and combined input-to-output/consumer test. References must resolve to actual source quotations outside mutable Candidate files.
+- `decisions`: exactly one per declared module, each `{moduleId,boundaryChange,gapRef,existingRef,rationale}`. `existingRef` identifies the usable existing public mechanism or evidenced absence. For change/create, `gapRef` identifies the unmet requirement and observed gap; rationale explains why the existing mechanism cannot suffice and why this is the smallest adequate increment. Consume has no gap and `boundaryChange: false`; create always has `boundaryChange: true`. Internal fixes may keep the boundary unchanged.
+- `review`: null for an unchanged-boundary correction or a pinned `{path,sha256}` review. Any new/changed public boundary requires a separate existing REVIEW perspective before implementation. It judges the **necessity and fit of the solution**, not just whether the chosen implementation passes. It must consider the simpler existing route and required security/storage/ownership guarantees. A supported security gap is a reason to change, not "unnecessary architecture". Human direction and accepted deferral gates remain authoritative.
+
+Without a required review, `context-prepare plan` returns `ALIGNMENT_REVIEW_REQUIRED` with the exact review basis and its digest, before commands or approval. Review that basis plus its public sources in a fresh bounded context, without the executor's defense/history. The review is `{schema: "context.alignment-review.v1",basisSha256,reviewer,decision,reason}`. Only `decision: "fit"` proceeds; name a reviewer distinct from orchestrator/worker/preparer. A request for revision routes one scoped rebrief, not repeated self-certification or a new architecture program. Review is not a new grant of user authority.
+
+The builder resolves the facts, pins the review, delivers only the decision/reference view to the worker and binds acknowledgment. Full review basis stays in the artifact, not duplicated over existing navigation quotations in the worker prompt. The runner rechecks it before supported actions and acceptance; changed facts or scope invalidate approval. Unchanged continuation reuses the same review, with no new model call. A preparation supplement cannot quietly change these decisions; use the existing explicit rebrief. No extra command or reviewer for every tool call.
+
+Receipts report `REVIEW_BOUND`, `UNCHANGED_BOUNDARIES_DECLARED` or `LEGACY_UNCHECKED`. A reviewer name/hash cannot authenticate a separate person/context or establish semantic truth. These checks make omitted evidence and stale approval detectable within the supported path; they do not reason about undeclared dependencies or police arbitrary native tools. Live adoption requires one actual worker readback plus a source-to-task-to-Return replay. Do not label installation alone as enforced architecture leadership.
 
 ## Meaning And Checks
 

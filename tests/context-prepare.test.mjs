@@ -11,6 +11,33 @@ import { classifyGuard, createReturnRoute, evaluateProductionContinuation, readP
   validateDurableOutbox } from "../scripts/vydykhai.mjs";
 
 const repository = fileURLToPath(new URL("../", import.meta.url));
+async function alignedPackage(w, boundaryChange = false, gap = "Independent example N1 rejects the current case-sensitive duplicate comparison.") {
+  const pkg = await w.json("package-modular.json"); pkg.schema = "context.package.v3";
+  const statements = {
+    goal: "Deliver reusable bundles to independent consumers, retaining accepted behavior.",
+    invariant: "Public boundaries preserve ownership, permissions and versioned output.",
+    gap,
+    acceptance: "Verify retained B1/B2 and independent N1 through the public consumer entry."
+  };
+  await w.put("architecture.md", Object.values(statements).join("\n") + "\n");
+  for (const [id, quote] of Object.entries(statements)) pkg.navigation.references.push({ id, quote,
+    path: "architecture.md", purpose: id, appliesTo: "task" });
+  pkg.alignment = { goalRef: "goal", invariantRefs: ["invariant"], acceptanceRef: "acceptance",
+    decisions: [{ moduleId: "buildBundle", boundaryChange, gapRef: "gap", existingRef: "public-contract",
+      rationale: "Correct the identified public behavior within the accepted module; no second runtime." }], review: null };
+  return pkg;
+}
+
+async function reviewPackage(w, pkg, decision = "fit", reviewer = "independent-reviewer") {
+  await w.put("package.json", pkg);
+  const pending = w.plan(); assert.equal(pending.code, "ALIGNMENT_REVIEW_REQUIRED", JSON.stringify(pending));
+  const report = { schema: "context.alignment-review.v1", basisSha256: pending.reviewBasis.basisSha256,
+    reviewer, decision, reason: decision === "fit" ? "The scoped boundary change is necessary for the stated consumer obligation." :
+      "Existing public mechanisms meet the requested connection; the proposed general protocol has no demonstrated gap." };
+  await w.put("alignment-review.json", report);
+  pkg.alignment.review = { path: "alignment-review.json", sha256: createHash("sha256").update(await readFile(path.join(w.root, "alignment-review.json"))).digest("hex") };
+  await w.put("package.json", pkg); return pkg;
+}
 async function workspace(t, selectors = false) {
   const root = await mkdtemp(path.join(tmpdir(), "context-preparation-"));
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -69,6 +96,51 @@ test("navigation handoff pins contracts, filters role-local rules and permits Ca
   assert.equal(w.run("preflight").code, "PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
 });
 
+test("aligned ordinary repair preserves deferred meaning and completes without a new review", async t => {
+  const w = await workspace(t), pkg = await alignedPackage(w);
+  await w.put("package.json", pkg); await w.ready();
+  const delivered = w.prepare("read", "--worker", pkg.task.worker);
+  assert.equal(delivered.alignment.coverage, "UNCHANGED_BOUNDARIES_DECLARED");
+  assert.equal(delivered.alignment.basis, undefined, "do not duplicate source quotations and module declarations in the handoff");
+  assert.match(delivered.context, /CSV/); assert.match(delivered.context, /module-owner/);
+  assert.match(delivered.context, /returns to scope/);
+  await w.put("candidate.mjs", (await readFile(path.join(w.root, "candidate.mjs"), "utf8")).replace("const key = entry.id;", "const key = entry.id.toLowerCase();"));
+  const action = w.run("resume"); assert.equal(action.status, "ACTION_COMPLETED", JSON.stringify(action));
+  assert.equal(action.coverageBasis.alignment, "UNCHANGED_BOUNDARIES_DECLARED");
+  assert.equal(w.run("accept").status, "VERIFIED");
+});
+
+test("unnecessary expansion is rejected before commands, not legitimized by successful helper tests", async t => {
+  const w = await workspace(t), pkg = await alignedPackage(w, true);
+  await reviewPackage(w, pkg, "change-required");
+  assert.equal(w.plan().code, "ALIGNMENT_REVISION_REQUIRED");
+  await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
+});
+
+test("an evidenced boundary change proceeds with a distinct pinned review and stale evidence blocks resume", async t => {
+  const w = await workspace(t), pkg = await alignedPackage(w, true);
+  await reviewPackage(w, pkg); await w.ready();
+  const delivery = w.prepare("read", "--worker", pkg.task.worker);
+  assert.equal(delivery.alignment.coverage, "REVIEW_BOUND");
+  assert.equal(w.run("preflight").status, "READY");
+  assert.equal(w.run("preflight").status, "READY");
+  await w.put("architecture.md", "A changed goal and ownership boundary.\n");
+  assert.equal(w.run("resume").code, "PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
+  await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
+});
+
+test("alignment rejects missing vertical facts, self-review and unexplained module work", async t => {
+  const w = await workspace(t);
+  for (const mutate of [p => { p.alignment.goalRef = "missing"; },
+    p => { p.alignment.decisions[0].gapRef = null; }, p => { p.alignment.acceptanceRef = "owned-code"; },
+    p => { p.alignment.decisions = []; }]) {
+    const pkg = await alignedPackage(w); mutate(pkg); await w.put("package.json", pkg);
+    assert.equal(w.plan().status, "BLOCKED");
+  }
+  const pkg = await alignedPackage(w, true); await reviewPackage(w, pkg, "fit", pkg.owner);
+  assert.equal(w.plan().code, "ALIGNMENT_REVIEW_NOT_INDEPENDENT");
+});
+
 test("navigation cannot replace source meaning or silently omit required module contracts", async t => {
   const w = await workspace(t), pkg = await w.json("package.json");
   pkg.module.contractFiles = ["contract.md"];
@@ -82,6 +154,7 @@ test("navigation cannot replace source meaning or silently omit required module 
 
 test("consumer connects a fixed release without a producer source tree or implementation in the handoff", async t => {
   const w = await workspace(t), pkg = await w.json("package.json");
+  const aligned = await alignedPackage(w, true, "The current consumer does not invoke the accepted bundle release.");
   // Synthetic distributed artifact: no producer repository or maintainer docs are supplied.
   const release = `// PRIVATE_IMPLEMENTATION_NOT_FOR_HANDOFF
 export function buildBundle(input) {
@@ -96,7 +169,7 @@ export function buildBundle(input) {
   await w.put("public-contract.md", contract);
   await w.put("connection-proof.md", "Fixture release accepted for the declared bundle/v1 examples; not a claim of universal input coverage.\n");
   const pin = async name => ({ path: name, sha256: createHash("sha256").update(await readFile(path.join(w.root, name))).digest("hex") });
-  pkg.schema = "context.package.v2";
+  pkg.schema = "context.package.v3";
   pkg.moduleAccess = { schema: "context.module-access.v1", modules: [
     { id: "buildBundle", intent: "create", contractFiles: ["public-contract.md"], privatePaths: ["candidate.mjs"], release: null },
     { id: "releasedBundle", intent: "consume", contractFiles: ["public-contract.md"], privatePaths: ["producer"],
@@ -109,6 +182,11 @@ export function buildBundle(input) {
     assignment: { owner: pkg.owner, requestId: "consume", question: "Find public connection instructions only; do not inspect producer internals", phase: "initial", previous: null },
     references: [{ id: "public-contract", path: "public-contract.md", quote: contract.trim(), purpose: "Consumer interface", appliesTo: "task" }],
     constraints: [{ text: "Consume the fixed release; internal development is out of scope.", appliesTo: "task", referenceIds: ["public-contract"] }], gaps: [] };
+  pkg.navigation.references.push(...aligned.navigation.references.filter(r => r.path === "architecture.md"));
+  pkg.alignment = aligned.alignment;
+  pkg.alignment.decisions[0].rationale = "Add only the consumer connection; the fixed producer already provides the required behavior.";
+  pkg.alignment.decisions.push({ moduleId: "releasedBundle", boundaryChange: false, gapRef: null,
+    existingRef: "public-contract", rationale: "The accepted release is sufficient and stays unchanged." });
   // Reject leakage even when the preparer labels it as its own read-only context.
   for (const forbidden of ["producer/internal.mjs", "bundle-release.mjs"]) {
     const attack = structuredClone(pkg);
@@ -118,14 +196,14 @@ export function buildBundle(input) {
     assert.equal(blocked.code, "CONSUMED_MODULE_CONTEXT_FORBIDDEN");
     await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
   }
-  await w.put("package.json", pkg);
+  await reviewPackage(w, pkg);
   assert.equal(w.plan().status, "PLAN_READY"); assert.equal(w.confirm().status, "PREPARED");
   const delivery = w.prepare("read", "--worker", pkg.task.worker);
   assert.equal(delivery.status, "DELIVERED");
   assert.doesNotMatch(JSON.stringify(delivery), /PRIVATE_IMPLEMENTATION|const seen|toLowerCase/);
   assert.deepEqual(delivery.moduleAccess, pkg.moduleAccess);
   assert.match(delivery.moduleAccessSha256, /^[a-f0-9]{64}$/);
-  assert.deepEqual(delivery.navigation.references.map(r => r.path), ["public-contract.md"]);
+  assert.deepEqual([...new Set(delivery.navigation.references.map(r => r.path))], ["public-contract.md", "architecture.md"]);
   await w.put("worker-evidence.txt", "Read public contract and applicable obligations. Consumer connects the fixed release; no producer edits, private imports or CSV expansion.");
   assert.equal(w.prepare("ack", "--worker", pkg.task.worker, "--evidence", "worker-evidence.txt").status, "ACKNOWLEDGED");
   await w.put("candidate.mjs", "export { buildBundle } from './bundle-release.mjs';\n");
@@ -133,11 +211,13 @@ export function buildBundle(input) {
   assert.equal(resumed.status, "ACTION_COMPLETED");
   assert.equal(accepted.status, "VERIFIED");
   assert.equal(accepted.coverageBasis.moduleAccess, "DECLARED_BOUNDARIES");
+  assert.equal(accepted.coverageBasis.alignment, "REVIEW_BOUND");
   assert.equal(accepted.receipt.productAcceptance, "NOT_ESTABLISHED");
   assert.equal(await readFile(path.join(w.root, "bundle-release.mjs"), "utf8"), release);
   const supplement = structuredClone(pkg);
   supplement.schema = "context.package.v1";
   delete supplement.moduleAccess;
+  delete supplement.alignment;
   supplement.navigation.assignment = { owner: pkg.owner, requestId: "downgrade", question: "Additional fact", phase: "supplement",
     previous: { plan: await pin("prepared/plan.json"), approval: await pin("prepared/approval.json") } };
   await w.put("downgrade.json", supplement);

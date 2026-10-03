@@ -8,6 +8,7 @@ import { parseContextJson, runContextTransition, artifactHash } from "./context-
 import { prepareNavigation, checkPreparationAssignment } from "./context-navigation.mjs";
 import { estimateContextRoutes } from "./context-cost.mjs";
 import { moduleAccessPolicy } from "./module-access.mjs";
+import { prepareAlignment } from "./context-alignment.mjs";
 
 const hash = v => sha256(canonicalJson(v));
 const encoded = v => canonicalJson(v) + "\n";
@@ -46,8 +47,10 @@ async function build(root, input, output) {
     const data = await file(root, name); inputs.set(name, { path: name, sha256: sha256(data) }); return data;
   };
   const pkg = parseContextJson(await source(input));
-  const modular = pkg.schema === "context.package.v2";
+  const aligned = pkg.schema === "context.package.v3";
+  const modular = aligned || pkg.schema === "context.package.v2";
   need(keys(pkg, ["schema", "owner", "task", "module", "sources", "classifications", "dependencies", "sharedArtifacts",
+    ...(aligned ? ["alignment"] : []),
     ...(modular ? ["moduleAccess", "navigation"] : Object.hasOwn(pkg, "navigation") ? ["navigation"] : [])]) &&
     (modular || pkg.schema === "context.package.v1") && id(pkg.owner));
   need(keys(pkg.task, ["id", "worker", "scope", "action", "candidateFiles"]) && id(pkg.task.id) && id(pkg.task.worker) && scope(pkg.task.scope) && list(pkg.task.candidateFiles));
@@ -68,7 +71,7 @@ async function build(root, input, output) {
   const add = (name, value) => { const p = at(name); artifacts.set(p, value); return reference(p, value); };
   const mutable = new Set([...pkg.task.candidateFiles, ...pkg.module.implementationFiles]);
   if (pkg.navigation) {
-    await checkPreparationAssignment(pkg.navigation.assignment, pkg.owner, pkg.task, source, pkg.moduleAccess ?? null);
+    await checkPreparationAssignment(pkg.navigation.assignment, pkg.owner, pkg.task, source, pkg.moduleAccess ?? null, pkg.alignment ?? null);
     const previous = pkg.navigation.assignment.previous;
     if (previous) {
       try {
@@ -80,6 +83,8 @@ async function build(root, input, output) {
   const navigation = pkg.navigation === undefined ? null : await prepareNavigation(pkg.navigation, pkg.task,
     name => { access?.assertRead(name); return mutable.has(name) ? file(root, name) : source(name); }, pkg.module.contractFiles);
   if (navigation) add("navigation.json", navigation);
+  const alignment = aligned ? await prepareAlignment(pkg, navigation, source, parseContextJson) : null;
+  if (alignment) add("alignment.json", alignment);
   const sourceSet = { schema: "context.sources.v1", sources: [] }, inventory = [], bodies = new Map(), ranges = [];
   for (const s of pkg.sources) {
     need(keys(s, ["id", "path", "scope"]) && id(s.id) && scope(s.scope));
@@ -159,7 +164,7 @@ async function build(root, input, output) {
   const request = { schema: "context.request.v1", workspace: root, task, operation: "prepare", capsule: null, readback: null, integrationPlan: null };
   const plan = { schema: "context.preparation-plan.v1", owner: pkg.owner, workspace: root, semanticPackage: pkg,
     inputFiles: [...inputs.values()], artifacts: [...artifacts].map(([name, value]) => reference(name, value)) };
-  return { plan, artifacts, request, integrationPlan, expectedIntegration, render, navigation, task: artifacts.get(task.path) };
+  return { plan, artifacts, request, integrationPlan, expectedIntegration, render, navigation, alignment, task: artifacts.get(task.path) };
 }
 
 export async function prepareContext(args, services = {}) {
@@ -237,9 +242,13 @@ export async function prepareContext(args, services = {}) {
       const navigation = built.navigation ? { navigation: built.navigation, navigationSha256: hash(built.navigation) } : {};
       const access = built.plan.semanticPackage.moduleAccess;
       const boundary = access ? { moduleAccess: access, moduleAccessSha256: hash(access) } : {};
+      const alignment = built.alignment ? { alignment: { ...built.plan.semanticPackage.alignment,
+        basisSha256: built.alignment.basisSha256, coverage: built.alignment.coverage }, alignmentSha256: hash(built.alignment) }
+        : { alignmentCoverage: "LEGACY_UNCHECKED" };
       const delivery = { schema: "context.worker-delivery.v1", worker, capsuleSha256: pending.capsule.sha256, renderSha256: sha256(capsule.render),
+        ...(built.alignment ? { alignmentSha256: hash(built.alignment) } : {}),
         ...(access ? { moduleAccessSha256: hash(access) } : {}), ...(built.navigation ? { navigationSha256: hash(built.navigation) } : {}) };
-      if (mode === "read") { await put("worker-delivery.json", delivery); return { status: "DELIVERED", worker, context: capsule.render, ...navigation, ...boundary, acknowledgment: "REQUIRED" }; }
+      if (mode === "read") { await put("worker-delivery.json", delivery); return { status: "DELIVERED", worker, context: capsule.render, ...navigation, ...boundary, ...alignment, acknowledgment: "REQUIRED" }; }
       need(hash(await read(root, `${output}/worker-delivery.json`)) === hash(delivery), "PACKAGE_WORKER_DELIVERY_MISSING");
       const evidence = options["--evidence"], data = await file(root, evidence); need(data.toString().trim().length, "PACKAGE_WORKER_EVIDENCE_EMPTY");
       const readback = await put("readback.json", { schema: "context.readback.v1", worker, taskSha256: pending.task.sha256,
@@ -278,6 +287,7 @@ export async function prepareContext(args, services = {}) {
     const prior = state.eventBindings.find(b => b.eventKey === event.key); need(!prior || hash(prior) === hash(binding), "PACKAGE_MAPPING_CONFLICT");
     if (!prior) { state.eventBindings.push(binding); await put("hook-state.json", state, true); }
     return { status: "BOUND", eventKey: event.key, sourceId: s.sourceId, eventId: s.eventId, note: "Existing pending events, conflict markers and action outcomes retained." };
-  } catch (e) { return { status: "BLOCKED", code: /^[A-Z][A-Z0-9_]+$/.test(e.message) ? e.message : "PREPARATION_IO_INVALID", commands: 0 }; }
+  } catch (e) { return { status: "BLOCKED", code: /^[A-Z][A-Z0-9_]+$/.test(e.message) ? e.message : "PREPARATION_IO_INVALID", commands: 0,
+    ...(e.reviewBasis ? { reviewBasis: e.reviewBasis } : {}) }; }
   finally { if (unlock) await unlock(); }
 }

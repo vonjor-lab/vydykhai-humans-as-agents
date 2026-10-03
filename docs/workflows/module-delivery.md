@@ -35,6 +35,8 @@ A module is a coherent, independently usable capability, not necessarily a proce
 
 The orchestrator must raise a boundary decision itself when there is no proven module for a promised reusable capability, responsibilities are tangled, consumer work requires producer internals, or repeated local fixes leave the promised end-to-end behavior unowned. Before more affected implementation, name the current evidence, external intervention, smallest proposed repair, preserved behavior, acceptance, owner and next action. Do not wait for the user to discover the mismatch.
 
+Before accepting material scope growth, apply [goal and necessity review](module-context.md#goal-and-necessity-before-implementation): bind the increment to the accepted platform goal, affected entity/ownership invariants and combined consumer test. Each new mechanism needs an evidenced gap and comparison with existing public mechanisms. Use the existing fresh REVIEW perspective to challenge necessity before implementation, including required security guarantees. A valid internal design does not prove that the product needed it. An unchanged-boundary correction reuses the accepted decision; the reviewer is not another permanent orchestrator.
+
 Explain the benefit plainly: "This connection still depends on manual repair. I recommend finishing that module's public boundary first, keeping the working parts unchanged, so later connections do not repeat this work." Reuse explicit boundary/development approval; an ordinary internal fix stays with its task. A tactical demonstration request does not silently cancel modularity. Resolve a conflicting request through one explicit choice; the human may change direction. A temporary exception retains truthful limits, owner and return condition, not repeated nagging. Explicit pauses stay paused; independent safe work continues.
 
 ## Prepare Or Discover
@@ -62,6 +64,8 @@ If a connection fails, retain both releases and diagnose public inputs, versions
 ## Retain And Continue
 
 Required documentation is part of the Candidate: changed module rationale, public contract, code/map routes and verification references. A preparer may draft factual updates; the executor verifies them. The orchestrator accepts shared decision/insight/commitment candidates, checks the next retrieval can find them, and retains unresolved obligations. No automatic whole-graph rebuild.
+
+Use [Memory Retention And Storage](memory-storage.md) for each semantic integration. Stable-entity refinement and explicit supersession preserve history; physical capacity cannot silently suppress a write. A pending delta with an owned recovery route is retained evidence, not completed integration or permission for another dependent task to ignore it.
 
 Return delivery is not product acceptance. The owning task sends its exact scoped proof through the existing Return route; the orchestrator consumes it, updates the parent DOD and either dispatches the next authorized action or records a concrete wait. A helper slice cannot close the whole module. A Guard or update message cannot replace the pending outcome, next action or question to the user.
 
