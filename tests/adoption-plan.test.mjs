@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, writeFile, rm, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { planAdoption, adoptionEvidenceScope } from "../scripts/adoption-plan.mjs";
 
@@ -50,6 +50,23 @@ test("same target repeat/resume preserves plan and State completion/failed repai
   assert.equal(plan.activeUse, "UNPROVEN_BY_INSTALLER");
 });
 
+test("installed reader diagnoses a producer JSON claim and carries its owned adoption work", async t => {
+  const f = await fixture(t);
+  f.run(["install", f.target]);
+  const source = `import {validateDurableOutbox,classifyGuard} from ${JSON.stringify(pathToFileURL(f.installed).href)};
+    const outbox=validateDurableOutbox(JSON.stringify({marker:"vydykhai:return-sync v1",receiptId:"installed-result",status:"ACCEPT"}));
+    console.log(JSON.stringify({outbox,guard:classifyGuard({ok:outbox.issues.length===0,stateIssues:[],graphIssues:[],outbox},"")}));`;
+  const processResult = spawnSync(process.execPath, ["--input-type=module", "--eval", source], {cwd:f.target,encoding:"utf8"});
+  assert.equal(processResult.status,0,processResult.stderr);
+  const result=JSON.parse(processResult.stdout);
+  assert.equal(result.outbox.returnCount,0);
+  assert.match(result.outbox.issues[0],/JSON Return claim requires canonical v1 framing/);
+  assert.equal(result.guard.action,"AUDIT_REQUIRED");
+  const plan=JSON.parse(f.run(["adoption-plan","--json"],f.installed));
+  assert.match(plan.requirements.find(r=>r.id==="guard-continuity").action,/same owner or retain evidence-backed NO_CHANGE/);
+  assert.equal(plan.activeUse,"UNPROVEN_BY_INSTALLER");
+});
+
 test("module adoption binds public release and consumer scope without claiming activation", () => {
   const p = planAdoption({ ...input, previousLock: { installedVersion: "1.31.0" } });
   const requirement = p.requirements.find(r => r.id === "module-boundaries");
@@ -60,7 +77,7 @@ test("module adoption binds public release and consumer scope without claiming a
 
 test("skipped releases are ordered and unknown baseline remains conservative on changed target", () => {
   const p = planAdoption({ ...input, previousLock: { installedVersion: "1.27.0" } });
-  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1", "1.30.2", "1.30.3", "1.30.4", "1.31.0", "1.32.0", "1.32.1", "1.32.2", "1.32.3", "1.32.4", "1.32.5", "1.32.6", "1.32.7", "1.32.8", "1.33.0", "1.33.1", "1.34.0", "1.34.1"]);
+  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1", "1.30.2", "1.30.3", "1.30.4", "1.31.0", "1.32.0", "1.32.1", "1.32.2", "1.32.3", "1.32.4", "1.32.5", "1.32.6", "1.32.7", "1.32.8", "1.33.0", "1.33.1", "1.34.0", "1.34.1", "1.34.2"]);
   const unknown = planAdoption(input);
   const changed = planAdoption({ ...input, managedFiles: { "core.md": "changed" }, previousLock: { installedVersion: manifest.version, adoptionPlan: unknown } });
   assert.equal(changed.reviewFromVersion, null);
@@ -144,6 +161,11 @@ test("Guard recipient change invalidates reuse; unrelated target version does no
   const scope = { guardBundle: "tested-service", recipient: "owner-1", installedTimer: "timer-1" }, previous = adoptionEvidenceScope(r, scope);
   assert.equal(adoptionEvidenceScope(r, { ...scope, targetVersion: "new" }, previous).status, "REVIEW_EXISTING_EVIDENCE");
   assert.equal(adoptionEvidenceScope(r, { ...scope, recipient: "owner-2" }, previous).status, "REVIEW_CHANGED_SCOPE");
+  assert.equal(adoptionEvidenceScope(r, { ...scope, guardBundle: "parser-framing-fix" }, previous).status, "REVIEW_CHANGED_SCOPE");
+  assert.match(r.action, /exact producer-written bytes/);
+  assert.match(r.action, /expected valid receipt id/);
+  assert.match(r.action, /Do not substitute a coordinator-generated receipt/);
+  assert.match(r.action, /verify affected recipients apply it/);
 });
 
 test("checkpoint adoption is included from 1.30.4 and actual delivery ownership scopes reuse", () => {

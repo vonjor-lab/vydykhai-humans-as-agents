@@ -10,6 +10,31 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 1.34.2 - 2026-10-04
+
+Неправильно оформленный результат не должен исчезать для системы передачи.
+Reader теперь диагностирует отдельный или fenced JSON-объект с явной меткой
+Return как ошибку формата, а не пустой outbox без ошибок. Это не новый транспорт:
+фиктивные receipt id не создаются, обычный JSON и текст остаются без сигналов.
+Заявленные идентификаторы различают ошибки разных записей; повтор неудачного
+ремонта не получает новый бюджет из-за обычного обновления состояния.
+
+Передача проверяется на точных сохранённых байтах исполнителя: ожидаемый id
+должен присутствовать как корректная запись. Отдельно созданный координатором
+Return не доказывает передачу исходного результата. Через существующую
+guard-continuity приходит задача проверить writer/storage, исправить реальную
+ошибку тем же владельцем или сохранить доказанное NO_CHANGE, затем подтвердить
+обнаружение, принятие и тихий повтор. Готовая работа не выполняется заново.
+
+Evolution gate: benefit is a visible framing failure instead of silent loss.
+Evidence is a reproduced reader regression, canonical repair/routing checks,
+incident identity and bounded-repair tests, and installation/adoption checks.
+The isolated fresh evaluator correctly requested a framing-only repair, but that
+does not certify production delivery or automatic semantic course control.
+Complexity: one narrow reader diagnostic plus existing handoff/adoption routes;
+no new role, timer, wire format or model policy. Verdict: prepare this patch for
+publication separately from the broader experimental course-review candidate.
+
 ## 1.34.1 - 2026-10-03
 
 Изменение функции должно приходить вместе с проверкой того, что уже есть в проекте: что оставить, что исправить и как подтвердить применение. Нужный рефакторинг получает владельца и безопасную точку возврата; ненужный не запускается ради самого обновления.

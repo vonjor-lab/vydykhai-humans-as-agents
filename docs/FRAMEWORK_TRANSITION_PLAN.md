@@ -13,6 +13,22 @@ Use one cycle: goal -> applicable decisions -> module boundaries -> sufficient c
 
 ## Decisions To Preserve
 
+Current scoped follow-up (2026-10-04): prepare the narrow 1.34.2 Return-framing
+fix on the published baseline. Explicit JSON protocol claims must not appear as
+an empty healthy outbox; verify exact producer bytes and the expected valid id.
+Reuse guard-continuity for writer/storage review, owned repair or NO_CHANGE,
+recipient application and quiet repeat. Preserve the separate broader candidate
+and all evaluation history; it is not part of this patch. Prior model checks
+proved bounded source recovery and observer-admitted review, not automatic
+semantic drift detection, live project delivery or economy. No additional model
+budget or product operations follow from preparing this release. Merge and public
+publication require their own confirmation and exact remote readback.
+
+Local verification: all 375 tests, framework validation and whitespace checks
+passed. Published updaters through 1.34.1 install the diagnostic and adoption
+action while retaining unfinished artifacts and explicit UNPROVEN_BY_INSTALLER.
+This verifies upgrade mechanics, not live delivery or semantic review adoption.
+
 Current follow-up (2026-10-03): after the bounded architecture/retention correction and separate project lesson review, the user authorized finishing review, merging and publishing 1.34.0. The candidate binds task necessity to goal/invariant/consumer evidence and separates logical memory from physical storage capacity; see [scope, replay and limits](evidence/architecture-memory-integrity-2026-10-03.md). Finish public source/tag/Release/archive/updater readback before claiming publication. No paid model budgets or product operations are reopened. Live adoption and demonstrated efficiency remain pending; preserve the earlier frozen evaluation artifacts.
 
 Follow-through (2026-10-03): 1.34.0 publication completed with source/tag/Release/archive/default-updater readback; product adoption remains unproven here. The user requires every changed capability to bring its existing-project review and owned repair/refactoring decision into adoption, and bilateral propagation of applicable knowledge, maps and rules. The 1.34.1 correction extends existing activation/alignment rather than adding roles or timers: participant contribution/integration and recipient retrieval/application evidence are checked against scoped artifacts. Missing proof must retain an owner/checkpoint; explicit pauses and independent work remain. The user authorized merge and publication after verification; finish the same live publication boundary checks before closing. No product inspection, private participant history, product installation or paid model evaluation is authorized here.

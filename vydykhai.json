@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "1.34.1",
+  "version": "1.34.2",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -658,7 +658,7 @@
     {
       "id": "guard-continuity",
       "since": "1.30.0",
-      "action": "Keep one liveness-only Guard; reuse applicable adapter/bundle/recipient evidence. Changed service adoption or recipient needs real event, installed timer and silent repeat proof. For execution recovery, supply current readiness and exact-turn terminal observations and prove missing cwd, denied report, empty API with result/blocker, bounded same-owner recovery and quiet waits. For task identity, prove authenticated checkpoint plus observed context epoch, readback after compaction, current next action/Return and preservation of a newer human pause. Missing native evidence remains LIMITED. Verify zero model invocations on an unchanged check; an empty model-backed heartbeat is only a bounded approved fallback, not model-free proof. Legacy observation alone does not prove this coverage; pending proof limits only that guarantee, not independent work.",
+      "action": "Keep one liveness-only Guard; reuse applicable adapter/bundle/recipient evidence. Changed service adoption or recipient needs real event, installed timer and silent repeat proof. For execution recovery, supply current readiness and exact-turn terminal observations and prove missing cwd, denied report, empty API with result/blocker, bounded same-owner recovery and quiet waits. For task identity, prove authenticated checkpoint plus observed context epoch, readback after compaction, current next action/Return and preservation of a newer human pause. Missing native evidence remains LIMITED. Verify zero model invocations on an unchanged check; an empty model-backed heartbeat is only a bounded approved fallback, not model-free proof. For durable handoff, parse exact producer-written bytes and require the expected valid receipt id; zero records is not delivery proof. Review existing writer/storage availability, repair demonstrated framing gaps through the same owner or retain evidence-backed NO_CHANGE, and read back actual discovery/consumption plus quiet repeat. An explicit JSON protocol claim is invalid framing, not an empty healthy outbox. Do not substitute a coordinator-generated receipt or repeat completed work; share the changed parser/writer route and verify affected recipients apply it. Legacy observation alone does not prove this coverage; pending proof limits only that guarantee, not independent work.",
       "reuseBy": [
         "guardBundle",
         "recipient",
