@@ -7,7 +7,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 
 for (const [version, baseline] of [["1.33.1", "3854bafcdbd2ac9a30f7fb1baeba102b53e8c53c"],
-  ["1.34.0", "87af6e9b8b05a7e3216692dafc257e5932f65805"]]) {
+  ["1.34.0", "87af6e9b8b05a7e3216692dafc257e5932f65805"],
+  ["1.34.1", "b158671788468e6c1f846830245337f3081b497d"]]) {
 test(`published ${version} updater retains unfinished work and exposes storage/alignment/sync adoption without claiming it`, async t => {
   const repository = fileURLToPath(new URL("../", import.meta.url));
   const archive = spawnSync("git", ["archive", baseline], { cwd: repository, maxBuffer: 16 * 1024 * 1024 });
@@ -42,6 +43,13 @@ test(`published ${version} updater retains unfinished work and exposes storage/a
   assert.match(cli(installed, ["doctor", target, "--offline"]), /Integrity: OK/);
   const plan = json(["adoption-plan", target, "--json"]);
   assert.equal(plan.activeUse, "UNPROVEN_BY_INSTALLER");
+  assert.match(plan.requirements.find(r => r.id === "guard-continuity").action, /exact producer-written bytes/);
+  const returnApi = await import(pathToFileURL(installed));
+  const malformedReturn = returnApi.validateDurableOutbox(JSON.stringify({
+    marker: "vydykhai:return-sync v1", receiptId: "retained-result", status: "ACCEPT",
+  }));
+  assert.equal(malformedReturn.returnCount, 0);
+  assert.match(malformedReturn.issues[0], /JSON Return claim requires canonical v1 framing/);
   assert.match(plan.requirements.find(r => r.id === "team-memory").action, /capacity/);
   assert.match(plan.requirements.find(r => r.id === "team-memory").action, /recipient retrieval\/application receipts/);
   assert.match(plan.requirements.find(r => r.id === "prepared-work").action, /context\.package\.v3/);

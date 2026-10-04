@@ -923,6 +923,20 @@ export function validateDurableOutbox(content) {
   if (/(^|\n)Return lifecycle:[\t ]*RECEIVED/.test(unframed)) {
     issues.push("Durable outbox: unmarked Return Route data requires canonical v1 framing");
   }
+  // A JSON claim is not a protocol record, but must not masquerade as an empty outbox.
+  const jsonClaims = [unframed.trim(),
+    ...Array.from(unframed.matchAll(/^```(?:json)?[\t ]*\r?\n([\s\S]*?)^```[\t ]*\r?$/gm), match => match[1])];
+  for (const candidate of jsonClaims) {
+    let value;
+    try { value = JSON.parse(candidate); } catch { continue; }
+    if (value && typeof value === "object" && !Array.isArray(value) &&
+        typeof value.marker === "string" && /^vydykhai:return-(?:sync|route) v\d+$/.test(value.marker)) {
+      const claimedId = typeof value.receiptId === "string" && value.receiptId.trim()
+        ? JSON.stringify(value.receiptId) : "unidentified";
+      const issue = `Durable outbox: JSON Return claim requires canonical v1 framing (${value.marker}; claimed id ${claimedId})`;
+      if (!issues.includes(issue)) issues.push(issue);
+    }
+  }
   const returns = new Map();
   const routes = new Map();
   const ambiguousReturns = new Set();

@@ -1133,9 +1133,10 @@ const historicalVersionFiles = new Set([
 ]);
 // Migration thresholds stay fixed when the current release advances.
 const migrationVersionReferences = new Map([
-  ["docs/workflows/framework-activation.md", [/\bFrom 1\.32\.8\b/, /\bOn adoption of 1\.32\.8\b/]],
+  ["docs/workflows/framework-activation.md", [/\bFrom 1\.32\.8\b/, /\bOn adoption of 1\.32\.8\b/, /\bfrom 1\.34\.1\b/]],
   ["docs/workflows/module-contract-template.md", [/\bFrom 1\.32\.8\b/]],
-  ["docs/workflows/project-state-template.md", [/\bFrom 1\.32\.8\b/]],
+  ["docs/workflows/project-state-template.md", [/\bFrom 1\.32\.8\b/, /\bFrom 1\.34\.1\b/]],
+  ["docs/workflows/team-alignment-delta.md", [/\bfrom 1\.34\.1\b/]],
 ]);
 for (const relative of runtimeFiles) {
   if (historicalVersionFiles.has(relative) || !existsSync(path.join(root, relative))) continue;

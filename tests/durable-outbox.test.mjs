@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   createReturnRoute,
   createReturnSync,
+  classifyGuard,
   parseDurableOutboxComment,
   validateDurableOutbox,
 } from "../scripts/vydykhai.mjs";
@@ -203,6 +204,79 @@ test("unframed machine fields are diagnosed even alongside a valid pair", () => 
   const result = validateDurableOutbox(`${producer("R1")}\n${consumer("R1")}\nReturn receipt id: UNFRAMED\n`);
   assert.ok(result.issues.some((issue) => issue.includes("unmarked Return Sync")));
   assert.equal(result.returnCount, 1);
+});
+
+test("JSON claiming Return protocol framing is not a silently empty outbox", () => {
+  for (const kind of ["sync", "route"]) {
+    const wrong = JSON.stringify({ marker: `vydykhai:return-${kind} v1`, receiptId: "LOST",
+      status: "ACCEPT", lifecycle: kind === "sync" ? "WRITTEN" : "RECEIVED -> CONSUMED -> ROUTED" });
+    for (const body of [wrong, JSON.stringify(JSON.parse(wrong), null, 2),
+      `\`\`\`json\n${wrong}\n\`\`\``, `\`\`\`json\r\n${wrong}\r\n\`\`\`\r\n`,
+      `${producer("GOOD")}\n${consumer("GOOD")}\n${wrong}`]) {
+      const parsed = validateDurableOutbox(body);
+      assert.ok(parsed.issues.some(issue => issue.includes("JSON Return claim requires canonical v1 framing")));
+      assert.ok(!parsed.returns.some(record => record.id === "LOST"));
+      assert.ok(!parsed.routes.some(record => record.id === "LOST"));
+      const result = { ok: parsed.issues.length === 0, stateIssues: [], graphIssues: [], outbox: parsed };
+      const first = classifyGuard(result, "");
+      assert.equal(first.action, "AUDIT_REQUIRED");
+      const repeated = classifyGuard(result, "Snapshot as of: newer", {
+        repairIncidentId: first.incidentId, repairAttempts: 1,
+      });
+      assert.equal(repeated.incidentId, first.incidentId);
+      assert.equal(repeated.action, "CONTROL_DEGRADED", "no repeated paid repair for the same malformed return");
+    }
+  }
+});
+
+test("ordinary JSON and protocol mentions do not manufacture control incidents", () => {
+  for (const body of [JSON.stringify({status:"ACCEPT",receiptId:"business-record"}),
+    JSON.stringify({note:"vydykhai:return-sync v1"}),
+    JSON.stringify({marker:["vydykhai:return-sync v1"]}),
+    JSON.stringify({marker:"application-export v1"}),
+    "Documentation discusses vydykhai:return-sync v1; this is not a receipt."]) {
+    const result = validateDurableOutbox(body);
+    assert.deepEqual(result.issues, []);
+    assert.equal(result.returnCount, 0);
+    assert.equal(result.routeCount, 0);
+  }
+});
+
+test("a prior accepted malformed claim cannot mask a different claimed receipt", () => {
+  const raw = id => JSON.stringify({marker:"vydykhai:return-sync v1",receiptId:id,status:"ACCEPT"});
+  const check = (body, options={}) => {
+    const outbox=validateDurableOutbox(body);
+    return classifyGuard({ok:false,stateIssues:[],graphIssues:[],outbox}, "", options);
+  };
+  const first = check(raw("ONE"));
+  assert.equal(check(raw("ONE"), {acceptedIncidentId:first.incidentId}).action, "NOOP");
+  const second = check(raw("TWO"), {acceptedIncidentId:first.incidentId});
+  assert.equal(second.action, "AUDIT_REQUIRED");
+  assert.notEqual(second.incidentId, first.incidentId);
+  const fenced = `\`\`\`json\n${raw("ONE")}\n\`\`\`\n\`\`\`json\n${raw("TWO")}\n\`\`\``;
+  assert.equal(validateDurableOutbox(fenced).issues.length, 2);
+});
+
+test("exact producer framing repair is discovered once, then routed without replaying work", () => {
+  const jsonReceipt = {marker:"vydykhai:return-sync v1",receiptId:"R-KEPT",status:"ACCEPT"};
+  const malformed = validateDurableOutbox(JSON.stringify(jsonReceipt));
+  assert.ok(malformed.issues.length);
+  assert.deepEqual(malformed.pendingReturnIds, []);
+  const emitted = createReturnSync({status:jsonReceipt.status, returnReceiptId:jsonReceipt.receiptId,
+    taskContextArtifact:"worker / retained-artifact", memoryCandidates:"retained obligations; not integrated",
+    artifactDisposition:"same preserved implementation; framing-only repair",
+    recommendedNextAction:"consume exact artifact; parent remains open"});
+  const pending = validateDurableOutbox(emitted);
+  assert.deepEqual(pending.pendingReturnIds, [jsonReceipt.receiptId]);
+  const result = {ok:false,stateIssues:[],graphIssues:[],outbox:pending};
+  const wake = classifyGuard(result, "");
+  assert.equal(wake.action, "WAKE");
+  assert.equal(classifyGuard(result, "", {wokenIncidentId:wake.incidentId}).action, "AUDIT_REQUIRED");
+  const paired = validateDurableOutbox(`${emitted}\n${createReturnRoute({returnReceiptId:jsonReceipt.receiptId,
+    consumer:"manager",routedNextAction:"retain remaining platform obligations",evidence:"independent exact-current receipt"})}`);
+  assert.deepEqual(paired.issues, []);
+  assert.deepEqual(paired.routedReturnIds, [jsonReceipt.receiptId]);
+  for (let i=0;i<2;i++) assert.equal(classifyGuard({ok:true,stateIssues:[],graphIssues:[],outbox:paired}, "").action,"NOOP");
 });
 
 test("CRLF transport preserves complete pairs", () => {

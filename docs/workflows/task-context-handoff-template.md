@@ -98,6 +98,14 @@ The orchestrator owns repair routing, not product implementation or permission g
 
 ## Return Sync
 
+Use the installed `createReturnSync` writer and read the exact stored bytes back
+through `parseDurableOutboxComment` (`scripts/vydykhai.mjs`). Require the expected
+receipt id as a valid record; zero records is not success even with no parser
+issues. A JSON object naming the protocol is not its marked v1 format. If the
+writer or authorized storage is unavailable, retain the result and report that
+specific handoff gap; never replace the producer's record inside an acceptance
+test and count the replacement as producer delivery.
+
 ```md
 <!-- vydykhai:return-sync v1 -->
 

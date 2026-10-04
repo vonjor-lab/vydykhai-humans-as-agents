@@ -25,6 +25,11 @@ test("release validation preserves exact migration references, not stale current
     ["docs/workflows/framework-activation.md", "Current version: 1.32.8", "1.32.8"],
     ["README.md", "From 1.32.8", "1.32.8"],
     ["docs/workflows/framework-activation.md", "From 1.32.80", "1.32.80"],
+    ["docs/workflows/framework-activation.md", "Current version: 1.34.1", "1.34.1"],
+    ["docs/workflows/project-state-template.md", "Current version: 1.34.1", "1.34.1"],
+    ["docs/workflows/team-alignment-delta.md", "Current version: 1.34.1", "1.34.1"],
+    ["README.md", "From 1.34.1", "1.34.1"],
+    ["docs/workflows/framework-activation.md", "from 1.34.10", "1.34.10"],
   ]) {
     const file = path.join(target, name);
     const original = await readFile(file, "utf8");
