@@ -10,6 +10,20 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 2.0.1 - 2026-10-11
+
+Compatible memory-section reader repair on `release/2.x`. Validation and recall
+stop Pending Memory Events at an actual peer or ancestor Markdown heading,
+instead of treating a following public-contract table as pending-event rows.
+Nested, prose, fenced and HTML-comment heading text cannot truncate genuine pending meaning;
+strict event shape, state and anchor validation remain unchanged. Existing graph
+versions and schemas are unchanged: no memory reordering, rebuilding or waiver
+is needed. Current operating-core labels now reflect the opt-in released channel;
+historical candidate evidence remains historical. Safe adoption uses the existing
+team-memory owner/readback route and new trusted runtime pins, retaining all
+accepted artifacts, pending deltas, private state and spent allocations. Installation
+is not proof of controlled project readiness or economic improvement.
+
 ## 2.0.0 - 2026-10-11
 
 Opt-in major release on `release/2.x`; stable `1.x/main` remains unchanged.

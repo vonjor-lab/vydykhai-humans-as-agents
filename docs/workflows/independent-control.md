@@ -1,6 +1,6 @@
 # Independent Control On The Supported Route
 
-Unreleased controlled operating contract. This procedure is shipped through the
+Opt-in controlled operating contract. This procedure is shipped through the
 managed workflows directory; it is not proof of an activated host or permission
 to change a product. Read it at controlled-mode adoption, new admission, product
 acceptance, an independent finding, or a due Health Review, not every unchanged turn.

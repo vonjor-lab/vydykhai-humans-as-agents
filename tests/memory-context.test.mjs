@@ -132,6 +132,39 @@ test("a complete v4 graph connects outcomes, modules, artifacts, commitments and
   assert.deepEqual(validateMemoryGraph(graphV4Fixture(), manifest), []);
 });
 
+const adjacentContractRoutes = `## Current Module Contract Routes
+| Anchor | Exact source | File SHA |
+| --- | --- | --- |
+| ENT-OUTCOME | docs/public-contract.md | ${"a".repeat(64)} |
+`;
+
+test("pending-event validation does not consume an adjacent module-contract section", () => {
+  for (const fixture of [graphFixture, graphV4Fixture]) {
+    const graph = fixture().replace("## Live Retrieval Probes", `${adjacentContractRoutes}## Live Retrieval Probes`);
+    assert.deepEqual(validateMemoryGraph(graph, manifest), []);
+    assert.deepEqual(validateMemoryGraph(graph.replace(/\n/g, "\r\n"), manifest), []);
+  }
+});
+
+test("an adjacent section does not waive genuine pending-event checks", () => {
+  const graph = graphFixture().replace("## Live Retrieval Probes", `${adjacentContractRoutes}## Live Retrieval Probes`);
+  const event = "| EVT-1 | correction | old / new / why | ENT-OUTCOME | NONE | REFINE | decision | PENDING |\n";
+  const pending = graph.replace(adjacentContractRoutes, `${event}${adjacentContractRoutes}`);
+  assert.match(validateMemoryGraph(pending, manifest).join("\n"), /memory event EVT-1 is still pending/);
+  assert.deepEqual(validateMemoryGraph(pending, manifest, {inspectionOnly: true}), []);
+  assert.match(validateMemoryGraph(pending.replace("decision | PENDING", "decision | GUESS"), manifest).join("\n"), /invalid pending event EVT-1/);
+  assert.match(validateMemoryGraph(pending.replace("why | ENT-OUTCOME", "why | ENT-MISSING"), manifest).join("\n"), /unknown anchor ENT-MISSING/);
+  assert.match(validateMemoryGraph(pending.replace("| EVT-1 | correction | old / new / why | ENT-OUTCOME | NONE | REFINE | decision | PENDING |", "| EVT-1 | correction | PENDING |"), manifest).join("\n"), /invalid pending event EVT-1/);
+});
+
+test("nested headings and quoted heading text cannot hide a genuine pending event", () => {
+  for (const prefix of ["### Event notes\n", "The next heading is ## Current Module Contract Routes.\n", "```markdown\n## Current Module Contract Routes\n```\n", "~~~markdown\n## Live Retrieval Probes\n~~~\n", "<!--\n## Event notes\n-->\n"]) {
+    const graph = graphFixture().replace("## Live Retrieval Probes",
+      `${prefix}| EVT-1 | correction | old / new / why | ENT-OUTCOME | NONE | REFINE | decision | PENDING |\n${adjacentContractRoutes}## Live Retrieval Probes`);
+    assert.match(validateMemoryGraph(graph, manifest).join("\n"), /memory event EVT-1 is still pending/, prefix);
+  }
+});
+
 test("v4 rejects undocumented modules, disconnected entities and orphan commitments", () => {
   const undocumented = graphV4Fixture().replace(
     "contract: docs/modules/arrangement.md; implementation: src/arrangement/",

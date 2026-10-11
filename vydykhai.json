@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -635,7 +635,7 @@
     {
       "id": "team-memory",
       "since": "1.30.0",
-      "action": "Reconcile relevant participants through existing sync: source-backed delta/no-change/gap, one integration owner, shared watermark and each participant own retrieval/readiness; unavailable scope stays pending. Include reusable design knowledge, code/module maps, contracts and shared rules/skills, not only graph nodes. Export existing registry, applicable artifact revisions and contribution/integration plus recipient retrieval/application receipts as readiness.teamSync under team-alignment-delta.md; verify actual contents and provenance. Sent packets or old recipient rules cannot close adoption. Preserve the existing owner and concrete checkpoint for missing participants; independent work continues. Read back graph storage format, location, physical capacity or uncertainty and pending unintegrated deltas under memory-storage.md. Preserve meaning through stable-id revisions, linked history and explicit conflict resolution. A full document requires a visible retained delta, owner/checkpoint and lossless storage expansion; never silently omit or mark an unwritten update integrated. Prove actual stored readback and ordinary retrieval before closing the update. Reuse the existing maintenance owner; no automatic whole-graph rebuild or extra Guard loop.",
+      "action": "Reconcile relevant participants through existing sync: source-backed delta/no-change/gap, one integration owner, shared watermark and each participant own retrieval/readiness; unavailable scope stays pending. Include reusable design knowledge, code/module maps, contracts and shared rules/skills, not only graph nodes. Export existing registry, applicable artifact revisions and contribution/integration plus recipient retrieval/application receipts as readiness.teamSync under team-alignment-delta.md; verify actual contents and provenance. Sent packets or old recipient rules cannot close adoption. Preserve the existing owner and concrete checkpoint for missing participants; independent work continues. Read back graph storage format, location, physical capacity or uncertainty and pending unintegrated deltas under memory-storage.md. Preserve meaning through stable-id revisions, linked history and explicit conflict resolution. A full document requires a visible retained delta, owner/checkpoint and lossless storage expansion; never silently omit or mark an unwritten update integrated. Prove actual stored readback and ordinary retrieval before closing the update. Reuse the existing maintenance owner; no automatic whole-graph rebuild or extra Guard loop. When adopting the pending-event reader repair, validate the unchanged existing graph and read back an ordinary relevant recall route, including genuine pending meaning. Adjacent sibling sections must not be treated as events. Use the newly published runtime pins at the existing safe checkpoint; retain private state and spent allocations. Repair only an evidenced owning gap or record source-backed NO_CHANGE; do not reorder or rebuild memory to satisfy the reader.",
       "reuseBy": [
         "targetBundle",
         "participant",

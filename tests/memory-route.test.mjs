@@ -74,6 +74,21 @@ function addRoutes(content, added) {
     .replace("## Current Memory Nodes", added.map(r=>`| ${r[0]} | ${r[1]} | ${r[2]} | fixture | source |`).join("\n") + "\n## Current Memory Nodes");
 }
 
+test("adjacent public-contract tables do not contaminate recall or hide pending meaning", () => {
+  const adjacent = "## Current Module Contract Routes\n| Anchor | Exact source | File SHA |\n| --- | --- | --- |\n| ENT-QUOTE | public/quote.md | " + "a".repeat(64) + " |\n";
+  const content = graph().replace("## Live Retrieval Probes", adjacent + "## Live Retrieval Probes");
+  assert.deepEqual(validateMemoryGraph(content, manifest), []);
+  const {graphSha256: changedHash, ...actual} = deriveMemoryRoute(content, "Use quotation");
+  const {graphSha256: originalHash, ...expected} = deriveMemoryRoute(graph(), "Use quotation");
+  assert.notEqual(changedHash, originalHash);
+  assert.deepEqual(actual, expected);
+  const pending = content.replace(adjacent, "| event-3 | correction | changed quotation | ENT-QUOTE | NONE | REFINE | source | PENDING |\n" + adjacent);
+  assert.deepEqual(validateMemoryGraph(pending, manifest, {inspectionOnly: true}), []);
+  const route = deriveMemoryRoute(pending, "Use quotation");
+  assert.equal(route.status, "NEEDS_DISCOVERY");
+  assert.ok(route.gaps.some(gap => gap.includes("event-3")));
+});
+
 test("incoming declared entity and memory constraints and entity prerequisites are retained", () => {
   const constrained = addRoutes(graph([node("MEM-EXTERNAL", "REQUIREMENT", "ENT-OTHER", "Preserve inventory isolation",
     {Relations: "about -> ENT-OTHER; constrains -> MEM-RATE"})]), [["ENT-OTHER", "constrains", "ENT-QUOTE"]]);

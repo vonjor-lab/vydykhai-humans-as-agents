@@ -1851,7 +1851,7 @@ export function validateMemoryGraph(content, manifest, {inspectionOnly = false} 
     }
   }
 
-  const pendingEvents = section(content, "## Pending Memory Events", ["## Live Retrieval Probes"]);
+  const pendingEvents = section(content, "## Pending Memory Events", ["## Live Retrieval Probes"], {stopAtPeerHeading: true});
   for (const row of tableRows(pendingEvents, /^Event$/i)) {
     if (row.length !== 8 || row.some(value => !present(value)) || !["PENDING", "INTEGRATED", "NEEDS_HUMAN"].includes(row[7])) {
       issues.push(`${label}: incomplete or invalid pending event ${row[0] || "(unnamed)"}`);

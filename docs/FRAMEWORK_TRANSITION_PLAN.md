@@ -1,6 +1,22 @@
 # Framework Efficiency Transition
 
 Owner: framework maintainer. Current direction approved 2026-10-09.
+Compatible patch checkpoint, 2026-10-11: the initial major release is published
+on `release/2.x`; stable `main` and Latest remain unchanged. A sanitized existing
+graph compatibility case exposed adjacent public-contract tables being consumed
+as pending events. The patch bounds the existing validator and recall reader at
+real peer/ancestor headings without dropping actual pending meaning, changing
+schemas or reorganizing memory. Independent review found and then verified fixes
+for HTML-comment boundaries and a test's graph-identity comparison: 34 targeted
+tests PASS, no remaining blocking finding in that narrow scope. Additional local
+adoption/version/recall checks PASS (71 and 11); full final regression and public
+source/tag/archive/update readbacks are release gates, not project activation.
+Existing team-memory adoption owns unchanged-graph and ordinary-recall readback
+with new trusted runtime pins. No native qualification allocation is reset and
+no additional paid behavioral trial is authorized by this compatibility patch.
+
+The following accepted major-release checkpoint retains its original evidence
+and limitations; it is not an instruction to replay completed qualification.
 Status: TECHNICAL_RELEASE_READY, independently accepted2026-10-10 23:07UTC.
 Release2.0.0 authorized2026-10-11 on the separate `release/2.x` channel.
 Publication owner: framework maintainer. Keep `main`, default HEAD and Latest

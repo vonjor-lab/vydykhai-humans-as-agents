@@ -10,9 +10,9 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `2.0.0`
+Current version: `2.0.1`
 
-Version `2.0.0` is an opt-in major release on `release/2.x`; stable `1.x` remains on `main`. Existing projects require an explicitly approved migration and independent adoption evidence; copying this source is not completed adoption. The supported operating cycle is qualified, but universal reliability and measured savings are not claimed.
+Version `2.0.1` is an opt-in release on `release/2.x`; stable `1.x` remains on `main`. Existing projects require an explicitly approved major-version migration and independent adoption evidence; copying this source is not completed adoption. The supported operating cycle is qualified, but universal reliability and measured savings are not claimed.
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 

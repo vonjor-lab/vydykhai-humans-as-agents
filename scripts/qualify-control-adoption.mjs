@@ -301,7 +301,8 @@ export async function stageAdoptionReadbacks(output) {
     hash(await tree(setup.workspace)) === hash(setup.workspaceTree) && hash(await tree(setup.root)) === hash(setup.controlTree) &&
     hash(await tree(setup.sourceRoot)) === hash(setup.sourceTree), 'ADOPTION_READBACK_NOT_FRESH_CANDIDATE');
   const doctor = JSON.parse(command(process.execPath,[path.join(setup.workspace,'scripts/vydykhai.mjs'),'doctor',setup.workspace,'--offline','--json'],setup.workspace));
-  need(doctor.ok && doctor.installedVersion === '2.0.0','ADOPTION_CANDIDATE_NOT_INSTALLED');
+  const candidateVersion = JSON.parse(await readFile(path.join(setup.sourceRoot,'vydykhai.json'))).version;
+  need(doctor.ok && doctor.installedVersion === candidateVersion,'ADOPTION_CANDIDATE_NOT_INSTALLED');
   const runtime = await loadControlRuntime({packageRoot:setup.activation.runtime.root,expectedDigest:setup.activation.runtime.digest,workspace:setup.workspace});
   const service = await runtime.service.openControlService(setup.profile);
   await save(path.join(out,'adoption-readback-stage-intent.json'),{setupSha256:sha256(setupBytes),nativeCalls:0});

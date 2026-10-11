@@ -14,7 +14,7 @@ test("controlled policy is reachable through ordinary managed events, not only m
     "UNKNOWN effects retain", "without a compulsory whole-project rewrite", "Native tools outside",
     "No activation automatically resumes paused work"])
     assert.ok(policy.includes(clause), clause);
-  assert.match(policy, /Unreleased controlled operating contract/);
+  assert.match(policy, /Opt-in controlled operating contract/);
   assert.match(policy, /Optimize the total effort to achieve and retain accepted outcomes/);
   assert.match(policy, /Never remove required evidence just to make control cheaper/);
   assert.match(policy, /The verdict still covers the full catalog/);

@@ -12,7 +12,7 @@ const relations = node => (node.fields.get("Relations") || "").split(/\s*;\s*/).
 const headings = ["## Anchor Index", "## Entity Routes", "## Current Memory Nodes",
   "## Source Coverage Ledger", "## Pending Memory Events", "## Live Retrieval Probes", "## Legacy Source Map"];
 const rows = (content, heading, header) => tableRows(section(content, heading,
-  headings.slice(headings.indexOf(heading) + 1)), header);
+  headings.slice(headings.indexOf(heading) + 1), {stopAtPeerHeading: heading === "## Pending Memory Events"}), header);
 const base = {semanticTruth: "NOT_VERIFIED", admission: "NOT_GRANTED", coverageBasis: "DECLARED_GRAPH_ONLY"};
 
 function parseNodes(content) {
