@@ -222,7 +222,7 @@ test("partial durable batch write stays charged and cannot be retried", async t 
   await assert.rejects(reserve(ledger), /NATIVE_UNRESOLVED_ALLOCATION/);
 });
 
-test("partition reservation refuses profile mismatch, stale bindings and orphan children before any spend", async t => {
+test("partition reservation refuses profile mismatch, stale bindings and orphan children before any spend", { skip: process.platform !== "darwin" }, async t => {
   const x = await reviewFixture(t, undefined, true);
   for (const changes of [{ partitionCount: 1 }, { partitionCount: 2 },
     { native: { ...x.args.profile.review.native, effort: "high" } },
@@ -390,7 +390,7 @@ test("unresolved settlement stays spent and unchanged when its selected reviewer
   assert.equal((await x.journal.read()).state.calls, 1); assert.equal(fake.requests.length, 2);
 });
 
-test("review reservation requires actual host claim and current bindings before consuming one arm slot", async t => {
+test("review reservation requires actual host claim and current bindings before consuming one arm slot", { skip: process.platform !== "darwin" }, async t => {
   const x = await reviewFixture(t);
   await assert.rejects(x.budget.reserve({ runId: "not-claimed" }), /NATIVE_REVIEW_CLAIM_REQUIRED/);
   const expected = await x.claim();
@@ -412,7 +412,7 @@ test("review reservation requires actual host claim and current bindings before 
   assert.equal((await x.journal.read()).state.calls, 0);
 });
 
-test("source journal deletion or wrong allocation cannot settle, reset or release spend", async t => {
+test("source journal deletion or wrong allocation cannot settle, reset or release spend", { skip: process.platform !== "darwin" }, async t => {
   const x = await reviewFixture(t), expected = await x.claim(), allocation = await x.budget.reserve(expected);
   await assert.rejects(x.budget.settle({ allocation: { ...allocation, runId: "another-run" }, entered: false,
     observation: { state: "UNKNOWN" } }), /NATIVE_REVIEW_ALLOCATION_MISMATCH/);

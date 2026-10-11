@@ -51,7 +51,7 @@ readline.createInterface({input:process.stdin}).on("line", line => {
     if (mode === "partial") return process.stdout.write('{"id":1,"result":');
     if (mode === "invalid-utf8") return process.stdout.write(Buffer.from([0xff,10]));
     if (mode === "notification-only") return process.stdout.write(JSON.stringify({method:"account/rateLimits/updated",params:result})+"\\n");
-    if (mode === "aggregate") process.stderr.write(noise.repeat(40));
+    if (mode === "aggregate") return process.stderr.write(noise.repeat(40), () => reply(1, {userAgent:noise}));
     if (mode === "pipes" || mode === "escaped") {
       const descendant = spawn(process.execPath,["-e","setInterval(()=>{},1000)"],{detached:mode === "escaped",stdio:["ignore",1,2]});
       fs.writeFileSync("descendant.pid",String(descendant.pid));
@@ -75,8 +75,10 @@ readline.createInterface({input:process.stdin}).on("line", line => {
       process.stdout.write(line.slice(0,11));
       setTimeout(()=>process.stdout.write(line.slice(11)),10);
     } else {
+      // Flush the late-handshake overflow before the final reply can trigger
+      // client cleanup; unflushed future writes are not observed output.
+      if (mode === "late-stderr") return process.stderr.write(noise.repeat(5000), () => process.stdout.write(line));
       process.stdout.write(line);
-      if (mode === "late-stderr") process.stderr.write(noise.repeat(5000));
     }
   } else process.exit(7);
 });
@@ -218,7 +220,9 @@ test("timeout, partial lines and notification-only output are bounded UNKNOWN", 
 test("aggregate stdout and stderr limits include unterminated output", async t => {
   for (const mode of ["stdout-overflow", "stderr-overflow", "aggregate", "late-stderr"]) {
     const x = await fixture(t, snapshot(), mode);
-    isUnknown(await readControlAllowance({...x.request,maxBytes:1024}),"OUTPUT_CAPACITY"); await stopped(x);
+    const result = await readControlAllowance({...x.request,maxBytes:1024});
+    assert.equal(result.status, "UNKNOWN", mode);
+    isUnknown(result,"OUTPUT_CAPACITY"); await stopped(x);
   }
   const x = await fixture(t, snapshot({padding:"x".repeat(1024)}));
   isUnknown(await readControlAllowance({...x.request,maxBytes:1024}),"OUTPUT_CAPACITY");
