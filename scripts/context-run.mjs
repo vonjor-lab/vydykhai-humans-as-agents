@@ -2,12 +2,14 @@ import { constants } from "node:fs";
 import { access, lstat, readFile, realpath } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { createHash, randomUUID } from "node:crypto";
 import { canonicalJson, sha256, compileExecutableBrief, checkPreparedContext } from "./memory-brief.mjs";
-import { moduleAccessPolicy } from "./module-access.mjs";
+import { moduleAccessPolicy, moduleExampleIds } from "./module-access.mjs";
 import { prepareAlignment } from "./context-alignment.mjs";
 
 const CAPABILITY = "retained-progress-v1";
 const MAX_BYTES = 2 * 1024 * 1024;
+const COMMAND_STOP_GRACE_MS = 250;
 const hash = value => sha256(canonicalJson(value));
 const text = v => typeof v === "string" && v.trim().length > 0;
 const id = v => typeof v === "string" && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/.test(v);
@@ -25,16 +27,23 @@ export const artifactRef = v => ref(v) || (keys(v, ["path", "sha256", "startMark
 class ContextError extends Error {
   constructor(code, limited = false, reference = null) { super(code); this.code = code; this.limited = limited; this.reference = reference; }
 }
+const commandFailures = new WeakMap();
+const commandSuccesses = new WeakMap();
+export const readCommandFailure = error => commandFailures.has(error) ? structuredClone(commandFailures.get(error)) : null;
+export const readCommandSuccess = result => commandSuccesses.has(result) ? structuredClone(commandSuccesses.get(result)) : null;
 const requireThat = (condition, code = "CONTEXT_SCHEMA_INVALID", reference = null) => { if (!condition) throw new ContextError(code, false, reference); };
 
-export function artifactHash(reference, data) {
+export function artifactBytes(reference, data) {
   requireThat(artifactRef(reference), "ARTIFACT_REF_INVALID");
-  if (ref(reference)) return sha256(data);
-  const body = data.toString("utf8"), start = body.indexOf(reference.startMarker), end = body.indexOf(reference.endMarker);
-  requireThat(start >= 0 && end > start && start === body.lastIndexOf(reference.startMarker) &&
-    end === body.lastIndexOf(reference.endMarker), "ARTIFACT_SELECTOR_INVALID");
-  return sha256(body.slice(start, end + reference.endMarker.length));
+  const bytes = Buffer.isBuffer(data) ? data : Buffer.from(data);
+  if (ref(reference)) return bytes;
+  const first = Buffer.from(reference.startMarker), last = Buffer.from(reference.endMarker);
+  const start = bytes.indexOf(first), end = bytes.indexOf(last);
+  requireThat(start >= 0 && end > start && start === bytes.lastIndexOf(first) &&
+    end === bytes.lastIndexOf(last), "ARTIFACT_SELECTOR_INVALID");
+  return bytes.subarray(start, end + last.length);
 }
+export const artifactHash = (reference, data) => sha256(artifactBytes(reference, data));
 
 // No error includes source bytes, command output, environment values or supplied paths.
 async function boundedRead(file) {
@@ -69,6 +78,14 @@ function parse(bytes) {
 function schema(value, name, fields) {
   requireThat(keys(value, ["schema", ...fields]) && value.schema === name);
 }
+export function checkExampleOracle(oracle, requiredExamples, knownAssertions) {
+  schema(oracle, "context.oracle.v1", ["examples"]);
+  requireThat(list(oracle.examples, e => keys(e, ["id", "sourceAssertionRefs", "input", "expected"]) && id(e.id) &&
+    list(e.sourceAssertionRefs, id)) && unique(oracle.examples.map(e => e.id)), "ORACLE_SCHEMA_INVALID");
+  requireThat(requiredExamples.every(e => oracle.examples.some(o => o.id === e)), "REQUIRED_EXAMPLE_MISSING");
+  requireThat(oracle.examples.filter(e => requiredExamples.includes(e.id)).every(e =>
+    e.sourceAssertionRefs.every(r => knownAssertions.has(r))), "VERIFICATION_SOURCE_MISSING");
+}
 function sourceBindings(value) {
   requireThat(list(value, b => keys(b, ["sourceId", "eventId", "sha256", "classificationSha256", "reviewSha256"]) &&
     id(b.sourceId) && id(b.eventId) && digest(b.sha256) && digest(b.classificationSha256) && digest(b.reviewSha256), false));
@@ -83,7 +100,7 @@ function commandShape(spec) {
   "COMMAND_SCHEMA_INVALID");
   requireThat(!/^(?:sh|bash|zsh|fish|csh|dash|cmd(?:\.exe)?|powershell(?:\.exe)?|pwsh(?:\.exe)?)$/i.test(path.basename(spec.executable)), "SHELL_COMMAND_UNSUPPORTED");
 }
-async function command(spec, root, readPath, stats, extraEnv = {}, kind = "dependent") {
+async function command(spec, root, readPath, stats, extraEnv = {}, kind = "dependent", admission = null) {
   commandShape(spec);
   const cwd = await readPath(spec.cwd, true);
   const executable = await realpath(spec.executable);
@@ -92,33 +109,79 @@ async function command(spec, root, readPath, stats, extraEnv = {}, kind = "depen
   // A minimal environment avoids forwarding host credentials to reference commands.
   const env = { ...extraEnv };
   for (const k of ["PATH", "SystemRoot", "TMPDIR", "TEMP"]) if (process.env[k]) env[k] = process.env[k];
-  stats.commands++;
-  stats[`${kind}Commands`]++;
-  return new Promise((resolve, reject) => {
-    let stdout = Buffer.alloc(0), stderrBytes = 0, failure = null;
-    const child = spawn(executable, spec.args, { cwd, env, shell: false, windowsHide: true,
-      detached: process.platform !== "win32", stdio: ["ignore", "pipe", "pipe"] });
-    const stop = code => {
-      if (failure) return;
-      failure = code;
-      try { process.platform === "win32" ? child.kill("SIGKILL") : process.kill(-child.pid, "SIGKILL"); } catch { /* exited */ }
-    };
-    const timer = setTimeout(() => stop("COMMAND_TIMEOUT"), spec.timeoutMs);
-    child.stdout.on("data", chunk => {
-      if (stdout.length + stderrBytes + chunk.length > spec.maxOutputBytes) stop("COMMAND_OUTPUT_LIMIT");
-      else stdout = Buffer.concat([stdout, chunk]);
+  const invoke = async () => {
+    if (admission) await admission.recheck();
+    const readSandboxLaunch=admission?.binding.confined ?
+      (await import("./local-control-sandbox.mjs")).readSandboxLaunch : null;
+    return new Promise((resolve, reject) => {
+      let stdout = Buffer.alloc(0), stdoutBytes = 0, stderrBytes = 0, failure = null, settled = false;
+      let timer, teardownTimer;
+      const stdoutHash = createHash("sha256"), stderrHash = createHash("sha256");
+      const launchId = randomUUID(), startedAt = new Date().toISOString();
+      const launch = admission?.launch ? admission.launch({executable, args: [...spec.args], cwd}) : {executable, args: spec.args};
+      const confined = readSandboxLaunch ? readSandboxLaunch(launch) : null;
+      if(admission?.binding.confined)requireThat(confined?.workspace === root &&
+        hash(confined.writeFiles) === hash(admission.binding.confined.writeFiles) &&
+        hash(confined.command) === hash({executable,args:[...spec.args],cwd}),"COMMAND_CONFINEMENT_REQUIRED");
+      stats.commands++;
+      stats[`${kind}Commands`]++;
+      const child = spawn(launch.executable, launch.args, { cwd, env, shell: false, windowsHide: true,
+        detached: process.platform !== "win32", stdio: ["ignore", "pipe", "pipe"] });
+      const stop = code => {
+        if (failure || settled) return;
+        failure = code;
+        teardownTimer = setTimeout(() => {
+          if (settled) return;
+          settled = true; clearTimeout(timer);
+          // Local pipe teardown is not a close/process-tree observation. No closed failure receipt is minted.
+          child.stdout.destroy(); child.stderr.destroy(); child.unref();
+          reject(new ContextError(failure));
+        }, COMMAND_STOP_GRACE_MS);
+        if (child.pid) {
+          try { process.platform === "win32" ? child.kill("SIGKILL") : process.kill(-child.pid, "SIGKILL"); } catch { /* termination unproven */ }
+        }
+      };
+      timer = setTimeout(() => stop("COMMAND_TIMEOUT"), spec.timeoutMs);
+      child.stdout.on("data", chunk => {
+        if (settled) return;
+        stdoutBytes += chunk.length; stdoutHash.update(chunk);
+        if (stdoutBytes + stderrBytes > spec.maxOutputBytes) stop("COMMAND_OUTPUT_LIMIT");
+        else stdout = Buffer.concat([stdout, chunk]);
+      });
+      child.stderr.on("data", chunk => {
+        if (settled) return;
+        stderrBytes += chunk.length; stderrHash.update(chunk);
+        if (stdoutBytes + stderrBytes > spec.maxOutputBytes) stop("COMMAND_OUTPUT_LIMIT");
+      });
+      child.on("error", () => stop("COMMAND_START_FAILED"));
+      child.on("close", (code, signal) => {
+        if (settled) return;
+        settled = true; clearTimeout(timer); clearTimeout(teardownTimer);
+        if (failure || code !== 0) {
+          const reason = failure || (signal ? "COMMAND_SIGNALLED" : "COMMAND_FAILED");
+          const error = new ContextError(reason);
+          // Protected metadata only: public error/result paths never include output or launch arguments.
+          commandFailures.set(error, {exitCode: code, signal, reason, commandSha256: hash(spec), cwd, executable,
+            process: {launchId, pid: child.pid ?? null, groupId: process.platform === "win32" ? null : child.pid ?? null,
+              startedAt, closedAt: new Date().toISOString(), launchExecutable: launch.executable,
+              launchArgsSha256: hash(launch.args)},
+            stdoutSha256: stdoutHash.digest("hex"), stderrSha256: stderrHash.digest("hex"), stdoutBytes, stderrBytes});
+          reject(error);
+        }
+        else {
+          const result={stdout,stdoutSha256:sha256(stdout),exitCode:code,commandSha256:hash(spec),cwd,executable};
+          commandSuccesses.set(result,{exitCode:code,signal,commandSha256:hash(spec),cwd,executable,
+            process:{launchId,pid:child.pid??null,groupId:process.platform==="win32"?null:child.pid??null,
+              startedAt,closedAt:new Date().toISOString(),launchExecutable:launch.executable,launchArgsSha256:hash(launch.args)},
+            stdoutSha256:stdoutHash.digest("hex"),stderrSha256:stderrHash.digest("hex"),stdoutBytes,stderrBytes,
+            ...(confined?{confinement:{workspace:confined.workspace,writeFiles:confined.writeFiles,policySha256:sha256(confined.policy)}}:{})});
+          resolve(result);
+        }
+      });
     });
-    child.stderr.on("data", chunk => {
-      stderrBytes += chunk.length;
-      if (stdout.length + stderrBytes > spec.maxOutputBytes) stop("COMMAND_OUTPUT_LIMIT");
-    });
-    child.on("error", () => { clearTimeout(timer); reject(new ContextError("COMMAND_START_FAILED")); });
-    child.on("close", code => {
-      clearTimeout(timer);
-      if (failure || code !== 0) reject(new ContextError(failure || "COMMAND_FAILED"));
-      else resolve({ stdout, stdoutSha256: sha256(stdout), exitCode: code, commandSha256: hash(spec), cwd, executable });
-    });
-  });
+  };
+  return admission ? admission.dispatch({...admission.binding, commandSha256: hash(spec),
+    cwd, executable, kind}, invoke) : invoke();
 }
 
 // This is the sole reference transition entry. It performs no shared-state writes.
@@ -162,6 +225,7 @@ export async function runContextTransition(request, services = {}) {
       list(task.newExampleIds, id, false) && unique(task.newExampleIds) && list(task.candidateFiles, text) && unique(task.candidateFiles) &&
       typeof task.allowLocalOverlay === "boolean");
     let alignmentCoverage = "LEGACY_UNCHECKED";
+    let packetBinding = null;
     const checkPackageApproval = async () => {
       if (!Object.hasOwn(task, "packageApproval")) return;
       requireThat(keys(task.packageApproval, ["plan", "approval"]) && text(task.packageApproval.plan) && text(task.packageApproval.approval), "PACKAGE_APPROVAL_INVALID");
@@ -182,6 +246,9 @@ export async function runContextTransition(request, services = {}) {
       schema(approval, "context.package-approval.v1", ["owner", "decision", "planSha256"]);
       requireThat(id(plan.owner) && plan.workspace === root && approval.owner === plan.owner && approval.decision === "approved" &&
         approval.planSha256 === sha256(planBytes), "PACKAGE_APPROVAL_MISMATCH");
+      packetBinding={plan:{path:task.packageApproval.plan,sha256:sha256(planBytes)},
+        approval:{path:task.packageApproval.approval,sha256:sha256(await bytes(task.packageApproval.approval))},
+        moduleAccess:plan.semanticPackage?.moduleAccess};
       requireThat(list(plan.inputFiles, artifactRef) && list(plan.artifacts, ref) &&
         plan.artifacts.some(r => r.path === request.task.path && r.sha256 === request.task.sha256), "PACKAGE_TASK_MISMATCH");
       // This one explicit decision is provenance for all exact derived reviews.
@@ -209,7 +276,7 @@ export async function runContextTransition(request, services = {}) {
     schema(module, "context.module.v1", ["publicBoundary", "implementationFiles", "retainedExampleIds", "oracle", "verificationScript", "verificationCommand",
       ...(Object.hasOwn(module, "access") ? ["access"] : [])]);
     requireThat(id(module.publicBoundary) && list(module.implementationFiles, text) && unique(module.implementationFiles) &&
-      list(module.retainedExampleIds, id) && unique(module.retainedExampleIds) && ref(module.oracle) && ref(module.verificationScript));
+      ref(module.oracle) && ref(module.verificationScript));
     requireThat(module.implementationFiles.every(f => task.candidateFiles.includes(f)), "CANDIDATE_BOUNDARY_MISSING");
     const checkModuleAccess = async () => {
       if (!Object.hasOwn(module, "access")) return;
@@ -219,8 +286,12 @@ export async function runContextTransition(request, services = {}) {
         module.implementationFiles.forEach(policy.assertMutation);
       } catch (e) { throw new ContextError(/^(?:MODULE|CONSUMED_MODULE)_[A-Z_]+$/.test(e.message) ? e.message : "MODULE_ACCESS_INVALID"); }
       for (const r of policy.immutable) requireThat(sha256(await bytes(r.path)) === r.sha256, "MODULE_RELEASE_CHANGED");
+      return policy;
     };
-    await checkModuleAccess();
+    const accessPolicy = await checkModuleAccess();
+    let requiredExamples;
+    try { requiredExamples = moduleExampleIds(module.retainedExampleIds, task.newExampleIds, accessPolicy?.targetIntent); }
+    catch (e) { throw new ContextError(e.message === "MODULE_EXAMPLES_INVALID" ? e.message : "CONTEXT_SCHEMA_INVALID"); }
     commandShape(task.action);
     commandShape(module.verificationCommand);
     requireThat(keys(task.memory, ["publicBoundary", "items", "atomicInput"]) && task.memory.publicBoundary === module.publicBoundary,
@@ -342,6 +413,8 @@ export async function runContextTransition(request, services = {}) {
         dependencyDigest: hash({ sources: sort(selected), dependencies: sort(dependencies) }) };
     };
     const snapshot = await intake();
+    const knownAssertions = new Set(snapshot.dispositions.flatMap(d => d.assertions.map(a => a.id)));
+    if (module.retainedExampleIds.length === 0) checkExampleOracle(await pinned(module.oracle), requiredExamples, knownAssertions);
     const classifiedPrefixes = [];
     for (const sourceId of new Set(snapshot.inventory.map(s => s.sourceId))) {
       const prefix = [];
@@ -430,7 +503,20 @@ export async function runContextTransition(request, services = {}) {
       coverageBasis: basis, sourceReceipt, classificationBindings: snapshot.classificationBindings, sourceBodies: snapshot.sourceBodies,
       action: { ...task.action, cwd: await resolvePath(task.action.cwd, true) }, stats };
     if (request.operation === "resume") {
-      const result = await command(task.action, root, resolvePath, stats);
+      const confined=services.confinedCommand;
+      if(confined!==undefined) {
+        requireThat(services.dispatch && keys(confined,["schema","writeFiles","module","plan","approval"]) &&
+          confined.schema==="control.confined-command.v1" && Array.isArray(confined.writeFiles) && confined.writeFiles.length===1 &&
+          task.candidateFiles.includes(confined.writeFiles[0]) && packetBinding?.moduleAccess && module.access &&
+          hash(packetBinding.moduleAccess)===hash(module.access) && hash(confined.module)===hash(task.module) &&
+          hash(confined.plan)===hash(packetBinding.plan) && hash(confined.approval)===hash(packetBinding.approval),"COMMAND_RIGHTS_REQUIRED");
+        moduleAccessPolicy(module.access,module.publicBoundary,task.candidateFiles).assertMutation(confined.writeFiles[0]);
+      }
+      const admission = services.dispatch ? {dispatch: services.dispatch, launch: services.sandboxLaunch,
+        binding: {operation: request.operation, taskId: task.id, taskSha256: request.task.sha256, capsuleSha256: request.capsule.sha256,
+          sourceDigest: snapshot.sourceDigest, dependencyDigest: snapshot.dependencyDigest,...(confined?{confined:structuredClone(confined)}:{})},
+        recheck: () => recheck("BEFORE_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef])} : null;
+      const result = await command(task.action, root, resolvePath, stats, {}, "dependent", admission);
       await recheck("DURING_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef]);
       return { status: "ACTION_COMPLETED", operation: "resume", enforcement: "reference", coverageBasis: basis,
         action: { commandSha256: result.commandSha256, stdoutSha256: result.stdoutSha256, exitCode: result.exitCode,
@@ -442,20 +528,19 @@ export async function runContextTransition(request, services = {}) {
       return { kind: "declared-files", workspace: root, files, sha256: hash({ workspace: root, files }) };
     };
     const oracle = await pinned(module.oracle);
-    schema(oracle, "context.oracle.v1", ["examples"]);
-    requireThat(list(oracle.examples, e => keys(e, ["id", "sourceAssertionRefs", "input", "expected"]) && id(e.id) &&
-      list(e.sourceAssertionRefs, id)) && unique(oracle.examples.map(e => e.id)), "ORACLE_SCHEMA_INVALID");
-    const requiredExamples = [...new Set([...module.retainedExampleIds, ...task.newExampleIds])];
-    requireThat(requiredExamples.every(e => oracle.examples.some(o => o.id === e)), "REQUIRED_EXAMPLE_MISSING");
-    const knownAssertions = new Set(snapshot.dispositions.flatMap(d => d.assertions.map(a => a.id)));
-    requireThat(oracle.examples.filter(e => requiredExamples.includes(e.id)).every(e => e.sourceAssertionRefs.every(r => knownAssertions.has(r))), "VERIFICATION_SOURCE_MISSING");
+    checkExampleOracle(oracle, requiredExamples, knownAssertions);
     const before = await candidateIdentity();
     requireThat(sha256(await bytes(module.verificationScript.path)) === module.verificationScript.sha256, "VERIFICATION_SCRIPT_MISMATCH");
     const spec = module.verificationCommand;
     requireThat(object(spec) && Array.isArray(spec.args) && text(spec.args[0]) && text(spec.cwd) &&
       path.resolve(root, spec.cwd, spec.args[0]) === await resolvePath(module.verificationScript.path), "VERIFICATION_COMMAND_MISMATCH");
+    const admission = services.dispatch ? {dispatch: services.dispatch, launch: services.sandboxLaunch,
+      binding: {operation: request.operation, taskId: task.id, taskSha256: request.task.sha256, capsuleSha256: request.capsule.sha256,
+        sourceDigest: snapshot.sourceDigest, dependencyDigest: snapshot.dependencyDigest, candidateSha256: before.sha256},
+      recheck: () => recheck("BEFORE_ACTION", [task.module, task.memoryReview, request.capsule, request.readback,
+        readback.evidenceRef, module.oracle, module.verificationScript])} : null;
     const result = await command(spec, root, resolvePath, stats, { VYDYKHAI_CANDIDATE_SHA256: before.sha256,
-      VYDYKHAI_ORACLE_SHA256: module.oracle.sha256, VYDYKHAI_REQUIRED_EXAMPLES: JSON.stringify(requiredExamples) }, "verification");
+      VYDYKHAI_ORACLE_SHA256: module.oracle.sha256, VYDYKHAI_REQUIRED_EXAMPLES: JSON.stringify(requiredExamples) }, "verification", admission);
     requireThat((await candidateIdentity()).sha256 === before.sha256, "CANDIDATE_CHANGED_DURING_VERIFICATION");
     requireThat(sha256(await bytes(module.oracle.path)) === module.oracle.sha256 &&
       sha256(await bytes(module.verificationScript.path)) === module.verificationScript.sha256, "VERIFICATION_INPUT_CHANGED");

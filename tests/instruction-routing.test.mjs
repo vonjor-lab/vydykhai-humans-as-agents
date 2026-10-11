@@ -4,11 +4,27 @@ import { readFile } from "node:fs/promises";
 
 const source = (name) => readFile(new URL(`../${name}`, import.meta.url), "utf8");
 
+test("controlled policy is reachable through ordinary managed events, not only maintainer design", async () => {
+  for (const file of ["docs/AGENTS_CORE.md", "docs/workflows/framework-orchestrator.md",
+    "docs/workflows/start-work.md", "docs/workflows/accept-work.md", "docs/workflows/framework-activation.md"])
+    assert.match(await source(file), /independent-control\.md/);
+  const policy = await source("docs/workflows/independent-control.md");
+  for (const clause of ["owner\nconfirmation is not an independent review", "Acceptance durably enrolls fresh post-accept REVIEW",
+    "not repair scope or permission", "chat reply without application leaves control pending", "real worker readback",
+    "UNKNOWN effects retain", "without a compulsory whole-project rewrite", "Native tools outside",
+    "No activation automatically resumes paused work"])
+    assert.ok(policy.includes(clause), clause);
+  assert.match(policy, /Unreleased controlled operating contract/);
+  assert.match(policy, /Optimize the total effort to achieve and retain accepted outcomes/);
+  assert.match(policy, /Never remove required evidence just to make control cheaper/);
+  assert.match(policy, /The verdict still covers the full catalog/);
+});
+
 test("structural route: authorized continuation omits global reread and repeated approval", async () => {
   const core = await source("docs/AGENTS_CORE.md");
   const entry = await source(".agents/skills/framework-orchestrator/SKILL.md");
   const shaping = await source("docs/workflows/start-work.md");
-  assert.match(core, /do not reread the same text/);
+  assert.match(core, /Read managed rules once in `AGENTS\.md`, not again in `docs\/AGENTS_CORE\.md`/);
   assert.match(entry, /ordinary current-contract continuation/);
   assert.match(entry, /not a routine prerequisite/);
   assert.match(shaping, /ordinary continuation within that approved contract needs no second approval/);
@@ -74,6 +90,34 @@ test("structural route: completeness and cheap preparation cannot override accep
   assert.match(completion, /stops automatic internal-tree expansion/);
 });
 
+test("structural route: all roles navigate one map with explicit selected releases", async () => {
+  const contract = await source("docs/workflows/module-contract-template.md");
+  for (const phrase of ["goal/brief -> capability -> stable module/composite id",
+    "latest available release from actually selected environment bindings",
+    "A diagram is a view of these same entries", "not a separately maintained truth"])
+    assert.ok(contract.includes(phrase), phrase);
+  const route = await source("docs/workflows/module-context.md");
+  for (const phrase of ["Orchestration binds", "preparation retrieves", "Discovery resolves",
+    "execution uses", "acceptance and independent REVIEW", "bounded repair/supplement",
+    "Unchanged routes remain reusable", "existing team-sync path"])
+    assert.ok(route.includes(phrase), phrase);
+});
+
+test("structural route: module identity, release promotion and composite upgrades stay explicit", async () => {
+  const cycle = (await source("docs/workflows/module-delivery.md")).replace(/\s+/g, " ");
+  for (const phrase of ["one canonical module identity", "existing equivalent",
+    "Build once and promote the same immutable release", "Physical copies/caches",
+    "Different versions may coexist", "pins resolved child releases",
+    "not a silent change", "not the recursive implementation tree",
+    "Separate connection acceptance from algorithm-quality acceptance",
+    "connection PASS to product-quality PASS", "documented semantics, state and failure behavior"])
+    assert.ok(cycle.includes(phrase), phrase);
+  const contract = await source("docs/workflows/module-contract-template.md");
+  for (const field of ["Graph anchor / canonical module identity:", "Implementation / canonical source:",
+    "Owner / release responsibility / decision gate:", "Environment bindings:", "Resolved composition:"])
+    assert.ok(contract.includes(field), field);
+});
+
 test("shared module cycle is reachable without duplicating it across event entrypoints", async () => {
   for (const file of ["docs/workflows/start-work.md", "docs/workflows/accept-work.md",
     "docs/workflows/context-routing.md", ".agents/skills/start-work/SKILL.md", ".agents/skills/framework-orchestrator/SKILL.md"]) {
@@ -100,6 +144,16 @@ test("module cycle preserves autonomy, human authority and outcome ownership", a
   assert.match(cycle, /timeout does not prove impossibility/);
   assert.match(cycle, /finite/i);
   assert.match(await source("docs/workflows/module-contract-template.md"), /Control coverage:/);
+});
+
+test("connection instructions distinguish supported data from contract changes and qualify the installed route", async () => {
+  const cycle = await source("docs/workflows/module-delivery.md");
+  for (const phrase of ["data changes, not module or contract changes", "Keep the capability in consume mode",
+    "Unsupported inputs require an explicit applicability decision", "actual installed route",
+    "persistence/reopen", "consumer projection and resource access", "omits a dispatch dependency",
+    "not READY", "Reuse unaffected evidence", "one combined connection diagnosis",
+    "competing business contract"]) assert.ok(cycle.includes(phrase), phrase);
+  assert.match(await source("docs/workflows/module-contract-template.md"), /one authoritative input schema owner/);
 });
 
 test("weekly review retains budget, renewal and continuation without another service", async () => {

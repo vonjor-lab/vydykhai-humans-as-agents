@@ -1,0 +1,17 @@
+{
+  "currentIntent": "intent.md",
+  "contracts": "contracts.json",
+  "decisions": "memory.json",
+  "sourceOutputs": "source-outputs.json",
+  "platformDecisions": "platform.json",
+  "healthEvidence": "health.json",
+  "modules": [
+    {"id": "export", "mode": "closed", "publicOutput": "source-outputs.json", "implementation": "not supplied"},
+    {"id": "archive", "mode": "closed", "contract": "contracts.json#archive", "implementation": "not supplied"},
+    {"id": "composition", "mode": "change", "implementation": "../work/composite.mjs", "responsibility": "public projection and stable lookup"}
+  ],
+  "consumers": [
+    {"id": "batch-retrieval", "requires": "lookup by owner and document id after cold reopen"},
+    {"id": "client-download", "requires": "no cross-owner record substitution"}
+  ]
+}

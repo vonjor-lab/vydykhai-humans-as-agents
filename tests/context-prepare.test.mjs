@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, cp, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, cp, readFile, writeFile, rm, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -38,10 +38,14 @@ async function reviewPackage(w, pkg, decision = "fit", reviewer = "independent-r
   pkg.alignment.review = { path: "alignment-review.json", sha256: createHash("sha256").update(await readFile(path.join(w.root, "alignment-review.json"))).digest("hex") };
   await w.put("package.json", pkg); return pkg;
 }
-async function workspace(t, selectors = false) {
+async function workspace(t, selectors = false, installed = false) {
   const root = await mkdtemp(path.join(tmpdir(), "context-preparation-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   await cp(path.join(repository, "examples/context-preparation"), root, { recursive: true });
+  if (installed) {
+    const result = spawnSync(process.execPath, [path.join(repository, "scripts/vydykhai.mjs"), "install", root], { encoding: "utf8" });
+    assert.equal(result.status, 0, result.stderr);
+  }
   const json = async name => JSON.parse(await readFile(path.join(root, name), "utf8"));
   const put = (name, value) => writeFile(path.join(root, name), typeof value === "string" ? value : JSON.stringify(value));
   if (selectors) {
@@ -50,7 +54,7 @@ async function workspace(t, selectors = false) {
     await put("package.json", pkg);
   }
   const cli = (...args) => {
-    const result = spawnSync(process.execPath, [path.join(repository, "scripts/vydykhai.mjs"), ...args], { cwd: root, encoding: "utf8" });
+    const result = spawnSync(process.execPath, [path.join(installed ? root : repository, "scripts/vydykhai.mjs"), ...args], { cwd: root, encoding: "utf8" });
     assert.equal(result.signal, null, result.stderr);
     assert.ok(result.stdout.trim(), result.stderr);
     return JSON.parse(result.stdout);
@@ -254,6 +258,45 @@ test("the shipped modular example reaches retained/new verification on its owned
   assert.equal(result.receipt.productAcceptance, "NOT_ESTABLISHED");
 });
 
+test("reviewed new module completes with no fabricated history and an observed new case", async t => {
+  const w = await workspace(t), pkg = await alignedPackage(w, true);
+  pkg.moduleAccess.modules[0].intent = "create";
+  pkg.module.retainedExampleIds = [];
+  await reviewPackage(w, pkg); await w.ready();
+  await w.put("candidate.mjs", (await readFile(path.join(w.root, "candidate.mjs"), "utf8"))
+    .replace("const key = entry.id;", "const key = entry.id.toLowerCase();"));
+  assert.equal(w.run("resume").status, "ACTION_COMPLETED");
+  const accepted = w.run("accept");
+  assert.equal(accepted.status, "VERIFIED", JSON.stringify(accepted));
+  assert.deepEqual(accepted.receipt.observations, [{ id: "N1", observed: { error: "DUPLICATE_ID" } }]);
+  assert.deepEqual((await w.json("prepared/module.json")).retainedExampleIds, []);
+});
+
+test("unsupported empty history and unbound cases fail before planning or confirmation artifacts", async t => {
+  for (const mode of ["legacy", "change", "unrelated-create", "empty-new", "malformed-access", "missing-example", "missing-source"]) {
+    const w = await workspace(t), pkg = await w.json(mode === "legacy" ? "package.json" : "package-modular.json");
+    pkg.module.retainedExampleIds = [];
+    if (mode === "unrelated-create") pkg.moduleAccess.modules.push({ id: "other", intent: "create",
+      contractFiles: [...pkg.module.contractFiles], privatePaths: ["other"], release: null });
+    if (!["legacy", "change", "unrelated-create"].includes(mode)) pkg.moduleAccess.modules[0].intent = "create";
+    if (mode === "empty-new") pkg.module.newExampleIds = [];
+    if (mode === "malformed-access") pkg.moduleAccess.modules[0].release = {};
+    if (mode === "missing-example") pkg.module.newExampleIds = ["ABSENT"];
+    if (mode === "missing-source") {
+      const oracle = await w.json("oracle.json");
+      oracle.examples.find(e => e.id === "N1").sourceAssertionRefs = ["ABSENT"];
+      await w.put("oracle.json", oracle);
+    }
+    await w.put("package.json", pkg);
+    const result = w.plan();
+    const code = mode === "malformed-access" ? "MODULE_ACCESS_INVALID" : mode === "missing-example" ? "REQUIRED_EXAMPLE_MISSING" :
+      mode === "missing-source" ? "VERIFICATION_SOURCE_MISSING" : "MODULE_EXAMPLES_INVALID";
+    assert.equal(result.code, code, JSON.stringify({ mode, result }));
+    assert.deepEqual(await readdir(path.join(w.root, "prepared")), []);
+    await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
+  }
+});
+
 test("quote-only handoff is portable across workspaces and excludes the preparer's question", async t => {
   const first = await workspace(t), second = await workspace(t);
   const deliveries = [];
@@ -372,6 +415,42 @@ test("selected shared section changes block prepared task", async t => {
   await w.put("shared.md", (await readFile(path.join(w.root, "shared.md"), "utf8")).replace("Accepted boundary:", "Changed boundary:"));
   assert.equal(w.run("preflight").code, "PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
   assert.equal(w.prepare("read", "--worker", "bundle-worker").code, "PACKAGE_PLAN_STALE");
+});
+
+test("installed caller rejects stale contract and missing shared readback without losing retained work", async t => {
+  const w = await workspace(t, false, true), pkg = await w.json("package-modular.json");
+  pkg.sharedArtifacts = [{ path: "shared.md", startMarker: "<!-- bundle:start -->", endMarker: "<!-- bundle:end -->" }];
+  await w.put("package.json", pkg);
+  await w.ready();
+  const kit = w.cli("adoption-plan", "--json");
+  assert.equal(kit.activeUse, "UNPROVEN_BY_INSTALLER");
+  const candidate = (await readFile(path.join(w.root, "candidate.mjs"), "utf8"))
+    .replace("const key = entry.id;", "const key = entry.id.toLowerCase();");
+  await w.put("candidate.mjs", candidate);
+  assert.equal(w.run("accept").status, "VERIFIED");
+  const task = await readFile(path.join(w.root, "prepared/task.json"), "utf8");
+  const contract = await readFile(path.join(w.root, "module-contract.md"), "utf8");
+  const shared = await readFile(path.join(w.root, "shared.md"), "utf8");
+
+  await w.put("module-contract.md", contract + "\nA later accepted public revision is now selected.\n");
+  for (const operation of ["preflight", "resume", "accept"]) {
+    const result = w.run(operation);
+    assert.equal(result.code, "PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
+    assert.equal(result.stats.commands, 0);
+  }
+  assert.equal(w.cli("adoption-plan", "--json").target.bundleSha256, kit.target.bundleSha256);
+  await w.put("module-contract.md", contract);
+
+  await rm(path.join(w.root, "shared.md"));
+  const missing = w.run("preflight");
+  assert.notEqual(missing.status, "READY");
+  assert.equal(missing.stats.commands, 0);
+  // Exact fixture bytes are an available immutable recovery source, not inferred loss.
+  await w.put("shared.md", shared.replace("Unrelated module has", "A changed unrelated module has"));
+  for (let retry = 0; retry < 2; retry++) assert.equal(w.run("preflight").status, "READY");
+  assert.equal(await readFile(path.join(w.root, "candidate.mjs"), "utf8"), candidate);
+  assert.equal(await readFile(path.join(w.root, "prepared/task.json"), "utf8"), task);
+  await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
 });
 
 test("multiple selected sections in one file retain each root binding", async t => {

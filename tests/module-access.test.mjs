@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { moduleAccessPolicy } from "../scripts/module-access.mjs";
+import { moduleAccessPolicy, moduleExampleIds } from "../scripts/module-access.mjs";
 
 const ref = path => ({ path, sha256: "a".repeat(64) });
 const fixture = () => ({ schema: "context.module-access.v1", modules: [
@@ -51,4 +51,18 @@ test("authorized development opens only its owner; a composition does not open i
   data.modules[1].release = null;
   check(data, ["producer/solver.mjs"]).assertRead("producer/solver.mjs");
   // Changing this approved declaration requires a new package, not an executor flag.
+});
+
+test("empty history requires the validated exact creation target and real new example ids", () => {
+  const data = fixture();
+  data.modules.push({ id: "other", intent: "create", contractFiles: ["docs/other.md"], privatePaths: ["other"], release: null });
+  assert.equal(check(data).targetIntent, "change");
+  assert.throws(() => moduleExampleIds([], ["N1"], check(data).targetIntent), /MODULE_EXAMPLES_INVALID/);
+  assert.throws(() => moduleExampleIds([], ["N1"]), /MODULE_EXAMPLES_INVALID/);
+  data.modules[0].intent = "create";
+  assert.deepEqual(moduleExampleIds([], ["N1"], check(data).targetIntent), ["N1"]);
+  assert.deepEqual(moduleExampleIds(["B1"], ["N1"], check(data).targetIntent), ["B1", "N1"]);
+  for (const added of [[], ["N1", "N1"], ["bad id"], null]) {
+    assert.throws(() => moduleExampleIds([], added, check(data).targetIntent), /MODULE_EXAMPLES_INVALID/);
+  }
 });

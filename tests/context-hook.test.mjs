@@ -2,19 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir, mkdir, rm, lstat } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { spawnSync, execFile } from "node:child_process";
 import { nativeActionCommand, hookEventKey, preflightHook } from "../scripts/context-hook.mjs";
 import { canonicalJson, sha256 } from "../scripts/memory-brief.mjs";
 
-// Reuse the reviewed synthetic setup without changing the owner's extraction API
-// or importing/registering its entire test suite a second time.
-const testPath = fileURLToPath(new URL("./context-run.test.mjs", import.meta.url));
-const source = await readFile(testPath, "utf8");
-const helper = source.slice(0, source.indexOf("\nconst noAction ="))
-  .replace('"../scripts/memory-brief.mjs"', JSON.stringify(new URL("../scripts/memory-brief.mjs", import.meta.url).href))
-  .replaceAll("import.meta.url", JSON.stringify(pathToFileURL(testPath).href)) + "\nexport { fixture };";
-const { fixture } = await import("data:text/javascript;base64," + Buffer.from(helper).toString("base64"));
+import { fixture } from "./context-fixture.mjs";
 const adapter = fileURLToPath(new URL("../scripts/context-hook.mjs", import.meta.url));
 const hash = v => sha256(canonicalJson(v));
 

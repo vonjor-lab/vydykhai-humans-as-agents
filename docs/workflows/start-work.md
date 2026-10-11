@@ -1,5 +1,11 @@
 # Start Work Workflow
 
+When the project has adopted the controlled operating contract, new admission
+also follows [Independent Control](independent-control.md): original-source
+readiness, the selected host's exact grant and real current worker readback.
+An ordinary unchanged continuation reuses current evidence; no extra manager or
+automatic repeated model review is required.
+
 Goal: turn a raw or changed product topic into an approved epic brief and executable task map. Use [Context Route](context-route.md) to connect the goal, accepted architecture, decisions, existing artifacts and verification; completeness takes priority over context length.
 
 ## 1. Restore Intent
@@ -24,6 +30,10 @@ If a future option is useful but unnecessary for the nearest DOD, recommend keep
 Use the shared [Module Delivery Cycle](module-delivery.md) for the outcome, ownership, context boundary and proof. Its [boundary decision](module-delivery.md#locate-before-editing) is mandatory when a promised reusable capability lacks a module, needs hidden intervention or draws consumer work into producer internals. Preserve accepted releases, reuse approved authority and give the user one concrete repair proposal; do not add a parallel manager or restart independent work.
 
 ### Weekly Architecture Review
+
+Use [Independent Course Review](module-delivery.md#independent-course-review) for
+fresh judgment and retained findings; unchanged evidence does not need a second
+review. Reconcile fulfilled recall conditions when shaping the next task.
 
 Follow [Weekly Architecture Review](module-delivery.md#weekly-architecture-review) inside the existing Health Review. Keep its allowance-window binding and owned return obligation in Project State; do not run it as a prerequisite for each task.
 

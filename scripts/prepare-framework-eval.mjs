@@ -8,8 +8,7 @@ import { canonicalJson, sha256 } from "./memory-brief.mjs";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const FIXTURE = "tests/fixtures/framework-behavior";
 const FREEZE = `${FIXTURE}/freeze.json`;
-const INPUTS = ["cases.json", "rubric.json", "prompt.md", "README.md"].map(p => `${FIXTURE}/${p}`)
-  .concat("scripts/prepare-framework-eval.mjs");
+const DEFAULT_SUITE = { fixture: FIXTURE, baselineVersion: "1.32.8" };
 const TOP = ["docs/AGENTS_CORE.md", "docs/FRAMEWORK.md", "docs/FRAMEWORK_RU.md", "docs/VYDYKHAI_NOTICE.md", "vydykhai.json"];
 const DIRS = ["docs/workflows", ".agents/skills"];
 const hash = value => sha256(canonicalJson(value));
@@ -19,6 +18,12 @@ const unique = values => new Set(values).size === values.length;
 const keys = (value, names) => value !== null && typeof value === "object" && !Array.isArray(value) &&
   Object.keys(value).sort().join() === [...names].sort().join();
 const jsonBytes = value => Buffer.from(JSON.stringify(value, null, 2) + "\n");
+function suiteOptions(value = DEFAULT_SUITE) {
+  need(keys(value, ["fixture", "baselineVersion"]) &&
+    /^tests\/fixtures\/[a-z0-9-]+$/.test(value.fixture) &&
+    /^\d+\.\d+\.\d+$/.test(value.baselineVersion), "EVAL_SUITE_INVALID");
+  return value;
+}
 const included = name => TOP.includes(name) || (name.endsWith(".md") && DIRS.some(d => name.startsWith(d + "/")));
 const records = files => [...files].sort(([a], [b]) => a.localeCompare(b, "en")).map(([name, bytes]) => ({
   path: name, sha256: sha256(bytes), bytes: bytes.length,
@@ -72,20 +77,23 @@ async function snapshot(root, revision) {
   return files;
 }
 
-async function inputs(root) {
+async function inputs(root, fixture) {
   const files = new Map();
-  for (const name of INPUTS) files.set(name, await localFile(root, name));
-  validateCases(JSON.parse(files.get(`${FIXTURE}/cases.json`)), JSON.parse(files.get(`${FIXTURE}/rubric.json`)));
+  const names = ["cases.json", "rubric.json", "prompt.md", "README.md"].map(p => `${fixture}/${p}`)
+    .concat("scripts/prepare-framework-eval.mjs");
+  for (const name of names) files.set(name, await localFile(root, name));
+  validateCases(JSON.parse(files.get(`${fixture}/cases.json`)), JSON.parse(files.get(`${fixture}/rubric.json`)));
   return files;
 }
 
-export async function createFreeze(root, revision) {
+export async function createFreeze(root, revision, options) {
   root = await realpath(root);
-  const baseline = await snapshot(root, revision), candidate = await snapshot(root), sources = await inputs(root);
+  const suite = suiteOptions(options);
+  const baseline = await snapshot(root, revision), candidate = await snapshot(root), sources = await inputs(root, suite.fixture);
   const baseManifest = JSON.parse(baseline.get("vydykhai.json"));
-  need(baseManifest.version === "1.32.8", "EVAL_BASELINE_VERSION_CHANGED");
+  need(baseManifest.version === suite.baselineVersion, "EVAL_BASELINE_VERSION_CHANGED");
   const record = { schema: "framework.behavior-freeze.v1", baseline: { revision, files: records(baseline) },
-    candidate: { files: records(candidate) }, inputs: records(sources) };
+    candidate: { files: records(candidate) }, inputs: records(sources), ...(options ? { suite } : {}) };
   return { ...record, sha256: hash(record) };
 }
 
@@ -93,7 +101,9 @@ export async function checkFreeze(root, freeze) {
   root = await realpath(root);
   const { sha256: frozenHash, ...body } = freeze;
   need(body.schema === "framework.behavior-freeze.v1" && frozenHash === hash(body), "EVAL_FREEZE_INVALID");
-  const baseline = await snapshot(root, body.baseline.revision), candidate = await snapshot(root), sources = await inputs(root);
+  const suite = suiteOptions(body.suite);
+  const baseline = await snapshot(root, body.baseline.revision), candidate = await snapshot(root), sources = await inputs(root, suite.fixture);
+  need(JSON.parse(baseline.get("vydykhai.json")).version === suite.baselineVersion, "EVAL_BASELINE_VERSION_CHANGED");
   need(hash(records(baseline)) === hash(body.baseline.files), "EVAL_BASELINE_DRIFT");
   need(hash(records(candidate)) === hash(body.candidate.files), "EVAL_CANDIDATE_DRIFT");
   need(hash(records(sources)) === hash(body.inputs), "EVAL_INPUT_DRIFT");
@@ -118,8 +128,9 @@ export async function stageTrials(root, freeze, output) {
     await mkdir(path.dirname(file), { recursive: true });
     await writeFile(file, bytes, { flag: "wx" });
   };
-  const cases = JSON.parse(verified.sources.get(`${FIXTURE}/cases.json`)).cases;
-  const prompt = verified.sources.get(`${FIXTURE}/prompt.md`), trials = trialOrder(cases);
+  const { fixture } = suiteOptions(freeze.suite);
+  const cases = JSON.parse(verified.sources.get(`${fixture}/cases.json`)).cases;
+  const prompt = verified.sources.get(`${fixture}/prompt.md`), trials = trialOrder(cases);
   for (const trial of trials) {
     const dir = `${trial.id}/`, files = verified[trial.arm];
     for (const [name, bytes] of files) await write(dir + name, bytes);
@@ -127,7 +138,7 @@ export async function stageTrials(root, freeze, output) {
     await write(dir + "SCENARIO.json", jsonBytes(cases.find(c => c.id === trial.caseId)));
     await write(dir + "PROMPT.md", prompt);
   }
-  await write("review/rubric.json", verified.sources.get(`${FIXTURE}/rubric.json`));
+  await write("review/rubric.json", verified.sources.get(`${fixture}/rubric.json`));
   await write("review/freeze.json", jsonBytes(freeze));
   await write("review/run-index.json", jsonBytes({ schema: "framework.behavior-runs.v1", freezeSha256: freeze.sha256,
     status: "STAGED_NOT_RUN", modelBudget: "NOT_APPROVED", trials }));

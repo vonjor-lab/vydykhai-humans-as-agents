@@ -2,6 +2,8 @@
 
 This is the executable declaration for the [Module Delivery Cycle](module-delivery.md), not a second module registry. Project maps/contracts are authoritative; the orchestrator selects their relevant boundaries into the existing reviewed task package.
 
+Use the shared map's public view from [Module Contract](module-contract-template.md) as the common navigation entry. Orchestration binds the goal to capabilities and module identities; preparation retrieves applicable contracts, decisions and selected releases; Discovery resolves evidenced gaps without treating proposed boundaries as accepted; execution uses the pinned packet and updates only owned map/contract entries; acceptance and independent REVIEW verify the affected routes and actual release bindings against sources. Do not substitute the latest published version for the version selected by a consumer. Missing, stale or conflicting routes require a bounded repair/supplement before dependent use, not invented completeness or a new implementation. Unchanged routes remain reusable. Share accepted map changes through the existing team-sync path; a local diagram alone is not participant adoption.
+
 ## Shape
 
 New prepared implementation tasks use `context.package.v3`: the v2 fields (`navigation` and `moduleAccess`) plus the source-bound `alignment` below. Research that is supposed to resolve unknown boundaries does not require this implementation package first. Existing v1/v2 packets remain readable; v1 reports module access unchecked, and both report alignment unchecked. Adopt only at a safe rebrief, not by restarting current workers.
@@ -57,6 +59,7 @@ Receipts report `REVIEW_BOUND`, `UNCHANGED_BOUNDARIES_DECLARED` or `LEGACY_UNCHE
 ## Meaning And Checks
 
 - `module.publicBoundary` names a change/create entry owning the task outcome. Integrating existing modules changes/creates consumer wiring, not the consumed module.
+- `retainedExampleIds` preserves historical regression cases. Only the validated target with `intent: create` may have none, and it must supply nonempty `newExampleIds` backed by oracle cases and classified source assertions. Change and legacy packets still require retained cases; an unrelated creation entry does not waive them. The builder checks coverage before planning/confirmation; the runner rechecks it and acceptance requires actual observations. Do not relabel an existing module as new or invent history to satisfy the packet.
 - Each entry selects its intent, public contract files and owned implementation roots/files from the reviewed map. Paths are normalized workspace-relative paths, not glob patterns. Different module ownership roots cannot overlap. A consumed service with no local implementation may have empty privatePaths; do not invent local source paths.
 - Every declared Candidate file and implementation file belongs to a change/create entry, either its private paths or its contract files. Consumed code, public contracts, artifacts and connection receipts are immutable for this task.
 - Every selected contract is in `module.contractFiles` and has a task-wide navigation reference. The preparer cannot choose coverage solely from the files it happened to find.

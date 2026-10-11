@@ -13,19 +13,19 @@ Create a contract only for a durable module or capability with its own behavior,
 
 # Module Contract: <canonical module or capability name>
 
-Graph anchor: <ENT id>
+Graph anchor / canonical module identity: <ENT id; stable id across environments>
 Serves: <OUTCOME/JOURNEY anchors>
-Implementation: <current code paths/packages/services>
+Implementation / canonical source: <authoritative code paths/packages/services; no environment-specific algorithm forks>
 Accepted revision: <commit/artifact/schema/version>
 Last verified: <date / revision / evidence>
-Owner / decision gate: <owner or none>
+Owner / release responsibility / decision gate: <accountable owner or unresolved>
 Boundary agreement: <human-approved responsibility/interfaces and authorized work scope>
 Behavior readiness: <experimental / candidate / accepted / deprecated; evidence and remaining obligations>
 Packaging readiness: <unproven / accepted for named consumer scope; independent connection evidence; separate from existing behavior acceptance>
 
 ## Consumer Contract
-
 Released artifact / service: <immutable version/digest or observed deployed revision; install/connect entry>
+Environment bindings: <lab/demo/production selected release and configuration; deliberate rollout differences, no independently edited copies>
 Public entry: <export/API/command and supported protocol/schema versions>
 
 ## Purpose And Boundary
@@ -35,7 +35,7 @@ Public entry: <export/API/command and supported protocol/schema versions>
 - Accepted public boundary: <entry/input/output and revision; distinguish internal passes and independently accepted capability from unfinished parent>
 - Applicability: <supported input families and conditions, excluded cases, defined refusal behavior; an example is not a reusable capability>
 - Excludes: <nearby responsibilities it does not own>
-- Composition: <parent/child capabilities and public dependencies; no private imports or direct access to another module's owned data>
+- Resolved composition: <parent/child ids and exact releases/dependency lock; aggregate revision, combined proof and upgrade/rollback route; no private imports or direct access to another module's owned data>
 - Project architecture: <applicable shared data/identity, interface/versioning, security and dependency rules; references to accepted decisions, not copied policy>
 
 ## Inputs And Authority
@@ -58,7 +58,7 @@ Public entry: <export/API/command and supported protocol/schema versions>
 - Failures and side effects: <typed errors/unsupported cases, timeouts, retry/idempotency/cancellation where relevant; no silent partial success>
 - Models and tuning: <declared internal model dependency, nondeterminism and supported settings, or none; no consumer-supplied hidden repair step>
 - Execution ownership: <who selects operations, retries, alternatives and termination inside the boundary; required human decisions are explicit inputs/checkpoints, never hidden per-run repair>
-- Compatibility: <supported consumer/provider versions, breaking-change decision, rollback and diagnostics available without private-source inspection>
+- Compatibility: <supported consumer/provider versions, breaking-change decision, rollback and diagnostics available without private-source inspection; one authoritative input schema owner and declared adapter projections; supported new values do not create a new contract>
 
 ## Accepted Decisions And Lessons
 
@@ -110,7 +110,7 @@ For a connection failure, first check public input validity, configuration, vers
 
 To accept a packaged module, verify public contract tests, declared input families, clean-start repeatability and an independent consumer connection without producer source. Pin the supplied version and all non-obvious runtime/data/model dependencies; record observed deployment identity for remote services. Build exports, dependency rules or boundary tests should enforce no private imports/shared writes where supported; otherwise state the unproven boundary. Artifact hash checks prove identity, not hidden-dependency absence or complete correctness.
 
-Use two linked views of the same module map: public capability/contract/release/dependencies for consumers, implementation/algorithm/tests for maintainers. Record parent/child composition in this map, with accepted project architecture decisions linked from contracts; do not create another hierarchy ledger. Keep approved decisions and unfinished commitments linked in the graph, including restrictions that apply to consumers; do not hide them just because internals are encapsulated. Update only the affected module and direct public compatibility routes, expanding on concrete evidence rather than walking every internal dependency.
+Use two linked views of the same module map: public capability/contract/release/dependencies for consumers, implementation/algorithm/tests for maintainers. Record parent/child composition in this map, with accepted project architecture decisions linked from contracts; do not create another hierarchy ledger. Each public entry links goal/brief -> capability -> stable module/composite id -> canonical contract/source/owner -> public entry -> releases -> consumers. Distinguish latest available release from actually selected environment bindings; preserve compatibility/dependency pins, acceptance limits and verification revision. A diagram is a view of these same entries, not a separately maintained truth. Keep decisions and unfinished obligations linked in the graph, including consumer restrictions. Update only affected entries and direct public compatibility routes, expanding on evidence rather than walking every internal dependency.
 
 At launch, unknown-readiness reconnect or relevant framework update, inventory the whole accessible top-level responsibility map once through `framework-activation.md`, then repair only proven gaps. Link responsibility -> public contract -> owned implementation/tests/data -> consumers/dependencies to existing graph anchors and source revisions. A candidate document is not an active module, accepted behavior is not packaged readiness, and inaccessible areas stay marked rather than inferred from names. Existing verified contracts remain current when their relevant sources have not changed. The focused maintenance owner may inspect producer code for this diagnostic; an ordinary consumer cannot use that inspection as permission to edit internals. Describe existing architecture in the same maintenance scope; propose new boundaries to the human before any code or interface mutation.
 

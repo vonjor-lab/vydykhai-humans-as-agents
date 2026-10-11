@@ -10,6 +10,528 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 2.0.0 - 2026-10-11
+
+Opt-in major release on `release/2.x`; stable `1.x/main` remains unchanged.
+The controlled operating contract
+adds independently evidenced admission, retained acceptance and observed recovery
+or continuation. Existing projects require owned migration and rollback proof;
+file installation alone cannot activate or certify this model. The major version
+identifies the incompatible operating model. Independent final acceptance closes
+the supported-route technical qualification gates: ordinary unhinted recall,
+public module composition, two retained tasks and owned health repair, scoped
+safe KIT migration, and the assisted adoption canary. Current regression:
+1554 PASS, 0 FAIL, 0 CANCELLED, 8 SKIP with bounded concurrency4.
+Matched output quality is equal at higher candidate effort: measured savings
+remain NOT_PROVEN. This is not whole-project health, universal reliability,
+unassisted canary-driver success or automatic product activation.
+Historical qualification notes below preserve the versions, failures and
+unreleased status actually observed at those earlier checkpoints.
+
+2026-10-10 creation compatibility correction: compiler and runner use the same
+validated target intent and example eligibility. Only genuine creation may have
+no retained cases, with nonempty source-bound new oracle cases; change and legacy
+keep regression baselines, and supplied retained cases are never dropped. Planning
+checks coverage before confirmation writes. This corrects the isolated pilot's
+compiler/runtime mismatch without fabricated history, a new lifecycle protocol
+or a blanket waiver. The changed runtime needs current adoption and independent
+acceptance; the stopped pilot and spent calls are retained. No release is implied.
+
+Final finding-scope clarification, 2026-10-10: independent REVIEW's previous
+findings are only the current offer's authoritative previousFindings. Another
+task's findings are source evidence, not inherited current IDs. Applicable issues
+need complete new current records; another task's history cannot be closed or
+rewritten. Existing assertions preserve rejection of incomplete foreign IDs;
+host, decoder and authority are unchanged. The original invalid native answer
+and spent calls remain retained. Its later independent reconciliation and actual
+owner DONE are separate evidence, not a rewritten unassisted pass. Matched six
+outputs have equal independently blinded quality at higher candidate effort;
+economic improvement is not claimed. The candidate remains unreleased.
+
+2026-10-10 assembly correction: single-part model REVIEW validates the complete
+finding history before exposing a reusable verdict, like the existing partitioned
+route. A completed invalid answer retains candidate, trace, usage and spent budget;
+it is not an UNKNOWN process or a permission. Cached invalid HEALTH findings can
+reach the existing explicit independent retry gate without looping on the rejected
+verdict; source/identity failures still block. Compact grouped nonpass rows link
+only their complete unique same-source declared new findings; ambiguity, retained
+OPEN competitors and missing proof are refused. No judgment or debt is rewritten.
+Required public plans/manifests must be readable by independent PRE, not only
+referenced. Maintainer fixture assembly now supplies that closure before preparation
+and requires actual owner endpoint application rather than prose-only success.
+The frozen native cycle completed17 phases unassisted: two actual accepted tasks,
+full87 POST each, owned actual map repair, fresh full HEALTH closure and applied
+owner continuation. Quiet observation added zero calls; unresolved retrieval debt
+remains owned. Supported regression1543 PASS/0 FAIL/9 SKIP. This proves the bounded
+working route, not universal adoption or economy. No new controller, recovery
+service or scheduled role was added; the candidate remains unreleased.
+
+Ordinary recall entry, 2026-10-09: `memory-recall` locates declared names/aliases
+in the existing Graph v4, retaining parent obligations, public consumer routes and
+current commitments without producer-source retrieval. A shared Markdown parser
+keeps the CLI locator and existing graph validation aligned. Read-only inspection
+can expose applicable pending integration without mistaking it for ready memory;
+ordinary readiness validation is unchanged. Candidate/gap outputs grant no
+admission and do not attest exhaustive semantic recall, native execution or indexed
+large-graph retrieval. Existing adoption includes source-backed route repair and
+actual next-task application. This is the first option-A increment, not release
+qualification or activation of the abandoned timeout experiment.
+
+Registered factual access uses the same locator through optional `recall_memory`
+on the existing read-only source MCP adapter. Only an explicitly enabled factual
+profile exposes it; default independent reviewers retain original-source tools.
+Inline-source transport limits remain, with no new store, role or authority.
+The existing multipart manifest is also supported only with separately registered
+whole parts and verified physical/logical identities. Acquisition stays within
+128 KiB per source/2 MiB total; returned candidates and invalid-graph diagnostics
+stay within 64 KiB. Independent falsification exposed and verified correction of
+an oversized refusal dump. Short packets are not indexed retrieval or semantic
+completeness; existing adoption must prove current part bindings and next-task use.
+The maintainer two-task qualification distinguishes actual native outcomes from
+scripted wiring and trusted fixture acceptance; it is not platform adoption.
+Its native follow-through exposed undisclosed grader spellings and a stale PENDING
+acceptance publication after completed POST. Source meaning stays under independent
+judgment; actual completed phase facts must be published before the next task, not
+reconstructed by that task. Accepted results and charged calls survive a bounded
+explicitly pinned continuation; no semantic backfill or automatic repeat is added.
+
+The actual two-consumer witness now passed both readiness and post-accept judgments
+with independent final evidence acceptance. It retains failed history, eight charged
+calls and the older frozen runtime identity; no production adoption or economic
+claim follows. A contract-specific lossless wire compiler is maintainer evidence,
+not a universal permission to reinterpret incomplete contracts.
+Registered marker selections now share the existing 2 MiB artifact envelope while
+returned sections stay capped at 128 KiB; markerless files retain their old limit.
+Exact-delta review accepted the genuine short-section regression correction. This
+does not fix full-history storage growth or establish indexed large-graph recall.
+
+Accepted-cycle terminal correction, 2026-10-09: explicit WAIT/DONE use a durable
+source-bound owner record, independent complete-catalog judgment and host readback,
+not a synthetic next command. WAIT retains owner/trigger/return/checkpoint; DONE
+binds accepted scope/DOD and producer Return. Existing reviewer wire, owner MCP,
+notification and delivery paths carry the typed verdict. These statuses grant no
+execution and cannot clear pause, blocking findings, pending review or UNKNOWN.
+Exact independent repair review accepts strict raw JSON refusal, historical/current
+separation, durable snapshot compatibility and visible later-drift owner attention.
+Actual native current adoption remains due; no atomic external-writer fence follows.
+Existing adoption requires recipient application and later-drift/expiry readback,
+not merely installed files or a historical completion notice.
+
+HEALTH evidence identity now hashes complete stored grants/reservations without
+exposing their contents. Genuine receipt/result-only drift counterexamples are
+corrected and independently accepted. This does not authorize arbitrary repository
+churn: trusted effect/dependency evidence is still missing for that liveness gate.
+The existing macOS launch adapter now has an optional single-existing-file data-write
+mode, independently accepted through real local process tests. It denies other
+writes, parent/Git mutation and process-fork, with prelaunch identity/alias checks;
+legacy modes remain unchanged. It is only a confinement primitive, not an effects
+observer, approved domain, external-writer lock or HEALTH exception. No existing
+service automatically selects it; changed mode adoption needs owned current proof.
+Scripted storage-envelope qualification retains prior bytes and pending ownership
+at capacity and proves short recall from a large packed graph, not indexed I/O or
+unbounded storage.
+
+Reconciled-failure migration, 2026-10-09: migration and cutover recognize a genuine
+`FAILED_RECONCILED` reservation only with bound grant/failure/process/effects and
+its exact append-only host transition. Preserve failed/spent history and pause;
+this is quiescence, not success or replay authority. Actual protected exit-7 to
+reconciliation/migration and synthetic cutover/rollback checks pass, independently
+reviewed at that scope. Generic effect collection and physical custody guarantees
+remain outside this correction; it does not qualify native adoption or release.
+
+Host-bound composition correction, 2026-10-09: fixed independent parts retain one
+authentic POST scope or HEALTH input and recheck the current lease before each
+dispatch and final complete union. HEALTH exposes read-only current review input,
+not new authority. Preflight can precede dispatch without reinitializing child
+journals; reopening validates their configuration. Finite aggregate allocation,
+expiry, unknown-outcome holds and final host admission remain mandatory. Scripted
+CLI proof is not semantic qualification; the candidate remains unreleased.
+The comparison budget now delegates child-identity calculation to the selected
+runtime's pure builder instead of duplicating its internals. Historical packages
+without that API retain only the original legacy formula; incompatible
+transitional packages refuse, never accept both keys or erase previous spend.
+An active REVIEW_IN_FLIGHT enrollment is required for model dispatch. Rebasing
+fresh inputs around a held reconciliation lease does not create authority;
+read-only observation and reuse of a verified stopped verdict remain available.
+
+Command-failure recovery correction, 2026-10-08: preserve protected termination
+metadata and output hashes without exposing raw command output. The trusted host
+can reconcile an exact failed reservation only through independent termination
+and separate effect observations with journal CAS. The service receives that observer
+only through a trusted SDK argument, not serialized profile claims. Failure stays failure; old grants
+remain consumed, correction needs fresh admission, and pauses remain. No generic
+effect collector, automatic retry, success credit or migration/cutover qualification
+is implied. Focused exit7, side-effect and forgery checks are not whole-cycle proof.
+Writable-command deadline correction: after timeout/output-limit kill, stream
+draining has a250ms teardown grace. Unobserved close settles as OUTCOME_UNKNOWN,
+without a fabricated closed-failure receipt or replay authority. Destroying local
+pipes is not proof that descendants stopped. Model qualification timers do not change.
+Admission diagnostics expose only bounded phase/kind/elapsedMs. Private deadline
+identity prevents callback error text from impersonating timer expiry; no raw errors
+or command contents are exposed. Contended qualification can safely refuse before
+invocation; serial functional testing is not concurrent-capacity certification.
+
+Native REVIEW evidence-integrity correction, 2026-10-08: acquired source evidence
+must precede the unique judgment within one completed turn, with consistent tool
+identity, arguments and completed lifecycle. Post-judgment reads, crossed calls and
+failed or incomplete tools refuse promotion. The observed pre-turn CLI feature
+warning is distinguished narrowly from tool errors; original traces and consumed
+attempts remain retained. Transport validity is not semantic qualification or
+continuation authority; frozen historical runs are unchanged.
+Compatibility follow-up: only the observed coherent empty built-in resource
+discovery response is admitted as non-evidence transport. Exact response shape,
+pre-judgment chronology and the same call ledger remain mandatory; discovery
+cannot replace registered-source acquisition or justify citations. Unknown or
+nonempty discovery still refuses. Freeze05 remains historical; changed source
+requires independent review, a new full-suite qualification and Freeze06 before
+native POST_ACCEPT dispatch.
+
+Scoped health correction, 2026-10-08: initial independent diagnosis and owner
+application remain mandatory. Later due observation stays visible without becoming
+a global execution hold. HEALTH findings can retain immutable source-backed
+affectedTasks; missing scope remains global/unknown. Actual owned repair leases
+admit their exact repair identifier without static aliasing. Pauses and independent
+failed-repair retry gates remain. This changes candidate runtime bytes; older
+Freeze02 qualification does not certify the corrected runtime. Focused regression
+and independent review, then a new source freeze, are required before new dispatch.
+
+Evidence granularity correction, 2026-10-08: protected per-acceptance source scope
+isolates unrelated registry growth; original acceptance remains immutable while
+owned additive revisions permit newly discovered dependencies after stopped-review
+reconciliation. Existing exact artifact selectors now also bound review-source
+bytes, avoiding whole-file invalidation for unrelated memory/map additions. Relevant
+drift and unacquired evidence still refuse. Single-part service supplies its own host
+binding; old unbound journals require explicit safe binding with preserved budget and
+history. No scoped multipart support, semantic-completeness or economic claim is
+implied. Independent counterexamples and the current full suite remain qualification
+requirements; no new manager, index, role or automatic product migration is added.
+
+Readiness coverage repair, 2026-10-08: existing C05.02 now explicitly judges the
+already-required independent disposition for the exact current packet, permitted
+command and source revisions BEFORE an adopted controlled action. A mechanical
+grant, worker readback or later successful review cannot substitute for it or
+backdate it. Reuse needs an unchanged authorized binding. Missing pertinent proof
+remains owned UNKNOWN; evidenced omission is FINDING, not NOT_APPLICABLE. This
+clarifies one existing criterion without adding roles, checks or a runtime schema.
+Prior all87 verdicts used the old predicate and do not prove this added coverage;
+preserve their original results and qualify a new compliant increment instead.
+
+Qualification transport repair, 2026-10-08: preserve completed preparation instead
+of regenerating it after a serializer failure. Only an exactly equal redundant
+frozen command may be projected out of the declared compact format, with original
+output and a checked receipt retained. Subsequent reuse requires an unchanged file
+map, acquired sources and a fresh owner decision; it grants no execution authority
+and permits no appended semantic changes. Publish the full compiler context at
+that interface. This changes the qualifier, not the installed operating roles;
+successful scoped recovery is not a clean-run, economic or adoption claim.
+
+Post-accept partition repair, 2026-10-08: a complete real three-part verdict failed
+at persistence because its parent copied an omitted POST_ACCEPT phase. The merger
+now uses the same phase default as the single-review path. Regression covers both
+phases, all87 rows, retained findings and no repeated dispatch. Original native
+answers can be recovered only with authenticated journals/source bindings; failed
+runs and actual findings remain visible. This is not release or product closure.
+
+Post-accept evidence boundary, 2026-10-08: expose only the accepted task's protected
+historical grants/reservations and bind them into review freshness. Do not expose
+raw commands/paths, infer outside-host authority or renew consumed grants. New
+continuation depending on the acceptance is excluded even for the same task ID,
+so it cannot invalidate its own prerequisite review; unknown effects remain held.
+Targeted counterexamples and the full runtime suite pass. This is an evidence
+projection repair, not another role or a claim that adoption is complete.
+
+Module identity clarified, 2026-10-07: the existing delivery workflow and contract
+now distinguish canonical development, immutable release distribution, environment
+bindings and versioned composites. Connections must not create algorithm forks;
+composites pin children and preserve public obligations. Independent connection
+and algorithm-quality verdicts remain separate. No new service/role/runtime schema;
+structural coverage is not behavioral qualification or project adoption proof.
+The shared map now explicitly routes goal/capability through canonical module,
+contract, selected release and consumers. Latest available and actually selected
+versions stay distinct; diagrams are views, not another registry. Existing roles
+share this navigation and update/review it through the normal acceptance/sync path.
+
+Economic objective clarified, 2026-10-07: eliminate repeated and wasted work through
+better organization, rather than minimize preparation/control in isolation. The
+managed control route and qualification criteria now require whole-sequence
+retained outcomes, actual rework/recall/duplication losses and all operating costs.
+Higher control expense can be justified by lower observed total effort; hypothetical
+prevented failures are not measured savings. No measured economic claim is added.
+
+Controlled policy assembly, 2026-10-07: the private host cycle was implemented and
+described in maintainer design, but ordinary managed owner/worker event routes did
+not explicitly require its post-accept enrollment. A model comparison driven only
+by harness instructions could therefore overstate adoption. One managed
+`independent-control.md` procedure now binds mode selection, original-source
+readiness, actual retention, fresh REVIEW, applied disposition and observed
+continuation. Core and existing start/accept/activation/orchestrator routes point
+to it; no new manager, runtime schema or unconditional full-context prompt. Host
+limitations, explicit pauses and budgets remain. This is unreleased policy wiring,
+not semantic or live-adoption proof; qualify the newly frozen policy before release.
+
+Separated startup, 2026-10-07: actual concurrent-registration and interrupted-before-
+kick counterexamples showed that successful registration could lose the immediate
+wake. Instead of adding wake retries or another coordinator, registration is now
+periodic-only. The automatic trusted setup route runs the selected observer once,
+checks its durable result and then registers the timer. Unknown initial outcomes
+stop before registration; activation itself remains NOT_RUN/NOT_CHANGED. Initial
+observation, real interval execution and project readiness are separate proofs.
+This supersedes the earlier post-registration kick approach below; historical
+failures remain evidence, not silently regraded outcomes.
+
+Major channel protection, 2026-10-07: the new installer selects updates from the
+installed target's major, using main for 1.x and opt-in release/2.x for 2.x. Major
+changes and downgrades require an exact approved version pair before any target
+write; --force does not bypass transition approval. Malformed/conflicting installed
+identity, regressed metadata and missing/wrong-major channels fail closed, without
+fallback. Historical updaters cannot gain these guards retroactively: main and
+remote default HEAD must remain compatible 1.x, and explicit cross-major --from
+must use the reviewed new installer. CLI approval is not authenticated human
+consent, adoption acceptance or journal rollback. No channel was published here.
+
+Registration wakeup, 2026-10-07: a disposable native launchd probe reproduces a
+lost first wake when RunAtLoad starts under the registration lease and kickstart
+encounters the still-exiting rejected child. New registrations disable RunAtLoad
+and explicitly wake after release, without killing, retrying or stealing observer
+ownership. Future LOGIN loading follows the interval, not immediate startup;
+logout/reboot remains unqualified. Existing conflicting plists require owned
+quiescent unregister/re-register. This explains a demonstrated possible failure
+path; the earlier failed broad test did not retain enough diagnostics to identify
+its exact cause retrospectively.
+
+Owned removal, 2026-10-07: two failing-before native cases exposed a false hold on
+an idle post-tick PID and an inability to remove the exact earlier RunAtLoad plist.
+Removal now accepts that exact legacy variant without allowing silent registration
+reuse, and may stop an idle process while exclusively holding the observer lease
+through verified bootout. Retained active/unknown leases still block removal. This
+does not establish why an earlier broad run's post-tick process exit was delayed.
+The later full-suite removal failure exposed another boundary: bootout can return
+success while a registered process is still SIGTERMed. A native delayed-exit probe
+reproduced this. Removal now observes exact absence within a finite deadline without
+repeating bootout; unknown post-dispatch state preserves both lease and plist for
+explicit reconciliation. Fault-injected print failures distinguish pre-dispatch
+safe release from post-dispatch retained ownership.
+
+Execution visibility and scoped evidence, 2026-10-07: a fresh all-criterion run
+completed but stopped before repair. Independent review distinguished a missing
+bounded source-universe declaration, a premature execution-lease requirement and
+an unsupported capacity-loss attribution. HEALTH now observes protected grant and
+reservation metadata without command contents; changes invalidate review and owner
+application. These facts cover only this host, not external project assignments.
+Review guidance requires the actual criterion's causal/timing conditions and keeps
+unknown scope distinct from a demonstrated fault. No automatic N/A, closure, retry
+or broadened repair authority; the failed run remains failed. A synthetic closed
+source-universe declaration cannot certify a real project's history.
+
+Overdue-review deduplication, 2026-10-07: a reproduced scheduler defect repeatedly
+reenrolled unchanged nonblocking overdue findings immediately after completed
+review and owner disposition. The lease now captures due checkpoint identities;
+only accepted review acknowledges them. Findings/deadlines remain open and intact;
+new deadlines, source changes and periodic control still trigger. Legacy journals
+have no implied acknowledgement. This repairs a demonstrated waste path, not a
+measured claim about any live project's allowance consumption.
+
+Health lifecycle visibility, 2026-10-07: initial diagnosis and repair verification
+now receive the host's actual coordination projection, including recorded repair
+assignments and requested finding IDs. These previously stored facts were absent
+from the reviewer input. The projection is offer-bound, stable across claim and
+explicitly not successful-repair proof. Independent closure and all criterion
+coverage remain required; phase does not automatically waive a check. Existing
+projects apply this only through a quiescent runtime update, then verify their
+own current lifecycle/evidence route; old incomplete reviews remain unresolved.
+
+Bounded review parts, 2026-10-07: diagnostic judgments completed on small assigned
+sets using the real native path; full-review timeout cause remains unproved.
+The candidate can explicitly split the catalog into fixed whole-group parts with
+one immutable offer, full source acquisition, reserved aggregate capacity and
+global all-or-nothing admission. No part alone is a healthy-project verdict or
+continuation authority. Independent lifecycle checks repaired budget-unit, source
+identity and cancellation-publication defects. Two actual parts completed, but
+the second was rejected for missing duplicated rationale. An absence-only decoder
+normalization reuses the exact linked current finding evidence; it does not invent
+proof or change the failed result. Maintainer-only diagnostic reconciliation can
+preserve those results without repeating their model calls. The qualifier now
+stops before a paid repair-review when other blocking work is outside its fixed
+repair scope. Assembled semantic qualification remains open; this is not released.
+
+Inherited-project qualification, 2026-10-07: actual historical install/update and
+installed control activation are exercised in a synthetic pricing project. An
+independent counterexample repaired the qualifier's pre-install preservation gap.
+The first native diagnosis acquired all sources but timed out; its failed state,
+unknown usage and unspent later stages remain visible, not a completed adoption.
+Review catalog serialization is smaller without dropping any of the 87 criteria;
+bounded transport timing now makes future phase delays observable. No timeout
+increase, allocation reset, inferred review, automatic retry or savings claim.
+The separately allocated diagnosis also timed out after completed source reads;
+cause remains unproved. Independent review found missing baseline behavioral
+proof in the fixture: it now verifies public behavior before installation and
+registers an artifact-bound synthetic receipt. Original failed runs remain failed.
+Child output now uses streaming UTF8 decoding after a split-character corruption
+reproduction; this transport fix is not presented as the diagnosis-timeout cause.
+
+Current-state preparation, 2026-10-07: immutable historical acceptance is now
+separate from a scoped read-only host projection. Native preparation must acquire
+that projection and pass post-call freshness, while public-source acquisition and
+semantic application remain separate obligations. Independent probes caught stale
+positive reporting during pending/reconciling review and a qualifier parser
+mismatch before another inference was dispatched. Preserve the original failed
+recall and all open findings; no runtime activation or release is claimed here.
+
+Combined-cycle checkpoint, 2026-10-07: actual model preparation, independent
+readiness, public-module consumption, product acceptance/retention, fresh control
+and owner disposition ran on one frozen version. The final native worker made no
+execution call; this was retained as FAILED, then independently checked and
+recovered through the same protected route with zero new model calls. Six open
+owned findings remain. Runtime completion now follows final readback, not child
+exit; required-source acquisition and exact action-result gates reject false
+success. Optional preapproved deterministic continuation removes an unnecessary
+model dispatch without creating new approval authority. See combined-cycle
+evidence; this is not production adoption or proven allowance savings. NO_RELEASE.
+
+Scoped delivery checkpoint, 2026-10-07: installed observation can invoke an
+explicitly delegated, budgeted native disposition handler, not another project
+orchestrator. Independent counterexamples repaired invalid application evidence
+and excessive repair-submission authority. Native continuation and local lost
+external-response reconciliation execute without replay. Automatic allowance RPC
+is wired but refuses unsafe/config-bearing auth homes; live reset observation and
+desktop-owner wakeup are not certified. This does not complete semantic/adoption/
+economics gates. See owner-delivery evidence; manifest 1.34.1, NO_RELEASE.
+
+Service recovery checkpoint, 2026-10-07: stopped-observer reconciliation preserves
+pause/journals/allocation and refuses unknown effects. Reset-aware scheduling now
+retains due epochs across newer observations and blocking repairs; independent
+review exposed and regression-tested both loss cases. Durable notifications
+distinguish attempted delivery, exact readback, host-observed disposition and
+supersession without false closure. Native owner transport and disposable LOGIN
+wakeup passed. Explicit paused journal migration retains old data and rejects
+unsafe rollback. These are supported-host prerequisites, not a completed combined
+cycle or installation. See service-recovery evidence. Manifest remains 1.34.1.
+
+Latest checkpoint, 2026-10-07: independent initial health, private activation and
+actual disposable launchd observation work without an accepted task or active
+manager. Five found boundary defects were repaired and independently accepted.
+A real owner failed on the old untyped tool; typed/compact delivery then consumed
+the same verdict without repeating review. Independent repair closed six of seven
+findings; one nonblocking inventory gap stays owned with its failed attempt.
+Added bounded dirty-path metadata, not producer source context. This is not complete
+recovery, adoption/rollback or measured framework savings. See health-activation
+evidence. Manifest remains 1.34.1; NO_RELEASE and no live product changes.
+
+Prior boundary checkpoint, 2026-10-06: 540/540 tests pass, native enabled, no
+skips. Independent review reproduced legacy failed-repair closure and stale
+registry acquisition; both fixes received separate scoped acceptance. Candidate
+runtime staging verifies a separate content-addressed package without changing
+the project. Actual native execution from it and same-schema reopen/rollback
+retain pauses and unknown effects; unsupported history is held, not reset.
+This does not install a service, enroll project health or complete adoption.
+See runtime-staging evidence. Manifest remains 1.34.1; NO_RELEASE.
+
+Semantic-cycle checkpoint, 2026-10-06 (supersedes earlier test counts below):
+fresh native review rejected contradictory retained meaning, verified its repair,
+then detected stale tracker state after the protected consumer ran once. Final
+closure retained original acceptance and failure history without product replay.
+Compact source handles keep hashes and immutable finding metadata host-owned.
+Two independent host defects were reproduced and repaired; 534 native/repository
+tests pass. This developmental synthetic cycle used a trusted fixture owner and
+retention-only admission, not a live orchestrator or complete adoption. Timeout
+usage is UNKNOWN and comparative savings are unproven. See the semantic-cycle
+evidence; installation/rollback and final independent acceptance remain gates.
+NO_RELEASE, no production activation or manifest change.
+
+Native-boundary follow-through, 2026-10-06 (candidate only): an isolated supported
+CLI worker now uses a required registered-command MCP, with direct native writes
+and shell disabled. Actual local-provider/OS tests reject missing approval,
+forged authority, replay and missing control service. A separate offline reviewer
+process retains results across restart; bounded shutdown preserves UNKNOWN rather
+than false completion. Independent scoped review accepted the shutdown repair;
+513 native/repository tests pass. Semantic model delivery, scheduler, combined
+cycle and existing-project adoption/rollback are still release gates. No installed
+manifest or product change, no universal reliability/economy claim, NO_RELEASE.
+
+Controlled-dispatch candidate, 2026-10-06: the existing context runner now supports
+a host-owned command admission boundary. A separate candidate entry requires
+authorization, exact reservation and observation; controller failure cannot fall
+back to execution on that entry. Eight real-command regression cases pass, full
+suite 479/479. Protected host identity/storage, post-accept delivery and installation
+remain unimplemented gates; ordinary reference CLI behavior is unchanged. No release.
+
+Assembly update, 2026-10-06 (not installed): 28 control groups now have 87 explicit
+operational criteria. Candidate modules bind atomic product acceptance/review
+enrollment, actual retention readback, independent post-accept disposition and
+continuation. Retained findings use live repair leases, append-only retry decisions
+and revision revalidation. A proven independent increment no longer implies that
+whole-project preparation is complete. Independent counterexamples were reproduced
+and repaired; 471 tests pass. Mandatory supported-host enforcement, combined
+semantic qualification and adoption/rollback remain release gates. See the
+assembly evidence; this is not a 2.0 release or a universal reliability claim.
+
+2.0 design clarification: independent cycle control follows the orchestrator's
+accept-work and actual knowledge/artifact retention. It examines the completed
+manager cycle across applicable C01-C28 responsibilities, not just the worker's
+output. Existing pre-accept technical review remains. Fresh REVIEW publishes a
+verdict; the host ensures delivery and an observed orchestrator response without
+a persuasion loop. Knowledge integration stays the orchestrator's accountability.
+The required post-accept host test is specified but not yet executed or installed.
+
+Qualification update, 2026-10-06 (not installed behavior): a disposable protocol
+host now tests real interruption, unknown-effect holds, exact result recovery and
+retained next-task preparation. Independent counterexamples tightened debt
+scope/time accounting, sparse-input validation and admitted/dispatched command
+binding. A private-source regression demonstrated why action-changing decisions
+need a short correction/provenance chain, and why independent grading must not
+confuse unavailable evidence or equivalent wording with a failure. These are
+bounded qualification results, not complete 2.0, project adoption or savings;
+see the lifecycle qualification evidence. No new production role/timer or release.
+
+The independent Health Review candidate now separates consideration from repair:
+an accepted deadline and source survive outside the product next action; a long
+milestone cannot silently postpone the architecture plan. Current dispositions
+accompany original findings, and accepted repaired-source revisions retain all
+unresolved owners/deadlines. Existing checkpoint-review adoption carries this
+proof; no new role, timer or runtime protocol is introduced. Isolated adapter
+checks and one separately owned host episode support the bounded follow-through,
+not universal semantic completeness, atomic host admission or allowance savings.
+The broader candidate remains unreleased pending its explicit acceptance gates.
+
+Exact-producer handoff review exposed a narrow reader gap: a standalone or fenced
+JSON object explicitly claiming the Return protocol was treated as an empty
+outbox without diagnostics. Such a claim now reports invalid framing; it is not
+accepted as a new wire format and creates no receipt id. Diagnostics preserve
+claimed identity so a different malformed receipt cannot hide behind an old
+accepted incident. Ordinary JSON/prose remains quiet. Tests cover canonical
+framing repair, one-time discovery/routing, quiet repeats and bounded failed
+repair. Adoption stays in guard-continuity: actual producer bytes, expected valid
+id, writer/storage availability, owner-scoped repair or NO_CHANGE, and recipient
+readback. Coordinator-created replacements do not prove producer delivery.
+
+The isolated stress episode accepted saved code and documentation, but its JSON
+Return was not natively discoverable; later coordinator-generated records proved
+only the coordinator path. Keep that evidence correction explicit. This reader
+fix has reproducible local benefit without a new role or timer. Production
+adoption and automatic semantic course control are separate, unproven boundaries;
+publication remains pending, not implied by passing tests.
+
+Поддерживаемые новые значения входа не означают изменение модуля или его контракта. Отказ адаптера сначала рассматривается как дефект совместимости; транспортная проверка не должна создавать вторую бизнес-схему. Перед дорогим этапом проверяется фактическая установленная стыковка, включая сохранение и повторное чтение, проекции входа и доступность объявленных ресурсов. Неизменность дочерних модулей и старый пример не заменяют эту проверку. Не требуется повторный аудит платформы для каждого нового значения.
+
+Sanitized compatibility review: a released capability supports a family of requests, but a consumer validator rejects a different supported request. This is a connection defect, not evidence that the user changed the module. Existing public-boundary rules already prohibit producer rewrites; this clarification makes input classification and installed-route proof explicit without another role, schema or runtime gate.
+
+| Review scenario | Required disposition |
+| --- | --- |
+| Different supported values; old consumer validator rejects them | Consume the same module; repair the evidenced consumer boundary, not a second business contract. |
+| Current persisted input differs from reopened or consumer-facing input | Connection not ready; retain evidence and route the named mismatch to its owner before the dependent costly stage. |
+| Old example passes but an actual declared resource location does not resolve | Old proof stays scoped; installed-route readiness is not established. |
+| Input is outside declared applicability, or unchanged route evidence is sufficient | Explicit applicability decision for the former; reuse evidence and continue authorized consumption for the latter. |
+
+Adoption uses the existing `module-boundaries` requirement: at the affected task's next safe connection/rebrief checkpoint, review its declared input family and projections, repair a demonstrated mismatch or record evidence-backed NO_CHANGE, and obtain actual installed-route readback. Preserve existing owners, authority and unaffected work; publish changed contract/map meaning and verify affected recipient application through existing sync. No whole-project refactor or automatic paid replay. These scenarios and instruction tests are review evidence, not observed model behavior or live adoption. Version remains 1.34.1 until publication is separately completed.
+
+Независимый контроль курса использует существующий REVIEW в свежем контексте, а не нового постоянного руководителя. Он сверяет исходные цели и публичные связи, сохраняет замечания до проверенного разрешения, возвращает обещанные рассмотрения идей и не открывает закрытые модули ради обычной стыковки. Повторное событие без новых обстоятельств не запускает ещё одну проверку. Последние согласованные решения пользователя сохраняют приоритет.
+
+The semantic procedure lives in module-delivery with short existing entry routes. The existing checkpoint-review adoption requirement checks one actual fresh review and consumed disposition plus unchanged continuation. Deterministic events can expose recorded due obligations, not discover omitted meaning; unsupported background observation remains explicit. No new Guard, scheduler, runtime schema or permanent role is introduced.
+
+Eight sanitized decision cases and 24 criteria are prepared against exact 1.34.1. The maintainer-only stager supports an explicit suite while retaining historical defaults. All 373 local tests passed. The separately authorized C01-C04 comparison used eight Sol 6.1 Low attempts and one independent Sol 6.1 High judgment: both arms passed 12/12, while candidate input increased 16.6% and process time fell 5.1%. The judge's complete streamed result was retained despite native finalization reaching the time limit; no retry was made. These are decision results, not autonomous recovery or subscription savings. C05-C08, bounded multi-step proof and live adoption remain unverified; no release or product change is performed.
+
+Evolution gate: benefit sought is fewer missed parent obligations and repeated connection repairs. Evidence is executable local checks and a small matched decision screen with tied quality and higher input cost. Complexity is one routed review procedure and an offline suite option in existing mechanisms. Verdict: HOLD publication; retain the frozen candidate, target omitted-source discovery and real follow-through before more rule expansion, and add no permanent supervision on this evidence.
+
 ## 1.34.1 - 2026-10-03
 
 Изменение функции должно приходить вместе с проверкой того, что уже есть в проекте: что оставить, что исправить и как подтвердить применение. Нужный рефакторинг получает владельца и безопасную точку возврата; ненужный не запускается ради самого обновления.

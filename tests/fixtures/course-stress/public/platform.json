@@ -1,0 +1,9 @@
+{
+  "accepted": [
+    {"id":"arch-4","status":"ACTIVE","decision":"A project owns versioned artifacts; workflow steps are consumers, not the permanent owners of those artifacts.","reason":"Participants must be able to revisit earlier steps and compose new flows without rewriting storage.","observedDelta":"The proposed next flow moves archived artifacts under the current UI-step session; no permanent project link is declared.","owner":"platform-integration"},
+    {"id":"design-6","status":"ACTIVE","decision":"All consumer surfaces use the shared focus, contrast and state tokens from design-system-3.","reason":"Accessibility and consistent state semantics survive changes by different contributors.","observedDelta":"A proposed demo-view addition uses its own selected-state color and omits keyboard focus; the shared design source is absent from its brief.","owner":"demo-ui"},
+    {"id":"structure-8","status":"ACTIVE","decision":"Handwritten files around 600 lines trigger responsibility review; 1000 is a strong warning, not automatic failure. Split by ownership and contracts, not arbitrary slices.","observedDelta":{"handwrittenFile":{"path":"legacy-flow-controller.js","lines":1180,"responsibilities":["import normalization","archive identity","UI selection","model dispatch"],"documentedException":false},"generatedFile":{"path":"generated-schema.js","lines":1800,"responsibility":"generated schema data","documentedException":true}},"owner":"maintenance"},
+    {"id":"idea-12","status":"OPTIONAL_IDEA","decision":"Explore animated transitions someday.","returnCondition":null,"implementationApproved":false}
+  ],
+  "sourceCoverage":"Metadata and declared proposals only; source code and rendered UI for these areas are not supplied. Do not claim runtime verification or launch a platform rewrite."
+}

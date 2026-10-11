@@ -11,6 +11,16 @@ const paths = (v, nonempty = true) => Array.isArray(v) && (!nonempty || v.length
 const ref = v => keys(v, ["path", "sha256"]) && relative(v.path) && /^[a-f0-9]{64}$/.test(v.sha256);
 const within = (file, root) => file === root || file.startsWith(root + "/");
 
+export function moduleExampleIds(retained, added, targetIntent = null) {
+  const ids = value => Array.isArray(value) && value.length <= 1024 &&
+    value.every(v => typeof v === "string" && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/.test(v)) &&
+    new Set(value).size === value.length;
+  // Only a validated creation target can have no historical regression cases.
+  need(ids(retained) && ids(added) && (retained.length > 0 ||
+    (targetIntent === "create" && added.length > 0)), "MODULE_EXAMPLES_INVALID");
+  return [...new Set([...retained, ...added])];
+}
+
 export function moduleAccessPolicy(access, target, candidateFiles) {
   need(keys(access, ["schema", "modules"]) && access.schema === "context.module-access.v1" &&
     Array.isArray(access.modules) && access.modules.length > 0 && access.modules.length <= 256, "MODULE_ACCESS_INVALID");
@@ -46,5 +56,5 @@ export function moduleAccessPolicy(access, target, candidateFiles) {
   consumed.forEach(m => assertRead(m.release.connection.path));
   need(Array.isArray(candidateFiles) && candidateFiles.length > 0, "MODULE_FILE_UNOWNED");
   candidateFiles.forEach(assertMutation);
-  return { assertRead, assertMutation, immutable, contracts };
+  return { assertRead, assertMutation, immutable, contracts, targetIntent: modules.find(m => m.id === target).intent };
 }

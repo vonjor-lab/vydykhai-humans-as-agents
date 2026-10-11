@@ -17,7 +17,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { compileExecutableBrief, validateApplicationReceipt } from "./memory-brief.mjs";
 import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
@@ -25,6 +25,7 @@ import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, readCapa
 import { classifyCheckpointReviews } from "./checkpoint-review.mjs";
 import { evaluateTaskIdentity } from "./task-continuity.mjs";
 import { readMemoryGraph, memoryStorageCommand } from "./memory-storage.mjs";
+import { section, tableRows, bulletFields } from "./artifact-markdown.mjs";
 export { evaluateTaskIdentity } from "./task-continuity.mjs";
 export { checkpointNoticeStillDue } from "./checkpoint-review.mjs";
 
@@ -33,7 +34,7 @@ const LOCK_FILE = ".vydykhai-lock.json";
 const AGENTS_START = "<!-- vydykhai:managed:start -->";
 const AGENTS_END = "<!-- vydykhai:managed:end -->";
 const CANONICAL_UPSTREAM = "https://github.com/vonjor-lab/vydykhai-humans-as-agents.git";
-const CANONICAL_MANIFEST = "https://raw.githubusercontent.com/vonjor-lab/vydykhai-humans-as-agents/main/vydykhai.json";
+const CANONICAL_RAW = "https://raw.githubusercontent.com/vonjor-lab/vydykhai-humans-as-agents";
 const CANONICAL_SOURCE = "https://github.com/vonjor-lab/vydykhai-humans-as-agents";
 const FRAMEWORK_CREATOR = "Alexander Rozhnov";
 const FRAMEWORK_LICENSE = "PolyForm-Small-Business-1.0.0";
@@ -52,8 +53,9 @@ function usage() {
   return `Vydykhai framework manager
 
 Usage:
-  node scripts/vydykhai.mjs install <target-repo> [--force]
+  node scripts/vydykhai.mjs install <target-repo> [--force] [--approve-transition <from-version>:<to-version>]
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--json]
+  node scripts/vydykhai.mjs control-activate --runtime-source <trusted-source> --input <private-request.json>
   node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--expect-state-sha <sha256>] [--expect-graph-sha <sha256>] [--json]
   node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--woken-incident <semantic-id>] [--repair-incident <semantic-id> --repair-attempts <count>] [--json]
   node scripts/vydykhai.mjs guard-check --mode checkpoints --state <project-state.md> --graph <project-memory-graph.md> --outbox <durable-outbox.md> [--woken-incident <id> --notice-at <UTC-time> | --uncertain-incident <id>] [--accepted-incident <id>] [--json]
@@ -61,11 +63,15 @@ Usage:
   node scripts/vydykhai.mjs memory-brief-validate --envelope <brief-envelope.json> --receipt <application-receipt.json>
   node scripts/vydykhai.mjs memory-storage plan --input <current-graph> --candidate <next-graph> --limit <number|unknown> --unit <utf8-bytes|unicode-points|utf16-units>
   node scripts/vydykhai.mjs memory-storage pack --input <graph> --output <new-directory> --part-bytes <number>
+  node scripts/vydykhai.mjs memory-recall --graph <graph-or-storage-manifest> --request <ordinary-request>
   node scripts/vydykhai.mjs context-run --input <context-request.json>
   node scripts/vydykhai.mjs adoption-plan [target] [--worker <worker-repo>] [--input <readiness-snapshot.json>] --json
   node scripts/vydykhai.mjs context-prepare <plan|confirm|read|ack|bind> --output <task-local-dir> ...
   node scripts/vydykhai.mjs context-prepare estimate --input <cost-estimate.json>
-  node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force]
+  node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force] [--approve-transition <from-version>:<to-version>]
+
+Major changes and downgrades require explicit human approval of the exact pair.
+For update, --approve-transition also requires --from. --force only resolves file conflicts.
 `;
 }
 
@@ -76,6 +82,7 @@ function parseArgs(argv) {
     offline: false,
     json: false,
     from: null,
+    approveTransition: null,
     state: null,
     graph: null,
     outbox: null,
@@ -100,7 +107,13 @@ function parseArgs(argv) {
     if (value === "--force") flags.force = true;
     else if (value === "--offline") flags.offline = true;
     else if (value === "--json") flags.json = true;
-    else if (value === "--from") {
+    else if (value === "--approve-transition") {
+      if (flags.approveTransition !== null) throw new Error("Duplicate --approve-transition");
+      const pair = argv[++i]?.split(":");
+      if (!pair || pair.length !== 2) throw new Error("--approve-transition requires <from-version>:<to-version>");
+      pair.forEach(versionParts);
+      flags.approveTransition = pair.join(":");
+    } else if (value === "--from") {
       flags.from = argv[i + 1];
       i += 1;
       if (!flags.from) throw new Error("--from requires a framework repository path");
@@ -153,10 +166,55 @@ async function readJson(file) {
   return JSON.parse(await readFile(file, "utf8"));
 }
 
+function versionParts(version) {
+  if (typeof version !== "string" || !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version)) {
+    throw new Error("Invalid framework version");
+  }
+  const parts = version.split(".").map(Number);
+  if (!parts.every(Number.isSafeInteger)) throw new Error("Invalid framework version");
+  return parts;
+}
+
+function compareVersions(left, right) {
+  const a = versionParts(left), b = versionParts(right);
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] - b[i];
+  return 0;
+}
+
+function updateChannel(version) {
+  const major = versionParts(version)[0];
+  // Never follow remote HEAD for an installed 2.x kit or opt a 1.x kit into 2.x.
+  const branch = major === 1 ? "main" : major === 2 ? "release/2.x" : null;
+  if (!branch) throw new Error(`Unsupported framework update major: ${major}`);
+  return { major, branch, manifestUrl: `${CANONICAL_RAW}/${branch}/vydykhai.json` };
+}
+
+function assertInstalledIdentity(manifest, lock) {
+  versionParts(manifest?.version);
+  versionParts(lock?.installedVersion);
+  if (manifest.schemaVersion !== 1 || manifest.name !== "vydykhai" || manifest.canonicalSource !== CANONICAL_SOURCE ||
+      lock.schemaVersion !== 1 || lock.framework !== manifest.name || lock.canonicalSource !== CANONICAL_SOURCE ||
+      lock.installedVersion !== manifest.version || !lock.managedFiles || typeof lock.managedFiles !== "object" ||
+      Array.isArray(lock.managedFiles)) throw new Error("Installed framework identity conflict");
+}
+
+async function installedIdentity(root) {
+  for (const file of ["vydykhai.json", LOCK_FILE]) await assertNoTargetSymlink(root, file);
+  const manifestFile = path.join(root, "vydykhai.json");
+  const hasManifest = existsSync(manifestFile), hasLock = existsSync(path.join(root, LOCK_FILE));
+  if (!hasManifest && !hasLock) return null;
+  if (!hasManifest || !hasLock) throw new Error("Incomplete installed framework identity");
+  const bytes = await readFile(manifestFile), manifest = JSON.parse(bytes), lock = await loadLock(root);
+  assertInstalledIdentity(manifest, lock);
+  if (sha256(bytes) !== lock.managedFiles["vydykhai.json"]) throw new Error("Installed framework manifest differs from lock");
+  return { manifest, lock };
+}
+
 async function loadManifest(root) {
   const file = path.join(root, "vydykhai.json");
   if (!existsSync(file)) throw new Error(`Missing framework manifest: ${file}`);
   const manifest = await readJson(file);
+  versionParts(manifest?.version);
   if (manifest.schemaVersion !== 1 || !manifest.version || !Array.isArray(manifest.managedPaths)) {
     throw new Error(`Invalid framework manifest: ${file}`);
   }
@@ -445,14 +503,22 @@ export async function checkWorkerAdoption(targetRoot, workerRoot) {
   return { ...result, ...assessWorkerAdoption(result.target, result.worker) };
 }
 
-async function installFrom(sourceRoot, targetRoot, { force = false } = {}) {
+async function installFrom(sourceRoot, targetRoot, { force = false, approveTransition = null, automaticMajor = null } = {}) {
   const sourceReal = await realpath(sourceRoot);
   const targetReal = await realpath(targetRoot);
   if (sourceReal === targetReal) throw new Error("Refusing to install the framework into its canonical source repository");
 
   const manifest = await loadManifest(sourceRoot);
+  const channel = updateChannel(manifest.version);
+  const installed = await installedIdentity(targetRoot);
+  const oldLock = installed?.lock || null;
+  const previousVersion = installed?.manifest.version;
+  if (automaticMajor !== null && channel.major !== automaticMajor) throw new Error("Upstream framework channel major mismatch");
+  const pair = previousVersion ? `${previousVersion}:${manifest.version}` : null;
+  if (approveTransition !== null && approveTransition !== pair) throw new Error("Transition approval does not match installed/source versions");
+  if (previousVersion && (versionParts(previousVersion)[0] !== channel.major || compareVersions(manifest.version, previousVersion) < 0) &&
+      approveTransition !== pair) throw new Error(`Framework transition requires explicit human approval: --approve-transition ${pair}`);
   const files = await managedFiles(sourceRoot, manifest);
-  const oldLock = await loadLock(targetRoot);
   const newHashes = {};
   const conflicts = [];
 
@@ -548,15 +614,20 @@ function printAdoption(plan) {
 
 async function fetchUpstreamManifest(manifest) {
   if (typeof fetch !== "function") return null;
-  const response = await fetch(CANONICAL_MANIFEST, { signal: AbortSignal.timeout(5000) });
+  const channel = updateChannel(manifest.version);
+  const response = await fetch(channel.manifestUrl, { signal: AbortSignal.timeout(5000) });
   if (!response.ok) throw new Error(`Upstream manifest returned HTTP ${response.status}`);
-  return response.json();
+  const upstream = await response.json();
+  if (upstream?.schemaVersion !== 1 || upstream.name !== "vydykhai" || upstream.canonicalSource !== CANONICAL_SOURCE ||
+      updateChannel(upstream.version).major !== channel.major) throw new Error("Upstream framework channel identity mismatch");
+  if (compareVersions(upstream.version, manifest.version) < 0) throw new Error("Upstream framework channel version regressed");
+  return upstream;
 }
 
 async function doctor(targetRoot, { offline = false } = {}) {
   const manifest = await loadManifest(targetRoot);
   const lock = await loadLock(targetRoot);
-  const sourceMode = path.resolve(targetRoot) === path.resolve(SCRIPT_ROOT) && !lock;
+  const sourceMode = path.resolve(targetRoot) === path.resolve(SCRIPT_ROOT) && !existsSync(path.join(targetRoot, LOCK_FILE));
   const missing = [];
   const modified = [];
   const warnings = [];
@@ -566,6 +637,8 @@ async function doctor(targetRoot, { offline = false } = {}) {
   }
 
   if (lock) {
+    try { assertInstalledIdentity(manifest, lock); }
+    catch (error) { modified.push(`Framework identity (${error.message})`); }
     for (const [relative, expectedHash] of Object.entries(lock.managedFiles || {})) {
       const file = path.join(targetRoot, relative);
       if (!existsSync(file)) missing.push(relative);
@@ -586,7 +659,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
   }
 
   let upstreamVersion = null;
-  if (!offline) {
+  if (!offline && missing.length === 0 && modified.length === 0) {
     try {
       upstreamVersion = (await fetchUpstreamManifest(manifest))?.version || null;
     } catch (error) {
@@ -600,7 +673,7 @@ async function doctor(targetRoot, { offline = false } = {}) {
     mode: sourceMode ? "canonical-source" : "installed-copy",
     installedVersion,
     upstreamVersion,
-    updateAvailable: Boolean(upstreamVersion && upstreamVersion !== installedVersion),
+    updateAvailable: Boolean(upstreamVersion && compareVersions(upstreamVersion, installedVersion) > 0),
     sourceRevision: lock?.sourceRevision || (await sourceRevision(targetRoot)),
     agentProfilePolicy: manifest.defaultAgentProfile,
     agentRoutingPolicy: manifest.agentRoutingPolicy,
@@ -764,32 +837,12 @@ function countExact(content, value) {
   return content.split(value).length - 1;
 }
 
-function section(content, heading, nextHeadings) {
-  const start = content.indexOf(heading);
-  if (start === -1) return "";
-  const candidates = nextHeadings
-    .map((next) => content.indexOf(next, start + heading.length))
-    .filter((index) => index !== -1);
-  const end = candidates.length ? Math.min(...candidates) : content.length;
-  return content.slice(start + heading.length, end);
-}
-
 function tableFirstColumnValues(value) {
   return value
     .split("\n")
     .filter((line) => /^\|/.test(line))
     .map((line) => line.split("|")[1]?.trim())
     .filter((cell) => cell && !/^[-: ]+$/.test(cell) && !/^(Work|Receipt|Task|Item|ID)$/i.test(cell));
-}
-
-function tableRows(value, headerPattern) {
-  return value
-    .split("\n")
-    .filter((line) => /^\|/.test(line))
-    .map((line) => line.split("|").slice(1, -1).map((cell) => cell.trim()))
-    .filter((cells) => cells.length && !cells.every((cell) => /^[-: ]+$/.test(cell)))
-    .filter((cells) => !headerPattern.test(cells[0] || ""))
-    .filter((cells) => !cells.every((cell) => /^<.*>$/.test(cell)));
 }
 
 function duplicateValues(values) {
@@ -922,6 +975,20 @@ export function validateDurableOutbox(content) {
   }
   if (/(^|\n)Return lifecycle:[\t ]*RECEIVED/.test(unframed)) {
     issues.push("Durable outbox: unmarked Return Route data requires canonical v1 framing");
+  }
+  // A JSON claim is not a protocol record, but must not masquerade as an empty outbox.
+  const jsonClaims = [unframed.trim(),
+    ...Array.from(unframed.matchAll(/^```(?:json)?[\t ]*\r?\n([\s\S]*?)^```[\t ]*\r?$/gm), match => match[1])];
+  for (const candidate of jsonClaims) {
+    let value;
+    try { value = JSON.parse(candidate); } catch { continue; }
+    if (value && typeof value === "object" && !Array.isArray(value) &&
+        typeof value.marker === "string" && /^vydykhai:return-(?:sync|route) v\d+$/.test(value.marker)) {
+      const claimedId = typeof value.receiptId === "string" && value.receiptId.trim()
+        ? JSON.stringify(value.receiptId) : "unidentified";
+      const issue = `Durable outbox: JSON Return claim requires canonical v1 framing (${value.marker}; claimed id ${claimedId})`;
+      if (!issues.includes(issue)) issues.push(issue);
+    }
   }
   const returns = new Map();
   const routes = new Map();
@@ -1538,7 +1605,7 @@ function memoryGraphVersion(content) {
   return matches.length === 1 ? Number(matches[0][1]) : null;
 }
 
-export function validateMemoryGraph(content, manifest) {
+export function validateMemoryGraph(content, manifest, {inspectionOnly = false} = {}) {
   const label = "Project Memory Graph";
   const graphVersion = memoryGraphVersion(content);
   const compatibleVersions = manifest.memoryPolicy.compatibleGraphVersions || [manifest.memoryPolicy.graphVersion];
@@ -1620,17 +1687,8 @@ export function validateMemoryGraph(content, manifest) {
       issues.push(`${label}: invalid node heading ${heading}`);
       continue;
     }
-    const fields = new Map();
-    for (const line of lines) {
-      // Emphasis changes presentation, not field identity; values remain untouched.
-      const plainLabel = line.replace(/^- \*\*([^*:\r\n]+):\*\*/, "- $1:")
-        .replace(/^- \*\*([^*:\r\n]+)\*\*:/, "- $1:");
-      const field = plainLabel.match(/^- ([^:]+):[ \t]*(.*)$/);
-      if (!field) continue;
-      const key = field[1].trim();
-      if (fields.has(key)) issues.push(`${label}: ${id} duplicate field ${key}`);
-      fields.set(key, field[2].trim().replace(/^`|`$/g, ""));
-    }
+    const {fields, duplicates} = bulletFields(lines);
+    for (const key of duplicates) issues.push(`${label}: ${id} duplicate field ${key}`);
     const requiredFields = ["Type / status", "About", "Because", "Apply", "Avoid", "Verify", "Applies / exceptions", "Relations", "Source / checked"];
     if (effectiveVersion >= 4) requiredFields.push("Recall when", "Owner gate", "Return / close when");
     const missing = requiredFields
@@ -1795,7 +1853,13 @@ export function validateMemoryGraph(content, manifest) {
 
   const pendingEvents = section(content, "## Pending Memory Events", ["## Live Retrieval Probes"]);
   for (const row of tableRows(pendingEvents, /^Event$/i)) {
-    if (row.at(-1) === "PENDING") issues.push(`${label}: memory event ${row[0]} is still pending`);
+    if (row.length !== 8 || row.some(value => !present(value)) || !["PENDING", "INTEGRATED", "NEEDS_HUMAN"].includes(row[7])) {
+      issues.push(`${label}: incomplete or invalid pending event ${row[0] || "(unnamed)"}`);
+    }
+    for (const id of row[3]?.match(/ENT-[A-Za-z0-9_-]+/g) || []) {
+      if (!anchorIds.includes(id)) issues.push(`${label}: memory event ${row[0]} has unknown anchor ${id}`);
+    }
+    if (!inspectionOnly && row.at(-1) === "PENDING") issues.push(`${label}: memory event ${row[0]} is still pending`);
   }
 
   return issues;
@@ -2024,10 +2088,10 @@ function printControlCheck(result, asJson) {
   for (const warning of result.outbox?.warnings || []) console.log(`Warning: ${warning}`);
 }
 
-async function cloneUpstream(upstream) {
+async function cloneUpstream(upstream, branch) {
   const parent = await mkdtemp(path.join(tmpdir(), "vydykhai-update-"));
   const checkout = path.join(parent, "framework");
-  const result = spawnSync("git", ["clone", "--depth", "1", upstream, checkout], {
+  const result = spawnSync("git", ["clone", "--depth", "1", "--single-branch", "--branch", branch, upstream, checkout], {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -2038,10 +2102,93 @@ async function cloneUpstream(upstream) {
   return { parent, checkout };
 }
 
+async function activatePrivateControl(argv) {
+  const need = (value, code) => { if (!value) throw new Error(`CONTROL_ACTIVATE_${code}`); };
+  const record = value => value !== null && typeof value === "object" && !Array.isArray(value);
+  const inside = (a, b) => a === b || b.startsWith(a + path.sep);
+  const separate = (a, b) => !inside(a, b) && !inside(b, a);
+  const args = {};
+  need(argv.length === 4, "ARGUMENTS_INVALID");
+  for (let i = 0; i < argv.length; i += 2) {
+    const key = argv[i], value = argv[i + 1];
+    need(["--runtime-source", "--input"].includes(key) && !Object.hasOwn(args, key) &&
+      typeof value === "string" && value.length > 0 && !value.startsWith("--"), "ARGUMENTS_INVALID");
+    args[key] = value;
+  }
+  need(process.platform === "darwin", "HOST_UNSUPPORTED");
+  const directory = async (file, privateOnly = false) => {
+    need(typeof file === "string" && path.isAbsolute(file) && path.resolve(file) === file, "PATH_INVALID");
+    const info = await lstat(file);
+    need(info.isDirectory() && !info.isSymbolicLink() && await realpath(file) === file &&
+      (!privateOnly || info.uid === process.getuid() && !(info.mode & 0o077)), "DIRECTORY_UNSAFE");
+    return file;
+  };
+  const privateJson = async file => {
+    need(typeof file === "string" && path.isAbsolute(file) && path.resolve(file) === file, "PATH_INVALID");
+    const info = await lstat(file);
+    need(info.isFile() && !info.isSymbolicLink() && info.nlink === 1 && info.uid === process.getuid() &&
+      !(info.mode & 0o077) && info.size <= 1024 * 1024 && await realpath(file) === file, "PRIVATE_FILE_UNSAFE");
+    await directory(path.dirname(file), true);
+    const bytes = await readFile(file);
+    need(bytes.length <= 1024 * 1024, "PRIVATE_FILE_UNSAFE");
+    try { return JSON.parse(bytes); }
+    catch { throw new Error("CONTROL_ACTIVATE_PRIVATE_JSON_INVALID"); }
+  };
+  const request = await privateJson(args["--input"]);
+  need(record(request) && Object.keys(request).length === 4 &&
+    ["expectedDigest", "runtimeDirectory", "root", "profile"].every(key => Object.hasOwn(request, key)) &&
+    typeof request.expectedDigest === "string" && /^[a-f0-9]{64}$/.test(request.expectedDigest) &&
+    record(request.profile), "REQUEST_INVALID");
+  const workspace = await directory(request.profile.config?.workspace);
+  need(workspace === await realpath(SCRIPT_ROOT), "WORKSPACE_KIT_MISMATCH");
+  const root = await directory(request.root, true);
+  const runtimeDirectory = await directory(request.runtimeDirectory, true);
+  const sourceRoot = await directory(args["--runtime-source"]);
+  need([root, runtimeDirectory, sourceRoot].every(dir => separate(workspace, dir)) &&
+    separate(root, runtimeDirectory) && separate(root, sourceRoot) && separate(runtimeDirectory, sourceRoot) &&
+    !inside(workspace, args["--input"]) && !inside(runtimeDirectory, args["--input"]) &&
+    !inside(sourceRoot, args["--input"]), "PATH_BOUNDARY");
+  await observedKit(workspace);
+  const installedManifest = await loadManifest(workspace), sourceManifest = await loadManifest(sourceRoot);
+  need(installedManifest.version === sourceManifest.version, "SOURCE_VERSION_MISMATCH_UPDATE_KIT_FIRST");
+  const {inspectControlRuntime, stageControlRuntime, verifyControlRuntime} = await import("./control-runtime.mjs");
+  // The operator supplies a trusted pin. Computing a digest here proves only
+  // byte identity, not source authenticity or release qualification.
+  const snapshot = await inspectControlRuntime(sourceRoot);
+  need(snapshot.digest === request.expectedDigest, "SOURCE_DIGEST_MISMATCH");
+  const descriptorFile = path.join(root, "activation.json");
+  const selectedFile = await lstat(descriptorFile).catch(error => {
+    if (error.code !== "ENOENT") throw error;
+    return null;
+  });
+  if (selectedFile) {
+    const selected = await privateJson(descriptorFile);
+    need(selected?.runtime?.digest === request.expectedDigest, "CUTOVER_REQUIRED");
+  }
+  const staged = await stageControlRuntime({sourceRoot, directory: runtimeDirectory, workspace,
+    expectedDigest: request.expectedDigest});
+  await verifyControlRuntime(staged.root, request.expectedDigest);
+  // Import only the verified private copy, never code from the source checkout.
+  const {activateControl, verifyControlActivation} = await import(
+    pathToFileURL(path.join(staged.root, "scripts/control-activation.mjs")).href);
+  const descriptor = await activateControl({sourceRoot: staged.root, root,
+    expectedDigest: request.expectedDigest, profile: request.profile});
+  await verifyControlActivation(descriptor.descriptorFile);
+  return {status: descriptor.status, descriptorFile: descriptor.descriptorFile, runtime: descriptor.runtime,
+    runtimeKind: staged.description.kind, kitVersion: installedManifest.version,
+    kitInstallation: "SEPARATE_PREVIOUS_STEP", scheduler: "NOT_CHANGED", observer: "NOT_RUN",
+    projectReadiness: "NOT_CERTIFIED"};
+}
+
 async function main() {
   const [command, ...rest] = process.argv.slice(2);
   if (!command || command === "help" || command === "--help") {
     console.log(usage());
+    return;
+  }
+
+  if (command === "control-activate") {
+    console.log(JSON.stringify(await activatePrivateControl(rest), null, 2));
     return;
   }
 
@@ -2058,6 +2205,14 @@ async function main() {
       ["CAPACITY_UNKNOWN", "EXPANSION_DUE"].includes(result.status) ? 2 : 0;
     return;
   }
+  if (command === "memory-recall") {
+    const { memoryRecallCommand } = await import("./memory-route.mjs");
+    const result = await memoryRecallCommand(rest, {validateGraph: validateMemoryGraph,
+      manifest: await loadManifest(SCRIPT_ROOT)});
+    console.log(JSON.stringify(result, null, 2));
+    process.exitCode = result.status === "BLOCKED" ? 1 : result.status === "NEEDS_DISCOVERY" ? 2 : 0;
+    return;
+  }
   if (command === "context-run") {
     const result = rest.length === 2 && rest[0] === "--input"
       ? await runContextFile(path.resolve(rest[1]), { createReturnSync, parseDurableOutboxComment })
@@ -2068,6 +2223,9 @@ async function main() {
   }
 
   const { positionals, flags } = parseArgs(rest);
+  if (flags.approveTransition !== null && command !== "install" && command !== "update") {
+    throw new Error("--approve-transition is only supported by install/update");
+  }
   if (flags.worker && command !== "adoption-plan") throw new Error("--worker is only supported by adoption-plan");
   if ((flags.mode || flags.uncertainIncident || flags.noticeAt) && command !== "guard-check") throw new Error("checkpoint options are only supported by guard-check");
 
@@ -2199,15 +2357,20 @@ async function main() {
 
   if (command === "update") {
     const target = path.resolve(positionals[0] || process.cwd());
+    if (flags.approveTransition !== null && !flags.from) throw new Error("--approve-transition requires explicit --from for update");
     let source = flags.from ? path.resolve(flags.from) : null;
     let temporary = null;
+    let automaticMajor = null;
     if (!source) {
-      await loadManifest(target);
-      temporary = await cloneUpstream(CANONICAL_UPSTREAM);
+      const installed = await installedIdentity(target);
+      if (!installed) throw new Error("Automatic update requires an installed framework identity");
+      const channel = updateChannel(installed.manifest.version);
+      automaticMajor = channel.major;
+      temporary = await cloneUpstream(CANONICAL_UPSTREAM, channel.branch);
       source = temporary.checkout;
     }
     try {
-      const result = await installFrom(source, target, flags);
+      const result = await installFrom(source, target, { ...flags, automaticMajor });
       console.log(`Updated Vydykhai to ${result.manifest.version} in ${target}`);
       printAdoption(result.lock.adoptionPlan);
     } finally {

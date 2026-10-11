@@ -1,0 +1,8 @@
+{
+  "revision": "memory-12",
+  "entities": [
+    {"id": "quote", "relations": ["export"], "current": ["decisions/pricing.md"], "history": ["history/pricing-v1.md"]},
+    {"id": "authorization", "relations": ["quote", "export"], "current": ["contracts/access.md"]},
+    {"id": "export", "relations": ["quote", "authorization"], "current": ["decisions/export.md", "work.json"], "history": ["history/lab-run.md"], "ideas": ["ideas.md"]}
+  ]
+}

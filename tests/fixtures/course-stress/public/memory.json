@@ -1,0 +1,28 @@
+{
+  "decisions": [
+    {
+      "id": "decision-17",
+      "kind": "TEMPORARY_EXCEPTION",
+      "text": "Single-owner demo display may use a temporary label before preview acceptance only.",
+      "returnCondition": "preview accepted",
+      "currentCondition": "preview accepted",
+      "effect": "exception expired; it never authorized shared archive acceptance"
+    },
+    {
+      "id": "decision-21",
+      "kind": "COMMITMENT",
+      "text": "At preview acceptance, reconsider the batch-retrieval consumer boundary and record the decision.",
+      "owner": "orchestrator",
+      "returnCondition": "preview accepted",
+      "disposition": "not recorded",
+      "implementationApproval": false
+    },
+    {
+      "id": "decision-25",
+      "kind": "AUTHORIZED_SCOPE_CHANGE",
+      "text": "CSV-only pilot replaces PDF delivery for now; preserve identity, ownership and cold retrieval.",
+      "returnCondition": "reconsider PDF after pilot completion",
+      "supersedes": "original PDF pilot requirement"
+    }
+  ]
+}

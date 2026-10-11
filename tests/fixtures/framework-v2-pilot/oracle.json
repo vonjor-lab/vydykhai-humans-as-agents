@@ -1,0 +1,21 @@
+{
+  "status": "FROZEN_EXPECTATIONS_NOT_MODEL_RESULT",
+  "prepare": [
+    {"id": "current-rounding", "sources": ["decisions/pricing.md", "history/pricing-v1.md"], "criterion": "Use current pricing release; preserve three-line tax regression, not old per-line rounding."},
+    {"id": "composite-identity", "sources": ["contracts/quote.md", "decisions/export.md"], "criterion": "Preserve projectId plus quoteId plus selected revision; test repeated quoteId across projects."},
+    {"id": "exact-replay", "sources": ["decisions/export.md", "contracts/quote.md"], "criterion": "Cold replay from explicit immutable revisions, not browser state or latest version."},
+    {"id": "all-or-nothing-access", "sources": ["contracts/access.md"], "criterion": "Authorize before reads/output; one denied selection fails entire export; later calls recheck actor access."},
+    {"id": "lab-not-autonomy", "sources": ["history/lab-run.md", "contracts/export.md"], "criterion": "Manual correction remains historical evidence, not packaged unattended acceptance."},
+    {"id": "idea-scope", "sources": ["ideas.md", "contracts/quote.md"], "criterion": "Keep currencies separate; conversion and preview ideas are retained but not silently implemented."},
+    {"id": "closed-consumption", "sources": ["contracts/quote.md", "contracts/access.md", "contracts/export.md"], "criterion": "Export owns integration; consume public releases without rewriting or requesting child internals."},
+    {"id": "retained-ownership", "sources": ["work.json"], "criterion": "Reuse existing executor and maintenance ownership; nonblocking map debt stays visible, not global stop."}
+  ],
+  "review": [
+    {"id": "reject-latest", "sources": ["contracts/quote.md", "decisions/export.md"], "criterion": "Reject replacing selected immutable revisions with latest."},
+    {"id": "reject-partial-access", "sources": ["contracts/access.md"], "criterion": "Reject silent omission of denied projects and any earlier unauthorized reads."},
+    {"id": "reject-assisted-proof", "sources": ["history/lab-run.md", "contracts/export.md"], "criterion": "Screenshot does not prove unattended reusable export."},
+    {"id": "require-real-tests", "sources": ["decisions/export.md", "decisions/pricing.md"], "criterion": "Replace count-only acceptance with cold revision replay, cross-project identity, permission and retained rounding coverage."},
+    {"id": "bounded-correction", "sources": ["work.json", "contracts/export.md"], "criterion": "NEEDS_FIXES with bounded existing-owner correction; do not demand entire-project rewrite or invent completed actions."}
+  ],
+  "grading": "A source id or keyword alone is not PASS. Human/independent semantic review must inspect actual meaning and proposed action against each criterion. No baseline comparison, whole-framework qualification or economics conclusion from these two runs."
+}

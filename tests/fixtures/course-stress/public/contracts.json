@@ -1,0 +1,18 @@
+{
+  "export": {
+    "output": {"owner": "nonempty string", "id": "nonempty string", "payload": "string"},
+    "applicability": "document id is unique only within its owner; different owners may use the same id",
+    "release": "export-fixed-7"
+  },
+  "archive": {
+    "release": "archive-fixed-3",
+    "stores": "JSON-serializable records; reopen preserves supplied bytes, not fields the integration drops"
+  },
+  "composition": {
+    "buildArchive": "synchronous buildArchive(items) returns JSON-serializable records preserving owner, id and payload",
+    "lookup": "synchronous lookup(archive, {owner,id}) returns exactly that record or null",
+    "invalidQuery": "missing or empty owner/id returns null",
+    "aggregation": "one archive can contain multiple owners with equal document ids, without collisions",
+    "closedChildren": "consume fixed public outputs; do not change export or archive releases"
+  }
+}

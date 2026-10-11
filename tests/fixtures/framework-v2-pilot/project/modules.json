@@ -1,0 +1,8 @@
+{
+  "revision": "map-7",
+  "capabilities": [
+    {"id": "quote", "public": "contracts/quote.md", "decisions": "quote", "status": "ACCEPTED"},
+    {"id": "access", "public": "contracts/access.md", "decisions": "authorization", "status": "ACCEPTED"},
+    {"id": "export", "public": "contracts/export.md", "decisions": "export", "status": "CANDIDATE", "consumes": ["quote", "access"]}
+  ]
+}

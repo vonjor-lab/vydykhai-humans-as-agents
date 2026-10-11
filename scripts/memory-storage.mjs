@@ -28,24 +28,23 @@ function indexFor(text, parts) {
   });
 }
 
-export async function readMemoryGraph(filename) {
-  const bytes = await readFile(filename), text = utf8(bytes);
+export async function decodeMemoryGraph(bytes, readPart) {
+  need(Buffer.isBuffer(bytes), "MEMORY_STORAGE_BYTES_INVALID");
+  const text = utf8(bytes);
   if (!text.trimStart().startsWith("{")) return { text, storage: { format: "inline", bytes: bytes.length, sha256: sha256(bytes) } };
   const manifest = parseContextJson(bytes);
   need(keys(manifest, ["schema", "graphSha256", "bytes", "partBytes", "parts", "index"]) &&
     manifest.schema === "memory.storage.v1" && digest(manifest.graphSha256) &&
     Number.isSafeInteger(manifest.bytes) && manifest.bytes > 0 && Number.isSafeInteger(manifest.partBytes) &&
     manifest.partBytes >= 4 && Array.isArray(manifest.parts) && manifest.parts.length > 0, "MEMORY_STORAGE_MANIFEST_INVALID");
-  const root = await realpath(path.dirname(filename)), chunks = [], seen = new Set();
+  need(typeof readPart === "function", "MEMORY_STORAGE_READER_REQUIRED");
+  const chunks = [], seen = new Set();
   for (const p of manifest.parts) {
     need(keys(p, ["path", "bytes", "sha256"]) && /^part-\d+\.md$/.test(p.path) && !seen.has(p.path) &&
       Number.isSafeInteger(p.bytes) && p.bytes > 0 && p.bytes <= manifest.partBytes && digest(p.sha256), "MEMORY_STORAGE_PART_INVALID");
     seen.add(p.path);
-    const full = path.join(root, p.path);
-    const stat = await lstat(full);
-    need(await realpath(full) === full && stat.isFile(), "MEMORY_STORAGE_PATH_INVALID");
-    need(stat.size === p.bytes, "MEMORY_STORAGE_PART_CHANGED");
-    const data = await readFile(full); utf8(data);
+    const data = await readPart(p);
+    need(Buffer.isBuffer(data), "MEMORY_STORAGE_BYTES_INVALID"); utf8(data);
     need(data.length === p.bytes && sha256(data) === p.sha256, "MEMORY_STORAGE_PART_CHANGED"); chunks.push(data);
   }
   const joined = Buffer.concat(chunks);
@@ -54,6 +53,18 @@ export async function readMemoryGraph(filename) {
   need(canonicalJson(indexFor(graph, manifest.parts)) === canonicalJson(manifest.index), "MEMORY_STORAGE_INDEX_CHANGED");
   return { text: graph, storage: { format: manifest.schema, bytes: joined.length, sha256: manifest.graphSha256,
     parts: manifest.parts.length, manifestSha256: sha256(bytes), index: manifest.index } };
+}
+
+export async function readMemoryGraph(filename) {
+  let root;
+  return decodeMemoryGraph(await readFile(filename), async p => {
+    root ??= await realpath(path.dirname(filename));
+    const full = path.join(root, p.path);
+    const stat = await lstat(full);
+    need(await realpath(full) === full && stat.isFile(), "MEMORY_STORAGE_PATH_INVALID");
+    need(stat.size === p.bytes, "MEMORY_STORAGE_PART_CHANGED");
+    return readFile(full);
+  });
 }
 
 export function assessMemoryCapacity(current, candidate, limit, unit) {

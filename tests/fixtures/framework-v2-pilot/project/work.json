@@ -1,0 +1,7 @@
+{
+  "active": {"id": "EXPORT-7", "owner": "existing-export-worker", "status": "PREPARED", "next": "public integration plan"},
+  "maintenance": [
+    {"id": "MAP-2", "owner": "existing-maintenance", "status": "OPEN", "scope": "inventory older supplier adapters", "blocksExport": false, "reviewAt": "2026-10-08T12:00:00Z"}
+  ],
+  "scope": "Plan approved-quotation export; no implementation, new agents, deployment or external calls"
+}

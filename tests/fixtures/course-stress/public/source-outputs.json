@@ -1,0 +1,5 @@
+[
+  {"owner": "owner-a", "id": "doc-1", "payload": "csv-a"},
+  {"owner": "owner-b", "id": "doc-1", "payload": "csv-b"},
+  {"owner": "owner-a", "id": "doc-2", "payload": "csv-c"}
+]

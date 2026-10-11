@@ -27,6 +27,46 @@ The bootstrap request authorizes creation of a setup branch, framework install/u
 8. Review the complete diff. Keep project rules outside the managed `AGENTS.md` block and reject secrets, transcripts, customer data, private links, or product internals in universal files.
 9. Commit and open a setup change or PR when repository-host access exists. Follow the target repository's merge policy; do not merge merely because bootstrap was requested.
 
+### Version Channels And Explicit Transitions
+
+Automatic update and live doctor select the installed target's major: `1.x` uses
+`main`, `2.x` uses the opt-in `release/2.x` branch. A missing, malformed, regressed
+or wrong-major channel is not permission to fall back. Keep remote default HEAD
+and `main` on compatible 1.x while historical updaters remain supported.
+
+A major change or downgrade needs an approved exact source/target version pair,
+preservation and migration/rollback evidence at a safe boundary. Use the reviewed
+new canonical installer with `--approve-transition <from-version>:<to-version>`;
+`update` additionally requires explicit `--from <trusted-local-source>`.
+`--force` only concerns approved managed-file conflicts, never transition consent.
+Old installed CLIs cannot enforce this guard and must not be used for an explicit
+cross-major `--from`. A matching version flag is an agent-supplied assertion of
+human consent, not independent authentication or successful project migration.
+Do not infer that the unreleased candidate is available merely because the CLI
+supports this route. Confirm published source/tag/archive and actual adoption.
+
+### Private Control Runtime
+
+When private control activation is explicitly authorized, own its followthrough after normal install/update; do not leave the technical step for a separate human reminder. Keep kit integrity, private activation and project adoption as distinct outcomes.
+
+Use the installed `node scripts/vydykhai.mjs control-activate --runtime-source <trusted-source> --input <private-request.json>`. Retain a standalone canonical source with its own `LICENSE.md` and `NOTICE.md`; never stage from product-local licenses or add those root files to the managed kit. The installed kit and source must have the same version. Obtain the expected runtime digest from separately trusted release/candidate evidence; a self-derived hash verifies bytes, not source authenticity or release status.
+
+The private request has exactly `expectedDigest`, `runtimeDirectory`, `root`, and `profile`. Prepare owned canonical 0700 runtime/state directories outside the product and outside each other, a 0600 request outside the product/source/runtime directory, and the profile's private source registry. Use explicit native/auth references; never provision or copy credentials. The command verifies the source snapshot, stages its immutable inventory, imports activation only from the verified private copy, and reads back its descriptor. It does not update the kit, start an observer, register/restart a scheduler, or certify project readiness. Same-profile repetition preserves existing journals, budgets and pauses; a different selected digest requires explicit cutover rather than activation. Unsupported hosts or failed activation stay visibly blocked; an earlier successful kit update is not rolled back or promoted to adoption.
+
+When the initial observation and periodic control have the required scope and finite
+native-call budget, the same setup owner automatically follows activation with the
+selected private runtime's `startControlSchedule({descriptorFile, mode,
+intervalSeconds, initialTimeoutMs})`. This trusted operator API runs that runtime's
+observer CLI once, verifies its durable result, then registers the timer. Do not
+ask the user to remember a separate first run. A failed/unknown initial result
+stops before registration; preserve journals, budget and any retained lease, do
+not repeat an unknown operation. An existing scheduler requires an owned stopped
+checkpoint before this initial-start route. Ordinary registration/reuse performs
+no initial observation and cannot substitute for this result. Its recurring route
+needs a separately observed interval receipt, not the initial receipt reused as
+timer proof. A paused receipt preserves pause and certifies neither diagnosis nor
+project readiness; missing authorization remains explicit, not assumed.
+
 ## Resolve Agent Routing
 
 Resolve capability-and-cost profiles from the current agent environment; do not equate price with task capability:

@@ -88,7 +88,9 @@ for (const [version, revision] of [
   assert.equal(first.status, "UPDATE_REQUIRED");
   assert.equal(first.checkout.branch, "retained-product");
   assert.deepEqual(await snapshot(worker), before);
-  r = run(process.execPath, [cli, "update", worker, "--from", source], f.root);
+  const targetVersion = JSON.parse(await readFile(path.join(source, "vydykhai.json"))).version;
+  r = run(process.execPath, [cli, "update", worker, "--from", source,
+    "--approve-transition", `${version}:${targetVersion}`], f.root);
   assert.equal(r.status, 0, r.stderr);
   assert.equal((await checkWorkerAdoption(f.target, worker)).status, "KIT_MATCH");
   assert.equal(await readFile(path.join(worker, "product.txt"), "utf8"), "unique unfinished work\n");

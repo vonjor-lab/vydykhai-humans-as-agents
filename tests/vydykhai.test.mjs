@@ -11,6 +11,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const cli = path.join(root, "scripts/vydykhai.mjs");
+const sourceManifest = JSON.parse(await readFile(path.join(root, "vydykhai.json"), "utf8"));
 
 function runCli(args, cwd = root) {
   return spawnSync(process.execPath, [cli, ...args], {
@@ -83,8 +84,8 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     await assert.rejects(readFile(path.join(target, "docs/codex-workflows/README.md"), "utf8"));
 
     const lock = JSON.parse(await readFile(path.join(target, ".vydykhai-lock.json"), "utf8"));
-    assert.equal(lock.installedVersion, "1.34.1");
-    assert.match(agents, /three context layers isolated/i);
+    assert.equal(lock.installedVersion, sourceManifest.version);
+    assert.match(agents, /Isolate framework maintenance, project orchestration and focused project work/);
     assert.match(
       await readFile(path.join(target, ".agents/skills/framework-orchestrator/SKILL.md"), "utf8"),
       /docs\/workflows\/framework-orchestrator\.md/,
@@ -199,13 +200,14 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.equal(brokenDoctor.status, 1);
     assert.match(brokenDoctor.stdout, /Modified managed files/);
 
-    const protectedInstall = run(["install", target]);
+    const transition = ["--approve-transition", `1.18.0:${sourceManifest.version}`];
+    const protectedInstall = run(["install", target, ...transition]);
     assert.equal(protectedInstall.status, 1);
     assert.match(protectedInstall.stderr, /Refusing to overwrite locally modified framework files/);
 
-    const repaired = run(["install", target, "--force"]);
+    const repaired = run(["install", target, "--force", ...transition]);
     assert.equal(repaired.status, 0, repaired.stderr);
-    assert.match(await readFile(corePath, "utf8"), /Version: 1\.34\.1/);
+    assert.ok((await readFile(corePath, "utf8")).includes(`Version: ${sourceManifest.version}`));
   } finally {
     await rm(target, { recursive: true, force: true });
   }
@@ -861,7 +863,7 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
       routeProof: Object.fromEntries(["moduleFound", "contextDelivered", "retainedAndNewAcceptance", "documentationUpdated",
         "semanticIntegration", "nextRetrieval"].map(k => [k, `fixture:${k}`])) };
     const syncRecord = { schemaVersion: 1, scope: adoption.scope, status: "ACCEPTED", evidence: "fixture:current-proof", readiness: synced };
-    const syncState = leaseState => addOwner(leaseState).replace("Framework: 1.32.3", "Framework: 1.34.1")
+    const syncState = leaseState => addOwner(leaseState).replace("Framework: 1.32.3", `Framework: ${sourceManifest.version}`)
       .replace(JSON.stringify(adoption), JSON.stringify(syncRecord));
     await writeFile(statePath, syncState("CLOSED"));
     assert.equal(JSON.parse(run(["control-check", "--state", statePath, "--graph", graphPath, "--json"]).stdout).publicationReady, true);

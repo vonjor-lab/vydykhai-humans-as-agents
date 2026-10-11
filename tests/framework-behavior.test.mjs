@@ -76,6 +76,50 @@ test("missing, ambiguous or ungrounded criteria cannot create a valid evaluation
   assert.throws(() => validateCases(leaked, rubric), /EVAL_CASE_INVALID/);
 });
 
+test("course replay stages the selected suite against an exact newer baseline without exposing its rubric", async t => {
+  const f = await fixture(t);
+  const suite = { fixture: "tests/fixtures/course-review", baselineVersion: "1.34.1" };
+  for (const name of ["cases.json", "rubric.json", "prompt.md", "README.md"])
+    await f.put(`${suite.fixture}/${name}`, await source(`${suite.fixture}/${name}`));
+  await f.put("vydykhai.json", { version: suite.baselineVersion });
+  const git = args => execFileSync("git", ["-C", f.root, ...args], { encoding: "utf8" }).trim();
+  git(["add", "vydykhai.json"]);
+  git(["-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+    "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", "commit", "--quiet", "-m", "New baseline"]);
+  const revision = git(["rev-parse", "HEAD"]);
+  const frozen = await createFreeze(f.root, revision, suite);
+  assert.deepEqual(frozen.suite, suite);
+  const output = path.join(f.home, "course");
+  const staged = await stageTrials(f.root, frozen, output);
+  assert.equal(staged.modelCalls, 0);
+  assert.equal(staged.status, "STAGED_NOT_RUN");
+  const index = JSON.parse(await readFile(path.join(output, "review/run-index.json")));
+  const selected = JSON.parse(await source(`${suite.fixture}/cases.json`));
+  const selectedRubric = JSON.parse(await source(`${suite.fixture}/rubric.json`));
+  validateCases(selected, selectedRubric);
+  assert.equal(index.trials.length, selected.cases.length * 2);
+  assert.equal(index.modelBudget, "NOT_APPROVED");
+  for (const trial of index.trials) {
+    assert.deepEqual(JSON.parse(await readFile(path.join(output, trial.id, "SCENARIO.json"))),
+      selected.cases.find(c => c.id === trial.caseId));
+    await assert.rejects(readFile(path.join(output, trial.id, "rubric.json")), { code: "ENOENT" });
+  }
+  assert.deepEqual(JSON.parse(await readFile(path.join(output, "review/rubric.json"))), selectedRubric);
+  await f.put(`${suite.fixture}/prompt.md`, "Changed instructions");
+  await assert.rejects(checkFreeze(f.root, frozen), /EVAL_INPUT_DRIFT/);
+});
+
+test("suite selection rejects external paths, extra options and wrong baseline versions", async t => {
+  const f = await fixture(t);
+  for (const fixture of ["../private", "/tmp/private", "tests/fixtures/../../private", "tests/fixtures/"]) {
+    await assert.rejects(createFreeze(f.root, f.revision, { fixture, baselineVersion: "1.32.8" }), /EVAL_SUITE_INVALID/);
+  }
+  await assert.rejects(createFreeze(f.root, f.revision,
+    { fixture: dir, baselineVersion: "1.32.8", bypass: true }), /EVAL_SUITE_INVALID/);
+  await assert.rejects(createFreeze(f.root, f.revision,
+    { fixture: dir, baselineVersion: "1.34.1" }), /EVAL_BASELINE_VERSION_CHANGED/);
+});
+
 test("freeze preserves distinct exact baseline and candidate without changing source files", async t => {
   const f = await fixture(t), before = await readFile(path.join(f.root, "AGENTS.md"));
   const verified = await checkFreeze(f.root, f.freeze);

@@ -1,0 +1,11 @@
+{
+  "recordedHealth":"HEALTHY",
+  "recordedHealthBefore":"two subsequent context-loss events",
+  "laterObservations":[
+    {"id":"health-31","kind":"CONTEXT_LOSS","evidence":"The resumed brief omitted the cold-retrieval obligation; one reminder restored its wording."},
+    {"id":"health-32","kind":"REPEATED_MEMORY_MISS","evidence":"The following brief omitted ownership again after that restoration; no independent recovery proof was retained."}
+  ],
+  "rotation":{"owner":"orchestrator","safeBoundary":"preview accepted","boundaryReached":true,"status":"deferred during preview; not reconsidered","newContextActivated":false,"humanSwitchConfirmed":false},
+  "memoryDelta":{"id":"memory-33","meaning":"Persist project ownership independently of the active UI step.","status":"pending write; storage shard full","integrated":false,"owner":"memory-maintenance"},
+  "independentInitiation":"No evidence that a host schedule or event adapter dispatched semantic review without the orchestrator. Existing recorded checkpoints alone cannot establish it."
+}

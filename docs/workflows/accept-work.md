@@ -99,6 +99,13 @@ These are task verdicts, not raw tool statuses. Inspect the reason and side-effe
 
 ## 6. Finish In The Task Context
 
+On an adopted controlled route, this technical task result is not the independent
+control verdict. The orchestrator consumes the producer Return, performs its own
+acceptance and actual retention, then enrolls fresh post-accept REVIEW through
+[Independent Control](independent-control.md). Preserve the accepted artifact while
+control/retention is repaired; neither the executor nor owner can self-certify that
+independent episode. Dependent continuation needs its observed disposition.
+
 Keep fixes, smoke, and manual merge in the owning task context. A local `NEEDS_FIXES` returns to correction and verification within scope/burn, not another request to "continue". Before a final answer, apply the completion rule in `task-context-handoff-template.md`; preserve explicit pauses and consult at a real unresolved boundary.
 
 At each declared readiness result, human checkpoint, irreducible blocker, or terminal result, the owning task reports through its agreed authorized return route before waiting. Reporting readiness does not require the approval it requests and grants no merge, deploy, spend, or acceptance authority.

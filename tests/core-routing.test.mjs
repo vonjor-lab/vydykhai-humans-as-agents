@@ -47,6 +47,7 @@ test("smaller core retains authority, accepted work, module isolation and honest
     /transition cost from repeated use/,
   ]) assert.match(core, rule);
   assert.match(core, /do not claim arbitrary native reads\/edits are sandboxed/);
+  assert.match(core, /Ask one scoped question only when that decision is unresolved/);
 });
 
 test("continuation and Return keep ownership without inviting repeated global preparation", () => {

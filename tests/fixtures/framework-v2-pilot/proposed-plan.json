@@ -1,0 +1,18 @@
+{
+  "task": "EXPORT-7",
+  "owner": "existing-export-worker",
+  "goal": "Export approved quotations grouped by project",
+  "readiness": "Sources checked; current scope is a small formatting integration",
+  "implementation": [
+    "Use getQuote and priceQuote through their public interfaces.",
+    "Use the latest approved revision for every selected quotation so output is always current.",
+    "Authorize each project and omit any denied projects before producing the allowed rows.",
+    "Keep projectId, quoteId and currency in each output row."
+  ],
+  "verification": [
+    "Compare exported row count to selected row count for one allowed project.",
+    "Keep the existing successful Lab screenshot as the export acceptance baseline."
+  ],
+  "retention": "Update export documentation; older-adapter inventory remains with existing-maintenance.",
+  "avoid": "No pricing rewrite, currency conversion, preview UI or producer-source inspection."
+}

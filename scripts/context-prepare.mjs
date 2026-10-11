@@ -4,10 +4,10 @@ import { readFile, writeFile, lstat, realpath, mkdir, rmdir, rename, readdir } f
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { canonicalJson, sha256, checkPreparedContext } from "./memory-brief.mjs";
-import { parseContextJson, runContextTransition, artifactHash } from "./context-run.mjs";
+import { parseContextJson, runContextTransition, artifactHash, checkExampleOracle } from "./context-run.mjs";
 import { prepareNavigation, checkPreparationAssignment } from "./context-navigation.mjs";
 import { estimateContextRoutes } from "./context-cost.mjs";
-import { moduleAccessPolicy } from "./module-access.mjs";
+import { moduleAccessPolicy, moduleExampleIds } from "./module-access.mjs";
 import { prepareAlignment } from "./context-alignment.mjs";
 
 const hash = v => sha256(canonicalJson(v));
@@ -67,6 +67,7 @@ async function build(root, input, output) {
       need(pkg.dependencies.some(d => d.path === r.path && intersects(d.scope, pkg.task.scope)), "MODULE_RELEASE_DEPENDENCY_MISSING");
     }
   }
+  const requiredExamples = moduleExampleIds(pkg.module.retainedExampleIds, pkg.module.newExampleIds, access?.targetIntent);
   const artifacts = new Map(), at = name => `${output}/${name}`;
   const add = (name, value) => { const p = at(name); artifacts.set(p, value); return reference(p, value); };
   const mutable = new Set([...pkg.task.candidateFiles, ...pkg.module.implementationFiles]);
@@ -126,6 +127,8 @@ async function build(root, input, output) {
     assertions: c.assertions.map(({ sourceRange, ...a }) => a), reason: c.reason })),
     prepared: { scope: pkg.task.scope, taskId: pkg.task.id, owner: pkg.task.worker, allowLocalOverlay: false, items, envelope: null, atomicRender: "" }, phase: "bind" });
   need(checked.status === "READY", checked.code);
+  checkExampleOracle(parseContextJson(await source(pkg.module.oracle)), requiredExamples,
+    new Set(records.flatMap(c => c.assertions.map(a => a.id))));
   const shared = [];
   for (const a of pkg.sharedArtifacts) {
     const r = typeof a === "string" ? { path: a } : a;
