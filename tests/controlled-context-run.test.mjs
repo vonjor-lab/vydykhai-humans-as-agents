@@ -44,6 +44,54 @@ test("controlled path has no fallback when the host control adapter is missing",
   assert.equal(result.code, "CONTROL_ADAPTER_REQUIRED"); await noAction(f);
 });
 
+test("only admitted controlled resume may use a declared action budget above sixty seconds", async t => {
+  const f = await fixture(t);
+  f.task.action.timeoutMs = 600000; await f.refresh(); await f.prepare();
+  const ordinary = await f.run("resume");
+  assert.equal(ordinary.code, "COMMAND_SCHEMA_INVALID"); await noAction(f);
+  const c = controller(), authorize = c.authorize;
+  c.authorize = async binding => {
+    assert.equal(binding.commandSha256, hash(f.task.action));
+    return authorize(binding);
+  };
+  const result = await run(f, c);
+  assert.equal(result.status, "ACTION_COMPLETED");
+  assert.deepEqual(c.calls, ["authorize", "reserve", "observe"]);
+  assert.equal(result.action.commandSha256, hash(f.task.action));
+});
+
+test("long controlled actions still require exact admission and cannot exceed ten minutes", async t => {
+  const f = await fixture(t);
+  f.task.action.timeoutMs = 550000; await f.refresh(); await f.prepare();
+  const c = controller(); c.authorize = async () => null;
+  assert.equal((await run(f, c)).code, "CONTROL_ADMISSION_FAILED"); await noAction(f);
+  f.task.action.timeoutMs = 600001; await f.refresh();
+  const refused = await run(f, controller());
+  assert.equal(refused.code, "COMMAND_SCHEMA_INVALID");
+  assert.equal(refused.stats.commands, 0); await noAction(f);
+});
+
+test("changing an action budget cannot reuse the old command grant", async t => {
+  const f = await fixture(t); await f.prepare();
+  const c = controller(), authorize = c.authorize;
+  let oldGrant;
+  c.authorize = async binding => { oldGrant = await authorize(binding); return null; };
+  assert.equal((await run(f, c)).code, "CONTROL_ADMISSION_FAILED");
+  f.task.action.timeoutMs = 550000; await f.refresh();
+  f.request.capsule = null; f.request.readback = null; await f.prepare();
+  c.authorize = async () => oldGrant;
+  assert.equal((await run(f, c)).code, "CONTROL_ADMISSION_FAILED"); await noAction(f);
+});
+
+test("protected verification retains its sixty-second ceiling", async t => {
+  const f = await fixture(t); await f.prepare();
+  f.module.verificationCommand.timeoutMs = 60001;
+  f.task.module = await f.put("module.json", f.module); await f.refresh();
+  const c = controller(), result = await run(f, c, "accept");
+  assert.equal(result.code, "COMMAND_SCHEMA_INVALID");
+  assert.equal(result.stats.commands, 0); assert.deepEqual(c.calls, []); await noAction(f);
+});
+
 test("authorization exception, unavailable service, missing verdict and timeout all prevent the real command", async t => {
   for (const [authorize, kind] of [
     [async () => { throw Error("private service failure /secret/path token=PRIVATE"); }, "SERVICE_REJECTION"],
