@@ -10,6 +10,19 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 2.1.1 - 2026-10-12
+
+Repair the missing trusted transition from an expired initial private service
+profile to a separately authorised operational profile. A stopped, paused same
+host selects an immutable versioned profile atomically while preserving old
+profiles, journals, findings, authority and spending. Explicit fresh allocations
+use separate journals; no in-place budget renewal or replacement of an existing
+owner-handler allocation. A crash retains exclusive ownership until exact
+stopped-operator recovery. Existing same-profile runtime cutover remains intact;
+runtime lacking versioned-profile support refuses selection. Setup still owns
+actual initial/recurring delivery and application proof before retiring personal
+monitoring. No new audit, controller, role, timer or checklist is introduced.
+
 ## 2.1.0 - 2026-10-12
 
 Compatible opt-in HEALTH continuation reuses the existing POST checkpoint

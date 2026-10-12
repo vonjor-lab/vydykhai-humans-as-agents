@@ -65,7 +65,7 @@ export async function acquireControlLease(root) {
     const dir = await open(root, "r"); try {await dir.sync();} finally {await dir.close();}
   };
 }
-async function validatePaths(root, profile, create = false) {
+async function validatePaths(root, profile, create = false, allowMissing = false) {
   need(profile?.schema === "control.service.v1" && profile.config?.health &&
     typeof profile.review?.sourceFile === "string" &&
     profile.config.evidenceRegistry === profile.review.sourceFile && profile.review.controlRoot === root &&
@@ -103,6 +103,7 @@ async function validatePaths(root, profile, create = false) {
     for (const part of parts) {
       parent = path.join(parent, part);
       if(create && !await exists(parent)) await mkdir(parent, {mode: 0o700});
+      if(allowMissing && !await exists(parent)) continue;
       await controlDirectory(parent);
     }
   }
@@ -112,7 +113,9 @@ async function validatePaths(root, profile, create = false) {
     profile.allowance.binary===profile.review.native.binary,"CONTROL_ACTIVATION_ALLOWANCE_IDENTITY_INVALID");
   need(typeof authHome === "string" && separate(workspace, authHome) &&
     [room, ...dirs].every(d => separate(d, authHome)), "CONTROL_ACTIVATION_AUTH_BOUNDARY");
-  if(inside(root,authHome))await controlDirectory(authHome);
+  if(inside(root,authHome)) {
+    if(!allowMissing || await exists(authHome)) await controlDirectory(authHome);
+  }
   else {
     const a=await lstat(authHome);
     need(path.isAbsolute(authHome)&&a.isDirectory()&&!a.isSymbolicLink()&&await realpath(authHome)===authHome&&
@@ -132,6 +135,12 @@ async function validatePaths(root, profile, create = false) {
   const registry = await readActivationJson(profile.review.sourceFile);
   need(registry.workspace === workspace, "CONTROL_ACTIVATION_REGISTRY_WORKSPACE_MISMATCH");
 }
+export {validatePaths as validateControlProfilePaths};
+export function controlProfilePath(root, descriptor) {
+  const digest = /^[a-f0-9]{64}$/.test(descriptor.profileHash ?? "");
+  return digest && (descriptor.profileFile === path.join(root, "service.json") ||
+    descriptor.profileFile === path.join(root, `service-${descriptor.profileHash}.json`));
+}
 export function assertObserverRuntime(runtime) {
   need(["control-activation","control-observer-run","control-schedule","control-recovery"].every(name=>
     Object.hasOwn(runtime?.identity?.description?.files??{},`scripts/${name}.mjs`)),
@@ -144,7 +153,7 @@ export async function verifyControlActivation(descriptorFile) {
   const descriptor = await readActivationJson(descriptorFile);
   need(!((await lstat(descriptorFile)).mode & 0o222), "CONTROL_ACTIVATION_DESCRIPTOR_MUTABLE");
   need(descriptor.schema === "control.activation.v1" && descriptor.status === "PRIVATE_ACTIVATED_NOT_PROJECT_READY" &&
-    hash(descriptor.controlRoot) === hash(identity) && descriptor.profileFile === path.join(root, "service.json"),
+    hash(descriptor.controlRoot) === hash(identity) && controlProfilePath(root, descriptor),
   "CONTROL_ACTIVATION_DESCRIPTOR_INVALID");
   const profile = await readActivationJson(descriptor.profileFile);
   need(hash(profile) === descriptor.profileHash, "CONTROL_ACTIVATION_PROFILE_CHANGED");
@@ -154,6 +163,9 @@ export async function verifyControlActivation(descriptorFile) {
   const runtime = await loadControlRuntime({packageRoot: descriptor.runtime.root,
     expectedDigest: descriptor.runtime.digest, workspace: profile.config.workspace});
   assertObserverRuntime(runtime);
+  need(descriptor.profileFile === path.join(root, "service.json") ||
+    Object.hasOwn(runtime.identity.description.files, "scripts/control-profile-change.mjs"),
+  "CONTROL_ACTIVATION_PROFILE_RUNTIME_UNSUPPORTED");
   return {descriptor, profile, runtime};
 }
 export async function activateControl({sourceRoot, root, expectedDigest, profile}) {
