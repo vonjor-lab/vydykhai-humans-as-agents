@@ -92,16 +92,20 @@ function sourceBindings(value) {
   requireThat(unique(value.map(b => `${b.sourceId}/${b.eventId}`)), "DUPLICATE_SOURCE");
 }
 
-function commandShape(spec) {
+const COMMAND_TIMEOUT_MAX_MS = 60000;
+const CONTROLLED_ACTION_TIMEOUT_MAX_MS = 600000;
+function commandShape(spec, timeoutMaxMs = COMMAND_TIMEOUT_MAX_MS) {
   requireThat(keys(spec, ["executable", "args", "cwd", "timeoutMs", "maxOutputBytes"]) &&
     path.isAbsolute(spec.executable || "") && list(spec.args, v => typeof v === "string", false) &&
-    text(spec.cwd) && Number.isInteger(spec.timeoutMs) && spec.timeoutMs > 0 && spec.timeoutMs <= 60000 &&
+    text(spec.cwd) && Number.isInteger(spec.timeoutMs) && spec.timeoutMs > 0 && spec.timeoutMs <= timeoutMaxMs &&
     Number.isInteger(spec.maxOutputBytes) && spec.maxOutputBytes > 0 && spec.maxOutputBytes <= MAX_BYTES,
   "COMMAND_SCHEMA_INVALID");
   requireThat(!/^(?:sh|bash|zsh|fish|csh|dash|cmd(?:\.exe)?|powershell(?:\.exe)?|pwsh(?:\.exe)?)$/i.test(path.basename(spec.executable)), "SHELL_COMMAND_UNSUPPORTED");
 }
 async function command(spec, root, readPath, stats, extraEnv = {}, kind = "dependent", admission = null) {
-  commandShape(spec);
+  const controlledAction = typeof admission?.dispatch === "function" &&
+    admission.binding.operation === "resume" && kind === "dependent";
+  commandShape(spec, controlledAction ? CONTROLLED_ACTION_TIMEOUT_MAX_MS : COMMAND_TIMEOUT_MAX_MS);
   const cwd = await readPath(spec.cwd, true);
   const executable = await realpath(spec.executable);
   requireThat((await lstat(executable)).isFile(), "COMMAND_EXECUTABLE_INVALID");
@@ -292,7 +296,8 @@ export async function runContextTransition(request, services = {}) {
     let requiredExamples;
     try { requiredExamples = moduleExampleIds(module.retainedExampleIds, task.newExampleIds, accessPolicy?.targetIntent); }
     catch (e) { throw new ContextError(e.message === "MODULE_EXAMPLES_INVALID" ? e.message : "CONTEXT_SCHEMA_INVALID"); }
-    commandShape(task.action);
+    // A longer declaration is not admission; actual dispatch enforces its route's bound.
+    commandShape(task.action, CONTROLLED_ACTION_TIMEOUT_MAX_MS);
     commandShape(module.verificationCommand);
     requireThat(keys(task.memory, ["publicBoundary", "items", "atomicInput"]) && task.memory.publicBoundary === module.publicBoundary,
       "PUBLIC_BOUNDARY_MISMATCH");

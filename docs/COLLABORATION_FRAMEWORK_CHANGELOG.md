@@ -10,6 +10,18 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 2.1.2 - 2026-10-12
+
+Separate the admitted action's finite execution budget from model and service
+deadlines. Task actions may declare up to ten minutes; only a trusted controlled
+resume with exact command-bound authorization and reservation can execute above
+the ordinary sixty-second ceiling. Verification and unprotected execution retain
+their old ceiling. Module/model limits, grant expiry, output bounds, final
+readback and uncertain-outcome reconciliation are unchanged. Existing adoption
+owns resource bindings and the whole deadline chain: observe initial startup
+without a long action when necessary, then prove its natural scheduled execution
+and owner application. No new role, timer, audit or asynchronous protocol.
+
 ## 2.1.1 - 2026-10-12
 
 Repair the missing trusted transition from an expired initial private service
