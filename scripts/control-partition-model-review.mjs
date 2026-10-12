@@ -37,7 +37,7 @@ export async function openPartitionModelReview(options,openSingle) {
   const validOffer=offer=>{
     need(/^[a-f0-9-]{36}$/.test(offer?.runId)&&/^[a-f0-9]{64}$/.test(offer?.key),'MODEL_REVIEW_OFFER_INVALID');
     need(!hostBound || offer.phase===undefined || ['POST_ACCEPT','HEALTH'].includes(offer.phase),'MODEL_REVIEW_HOST_PARTITION_PHASE_UNSUPPORTED');
-    if(episode)need(offer.phase!=='HEALTH' && offer.episode?.planSha256===planSha256 &&
+    if(episode)need(offer.episode?.planSha256===planSha256 &&
       /^[a-f0-9-]{36}$/.test(offer.episode.id) &&
       offer.episode.basisSha256===hash({key:offer.key,input:offer.input}) &&
       Number.isFinite(Date.parse(offer.episode.startedAt)),'MODEL_REVIEW_EPISODE_OFFER_INVALID');
@@ -217,7 +217,7 @@ export async function openPartitionModelReview(options,openSingle) {
           if(/SOURCE_DRIFT|OFFER_EVIDENCE_MISMATCH|HOST_OFFER_MISMATCH/.test(error.message))run.invalidated=true;
           Object.assign(run,{
           state:failedPart?.state==='UNKNOWN'?'UNKNOWN':'STOPPED',reason:error.message,
-          finishedAt:new Date().toISOString(),completedParts:completed,failedPart});return s;});
+          finishedAt:new Date().toISOString(),completedParts:run.parts.length,failedPart});return s;});
         throw error;
       }
     }

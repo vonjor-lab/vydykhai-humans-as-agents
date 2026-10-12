@@ -9,7 +9,8 @@ import {openReviewSources, validateReviewSourceScope} from "./control-review-sou
 import {initialHealth, healthControl, healthId} from "./control-health.mjs";
 import {checkFindingLeases} from "./finding-history.mjs";
 import {readCommandEffects} from "./control-health-domain.mjs";
-import {frozenReviewPartitions} from "./control-review-partitions.mjs";
+import {reviewEpisodeDescriptor as episodeDescriptor,reviewEpisodeProgress as episodeProgress,
+  validateReviewEpisodeSpec} from "./control-review-partitions.mjs";
 
 const hash = value => sha256(canonicalJson(value));
 const filled = v => typeof v === "string" && v.trim().length > 0;
@@ -80,12 +81,7 @@ export async function openControlHost(directory, config, {createReturnSync, obse
   const reviewScope = (s, id) => hash({row: rowFor(s, id), paused: s.paused, execution: executionFor(s, id)});
   const overdue = row => row.findings.some(f => f.status === "OPEN" && Date.parse(f.reviewAt) <= Date.now());
   const reviewPending = row => row.reviewLease || ["REVIEW_DUE", "REVIEW_EPISODE_DUE", "REVIEW_IN_FLIGHT", "REVIEW_RECONCILIATION_REQUIRED"].includes(row.enrollment);
-  const episodeDescriptor = e => ({id:e.id,planSha256:e.planSha256,basisSha256:e.basisSha256,
-    startedAt:e.startedAt,previousRunId:e.previousRunId});
   const episodeBasis = (key,input) => hash({key,input:{...input,review:null,disposition:null}});
-  const episodeProgress = observed => ({runId:observed.runId,evidence:observed.evidence,
-    completedParts:observed.completedParts,sourceDigest:observed.sourceDigest,spentTokens:observed.spentTokens,
-    parts:observed.parts.map(p=>({index:p.index,ids:p.ids,journal:p.journal,observationSha256:hash(p.observation)}))});
   const assertEpisodeBasis = async (s,id,fresh,reject=true) => {
     const e=rowFor(s,id).reviewEpisode;
     if(!e)return;
@@ -341,19 +337,12 @@ export async function openControlHost(directory, config, {createReturnSync, obse
         ...(rowFor(s,id).reviewEpisode?{episode:episodeDescriptor(rowFor(s,id).reviewEpisode)}:{})};
     },
     async claimReview(id, {episode} = {}) {
-      need(!episode || id!==healthId,"REVIEW_EPISODE_POST_ACCEPT_ONLY");
-      if(id === healthId && health)return health.claimReview();
+      if(id === healthId && health)return health.claimReview({episode});
       const runId = randomUUID();
       const s = await state(), row = rowFor(s, id);
       const continuing=row.enrollment==="REVIEW_EPISODE_DUE" && row.reviewEpisode;
       need(!s.paused && (!row.reviewLease || continuing), "REVIEW_ALREADY_CLAIMED_OR_PAUSED");
-      if(episode) {
-        frozenReviewPartitions(episode.partitions);
-        need(exactKeys(episode,["partitions","maxPartsPerTick","maxDurationMs","maxUsageTokens"]) &&
-          episode.maxPartsPerTick===1 && Number.isSafeInteger(episode.maxDurationMs) &&
-          episode.maxDurationMs>=1 && episode.maxDurationMs<=86400000 &&
-          Number.isSafeInteger(episode.maxUsageTokens) && episode.maxUsageTokens>=1,"REVIEW_EPISODE_CONFIG_INVALID");
-      }
+      if(episode)validateReviewEpisodeSpec(episode);
       const input = await stableInputFor(s,id), fresh=await inputFor(s,id,true), key=postAcceptKey(fresh);
       if(continuing) {
         const reason=row.reviewEpisode.invalidated || row.reviewEpisode.basisSha256!==episodeBasis(key,fresh) ?
@@ -382,6 +371,7 @@ export async function openControlHost(directory, config, {createReturnSync, obse
       return {...await this.reviewInput(id), runId};
     },
     async deferReview(id, offer) {
+      if(id === healthId && health)return health.deferReview(offer);
       const s=await state(),row=rowFor(s,id),fresh=await inputFor(s,id,true);
       await assertEpisodeBasis(s,id,fresh);
       need(!s.paused && ["REVIEW_IN_FLIGHT","REVIEW_RECONCILIATION_REQUIRED"].includes(row.enrollment) && row.reviewLease?.runId===offer.runId &&
@@ -675,6 +665,10 @@ export async function openControlHost(directory, config, {createReturnSync, obse
         if(paused)for(const row of Object.values(s.acceptances))if(row.reviewEpisode) {
           row.reviewEpisode.invalidated="REVIEW_EPISODE_PAUSED";
           row.enrollment="REVIEW_RECONCILIATION_REQUIRED";
+        }
+        if(paused && s.health?.reviewEpisode) {
+          s.health.reviewEpisode.invalidated="REVIEW_EPISODE_PAUSED";
+          s.health.enrollment="REVIEW_RECONCILIATION_REQUIRED";
         }
       });
     },

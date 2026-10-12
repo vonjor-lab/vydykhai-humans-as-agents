@@ -10,9 +10,9 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `2.0.1`
+Current version: `2.1.0`
 
-Version `2.0.1` is an opt-in release on `release/2.x`; stable `1.x` remains on `main`. Existing projects require an explicitly approved major-version migration and independent adoption evidence; copying this source is not completed adoption. The supported operating cycle is qualified, but universal reliability and measured savings are not claimed.
+Version `2.1.0` is a compatible opt-in update on `release/2.x`; stable `1.x` remains on `main`. Existing `1.x` projects require an explicitly approved major-version migration and independent adoption evidence; copying this source is not completed adoption. HEALTH can retain validated whole-group checkpoints under one frozen basis and finite allocation; only the complete review and actual owner application establish a verdict. Universal reliability and measured savings are not claimed.
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 

@@ -9,6 +9,7 @@ import {validateControlFindings} from "./control-findings.mjs";
 import {checkFindingLeases} from "./finding-history.mjs";
 import {evaluateControlCadence} from "./control-cadence.mjs";
 import {observeConfinedFile,validCompletedEffects} from "./control-health-domain.mjs";
+import {reviewEpisodeDescriptor,reviewEpisodeProgress,validateReviewEpisodeSpec} from "./control-review-partitions.mjs";
 
 const hash = v => sha256(canonicalJson(v));
 const need = (v, code) => {if (!v) throw Error(code);};
@@ -80,6 +81,19 @@ export function healthControl({state,update,config,observeReviewRun}) {
   const input = async s => ({policy:config.policy,scope:plan.scope,previousFindings:s.health.findings,
     lifecycle:lifecycle(s.health),...await sources(s),
     ...(s.health.domainCandidate?{domainCandidate:structuredClone(s.health.domainCandidate)}:{})});
+  const episodeBasis = fresh => hash({key:hash(fresh),input:fresh});
+  const assertEpisodeBasis = async (s,fresh,reject=true) => {
+    const e=s.health.reviewEpisode;
+    if(!e)return;
+    const reason=e.invalidated || (e.basisSha256!==episodeBasis(fresh) ? "REVIEW_EPISODE_BASIS_CHANGED" :
+      Date.now()>=Date.parse(e.startedAt)+e.spec.maxDurationMs ? "REVIEW_EPISODE_EXPIRED" : null);
+    if(!reason)return;
+    await update(current=>{need(scopeKey(current)===scopeKey(s),"HEALTH_STATE_CHANGED");
+      current.health.reviewEpisode.invalidated=reason;
+      current.health.enrollment="REVIEW_RECONCILIATION_REQUIRED";});
+    if(reject)throw Error(reason);
+    return reason;
+  };
   const sourceKey = fresh => hash({sourceEvidence:fresh.sourceEvidence,repository:fresh.repository,trigger:fresh.trigger,execution:fresh.execution});
   const blockingDomainFinding = (h,taskId) => h.findings.concat(h.disposition?[]:
     h.history.findLast(row=>row.disposition&&row.review)?.review.findings??[]).some(f=>f.status==="OPEN"&&
@@ -129,7 +143,9 @@ export function healthControl({state,update,config,observeReviewRun}) {
     async reviewInput() {
       const s=await state(),fresh=await input(s);
       if(s.health.reviewLease?.captured)return admitCaptured(s,s.health.reviewLease.captured);
-      return {key:hash(fresh),phase:"HEALTH",input:fresh,stateRevision:scopeKey(s)};
+      await assertEpisodeBasis(s,fresh);
+      return {key:hash(fresh),phase:"HEALTH",input:fresh,stateRevision:scopeKey(s),
+        ...(s.health.reviewEpisode?{episode:reviewEpisodeDescriptor(s.health.reviewEpisode)}:{})};
     },
     async admitReview(offer) {
       const s=await state();
@@ -137,7 +153,8 @@ export function healthControl({state,update,config,observeReviewRun}) {
         s.health.reviewLease?.runId===offer.runId && s.health.reviewLease.reviewer===config.reviewer,"HEALTH_LEASE_MISMATCH");
       if(s.health.reviewLease.captured)return admitCaptured(s,s.health.reviewLease.captured,offer);
       const current=await api.reviewInput();
-      need(current.key===offer.key && current.stateRevision===offer.stateRevision && hash(current.input)===hash(offer.input),"HEALTH_SOURCE_CHANGED");
+      need(current.key===offer.key && current.stateRevision===offer.stateRevision && hash(current.input)===hash(offer.input) &&
+        hash(current.episode??null)===hash(offer.episode??null),"HEALTH_SOURCE_CHANGED");
       return structuredClone(offer);
     },
     async proposeDomain({owner,grantId,sourceIds}) {
@@ -181,6 +198,10 @@ export function healthControl({state,update,config,observeReviewRun}) {
     },
     async due() {
       let s = await state(); if(s.paused)return [];
+      if(s.health.enrollment==="REVIEW_EPISODE_DUE" && s.health.reviewEpisode) {
+        await assertEpisodeBasis(s,await input(s),false);
+        return [{id:healthId,action:(await state()).health.enrollment,kind:"HEALTH"}];
+      }
       if(s.health.reviewLease)return [{id:healthId,action:s.health.enrollment}];
       if(cadence(s)?.periodic.status === "DUE" && s.health.pendingResetEpoch !== cadence(s).periodic.resetEpoch) {
         const epoch=cadence(s).periodic.resetEpoch;
@@ -195,9 +216,22 @@ export function healthControl({state,update,config,observeReviewRun}) {
           [{id:healthId,action:"CADENCE_OBSERVATION_DUE",kind:"HEALTH",followup:cadence(s).followup}] : [] :
           [{id:healthId,action:h.enrollment,kind:"HEALTH"}];
     },
-    async claimReview() {
+    async claimReview({episode}={}) {
       const s = await state(), fresh = await input(s);
-      need(!s.paused && !s.health.reviewLease && isDue(s,fresh),"HEALTH_REVIEW_NOT_DUE");
+      const continuing=s.health.enrollment==="REVIEW_EPISODE_DUE" && s.health.reviewEpisode;
+      need(!s.paused && (!s.health.reviewLease || continuing) && (continuing || isDue(s,fresh)),"HEALTH_REVIEW_NOT_DUE");
+      if(episode)validateReviewEpisodeSpec(episode);
+      // Captured confined-command effects have a different custody protocol.
+      need(!episode || (!s.health.domain && !s.health.domainCandidate),"HEALTH_EPISODE_DOMAIN_UNSUPPORTED");
+      if(continuing) {
+        await assertEpisodeBasis(s,fresh);
+        if(!episode || hash(episode)!==s.health.reviewEpisode.planSha256) {
+          await update(current=>{need(scopeKey(current)===scopeKey(s),"HEALTH_STATE_CHANGED");
+            current.health.reviewEpisode.invalidated="REVIEW_EPISODE_PLAN_CHANGED";
+            current.health.enrollment="REVIEW_RECONCILIATION_REQUIRED";});
+          throw Error("REVIEW_EPISODE_PLAN_CHANGED");
+        }
+      }
       const runId = randomUUID(), key = hash(fresh),claimedAt=Date.now();
       const overdueCheckpoints=overdue(s.health,claimedAt).map(({id,reviewAt})=>({id,reviewAt}));
       const observed=s.health.domain ? await currentDomain(s,s.health.domain) : null;
@@ -209,6 +243,9 @@ export function healthControl({state,update,config,observeReviewRun}) {
       }
       await update(current => {
         need(scopeKey(current) === scopeKey(s),"HEALTH_STATE_CHANGED");
+        if(episode && !continuing)current.health.reviewEpisode={id:runId,planSha256:hash(episode),
+          basisSha256:episodeBasis(fresh),startedAt:new Date(claimedAt).toISOString(),previousRunId:null,
+          spec:structuredClone(episode),progress:null};
         current.health.reviewLease = {runId,reviewer:config.reviewer,startedAt:new Date(claimedAt).toISOString(),key,overdueCheckpoints,
           ...(cadence(s)?.periodic.status === "DUE" ? {resetEpoch:cadence(s).periodic.resetEpoch} : {})};
         current.health.enrollment = "REVIEW_IN_FLIGHT";
@@ -218,16 +255,43 @@ export function healthControl({state,update,config,observeReviewRun}) {
         }
       });
       if(observed)return structuredClone((await state()).health.reviewLease.captured.offer);
-      return {runId,key,phase:"HEALTH",input:fresh,stateRevision:scopeKey(await state())};
+      return {...await api.reviewInput(),runId};
+    },
+    async deferReview(offer) {
+      const s=await state(),h=s.health,fresh=await input(s);
+      await assertEpisodeBasis(s,fresh);
+      need(!s.paused && ["REVIEW_IN_FLIGHT","REVIEW_RECONCILIATION_REQUIRED"].includes(h.enrollment) &&
+        h.reviewLease?.runId===offer.runId && h.reviewEpisode && offer.stateRevision===scopeKey(s) &&
+        hash(reviewEpisodeDescriptor(h.reviewEpisode))===hash(offer.episode),"REVIEW_EPISODE_BASIS_CHANGED");
+      need(typeof observeReviewRun==="function","REVIEW_OBSERVER_REQUIRED");
+      const observed=await observeReviewRun(offer.runId),e=h.reviewEpisode;
+      need(observed?.runId===offer.runId && observed.state==="STOPPED" && filled(observed.evidence) &&
+        observed.deferred===true && !observed.reason && !observed.verdict && !observed.invalidated &&
+        !observed.usageUnknown && Number.isSafeInteger(observed.spentTokens) && observed.spentTokens>=0 &&
+        observed.spentTokens<=e.spec.maxUsageTokens && Number.isSafeInteger(observed.completedParts) &&
+        observed.completedParts>0 && observed.completedParts<e.spec.partitions.length &&
+        observed.completedParts===(e.progress?.completedParts??0)+1 &&
+        observed.parts?.length===observed.completedParts &&
+        observed.parts.every((p,i)=>p.index===i && hash(p.ids)===hash(e.spec.partitions[i])) &&
+        observed.sourceDigest===fresh.sourceEvidence.digest && hash(observed.episode)===hash(offer.episode),
+        "REVIEW_EPISODE_PROGRESS_INVALID");
+      await update(current=>{need(scopeKey(current)===scopeKey(s),"HEALTH_STATE_CHANGED");
+        current.health.reviewEpisode.previousRunId=offer.runId;
+        current.health.reviewEpisode.progress=reviewEpisodeProgress(observed);
+        current.health.enrollment="REVIEW_EPISODE_DUE";});
+      return {action:"REVIEW_EPISODE_DUE"};
     },
     async review(_id,offer,verdict) {
       const s = await state(), h = s.health, fresh = await input(s);
+      await assertEpisodeBasis(s,fresh);
       if(h.reviewLease?.captured)await api.admitReview(offer);
       else need(!s.paused && offer.stateRevision === scopeKey(s) && offer.key === hash(fresh) && hash(offer.input)===hash(fresh),"HEALTH_SOURCE_CHANGED");
       need(verdict?.phase === "HEALTH" && verdict.key === offer.key && verdict.reviewer === config.reviewer &&
         verdict.runId === offer.runId && h.reviewLease?.runId === offer.runId &&
         Number.isFinite(Date.parse(verdict.observedAt)) && Date.parse(verdict.observedAt) >= Date.parse(h.reviewLease.startedAt),
         "HEALTH_VERDICT_IDENTITY_INVALID");
+      if(h.reviewEpisode)need(hash(reviewEpisodeDescriptor(h.reviewEpisode))===hash(offer.episode),
+        "REVIEW_EPISODE_BASIS_CHANGED");
       const v = structuredClone(verdict);
       // A reviewed repair that leaves its named finding open is a failed attempt,
       // not a fresh incident. The wire cannot silently reset that attempt.
@@ -251,6 +315,10 @@ export function healthControl({state,update,config,observeReviewRun}) {
         const row = current.health;
         if(row.review)row.history.push({review:row.review,disposition:row.disposition,repairLeases:row.repairLeases});
         row.findings = v.findings; row.review = v; row.disposition = null; row.reviewLease = null;
+        if(row.reviewEpisode) {
+          (row.reviewEpisodeHistory??=[]).push({...row.reviewEpisode,completedRunId:v.runId});
+          delete row.reviewEpisode;
+        }
         const considered=[...(h.reviewedCheckpoints??[]),...(h.reviewLease.overdueCheckpoints??[])];
         row.reviewedCheckpoints=considered.filter((p,index)=>
           considered.findIndex(q=>sameCheckpoint(p,q))===index&&
@@ -263,23 +331,38 @@ export function healthControl({state,update,config,observeReviewRun}) {
       });
     },
     async reviewFailure(_id,runId) {
+      const before=await state();
+      if(before.health.reviewEpisode)await assertEpisodeBasis(before,await input(before),false);
       await update(s => {
         need(s.health.reviewLease?.runId === runId,"HEALTH_LEASE_MISMATCH");
         s.health.enrollment = "REVIEW_RECONCILIATION_REQUIRED";
       });
     },
     async reconcile(decision) {
-      const s = await state(), lease = s.health.reviewLease;
+      let s = await state();const lease = s.health.reviewLease;
       need(!s.paused && lease && typeof observeReviewRun === "function","HEALTH_OBSERVER_REQUIRED");
       const observed = await observeReviewRun(lease.runId);
       need(observed?.state === "STOPPED" && observed.runId === lease.runId && filled(observed.evidence),"HEALTH_OUTCOME_UNKNOWN");
       need(scopeKey(await state()) === scopeKey(s),"HEALTH_STATE_CHANGED");
+      const fresh=await input(s);
+      if(s.health.reviewEpisode && await assertEpisodeBasis(s,fresh,false)) {
+        s=await state();
+        need(s.health.reviewLease?.runId===lease.runId,"HEALTH_LEASE_MISMATCH");
+      }
+      const e=s.health.reviewEpisode;
+      const episodeCurrent=!e || (!e.invalidated && !observed.invalidated && e.basisSha256===episodeBasis(fresh) &&
+        Date.now()<Date.parse(e.startedAt)+e.spec.maxDurationMs);
+      if(observed.deferred && !observed.reason && episodeCurrent) {
+        try {
+          await api.deferReview({...await api.reviewInput(),runId:lease.runId});
+          return {action:"REVIEW_EPISODE_DUE",reused:true};
+        } catch {}
+      }
       let validationFailure = null;
-      if(observed.verdict) {
-        const fresh = await input(s);
+      if(observed.verdict && episodeCurrent) {
         if(observed.verdict.key === hash(fresh)) {
           try {
-            await api.review(healthId,{runId:lease.runId,key:hash(fresh),input:fresh,stateRevision:scopeKey(s)},observed.verdict);
+            await api.review(healthId,{...await api.reviewInput(),runId:lease.runId},observed.verdict);
             return {action:"OWNER_DISPOSITION_DUE",reused:true};
           } catch(error) {
             if(error.message !== "HEALTH_FINDINGS_INVALID")throw error;
@@ -290,11 +373,28 @@ export function healthControl({state,update,config,observeReviewRun}) {
       need(decision?.reviewer === config.reviewer && decision.action === "RETRY" && filled(decision.evidence),"HEALTH_RETRY_DECISION_REQUIRED");
       await update(current => {
         need(scopeKey(current) === scopeKey(s),"HEALTH_STATE_CHANGED");
+        need(current.health.reviewLease?.runId===lease.runId,"HEALTH_LEASE_MISMATCH");
         current.health.history.push({lease,observation:observed,decision:structuredClone(decision),
           ...(validationFailure ? {validationFailure} : {})});
+        if(current.health.reviewEpisode) {
+          const episode=current.health.reviewEpisode;
+          if(!episodeCurrent || !observed.episode) {
+            (current.health.reviewEpisodeHistory??=[]).push({...episode,
+              invalidated:episode.invalidated??"REVIEW_EPISODE_INVALIDATED"});
+            delete current.health.reviewEpisode;
+          } else {
+            need(hash(observed.episode)===hash(reviewEpisodeDescriptor(episode)) && !observed.usageUnknown &&
+              Number.isSafeInteger(observed.completedParts) && observed.completedParts>=0 &&
+              observed.completedParts<=episode.spec.partitions.length && observed.parts?.length===observed.completedParts &&
+              observed.parts.every((p,i)=>p.index===i && hash(p.ids)===hash(episode.spec.partitions[i])),
+              "REVIEW_EPISODE_PROGRESS_INVALID");
+            episode.progress=reviewEpisodeProgress(observed);episode.previousRunId=lease.runId;
+            current.health.enrollment="REVIEW_EPISODE_DUE";return;
+          }
+        }
         current.health.reviewLease = null; current.health.enrollment = "REVIEW_DUE";
       });
-      return {action:"REVIEW_DUE",reused:false};
+      return {action:(await state()).health.enrollment,reused:false};
     },
     async disposition(decision,leases=[]) {
       const s = await state(), h = s.health;

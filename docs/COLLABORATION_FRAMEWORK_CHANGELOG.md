@@ -10,6 +10,22 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 2.1.0 - 2026-10-12
+
+Compatible opt-in HEALTH continuation reuses the existing POST checkpoint
+mechanism: one frozen whole-group part per tick, retained native evidence and
+finite cumulative allocation. Only the complete 28-group/87-criterion union can
+become an owner verdict; partial progress grants no execution or repair scope.
+Source, execution, plan drift or pause invalidates reuse even after restoration.
+Unknown termination or usage retains the hold; known failure requires independent
+changed-attempt reconciliation, without replaying completed parts or refunding
+spent calls. Captured confined-command domains retain their existing single-review
+protocol and refuse episodes. Existing single/fixed-part profiles and schemas are
+unchanged. Adoption owns safe runtime switching, preserved evidence and allocations,
+fresh complete review and actual same-projection owner application. Local tests
+and scripted CLI transport are not semantic project acceptance or measured savings.
+Stable main/Latest remains unchanged; no new controller, timer or checklist is added.
+
 ## 2.0.1 - 2026-10-11
 
 Compatible memory-section reader repair on `release/2.x`. Validation and recall
