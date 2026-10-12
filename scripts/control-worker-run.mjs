@@ -22,7 +22,7 @@ export function controlledWorkerPrompt(prompt,endpoint) {
 }
 export async function runControlledWorker({binary, workspace, endpointFile, controlEndpointFile, home, model, effort,
   prompt, timeoutMs = 120000, maxBytes = 4 * 1024 * 1024, provider, signal, role = "worker", authHome = home,
-  enableMemoryRecall = false}) {
+  enableMemoryRecall = false, reviewAcquisition}) {
   need(process.platform === "darwin", "CONTROL_WORKER_HOST_UNSUPPORTED");
   need([binary, workspace, endpointFile, home].every(v => typeof v === "string" && path.isAbsolute(v)) &&
     typeof model === "string" && model.trim() && ["low", "medium", "high", "xhigh", "max"].includes(effort) &&
@@ -40,6 +40,7 @@ export async function runControlledWorker({binary, workspace, endpointFile, cont
     await realpath(authHome) === authHome && (await lstat(authHome)).isDirectory() &&
     authHome !== workspace && !authHome.startsWith(workspace + path.sep), "CONTROL_WORKER_AUTH_OR_ROLE_INVALID");
   need(typeof enableMemoryRecall === "boolean" && (!enableMemoryRecall || role === "review"), "CONTROL_WORKER_RECALL_PROFILE_INVALID");
+  need(reviewAcquisition === undefined || role === "review", "CONTROL_WORKER_ACQUISITION_ROLE_INVALID");
   let controlEndpointDigest, preparationHost, preparationIds;
   if (role === "preparation") {
     need(typeof controlEndpointFile === "string" && path.isAbsolute(controlEndpointFile), "PREPARATION_CONTROL_ENDPOINT_REQUIRED");
@@ -55,7 +56,7 @@ export async function runControlledWorker({binary, workspace, endpointFile, cont
   }
   const profile = {review:reviewCodexConfig,owner:ownerCodexConfig,"owner-disposition":dispositionCodexConfig,
     preparation:preparationCodexConfig,worker:controlledCodexConfig}[role];
-  const config = {...profile({workspace, endpointFile, controlEndpointFile, controlEndpointDigest, enableMemoryRecall}), model_reasoning_effort: effort};
+  const config = {...profile({workspace, endpointFile, controlEndpointFile, controlEndpointDigest, enableMemoryRecall, reviewAcquisition}), model_reasoning_effort: effort};
   if (provider !== undefined) {
     need(provider && typeof provider.baseUrl === "string" && typeof provider.requiresAuth === "boolean",
       "CONTROL_WORKER_PROVIDER_INVALID");

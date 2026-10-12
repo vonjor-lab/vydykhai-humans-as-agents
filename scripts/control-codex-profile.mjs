@@ -1,6 +1,7 @@
 // Explicit isolated CLI profile, not a change to an existing desktop chat.
 import path from "node:path";
 import {fileURLToPath} from "node:url";
+import {validateReviewAcquisition} from "./control-review-acquisition.mjs";
 
 export function controlledCodexConfig({workspace, endpointFile, nodeExecutable = process.execPath}) {
   if (![workspace, endpointFile, nodeExecutable].every(path.isAbsolute)) throw Error("CONTROL_PROFILE_PATH_INVALID");
@@ -23,13 +24,16 @@ export function controlledCodexConfig({workspace, endpointFile, nodeExecutable =
   };
 }
 
-export function reviewCodexConfig({workspace, endpointFile, nodeExecutable = process.execPath, enableMemoryRecall = false}) {
+export function reviewCodexConfig({workspace, endpointFile, nodeExecutable = process.execPath, enableMemoryRecall = false, reviewAcquisition}) {
   if (typeof enableMemoryRecall !== "boolean") throw Error("CONTROL_PROFILE_RECALL_INVALID");
+  if (reviewAcquisition !== undefined) validateReviewAcquisition(reviewAcquisition);
+  if (reviewAcquisition !== undefined && enableMemoryRecall) throw Error("CONTROL_PROFILE_RECALL_WINDOW_UNSUPPORTED");
   const config = controlledCodexConfig({workspace, endpointFile, nodeExecutable});
   config.project_doc_max_bytes = 0;
   delete config["mcp_servers.vydykhai_control"];
   config["mcp_servers.vydykhai_review"] = {command: nodeExecutable,
-    args: [fileURLToPath(new URL("./control-review-mcp.mjs", import.meta.url)), endpointFile],
+    args: [fileURLToPath(new URL("./control-review-mcp.mjs", import.meta.url)), endpointFile,
+      ...(reviewAcquisition === undefined ? [] : [JSON.stringify(reviewAcquisition)])],
     required: true, enabled: true, enabled_tools: ["list_sources", "read_source", ...(enableMemoryRecall ? ["recall_memory"] : [])], startup_timeout_sec: 10, tool_timeout_sec: 15};
   return config;
 }

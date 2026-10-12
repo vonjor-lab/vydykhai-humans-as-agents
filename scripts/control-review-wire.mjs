@@ -23,7 +23,10 @@ export function decodeReviewAnswer(answer,{readbacks,offer,reviewer,observedAt})
     return ids.map(id=>{
       const source=sources.get(id);need(source,"MODEL_REVIEW_UNREAD_EVIDENCE");
       need(source.status==="MISSING"||/^[a-f0-9]{64}$/.test(source.sha256),"MODEL_REVIEW_SOURCE_DIGEST_INVALID");
-      return `source:${id}:${source.sha256??"MISSING"}`;
+      const window=source.window;
+      return `source:${id}:${source.sha256??"MISSING"}` +
+        (window && id!==window.sourceId ?
+          ` #original=${window.sourceId}:${window.sourceSha256};range=${window.offset}+${window.length}` : "");
     }).join(" ; ");
   };
   const groups=answer.rowGroups.map(g=>{
