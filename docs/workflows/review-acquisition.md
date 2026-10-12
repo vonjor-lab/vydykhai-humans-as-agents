@@ -51,3 +51,32 @@ Compare the real retained failure's acquisition/result boundary after adoption.
 Only actual causal repair opens a new error-attempt series; cumulative spending
 and prior failures always remain. Independent review/owner application/POST,
 ordinary recall and the natural scheduled cycle retain their original duties.
+
+## Existing Fixed Parts
+
+A fixed part receives its assigned criteria and complete matching prior findings.
+Outside blockers and failed findings remain complete; other outside dependencies
+retain evidence, ownership, scope, history and work, without repeating their
+unassigned criterion. The host retains the unchanged original offer and all
+findings. No part alone closes the review or grants continuation.
+
+The model view carries source identity pointers, not a substitute evidence
+snapshot. The complete registered metadata remains available through
+`list_sources`, and original reading and host validation are unchanged. Partition
+by actual related questions and dependencies, not merely equal criterion counts.
+An assigned criterion does not make every possible locator mandatory whole-file
+reading. The required list is a justified minimum, never a whitelist or evidence
+of completeness. Additional relevant originals must still be acquired, or the
+gap must remain independently owned rather than inferred healthy.
+
+## Snapshot Capacity
+
+The private trusted `control.review-sources.v1` registry may explicitly declare
+`maxSnapshotBytes`, a safe integer from 1024 through 16777216. Omission preserves
+the existing 2097152-byte default. This bounds the aggregate selected source
+TEXT held in the host snapshot, not graph storage, per-source size, native
+acquisition, model context, timeout or price. Per-source limits are unchanged.
+Preserve original sources and selectors before a justified finite expansion;
+registering more sources neither requires reading them all nor proves coverage.
+The model cannot change this allowance. Use the existing preserving adoption
+route at a safe boundary, retaining previous failures and unknown expenditure.

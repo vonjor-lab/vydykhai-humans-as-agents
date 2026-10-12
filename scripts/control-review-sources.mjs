@@ -25,6 +25,9 @@ export async function readPrivateControlJson(file) {
 }
 export async function openReviewSources(file) {
   const config = await readPrivateControlJson(file), root = await realpath(config.workspace);
+  const maxSnapshotBytes = config.maxSnapshotBytes ?? 2*1024*1024;
+  need(Number.isSafeInteger(maxSnapshotBytes) && maxSnapshotBytes >= 1024 && maxSnapshotBytes <= 16*1024*1024,
+    "REVIEW_SOURCE_SNAPSHOT_BUDGET_INVALID");
   need(config.schema === "control.review-sources.v1" && root === config.workspace &&
     !path.resolve(file).startsWith(root + path.sep) && Array.isArray(config.sources) &&
     config.sources.length > 0 && config.sources.length <= 500, "REVIEW_SOURCE_CONFIG_INVALID");
@@ -120,7 +123,7 @@ export async function openReviewSources(file) {
       const rows = []; let bytes = 0;
       for(const id of ids) {
         const row = await read(id); bytes += Buffer.byteLength(row.text ?? "");
-        need(bytes <= 2*1024*1024, "REVIEW_SOURCE_TOTAL_CAPACITY");
+        need(bytes <= maxSnapshotBytes, "REVIEW_SOURCE_TOTAL_CAPACITY");
         const {text, ...reference} = row; rows.push(reference);
       }
       return {rows, digest: sha256(canonicalJson(rows)), bytes, ...(scope ? {scope:structuredClone(scope)} : {})};
