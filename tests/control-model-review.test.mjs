@@ -15,6 +15,7 @@ import {runControlTick} from "../scripts/control-loop.mjs";
 import {controlCatalog,controlCheckIds} from "../scripts/control-catalog.mjs";
 import {sha256,canonicalJson} from "../scripts/memory-brief.mjs";
 import {retentionKinds} from "../scripts/post-accept.mjs";
+import {sourceWindow} from "../scripts/control-review-acquisition.mjs";
 import {openControlNotification} from "../scripts/control-notification.mjs";
 const binary=process.env.VYDYKHAI_CODEX_BINARY;
 test("readiness criterion reaches the actual review prompt without enlarging the catalog",()=>{
@@ -55,10 +56,18 @@ test("source registry denies traversal, symlinks and undeclared private reads; m
   await assert.rejects((await openReviewSources(x.sourceFile)).read({id:"link"}),/PATH_INVALID/);
 });
 
-for(const mode of ["valid","eight-source-batch","unread","drift","transient","registry-drift","required-unread","forgotten-finding"])test(`native model reviewer ${mode}: retained source-bound result without worker authority`,
+for(const mode of ["valid","eight-source-batch","unread","drift","transient","registry-drift","required-unread","forgotten-finding",
+  "windowed-valid","windowed-unread","windowed-limit","windowed-legacy"])test(`native model reviewer ${mode}: retained source-bound result without worker authority`,
   {skip:!binary||process.platform!=="darwin",timeout:30000},async t=>{
-    const x=await setup(t), original=await readFile(path.join(x.f.root,"ledger.md")),
-      evidence=`source:ledger:${sha256(mode==="transient"?"temporary wrong source":original)}`;
+    const x=await setup(t);
+    if(mode==="windowed-limit")await x.f.put("ledger.md","x".repeat(2048));
+    const original=await readFile(path.join(x.f.root,"ledger.md"));
+    let evidence=`source:ledger:${sha256(mode==="transient"?"temporary wrong source":original)}`;
+    if(mode==="windowed-legacy") {
+      const r=sourceWindow({id:"ledger",status:"AVAILABLE",text:original.toString(),sha256:sha256(original)},
+        {id:"ledger"},{maxBytes:1024,maxChars:16});
+      evidence=`source:${r.id}:${r.sha256}`;
+    }
     if(mode==="required-unread") {
       x.sources.push({id:"memory",path:"memory.md",purpose:"Required current memory"});
       await x.f.put("memory.md","Current retained knowledge");
@@ -72,11 +81,15 @@ for(const mode of ["valid","eight-source-batch","unread","drift","transient","re
       await writeFile(x.sourceFile,JSON.stringify({schema:"control.review-sources.v1",workspace:x.f.root,sources:x.sources}));
     }
     await writeFile(path.join(x.dirs.room,"AGENTS.md"),"POISON_MANAGER_CONTEXT_MUST_NOT_LOAD");
-    const valid=mode==="valid"||mode==="eight-source-batch";
-    const answer=valid?{evidence:{S1:evidence},rowGroups:[{ids:[...controlCheckIds],status:"PASS",evidenceRef:"S1"}],findings:[]}:
+    const windowed=mode.startsWith("windowed-"),valid=mode==="valid"||mode==="eight-source-batch"||mode==="windowed-valid";
+    const answer=windowed && mode!=="windowed-legacy" ? {schema:"control.review-answer.v2",
+      rowGroups:[{ids:[...controlCheckIds],status:"PASS",sourceIds:["ledger"]}],newFindings:[],resolutions:[]} :
+      valid?{evidence:{S1:evidence},rowGroups:[{ids:[...controlCheckIds],status:"PASS",evidenceRef:"S1"}],findings:[]}:
       {rows:controlCheckIds.map(id=>({id,status:"PASS",evidence})),findings:[]};
+    const requests=windowed ? (mode==="windowed-valid"?[0,16,32]:mode==="windowed-limit"?[0,128,256,384,512,640,768,896,1024]:[0])
+      .map(offset=>({id:"ledger",offset})) : (mode==="eight-source-batch"?x.sources.map(s=>s.id):["ledger"]).map(id=>({id}));
     const sourceRead="const a=ALL_TOOLS.find(t=>t.name.includes('vydykhai_review')&&t.name.includes('read_source'));"+
-      `for(const id of ${JSON.stringify(mode==="eight-source-batch"?x.sources.map(s=>s.id):["ledger"])})text(await tools[a.name]({id}));`;
+      `for(const args of ${JSON.stringify(requests)})text(await tools[a.name](args));`;
     const provider=await nativeProvider(t,async n=>{
       if(mode==="transient")await x.f.put("ledger.md",n===1?"temporary wrong source":original.toString());
       if(n===1 && mode!=="unread")return codeItem(sourceRead);
@@ -86,9 +99,10 @@ for(const mode of ["valid","eight-source-batch","unread","drift","transient","re
       return answerItem(answer);
     });
     const config={directory:x.dirs.journal,controlRoot:x.privateRoot,reviewer:"reviewer",sourceFile:x.sourceFile,
-      native:{binary,workspace:x.dirs.room,home:x.dirs.home,model:"gpt-6.1-sol",effort:"low",timeoutMs:15000,provider:provider.provider},
+      native:{binary,workspace:x.dirs.room,home:x.dirs.home,model:"gpt-6.1-sol",effort:"low",timeoutMs:15000,provider:provider.provider,
+        ...(windowed?{reviewAcquisition:{maxBytes:1024,maxChars:mode==="windowed-limit"?128:16}}:{})},
       maxCalls:1,expiresAt:new Date(Date.now()+60000).toISOString(),scope:{kind:"protocol-fixture",
-        ...(mode==="required-unread"?{requiredSourceIds:["ledger","memory"]}:
+        ...(windowed?{requiredSourceIds:mode==="windowed-legacy"?[]:["ledger"]}:mode==="required-unread"?{requiredSourceIds:["ledger","memory"]}:
           mode==="eight-source-batch"?{requiredSourceIds:x.sources.map(s=>s.id)}:{})}};
     const review=await openModelReview(config);await review.initialize();
     const prior={id:"C27.01-cost",checkId:"C27.01",area:"C27",criterion:controlCatalog.find(g=>g.id==="C27").checks[0].criterion,
@@ -97,11 +111,12 @@ for(const mode of ["valid","eight-source-batch","unread","drift","transient","re
     const offer={runId:randomUUID(),key:sha256("offer"),input:{previousFindings:mode==="forgotten-finding"?[prior]:[]}};
     if(valid) {
       const verdict=await review.review(offer);assert.equal(verdict.reviewer,"reviewer");
-      assert.deepEqual(verdict.evidenceIndex,{S1:evidence});
+      if(windowed)assert.equal(verdict.rows[0].evidence,evidence);
+      else assert.deepEqual(verdict.evidenceIndex,{S1:evidence});
       const restored=await openModelReview(config);assert.deepEqual((await restored.observe(offer.runId)).verdict,verdict);
     } else {
       await assert.rejects(review.review(offer),mode==="forgotten-finding"?/MODEL_REVIEW_FINDINGS_INVALID/:mode==="unread"?/NO_SOURCE_ACQUISITION/:
-        mode==="required-unread"?/REQUIRED_SOURCE_UNREAD/:/SOURCE_DRIFT|REGISTRY_CHANGED/);
+        mode==="windowed-legacy"?/WINDOW_V2_REQUIRED/:mode==="required-unread"||windowed?/REQUIRED_SOURCE_UNREAD/:/SOURCE_DRIFT|REGISTRY_CHANGED/);
       assert.equal((await review.observe(offer.runId)).verdict,undefined);
     }
     const refusedId=randomUUID();
