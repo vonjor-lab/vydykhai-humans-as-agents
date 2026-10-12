@@ -5,7 +5,7 @@ import {lstat, open, readFile, rename, unlink, realpath} from "node:fs/promises"
 import path from "node:path";
 import {pathToFileURL} from "node:url";
 import {randomUUID} from "node:crypto";
-import {controlDirectory, readActivationJson, verifyControlActivation, acquireControlLease, assertObserverRuntime} from "./control-activation.mjs";
+import {controlDirectory, readActivationJson, verifyControlActivation, acquireControlLease, assertObserverRuntime, controlProfilePath} from "./control-activation.mjs";
 import {verifyControlRuntime, loadControlRuntime} from "./control-runtime.mjs";
 import {controlSchedulePlan, matchesControlRegistration} from "./control-schedule.mjs";
 import {openControlStore} from "./control-store.mjs";
@@ -140,7 +140,7 @@ async function compatible(runtime, profile, before, baseline) {
 }
 async function profileFor(intent) {
   need(hash(await controlDirectory(intent.root)) === hash(intent.old.controlRoot), "DIRECTORY_CHANGED");
-  need(intent.old.profileFile === path.join(intent.root, "service.json"), "INTENT_INVALID");
+  need(controlProfilePath(intent.root, intent.old), "INTENT_INVALID");
   const profile = await readActivationJson(intent.old.profileFile);
   need(!((await lstat(intent.old.profileFile)).mode & 0o222) && hash(profile) === intent.old.profileHash &&
     sha256(await readFile(intent.old.profileFile)) === intent.profileBytesHash, "PROFILE_CHANGED");
@@ -206,6 +206,8 @@ export async function switchControlRuntime({descriptorFile, expectedOldDigest, p
     const schedulerObservation = await stoppedSchedule(plans, readSchedule);
     const before = await journals(profile), capacities = await compatible(runtime, profile, before);
     const target = await verifyControlRuntime(packageRoot, expectedDigest);
+    need(old.profileFile === path.join(root, "service.json") ||
+      Object.hasOwn(target.description.files, "scripts/control-profile-change.mjs"), "TARGET_PROFILE_UNSUPPORTED");
     need(!inside(root, target.root) && !inside(target.root, root), "RUNTIME_BOUNDARY");
     const next = {...old, runtime: {root: target.root, digest: target.digest}};
     const pending = {schema: "control.cutover-intent.v1", root, token: randomUUID(), pid: process.pid,
@@ -252,6 +254,7 @@ export async function switchControlRuntime({descriptorFile, expectedOldDigest, p
   await finish(intent, release);
   return receipt("RUNTIME_SWITCHED_PAUSED", intent);
 }
+export {journals as inspectQuiescentControlJournals, stoppedSchedule as observeStoppedControlSchedule};
 
 export async function inspectControlCutover(descriptorFile) {
   need(process.platform === "darwin", "HOST_UNSUPPORTED");

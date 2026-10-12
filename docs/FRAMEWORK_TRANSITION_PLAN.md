@@ -1,6 +1,18 @@
 # Framework Efficiency Transition
 
 Owner: framework maintainer. Current direction approved 2026-10-09.
+Compatible patch checkpoint, 2026-10-12: repair the missing trusted same-host
+initial-profile transition; no new controller, role, timer or audit. Existing
+runtime cutover preserves configuration and therefore cannot repair expired or
+delivery-incomplete setup. Explicit fresh allocations use separate journals;
+host authority, old profiles, spent and unknown history remain unchanged.
+Independent targeted review found three interruption/recovery defects (BLOCK).
+Compact pre-staging intent, atomic publication and exact unused resumption now
+pass twelve local regressions including first-owner initialization, partial
+cleanup and large retained histories. This remediation is not a fresh independent
+PASS or live autonomy proof. Final regression/publication gates remain; adoption
+owns actual startup, recurring delivery and application at a safe boundary.
+
 Compatible MINOR candidate checkpoint, 2026-10-12: HEALTH continuation reuses
 existing frozen POST episodes; no new controller, timer or per-criterion task.
 The sanitized native case proved an atomic-return/deadline failure, not a
@@ -8,9 +20,9 @@ rejected verdict or an isolated provider cause. Preserve failed calls and eviden
 Eight HEALTH custody tests, 49 focused regression tests and a scripted real-CLI
 HEALTH transport test pass; the whole regression exposed one omitted explicit
 documentation clause, restored before independent review. Scripted CLI uses no
-model inference and does not establish semantic health. Release2.1.0 requires
-fresh independent code/safe-continuation review, final regression and exact public
-source/tag/archive/updater readbacks. Adoption keeps old allocations immutable;
+model inference and does not establish semantic health. Release2.1.0 is published
+on the separate opt-in channel after the retained independent review and final
+regression/source/tag/archive/updater readbacks. Adoption keeps old allocations immutable;
 new parts require separate explicit authority and cumulative spend. Only full
 catalog union and actual owner application allow readiness. Captured domains
 remain single-review. No product activation or measured economy is claimed.

@@ -67,6 +67,19 @@ needs a separately observed interval receipt, not the initial receipt reused as
 timer proof. A paused receipt preserves pause and certifies neither diagnosis nor
 project readiness; missing authorization remains explicit, not assumed.
 
+An expired initial profile without delivery is a setup gap, not permission to edit
+its immutable file or refill its journal. After qualified runtime selection, use
+the trusted `changeControlProfile` operator API from `control-profile-change.mjs`
+at a paused, stopped boundary. Keep host config/authority and all old journals;
+new review allocation and first owner-handler allocation need separate explicit
+limits/evidence. New allocations have separate journals. Do not replace existing
+owner allocation through this route. A crashed transition retains ownership and
+needs exact stopped-operator recovery, never automatic replay. Recovery can resume
+the bound unused staging or roll back with an exact `resumeFrom` archive; spent or
+unknown allocations never become fresh. Profile selection
+does not start a timer, unpause work or certify adoption. The same setup owner
+then proves actual initial, recurring, delivery and application receipts.
+
 ## Resolve Agent Routing
 
 Resolve capability-and-cost profiles from the current agent environment; do not equate price with task capability:

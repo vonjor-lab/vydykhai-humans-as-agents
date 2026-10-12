@@ -10,7 +10,7 @@ const need = (v, code) => {if (!v) throw Error(code);};
 const inside = (root, file) => file === root || file.startsWith(root + path.sep);
 const hash = value => sha256(canonicalJson(value));
 const additional = [
-  "control-activation", "control-observer-run", "control-recovery", "control-cutover", "control-schedule", "control-catalog", "control-child", "control-codex-profile", "control-endpoint", "control-findings", "control-health", "control-health-domain", "control-repo-observation",
+  "control-activation", "control-observer-run", "control-recovery", "control-cutover", "control-profile-change", "control-schedule", "control-catalog", "control-child", "control-codex-profile", "control-endpoint", "control-findings", "control-health", "control-health-domain", "control-repo-observation",
   "control-host", "control-continuation", "control-loop", "control-mcp", "control-model-review", "control-cadence", "control-allowance", "control-notification", "control-migration",
   "control-owner", "control-owner-mcp", "control-owner-delivery", "control-notification-owner", "control-review-mcp", "control-review-process",
   "control-review-sources", "control-review-wire", "control-review-partitions", "control-partition-model-review", "control-runtime", "control-service",

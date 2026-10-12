@@ -12,6 +12,8 @@ import {controlSchedulePlan} from "../scripts/control-schedule.mjs";
 import {openControlStore} from "../scripts/control-store.mjs";
 import {openControlHost} from "../scripts/control-host.mjs";
 import {canonicalJson, sha256} from "../scripts/memory-brief.mjs";
+import {changeControlProfile, recoverControlProfileChange} from "../scripts/control-profile-change.mjs";
+import {inspectControlRecovery, recoverStoppedControlObserver} from "../scripts/control-recovery.mjs";
 
 const source = fileURLToPath(new URL("..", import.meta.url));
 const darwin = {skip: process.platform !== "darwin", timeout: 30000};
@@ -20,7 +22,83 @@ const missing = plan => ({state: "CLOSED", code: 113, output: "",
   errors: `Could not find service "${plan.label}" in domain for user gui: ${process.getuid()}`});
 const stopped = {readSchedule: async plan => missing(plan)};
 
-async function fixture(t, {calls = 2, ttlMs = 3600000, continuation} = {}) {
+function profileChange(x) {
+  const profile = structuredClone(x.profile);
+  profile.review.directory = path.join(x.root,"review-next");
+  profile.review.maxCalls = 4;
+  profile.review.expiresAt = new Date(Date.now()+3600000).toISOString();
+  return {descriptorFile:x.descriptor.descriptorFile,expectedDescriptorHash:hash(JSON.parse(x.oldBytes)),
+    profile,actor:"operator",evidence:"fixture:explicit fresh allocation, not refunded history",
+    noRacingSchedulerOperators:true,noConcurrentStateWriters:true,
+    allocations:{review:{maxCalls:4,expiresAt:profile.review.expiresAt,evidence:"fixture:four new authorized slots"}}};
+}
+
+test("profile transition retains expired spent journals and creates a separate finite allocation",darwin,async t=>{
+  const x=await fixture(t,{ttlMs:-1000}),options=profileChange(x);
+  const result=await changeControlProfile(options,stopped);
+  assert.equal(result.status,"PROFILE_CHANGED_PAUSED");
+  assert.equal(result.projectReadiness,"NOT_CERTIFIED");
+  await x.unchanged();await noOwnership(x);
+  const selected=await verifyControlActivation(x.descriptor.descriptorFile);
+  assert.notEqual(selected.descriptor.profileFile,x.descriptor.profileFile);
+  assert.deepEqual(selected.profile,options.profile);
+  const service=await selected.runtime.service.openControlService(selected.profile);
+  assert.deepEqual(await service.review.capacity(),{remaining:4,used:0});
+  assert.equal((await x.stores.review.read()).state.calls,2);
+  const history=JSON.parse(await readFile(result.historyFile,"utf8"));
+  assert.deepEqual(history.oldJournals.review,{revision:x.before.review.revision,digest:x.before.review.digest});
+  assert.deepEqual((await service.host.snapshot()).acceptances.retained.findings,x.before.host.state.acceptances.retained.findings);
+});
+
+for(const [name,change,code] of [
+  ["in-place renewal",o=>{o.profile.review.directory=path.join(path.dirname(o.descriptorFile),"review");},"OLD_ALLOCATION_IMMUTABLE"],
+  ["unapproved budget",o=>{delete o.allocations.review;},"NEW_ALLOCATION_REQUIRED"],
+  ["different owner",o=>{o.profile.config.owner="someone-else";},"HOST_CHANGE_FORBIDDEN"],
+  ["old owner refund",o=>{o.profile.ownerDelivery.maxCalls=4;},"OLD_OWNER_ALLOCATION_IMMUTABLE"]
+])test(`profile transition refuses ${name} without changing original state`,darwin,async t=>{
+  const x=await fixture(t),options=profileChange(x);change(options);
+  await assert.rejects(changeControlProfile(options,stopped),new RegExp(code));
+  await x.unchanged();await noOwnership(x);
+  assert.deepEqual(await readFile(x.descriptor.descriptorFile),x.oldBytes);
+});
+
+test("profile transition refuses unknown model history before staging any allocation",darwin,async t=>{
+  const x=await fixture(t),options=profileChange(x);
+  await x.stores.review.transact(s=>{s.runs.spent.state="UNKNOWN";return s;});
+  const before=await x.snapshot();
+  await assert.rejects(changeControlProfile(options,stopped),/MODEL_OR_OWNER_OUTCOME_UNKNOWN/);
+  await x.unchanged(before);await noOwnership(x);
+  await assert.rejects(lstat(options.profile.review.directory),{code:"ENOENT"});
+});
+
+test("profile transition refuses a live scheduler without touching journals",darwin,async t=>{
+  const x=await fixture(t);
+  await assert.rejects(changeControlProfile(profileChange(x),{readSchedule:async plan=>({
+    state:"CLOSED",code:0,errors:"",output:`path = ${plan.file}\nprogram = ${plan.args[0]}\narguments = {\n${plan.args.join("\n")}\n}\n`
+  })}),/SCHEDULE_STOP_REQUIRED/);
+  await x.unchanged();await noOwnership(x);
+});
+
+test("interrupted profile selection retains the lease until exact stopped-operator recovery",darwin,async t=>{
+  const x=await fixture(t),options=profileChange(x);
+  const code=`import {changeControlProfile} from ${JSON.stringify(new URL("../scripts/control-profile-change.mjs",import.meta.url).href)};
+    let n=0;await changeControlProfile(${JSON.stringify(options)},{readSchedule:async plan=>{
+      if(++n===4)process.exit(63);return {state:'CLOSED',code:113,output:'',errors:'Could not find service "'+plan.label+'"'};}});`;
+  const r=spawnSync(process.execPath,["--input-type=module","-e",code],{encoding:"utf8",timeout:15000});
+  assert.equal(r.status,63,r.stderr);assert.equal(r.signal,null);
+  const intent=JSON.parse(await readFile(path.join(x.root,"observer-recovery.lease"),"utf8"));
+  assert.equal(intent.schema,"control.profile-change.v1");
+  await assert.rejects(acquireControlLease(x.root),/RECOVERY_IN_PROGRESS/);
+  const recovered=await recoverControlProfileChange({descriptorFile:x.descriptor.descriptorFile,
+    expectedIntentKey:hash(intent),actor:"supervisor",evidence:"fixture:exact operator stopped, histories unchanged",
+    noRacingSchedulerOperators:true,noConcurrentStateWriters:true},{...stopped,observeStop:async()=>({
+      state:"STOPPED",pid:intent.pid,token:intent.token,evidence:"fixture child exited63"})});
+  assert.equal(recovered.status,"PROFILE_ROLLED_BACK_PAUSED");
+  await x.unchanged();await noOwnership(x);
+  assert.deepEqual(await readFile(x.descriptor.descriptorFile),x.oldBytes);
+});
+
+async function fixture(t, {calls = 2, ttlMs = 3600000, continuation, noOwner = false} = {}) {
   const temp = await realpath(await mkdtemp(path.join(tmpdir(), "control-cutover-test-")));
   t.after(() => rm(temp, {recursive: true, force: true}));
   const workspace = path.join(temp, "workspace"), root = path.join(temp, "control"),
@@ -64,12 +142,13 @@ async function fixture(t, {calls = 2, ttlMs = 3600000, continuation} = {}) {
         authHome: path.join(root, "empty-home"), binary: "/never-launch-model", model: "no-inference",
         effort: "low", timeoutMs: 1000}}, timeoutMs: 3000, maxReviewsPerTick: 0,
     ...(continuation ? {continuation} : {})};
+  if(noOwner) {delete profile.ownerDelivery;delete profile.notifications;}
   const descriptor = await activateControl({sourceRoot: first.root, root, expectedDigest: first.digest, profile});
   const runtime = await loadControlRuntime({packageRoot: first.root, expectedDigest: first.digest, workspace});
   const service = await runtime.service.openControlService(profile); await service.host.pause(true);
   const stores = {};
   for (const [id, directory] of Object.entries({host: profile.directory, review: profile.review.directory,
-    owner: profile.ownerDelivery.directory, notifications: profile.notifications.directory}))
+    ...(profile.ownerDelivery ? {owner: profile.ownerDelivery.directory,notifications:profile.notifications.directory} : {})}))
     stores[id] = await openControlStore(directory);
   await stores.host.transact(s => {
     s.acceptances.retained = {acceptance: {id: "retained", status: "ACCEPTED", owner: "owner"},
@@ -78,7 +157,7 @@ async function fixture(t, {calls = 2, ttlMs = 3600000, continuation} = {}) {
     s.reservations.done = {status: "COMPLETED", evidence: "never replay"};
     return s;
   });
-  for (const id of ["review", "owner"]) await stores[id].transact(s => {
+  for (const id of ["review", "owner"].filter(id=>stores[id])) await stores[id].transact(s => {
     s.calls = calls; s.runs.spent = {state: "STOPPED", evidence: "failed attempt remains spent"}; return s;
   });
   const snapshot = async () => Object.fromEntries(await Promise.all(Object.entries(stores).map(async ([id, store]) =>
@@ -111,6 +190,87 @@ async function fixture(t, {calls = 2, ttlMs = 3600000, continuation} = {}) {
   return {temp, root, workspace, profile, descriptor, candidate, alternate, stage, first, second,
     options, stores, snapshot, before, oldBytes, unchanged, command, observe};
 }
+function profileChild(options, hook = "") {
+  const code = `import fs from 'node:fs/promises';import {syncBuiltinESMExports} from 'node:module';
+    ${hook};syncBuiltinESMExports();
+    const {changeControlProfile}=await import(${JSON.stringify(new URL("../scripts/control-profile-change.mjs",import.meta.url).href)});
+    await changeControlProfile(${JSON.stringify(options)},{readSchedule:async plan=>({state:'CLOSED',code:113,
+      output:'',errors:'Could not find service "'+plan.label+'"'})});`;
+  const r=spawnSync(process.execPath,["--input-type=module","-e",code],{encoding:"utf8",timeout:15000});
+  assert.equal(r.status,63,r.stderr);assert.equal(r.signal,null);
+}
+const recoveryInput = (x,intent) => ({descriptorFile:x.descriptor.descriptorFile,expectedIntentKey:hash(intent),
+  actor:"supervisor",evidence:"fixture:exact stopped process and unchanged state",
+  noRacingSchedulerOperators:true,noConcurrentStateWriters:true});
+const stopProof = intent => ({...stopped,observeStop:async()=>({state:"STOPPED",pid:intent.pid,
+  token:intent.token,evidence:"fixture child completed with exit63"})});
+
+test("profile transition resumes exact unused first-owner staging after interrupted initialization and rollback",darwin,async t=>{
+  const x=await fixture(t,{noOwner:true}),o=profileChange(x);
+  o.profile.notifications={directory:path.join(x.root,"notifications"),transportActor:"control-owner-transport"};
+  o.profile.ownerDelivery={directory:path.join(x.root,"owner-delivery"),maxCalls:2,expiresAt:o.profile.review.expiresAt,
+    delegation:{mode:"NATIVE_CONTROL_DISPOSITION",owner:"owner",authorizedBy:"owner",evidence:"fixture approval",nextAction:"next"},
+    native:{workspace:path.join(x.root,"owner-room"),home:path.join(x.root,"owner-home"),authHome:o.profile.review.native.authHome,
+      binary:"/never-launch-model",model:"no-inference",effort:"low",timeoutMs:1000}};
+  o.allocations.owner={maxCalls:2,expiresAt:o.profile.ownerDelivery.expiresAt,evidence:"fixture two new slots"};
+  profileChild(o,`const link=fs.link;fs.link=async(...args)=>{const r=await link(...args);
+    if(args[1]===${JSON.stringify(path.join(x.root,"owner-delivery","0000000000.json"))})process.exit(63);return r;}`);
+  const intent=JSON.parse(await readFile(path.join(x.root,"observer-recovery.lease"),"utf8"));
+  assert.equal(intent.phase,"PREPARED");
+  const rolled=await recoverControlProfileChange(recoveryInput(x,intent),stopProof(intent));
+  assert.equal(rolled.status,"PROFILE_ROLLED_BACK_PAUSED");await x.unchanged();await noOwnership(x);
+  await assert.rejects(changeControlProfile(o,stopped),/PROFILE_ALREADY_EXISTS/);
+  const result=await changeControlProfile({...o,resumeFrom:rolled.resumeFrom},stopped);
+  assert.equal(result.status,"PROFILE_CHANGED_PAUSED");await x.unchanged();await noOwnership(x);
+  const selected=await verifyControlActivation(x.descriptor.descriptorFile);
+  const service=await selected.runtime.service.openControlService(selected.profile);
+  assert.equal((await service.ownerDelivery.capacity()).used,0);
+  assert.equal((await service.review.capacity()).remaining,4);
+});
+
+test("interruption while writing profile intent leaves no torn published marker or new allocation",darwin,async t=>{
+  const x=await fixture(t),o=profileChange(x);
+  profileChild(o,`const open=fs.open;fs.open=async(...args)=>{const fd=await open(...args);
+    if(String(args[0]).includes('.profile-intent-'))fd.writeFile=async()=>{await fd.write('{');process.exit(63);};return fd;}`);
+  await assert.rejects(lstat(path.join(x.root,"observer-recovery.lease")),{code:"ENOENT"});
+  await assert.rejects(lstat(o.profile.review.directory),{code:"ENOENT"});await x.unchanged();
+  const before=await inspectControlRecovery(x.descriptor.descriptorFile);
+  await recoverStoppedControlObserver({descriptorFile:x.descriptor.descriptorFile,expectedKey:before.key,
+    actor:"supervisor",evidence:"fixture child stopped before atomic intent",observeStop:async lease=>({
+      state:"STOPPED",...lease,evidence:"fixture exit63"})});
+  await noOwnership(x);await x.unchanged();
+  assert.equal((await changeControlProfile(o,stopped)).status,"PROFILE_CHANGED_PAUSED");
+});
+
+test("profile recovery completes after an interrupted cleanup has already removed the observer lease",darwin,async t=>{
+  const x=await fixture(t),o=profileChange(x);
+  profileChild(o,`const unlink=fs.unlink;fs.unlink=async file=>{
+    if(file===${JSON.stringify(path.join(x.root,"observer-recovery.lease"))})process.exit(63);return unlink(file);}`);
+  const intent=JSON.parse(await readFile(path.join(x.root,"observer-recovery.lease"),"utf8"));
+  // Normal completion removes the intent first; exercise recovery's opposite
+  // cleanup order by failing its second unlink after the stopped lease removal.
+  const code=`import fs from 'node:fs/promises';import {syncBuiltinESMExports} from 'node:module';
+    const unlink=fs.unlink;fs.unlink=async file=>{if(file===${JSON.stringify(path.join(x.root,"observer-recovery.lease"))})
+      throw Error('fixture cleanup failure');return unlink(file);};syncBuiltinESMExports();
+    const {recoverControlProfileChange}=await import(${JSON.stringify(new URL("../scripts/control-profile-change.mjs",import.meta.url).href)});
+    try{await recoverControlProfileChange(${JSON.stringify(recoveryInput(x,intent))},{readSchedule:async plan=>({state:'CLOSED',code:113,
+      output:'',errors:'Could not find service "'+plan.label+'"'}),observeStop:async()=>(${JSON.stringify({state:"STOPPED",pid:intent.pid,token:intent.token,evidence:"fixture stopped"})})});}
+    catch(e){if(e.message==='fixture cleanup failure')process.exit(63);throw e;}`;
+  const r=spawnSync(process.execPath,["--input-type=module","-e",code],{encoding:"utf8",timeout:15000});
+  assert.equal(r.status,63,r.stderr);await assert.rejects(lstat(path.join(x.root,"observer.lease")),{code:"ENOENT"});
+  await assert.rejects(lstat(path.join(x.root,"profile-change-recovery.lease")),{code:"ENOENT"});
+  const retained=JSON.parse(await readFile(path.join(x.root,"observer-recovery.lease"),"utf8"));
+  const recovered=await recoverControlProfileChange(recoveryInput(x,retained),stopProof(retained));
+  assert.equal(recovered.status,"PROFILE_ROLLED_BACK_PAUSED");await x.unchanged();await noOwnership(x);
+});
+
+test("profile transition references a large retained history without copying it into the bounded intent",darwin,async t=>{
+  const x=await fixture(t),o=profileChange(x);
+  await x.stores.host.transact(s=>{s.acceptances.retained.history.push({evidence:"x".repeat(1100000)});return s;});
+  const before=await x.snapshot(),result=await changeControlProfile(o,stopped);
+  assert.ok((await lstat(result.historyFile)).size<100000);
+  await x.unchanged(before);await noOwnership(x);
+});
 async function noOwnership(x) {
   for (const name of ["observer.lease", "observer-recovery.lease", "cutover-recovery.lease"])
     await assert.rejects(lstat(path.join(x.root, name)), {code: "ENOENT"});
