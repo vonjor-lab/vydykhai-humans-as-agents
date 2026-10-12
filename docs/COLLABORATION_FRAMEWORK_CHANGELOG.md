@@ -10,6 +10,22 @@
 - `MINOR`: появляется совместимый операционный элемент; существующие Project State, tasks и contexts остаются пригодны и могут обновиться без смены модели.
 - `PATCH`: уточняются rules, wording, gates или templates без нового операционного элемента.
 
+## 2.1.4 - 2026-10-13
+
+Reduce duplicated initial context in existing host-bound fixed review parts.
+Assigned findings remain complete; outside blockers and failed findings remain
+complete, and other outside dependencies retain evidence, ownership, scope and
+history without repeating unassigned criterion prose. Source pointers bind the
+original snapshot; complete original metadata and acquisition remain available.
+The host admits only the complete criterion union against the unchanged offer.
+Unbound and single-review profiles retain their existing rendering and behavior.
+An optional trusted finite aggregate source snapshot allowance preserves the
+default and all per-source, native acquisition and timeout limits. It permits
+retaining original history alongside justified current sources, not expanding
+graph or model context. These changes establish neither semantic completeness
+nor native timeout repair, autonomy or net savings; adoption must prove the real
+result boundary on the retained incident without resetting previous expenditure.
+
 ## 2.1.3 - 2026-10-13
 
 Repair unbounded original-source acquisition without adding a role, timer or

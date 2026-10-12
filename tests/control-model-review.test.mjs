@@ -55,6 +55,23 @@ test("source registry denies traversal, symlinks and undeclared private reads; m
     sources:[{id:"link",path:"link.md",purpose:"Not allowed"}]}));
   await assert.rejects((await openReviewSources(x.sourceFile)).read({id:"link"}),/PATH_INVALID/);
 });
+test("declared source snapshot allowance preserves originals without increasing model read allowance",async t=>{
+  const x=await setup(t);
+  await x.f.put("ledger.md","x".repeat(900));await x.f.put("other.md","y".repeat(900));
+  const sources=[...x.sources,{id:"other",path:"other.md",purpose:"Needed new original"}];
+  const config={schema:"control.review-sources.v1",workspace:x.f.root,sources,maxSnapshotBytes:1024};
+  await writeFile(x.sourceFile,JSON.stringify(config));
+  await assert.rejects((await openReviewSources(x.sourceFile)).snapshot(),/TOTAL_CAPACITY/);
+  assert.deepEqual((await(await openReviewSources(x.sourceFile)).list()).map(s=>s.id),["ledger","other"]);
+  await writeFile(x.sourceFile,JSON.stringify({...config,maxSnapshotBytes:2048}));
+  const snapshot=await(await openReviewSources(x.sourceFile)).snapshot();
+  assert.equal(snapshot.bytes,1800);assert.equal(snapshot.rows.length,2);
+  assert.equal((await readFile(path.join(x.f.root,"ledger.md"))).length,900);
+  for(const maxSnapshotBytes of [0,1.5,16*1024*1024+1,"2048"]){
+    await writeFile(x.sourceFile,JSON.stringify({...config,maxSnapshotBytes}));
+    await assert.rejects(openReviewSources(x.sourceFile),/SNAPSHOT_BUDGET_INVALID/);
+  }
+});
 
 for(const mode of ["valid","eight-source-batch","unread","drift","transient","registry-drift","required-unread","forgotten-finding",
   "windowed-valid","windowed-unread","windowed-limit","windowed-legacy"])test(`native model reviewer ${mode}: retained source-bound result without worker authority`,
