@@ -6,6 +6,7 @@ import path from 'node:path';
 import {openPartitionModelReview} from '../scripts/control-partition-model-review.mjs';
 import {openModelReview} from '../scripts/control-model-review.mjs';
 import {openControlHost} from '../scripts/control-host.mjs';
+import {healthControl} from '../scripts/control-health.mjs';
 import {openControlStore} from '../scripts/control-store.mjs';
 import {openReviewSources} from '../scripts/control-review-sources.mjs';
 import {validateReviewEpisode,validateReviewPart,frozenReviewPartitions} from '../scripts/control-review-partitions.mjs';
@@ -15,6 +16,7 @@ import {ownerControl} from '../scripts/control-owner.mjs';
 import {canonicalJson,sha256} from '../scripts/memory-brief.mjs';
 import {retentionKinds} from '../scripts/post-accept.mjs';
 import {createReturnSync} from '../scripts/vydykhai.mjs';
+import {execFileSync} from 'node:child_process';
 
 const hash=v=>sha256(canonicalJson(v));
 const groups=[['C20'],['C01','C02','C04','C15'],['C05','C06','C07','C09','C19'],
@@ -26,6 +28,8 @@ const retry={reviewer:'reviewer',action:'RETRY',evidence:'Synthetic independent 
 // Scripted native observations exercise the real adapter/host journals. No model,
 // real product source, semantic capability, or CLI protocol success is implied.
 async function fixture(t, changes={}) {
+  const {health=false,...reviewChanges}=changes;
+  const acceptedId=health?'@health':'accepted';
   const root=await realpath(await mkdtemp(path.join(tmpdir(),'review-episode-')));
   t.after(()=>rm(root,{recursive:true,force:true}));
   for(const name of ['workspace','host','review','room','home'])await mkdir(path.join(root,name),{mode:0o700});
@@ -33,9 +37,16 @@ async function fixture(t, changes={}) {
   await writeFile(path.join(workspace,'source.md'),'Synthetic frozen source');
   await writeFile(sourceFile,JSON.stringify({schema:'control.review-sources.v1',workspace,
     sources:[{id:'source',path:'source.md',purpose:'Synthetic protocol evidence'}]}),{mode:0o600});
-  const config={workspace,policy:sha256('policy'),owner:'owner',executor:'worker',reviewer:'reviewer',evidenceRegistry:sourceFile};
+  if(health) {
+    const git=args=>execFileSync('git',args,{cwd:workspace,stdio:'pipe'});
+    git(['init','--quiet']);
+    git(['-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','--quiet','--allow-empty','-m','baseline']);
+  }
+  const config={workspace,policy:sha256('policy'),owner:'owner',executor:'worker',reviewer:'reviewer',evidenceRegistry:sourceFile,
+    ...(health?{health:{scope:'Synthetic health',intervalMs:604800000,maxBranches:1,maxWorktrees:2,
+      triggerSourceIds:['source'],repairTasks:['maintenance']}}:{})};
   const options={directory:path.join(root,'review'),controlRoot:root,sourceFile,reviewer:'reviewer',
-    maxCalls:8,expiresAt:new Date(Date.now()+3600000).toISOString(),...limits,...changes,
+    maxCalls:8,expiresAt:new Date(Date.now()+3600000).toISOString(),...limits,...reviewChanges,
     scope:{host:{directory:path.join(root,'host'),config},requiredSourceIds:['source']},
     native:{binary:'/never-launch-model',workspace:path.join(root,'room'),home:path.join(root,'home'),
       model:'no-inference',effort:'low',timeoutMs:120000}};
@@ -48,8 +59,8 @@ async function fixture(t, changes={}) {
       async initialize(){await journal.initialize({runs:{}});},
       async capacity(){return {remaining:1};},
       async preflight(offer){
-        const current=await host.reviewInput('accepted'),s=await host.snapshot();
-        assert.equal(s.acceptances.accepted.reviewLease.runId,offer.runId);
+        const current=health?await host.health.reviewInput():await host.reviewInput(acceptedId),s=await host.snapshot();
+        assert.equal((health?s.health:s.acceptances.accepted).reviewLease.runId,offer.runId);
         assert.equal(current.stateRevision,offer.stateRevision);
         assert.equal(hash(current.input),hash(offer.input));
         assert.equal(hash(current.episode),hash(offer.episode));
@@ -88,14 +99,14 @@ async function fixture(t, changes={}) {
     producerReturn:ref('return'),artifact:ref('artifact'),technicalProof:ref('proof'),goal:ref('goal'),
     retention:retentionKinds.map(id=>({id,required:true,expected:ref(id)}))};
   for(const name of ['return','artifact','proof','goal',...retentionKinds])await writeFile(path.join(workspace,name+'.md'),name);
-  await host.accept(acceptance);
+  if(!health)await host.accept(acceptance);
   review=await openPartitionModelReview(options,children);await review.initialize();
   return {root,workspace,config,options,control,dispatched,acceptance,
     get host(){return host;},get review(){return review;},
     async reopen(){review=await openPartitionModelReview(options,children);
       host=await openControlHost(path.join(root,'host'),config,services);},
     tick(extra={}){return runControlTick(host,{review:review.review,episode:review.episodeSpec,timeoutMs:5000,...extra});},
-    async run(){return (await host.snapshot()).acceptances.accepted;}
+    async run(){const s=await host.snapshot();return health?s.health:s.acceptances.accepted;}
   };
 }
 
@@ -111,6 +122,140 @@ test('neutral frozen whole groups cover 87 exactly; C20-first is only this oracl
   assert.throws(()=>frozenReviewPartitions(split),/GROUP_SPLIT/);
   for(const change of [{episodeMaxDurationMs:0},{episodeMaxDurationMs:86400001},{episodeMaxUsageTokens:NaN}])
     assert.throws(()=>validateReviewEpisode({...limits,...change}));
+});
+
+test('HEALTH uses retained whole-group checkpoints and only a full 87-row union reaches its owner',async t=>{
+  const x=await fixture(t,{health:true}),owner=ownerControl(x.host,'owner');
+  assert.equal((await x.tick()).results[0].action,'REVIEW_EPISODE_DUE');
+  let h=await x.run();assert.equal(h.review,null);assert.equal(h.reviewEpisode.progress.completedParts,1);
+  await assert.rejects(owner.readVerdict('@health'),/NOT_AVAILABLE/);
+  await assert.rejects(x.host.health.assertReady('ordinary-product'),/HEALTH_CONTROL_PENDING/);
+  assert.deepEqual((await x.host.snapshot()).grants,{});
+  const next=await x.host.claimReview('@health',{episode:x.review.episodeSpec});
+  const native=await openModelReview(x.options);
+  await native.preflight(next);
+  await assert.rejects(native.preflight({...next,episode:{...next.episode,id:'a'.repeat(36)}}),/HOST_OFFER_MISMATCH/);
+  const part=await x.review.review(next);await x.host.deferReview('@health',next);
+  assert.equal(part.status,'REVIEW_EPISODE_PROGRESS');
+  await x.reopen();
+  for(let i=2;i<8;i++)await x.tick();
+  h=await x.run();assert.equal(h.enrollment,'OWNER_DISPOSITION_DUE');assert.equal(h.review.rows.length,87);
+  assert.equal(h.review.phase,'HEALTH');assert.equal(h.reviewEpisode,undefined);
+  assert.equal(h.reviewEpisodeHistory.at(-1).progress.completedParts,7);
+  assert.deepEqual(x.dispatched.map(p=>p.index),[0,1,2,3,4,5,6,7]);
+  const current=ownerControl(x.host,'owner');await current.readVerdict('@health');
+  assert.equal((await current.respond('@health',{owner:'owner',action:'CONTINUE',evidence:'Synthetic applied union'})).action,'HEALTH_WINDOW_CONFIRMED');
+  assert.deepEqual(await x.host.due(),[]);assert.equal((await x.review.capacity()).used,8);
+});
+
+test('HEALTH retains completed part after invalid second part; retry needs an independent changed-attempt decision',async t=>{
+  const x=await fixture(t,{health:true,maxCalls:9});await x.tick();
+  x.control.mutate=(answer,index)=>{if(index===1)answer.rowGroups[0].ids.pop();};
+  assert.equal((await x.tick()).results[0].action,'REVIEW_RECONCILIATION_REQUIRED');
+  const before=await x.run();assert.equal(before.review,null);
+  await assert.rejects(x.host.reconcileReview('@health'),/RETRY_DECISION_REQUIRED/);
+  assert.equal((await x.review.observe(before.reviewLease.runId)).completedParts,1);
+  await x.host.reconcileReview('@health',retry);x.control.mutate=null;await x.reopen();
+  await x.tick();assert.equal((await x.run()).reviewEpisode.progress.completedParts,2);
+  assert.deepEqual(x.dispatched.map(p=>p.index),[0,1,1]);assert.equal((await x.review.capacity()).used,3);
+});
+
+for(const boundary of ['source','pause'])test(`HEALTH ${boundary} invalidation survives restore and reopening`,async t=>{
+  const x=await fixture(t,{health:true});await x.tick();const old=(await x.run()).reviewEpisode.id;
+  if(boundary==='source') {
+    await writeFile(path.join(x.workspace,'source.md'),'Changed');
+    assert.equal((await x.tick()).calls,0);
+    await writeFile(path.join(x.workspace,'source.md'),'Synthetic frozen source');
+  } else {await x.host.pause(true);await x.host.pause(false);}
+  await x.reopen();assert.equal((await x.tick()).calls,0);
+  const held=await x.run();assert.ok(held.reviewEpisode.invalidated);
+  await x.host.reconcileReview('@health',retry);
+  assert.equal((await x.run()).reviewEpisode,undefined);
+  assert.equal((await x.run()).reviewEpisodeHistory.at(-1).id,old);
+  assert.equal((await x.review.capacity()).used,1);
+});
+
+test('HEALTH deferred progress survives a lost host receipt without an extra native call',async t=>{
+  const x=await fixture(t,{health:true}),offer=await x.host.claimReview('@health',{episode:x.review.episodeSpec});
+  await x.review.review(offer);await x.host.reviewFailure('@health',offer.runId);await x.reopen();
+  assert.deepEqual(await x.host.reconcileReview('@health'),{action:'REVIEW_EPISODE_DUE',reused:true});
+  assert.equal((await x.run()).reviewEpisode.progress.completedParts,1);
+  assert.equal((await x.review.capacity()).used,1);
+});
+
+test('HEALTH changed plan and changed execution cannot reuse an earlier checkpoint',async t=>{
+  const plan=await fixture(t,{health:true});await plan.tick();
+  const changed=validateReviewEpisode({...limits,episodeGroups:[...groups].reverse()});
+  await assert.rejects(plan.host.claimReview('@health',{episode:changed}),/PLAN_CHANGED/);
+  await assert.rejects(plan.host.claimReview('@health',{episode:plan.review.episodeSpec}),/NOT_DUE/);
+  assert.equal((await plan.review.capacity()).used,1);
+  const authority=await fixture(t,{health:true});await authority.tick();
+  await authority.host.approveCommand({taskId:'maintenance'},{reviewer:'reviewer',reviewReceipt:'Synthetic new authority',
+    dependencies:[],expiresAt:Date.now()+60000});
+  assert.equal((await authority.tick()).calls,0);
+  assert.equal((await authority.run()).reviewEpisode.invalidated,'REVIEW_EPISODE_BASIS_CHANGED');
+});
+
+test('HEALTH stopped reconciliation cannot clear a newer lease after invalidation reload',async t=>{
+  const x=await fixture(t,{health:true});await x.tick();
+  const old=(await x.run()).reviewLease.runId;
+  await x.host.reviewFailure('@health',old);
+  await writeFile(path.join(x.workspace,'source.md'),'Changed reconciliation basis');
+  const journal=await openControlStore(x.options.scope.host.directory);
+  let replacement;
+  const api=healthControl({config:x.config,observeReviewRun:id=>x.review.observe(id),
+    state:async()=>{
+      const s=await x.host.snapshot();
+      if(s.health.reviewEpisode?.invalidated && !replacement) {
+        await x.host.reconcileReview('@health',retry);
+        replacement=await x.host.claimReview('@health');
+        return x.host.snapshot();
+      }
+      return s;
+    },
+    update:mutate=>journal.transact(s=>{mutate(s);return s;})});
+  await assert.rejects(api.reconcile(retry),/HEALTH_LEASE_MISMATCH/);
+  const current=await x.run();
+  assert.notEqual(replacement.runId,old);
+  assert.equal(current.reviewLease.runId,replacement.runId);
+  assert.equal(current.enrollment,'REVIEW_IN_FLIGHT');
+});
+
+for(const health of [false,true])test(`${health?'HEALTH':'POST'} pre-dispatch cancellation preserves durable completed parts and spent reservation`,async t=>{
+  const x=await fixture(t,{health,maxCalls:9}),id=health?'@health':'accepted';
+  await x.tick();
+  const offer=await x.host.claimReview(id,{episode:x.review.episodeSpec});
+  const abort=new AbortController();abort.abort();
+  await assert.rejects(x.review.review(offer,{signal:abort.signal}),/CANCELLED/);
+  await x.host.reviewFailure(id,offer.runId);await x.reopen();
+  const observed=await x.review.observe(offer.runId);
+  assert.equal(observed.state,'STOPPED');assert.equal(observed.parts.length,1);
+  assert.equal(observed.completedParts,1);assert.equal(observed.actualDispatches,0);
+  assert.equal((await x.review.capacity()).used,2);
+  await x.host.reconcileReview(id,retry);await x.tick();
+  assert.deepEqual(x.dispatched.map(p=>p.index),[0,1]);
+  assert.equal((await x.run()).reviewEpisode.progress.completedParts,2);
+  assert.equal((await x.review.capacity()).used,3);
+});
+
+test('HEALTH cannot discard a checkpoint by switching to confined-command custody',async t=>{
+  const x=await fixture(t,{health:true});await x.tick();
+  const journal=await openControlStore(x.options.scope.host.directory);
+  await journal.transact(s=>{s.health.domainCandidate={schema:'control.health-domain.v1'};return s;});
+  await assert.rejects(x.host.claimReview('@health',{episode:x.review.episodeSpec}),/DOMAIN_UNSUPPORTED/);
+  assert.equal((await x.review.capacity()).used,1);assert.equal((await x.run()).review,null);
+});
+
+test('HEALTH unknown termination or missing usage cannot be turned into continuation permission',async t=>{
+  for(const mode of ['UNKNOWN','usage']) {
+    const x=await fixture(t,{health:true});await x.tick();
+    if(mode==='UNKNOWN')x.control.before=()=>mode;else x.control.usage=null;
+    await x.tick();const h=await x.run();
+    await assert.rejects(x.host.reconcileReview('@health',retry),mode==='UNKNOWN'?/OUTCOME_UNKNOWN/:/PROGRESS_INVALID/);
+    assert.equal((await x.run()).reviewLease.runId,h.reviewLease.runId);
+    assert.equal((await x.review.capacity()).used,2);
+    await assert.rejects(ownerControl(x.host,'owner').readVerdict('@health'),/NOT_AVAILABLE/);
+  }
 });
 
 test('C20 checkpoint retains actual observation before host progress, admits nothing; eighth part globally admits',async t=>{

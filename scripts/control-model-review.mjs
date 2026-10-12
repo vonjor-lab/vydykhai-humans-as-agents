@@ -189,11 +189,15 @@ async function openSingleModelReview({directory, controlRoot, reviewer, sourceFi
     if(host && offer.phase === "HEALTH") {
       need(typeof host.health?.reviewInput === "function","MODEL_REVIEW_HEALTH_HOST_REQUIRED");
       let current;
-      try {current=await host.health.admitReview(offer);} catch {throw Error("MODEL_REVIEW_HOST_OFFER_MISMATCH");}
+      try {current=await host.health.admitReview(offer);} catch(error) {
+        if(error.message.startsWith("REVIEW_EPISODE_"))throw Error("MODEL_REVIEW_SOURCE_DRIFT");
+        throw Error("MODEL_REVIEW_HOST_OFFER_MISMATCH");
+      }
       const state=await host.snapshot();
       need(!state.paused && state.health?.enrollment==="REVIEW_IN_FLIGHT" && state.health.reviewLease?.runId===offer.runId &&
         state.health.reviewLease.reviewer===reviewer && current.key===offer.key &&
-        current.stateRevision===offer.stateRevision && hash(current.input)===hash(offer.input),
+        current.stateRevision===offer.stateRevision && hash(current.input)===hash(offer.input) &&
+        hash(current.episode??null)===hash(offer.episode??null),
         "MODEL_REVIEW_HOST_OFFER_MISMATCH");
     } else if(host) {
       need(offer.phase === undefined || offer.phase === "POST_ACCEPT", "MODEL_REVIEW_SOURCE_SCOPE_PHASE_INVALID");

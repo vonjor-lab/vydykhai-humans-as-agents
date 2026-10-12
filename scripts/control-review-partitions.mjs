@@ -3,6 +3,7 @@ import {controlCatalog, controlCheckIds} from "./control-catalog.mjs";
 import {decodeReviewAnswer} from "./control-review-wire.mjs";
 import {validateControlFindings, validAffectedTasks} from "./control-findings.mjs";
 import {checkFindingHistory} from "./finding-history.mjs";
+import {canonicalJson,sha256} from "./memory-brief.mjs";
 
 const schema = "control.review-answer.v2";
 const checks = new Map(controlCatalog.flatMap(g => g.checks.map(c => [c.id, c])));
@@ -12,6 +13,19 @@ const instant = value => filled(value) && Number.isFinite(Date.parse(value));
 const digest = value => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
 const uniqueRecords = rows => Array.isArray(rows) && Array.from(rows).every(r => filled(r?.id)) &&
   new Set(rows.map(r => r.id)).size === rows.length;
+
+export const reviewEpisodeDescriptor = e => ({id:e.id,planSha256:e.planSha256,basisSha256:e.basisSha256,
+  startedAt:e.startedAt,previousRunId:e.previousRunId});
+export const reviewEpisodeProgress = observed => ({runId:observed.runId,evidence:observed.evidence,
+  completedParts:observed.completedParts,sourceDigest:observed.sourceDigest,spentTokens:observed.spentTokens,
+  parts:observed.parts.map(p=>({index:p.index,ids:p.ids,journal:p.journal,
+    observationSha256:sha256(canonicalJson(p.observation))}))});
+export function validateReviewEpisodeSpec(spec) {
+  frozenReviewPartitions(spec.partitions);
+  need(Object.keys(spec).sort().join() === ['partitions','maxPartsPerTick','maxDurationMs','maxUsageTokens'].sort().join() &&
+    spec.maxPartsPerTick===1 && Number.isSafeInteger(spec.maxDurationMs) && spec.maxDurationMs>=1 && spec.maxDurationMs<=86400000 &&
+    Number.isSafeInteger(spec.maxUsageTokens) && spec.maxUsageTokens>=1,"REVIEW_EPISODE_CONFIG_INVALID");
+}
 
 function assignedIds(ids) {
   need(Array.isArray(ids) && ids.length > 0 && ids.length <= checks.size &&

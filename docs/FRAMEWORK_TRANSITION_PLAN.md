@@ -1,6 +1,29 @@
 # Framework Efficiency Transition
 
 Owner: framework maintainer. Current direction approved 2026-10-09.
+Compatible MINOR candidate checkpoint, 2026-10-12: HEALTH continuation reuses
+existing frozen POST episodes; no new controller, timer or per-criterion task.
+The sanitized native case proved an atomic-return/deadline failure, not a
+rejected verdict or an isolated provider cause. Preserve failed calls and evidence.
+Eight HEALTH custody tests, 49 focused regression tests and a scripted real-CLI
+HEALTH transport test pass; the whole regression exposed one omitted explicit
+documentation clause, restored before independent review. Scripted CLI uses no
+model inference and does not establish semantic health. Release2.1.0 requires
+fresh independent code/safe-continuation review, final regression and exact public
+source/tag/archive/updater readbacks. Adoption keeps old allocations immutable;
+new parts require separate explicit authority and cumulative spend. Only full
+catalog union and actual owner application allow readiness. Captured domains
+remain single-review. No product activation or measured economy is claimed.
+Fresh independent Astra High review returned BLOCK for two concrete lifecycle
+defects: reconciliation after an invalidation reload could release a newer lease,
+and cancellation before dispatch could miscount durable completed parts. The
+candidate now checks the original lease at reload and commit and derives failure
+progress from durable parts. Three focused regressions pass; independently
+identified defects are not a rewritten Astra PASS. Its technical continuation
+decision is conditional on trusted known-stop observation, qualified runtime,
+separate authorized allocation and preserved historical unknown usage/findings.
+No extra paid reviewer repetition is authorized or performed.
+
 Compatible patch checkpoint, 2026-10-11: the initial major release is published
 on `release/2.x`; stable `main` and Latest remain unchanged. A sanitized existing
 graph compatibility case exposed adjacent public-contract tables being consumed
