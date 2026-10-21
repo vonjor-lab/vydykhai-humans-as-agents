@@ -1,5 +1,26 @@
 # Collaboration Framework Changelog
 
+## 2.1.5 - 2026-10-20
+
+The existing v4 locator distinguishes association from obligation expansion.
+Shared `About` links keep navigation, source coverage and contracts without copying
+every sibling record into the packet. Unselected associated records remain explicit
+applicability gaps; `requires`/`constrains`, pending evidence and overflow refusal
+stay enforced, including constraints on association-only anchors and visible
+applicability gaps for their outgoing dependency routes. Contract anchors can be recall roots. Historical reconstruction
+uses canonical v4 fields and provisional scope, not a second installed format.
+
+Evolution Gate: **Benefit** - recover prior decisions without whole-graph expansion
+or silently dropping related uncertainty. **Evidence and limits** - focused old/new
+format and source-boundary checks; no claim of whole-project completeness, autonomous
+adoption or measured savings. **Complexity tradeoff** - one retrieval-set distinction
+inside the existing reader, no new role, service, format or timer. **Verdict** -
+scoped independent code review passed after repairing one omitted-constraint
+finding; local archive/update preservation passed. Final packaging readiness is
+recorded in the maintainer plan, not inferred as live adoption. Existing prepared-work
+adoption owns safe source integration and recipient retrieval/application; pauses
+are not resumed by this change.
+
 Этот файл фиксирует концептуальные изменения фреймворка совместной работы. Это не commit-by-commit log.
 
 Старые записи используют текущую environment-neutral терминологию там, где менялось только название механизма. Точный текст каждой версии сохраняется в Git tags.

@@ -74,6 +74,28 @@ function addRoutes(content, added) {
     .replace("## Current Memory Nodes", added.map(r=>`| ${r[0]} | ${r[1]} | ${r[2]} | fixture | source |`).join("\n") + "\n## Current Memory Nodes");
 }
 
+test("association-only anchors retain explicit constraints and dependency applicability", () => {
+  for (const relation of ["constrains", "depends-on"]) {
+    let content = graph([
+      node("MEM-SHARED", "DECISION", "ENT-QUOTE, ENT-OTHER", "Retain shared rationale"),
+      node("MEM-LIMIT", "REQUIREMENT", "ENT-LIMIT", "Obtain owner approval before changing this boundary"),
+    ]).replace("Declared anchors: 5", "Declared anchors: 6")
+      .replace("## Entity Routes", "| ENT-LIMIT | MODULE | approval limit | limit | contract: public/limit.md; implementation: private/limit/ | decision / revision-2 |\n## Entity Routes")
+      .replace("## Live Retrieval Probes", "| event-limit | correction | pending limit | ENT-LIMIT | NONE | REFINE | decision | PENDING |\n## Live Retrieval Probes");
+    content = addRoutes(content, [relation === "constrains"
+      ? ["ENT-LIMIT", relation, "ENT-OTHER"] : ["ENT-OTHER", relation, "ENT-LIMIT"]]);
+    assert.deepEqual(validateMemoryGraph(content, manifest, {inspectionOnly:true}), []);
+    const result = deriveMemoryRoute(content, "Use quotation");
+    assert.equal(result.status, "NEEDS_DISCOVERY", relation);
+    assert.ok(result.gaps.some(g=>g.includes("event-limit")), relation);
+    assert.ok(result.contracts.some(c=>c.path === "public/limit.md"), relation);
+    assert.ok(result.routes.some(r=>r.relation === relation && (r.to === "ENT-LIMIT" || r.from === "ENT-LIMIT")), relation);
+    if (relation === "constrains") assert.ok(result.items.some(n=>n.id === "MEM-LIMIT"));
+    else assert.ok(result.navigationCandidates.some(n=>n.id === "MEM-LIMIT"));
+    assert.equal(result.admission, "NOT_GRANTED");
+  }
+});
+
 test("adjacent public-contract tables do not contaminate recall or hide pending meaning", () => {
   const adjacent = "## Current Module Contract Routes\n| Anchor | Exact source | File SHA |\n| --- | --- | --- |\n| ENT-QUOTE | public/quote.md | " + "a".repeat(64) + " |\n";
   const content = graph().replace("## Live Retrieval Probes", adjacent + "## Live Retrieval Probes");
@@ -99,6 +121,49 @@ test("incoming declared entity and memory constraints and entity prerequisites a
   const required = graph([node("MEM-EXTERNAL", "REQUIREMENT", "ENT-OTHER", "Preserve inventory isolation")])
     .replace("Relations: about -> ENT-QUOTE", "Relations: about -> ENT-QUOTE; requires -> ENT-OTHER");
   assert.ok(deriveMemoryRoute(required, "Use quotation").items.some(x=>x.id === "MEM-EXTERNAL"));
+});
+
+test("shared About links retain navigation without expanding every sibling into current guidance", () => {
+  const content = graph([
+    node("MEM-SHARED", "LESSON", "ENT-QUOTE; ENT-OTHER", "Historical cross-domain lesson",
+      {Relations:"about -> ENT-QUOTE, ENT-OTHER"}),
+    node("MEM-INVENTORY", "DECISION", "ENT-OTHER", "Inventory-only history " + "detail ".repeat(12000))
+  ]);
+  assert.deepEqual(validateMemoryGraph(content, manifest), []);
+  const result = deriveMemoryRoute(content, "Use quotation");
+  assert.equal(result.status, "NEEDS_DISCOVERY");
+  assert.ok(result.items.some(n => n.id === "MEM-SHARED"));
+  assert.ok(!result.items.some(n => n.id === "MEM-INVENTORY"));
+  assert.ok(result.navigationCandidates.some(n => n.id === "MEM-INVENTORY"));
+  assert.ok(result.contracts.some(c => c.path === "public/inventory.md"));
+  assert.match(result.gaps.join(" "), /applicability review/);
+  assert.equal(result.admission, "NOT_GRANTED");
+  assert.ok(Buffer.byteLength(JSON.stringify(result)) < 10000);
+  // An explicit requirement must still return the full meaning or refuse overflow.
+  const explicit = content.replace("Relations: about -> ENT-QUOTE, ENT-OTHER", "Relations: about -> ENT-QUOTE, ENT-OTHER; requires -> MEM-INVENTORY");
+  assert.equal(deriveMemoryRoute(explicit, "Use quotation").reason, "RECALL_PACKET_TOO_LARGE");
+});
+
+test("contract names and ordinary language aliases use the existing v4 route", () => {
+  const content = graph().replace("ENT-DATA | ARTIFACT | accepted quotation record", "ENT-DATA | CONTRACT | accepted quotation record / согласованный расчет / согласованного расчета")
+    .replace("| ENT-QUOTE | produces | ENT-DATA |", "| ENT-QUOTE | consumes | ENT-DATA |");
+  assert.deepEqual(validateMemoryGraph(content, manifest), []);
+  const result = deriveMemoryRoute(content, "Используй данные согласованного расчета");
+  assert.deepEqual(result.roots, ["ENT-DATA"]);
+  assert.ok(result.items.some(n => n.id === "MEM-RATE"));
+  assert.ok(!result.gaps.some(g => g.includes("broad outcome")));
+  assert.equal(result.admission, "NOT_GRANTED");
+});
+
+test("historical evidence remains provisional with original meaning and current-applicability gaps", () => {
+  const content = graph([node("MEM-HISTORY", "LESSON", "ENT-QUOTE", "A historical acceptance retained a known residual",
+    {"Type / status":"LESSON / PROVISIONAL", "Applies / exceptions":"Historical success only; current applicability unresolved",
+      "Source / checked":"original messages and audit / retained revision"})]);
+  assert.deepEqual(validateMemoryGraph(content, manifest), []);
+  const result = deriveMemoryRoute(content, "Use quotation");
+  assert.equal(result.status, "NEEDS_DISCOVERY");
+  assert.equal(result.items.find(n => n.id === "MEM-HISTORY").status, "PROVISIONAL");
+  assert.match(result.gaps.join(" "), /MEM-HISTORY/);
 });
 
 test("external memory prerequisites extend pending and contract relevance without internal access", () => {

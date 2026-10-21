@@ -17,6 +17,31 @@ An unrelated pending event does not block read-only inspection; an applicable
 pending event, provisional/conflicting meaning or unavailable source remains a gap.
 The normal graph readiness validator still refuses pending integration.
 
+`About` links also locate related evidence; they do not recursively select every
+other subject's complete history. Explicit `requires` and `constrains` still close
+obligations. Unselected records reached only through those associations remain
+visible as `navigationCandidates` and require applicability review, not a silent
+PASS. Their source/status, relevant contracts and pending coverage are retained.
+Explicit constraints on associated anchors also remain obligations. Their outgoing
+purpose/dependency routes retain navigation and an applicability gap, not full sibling text.
+The preparer resolves that question from sources; this does not authorize deleting
+an inconvenient constraint or replacing an oversized required meaning with an id.
+Contract anchors are valid recall roots, not automatically approved execution units.
+
+Repair a known historical gap in the existing v4 graph beside the accepted version,
+not in a second active JSON memory or custom reader. Retain original records and
+source coordinates, add actual user-language aliases to the appropriate artifact
+or entity, and preserve decisions, reasons, alternatives and exceptions in canonical
+fields. A historical artifact must not masquerade as the current module. Where
+current applicability or supersession is unresolved, keep reconstructed lessons
+`PROVISIONAL` and coverage `PARTIAL`; historical human acceptance is not a new grant.
+Old probe rows remain old evidence, not acceptance of a changed graph. Verify the
+same canonical meaning through CLI preparation and the registered-source reader,
+and independently read original evidence through `list_sources`/`read_source`.
+The preliminary reconstruction format can remain archival evidence but is not an
+additional installed memory format. Publication and actual participant application
+still belong to the existing owned adoption checkpoint.
+
 `RECALL_CANDIDATE` means a candidate navigation packet, never complete recall or
 execution admission (`semanticTruth: NOT_VERIFIED`, `admission: NOT_GRANTED`).
 Unknown phrasing, ambiguous aliases and broad outcomes go to bounded Discovery;

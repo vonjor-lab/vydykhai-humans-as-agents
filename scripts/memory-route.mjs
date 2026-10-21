@@ -59,15 +59,15 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
     }
     return result;
   }
-  const scope = new Set(roots), edges = new Set();
-  const include = (r, target) => {scope.add(target); edges.add(r);};
+  const scope = new Set(roots), retrievalScope = new Set(roots), edges = new Set();
+  const include = (r, target) => {scope.add(target); retrievalScope.add(target); edges.add(r);};
   // Follow purpose upward, never from a shared goal down into sibling modules.
   function ancestors() {
     let changed = true;
     while (changed) {
-      const before = scope.size;
-      for (const r of routes) if (scope.has(r[0]) && ["serves", "part-of"].includes(r[1])) include(r, r[2]);
-      changed = scope.size !== before;
+      const before = retrievalScope.size;
+      for (const r of routes) if (retrievalScope.has(r[0]) && ["serves", "part-of"].includes(r[1])) include(r, r[2]);
+      changed = retrievalScope.size !== before;
     }
   }
   ancestors();
@@ -75,7 +75,7 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
   const consumerFrontier = new Set(scope);
   for (const r of routes) if (r[1] === "consumes" && consumerFrontier.has(r[2])) include(r, r[0]);
   ancestors();
-  const selected = new Map(nodes.filter(n => current(n) && ids(n.fields.get("About")).some(id => scope.has(id)))
+  const selected = new Map(nodes.filter(n => current(n) && ids(n.fields.get("About")).some(id => retrievalScope.has(id)))
     .map(n => [n.id, n]));
   const gaps = [];
   const aliasMatches = [];
@@ -89,25 +89,29 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
   if (aliasMatches.some((a,i) => aliasMatches.slice(i + 1).some(b => a.owner !== b.owner && a.start < b.end && b.start < a.end))) {
     gaps.push("Ambiguous matching alias: resolve the intended public boundary.");
   }
-  if (!matched.some(a => ["MODULE", "CAPABILITY", "ENTITY", "ARTIFACT", "SYSTEM"].includes(a[1].toUpperCase()))) {
+  if (!matched.some(a => ["MODULE", "CAPABILITY", "ENTITY", "ARTIFACT", "SYSTEM", "CONTRACT"].includes(a[1].toUpperCase()))) {
     gaps.push("The request names a broad outcome or actor, not an execution boundary; resolve it through Discovery.");
   }
   // Close declared obligations, not composite children or successive consumer trees.
   let changed = true;
   while (changed) {
-    const before = scope.size + selected.size;
+    const before = scope.size + retrievalScope.size + selected.size;
     for (const r of routes) {
-      if (scope.has(r[0]) && ["serves", "part-of", "depends-on", "stored-in"].includes(r[1])) include(r, r[2]);
+      if (["serves", "part-of", "depends-on", "stored-in"].includes(r[1])) {
+        if (retrievalScope.has(r[0])) include(r, r[2]);
+        else if (scope.has(r[0])) {scope.add(r[2]); edges.add(r);}
+      }
       if (r[1] === "constrains" && scope.has(r[2])) include(r, r[0]);
     }
     for (const n of nodes.filter(current)) {
       const incoming = relations(n).some(r => r.kind === "constrains" && r.targets.some(id => scope.has(id) || selected.has(id)));
-      if (incoming || ids(n.fields.get("About")).some(id => scope.has(id))) selected.set(n.id, n);
+      if (incoming || ids(n.fields.get("About")).some(id => retrievalScope.has(id))) selected.set(n.id, n);
     }
     for (const n of selected.values()) {
+      // Association retains navigation and coverage, not every sibling's full text.
       ids(n.fields.get("About")).forEach(id => scope.add(id));
       for (const relation of relations(n).filter(r => r.kind === "requires")) for (const id of relation.targets) {
-        if (id.startsWith("ENT-")) scope.add(id);
+        if (id.startsWith("ENT-")) {scope.add(id); retrievalScope.add(id);}
         else {
           const dependency = nodes.find(candidate => candidate.id === id && current(candidate));
           if (dependency) selected.set(id, dependency);
@@ -115,8 +119,17 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
         }
       }
     }
-    changed = scope.size + selected.size !== before;
+    changed = scope.size + retrievalScope.size + selected.size !== before;
   }
+  for (const r of edges) if (!retrievalScope.has(r[0]) && r[1] !== "constrains") {
+    gaps.push(`Associated route ${r[0]} ${r[1]} ${r[2]} requires applicability review.`);
+  }
+  const navigationCandidates = nodes.filter(n => current(n) && !selected.has(n.id) &&
+    (ids(n.fields.get("About")).some(id => scope.has(id)) || relations(n).some(r =>
+      r.kind === "constrains" && r.targets.some(id => scope.has(id))))).map(n => ({
+      id:n.id, type:n.type, status:n.status, about:ids(n.fields.get("About")),
+      source:n.fields.get("Source / checked")}));
+  if (navigationCandidates.length) gaps.push("Associated records need an applicability review; navigation alone does not establish their obligations.");
   for (const n of nodes.filter(current)) for (const relation of relations(n)) {
     if (!["supersedes", "conflicts"].includes(relation.kind)) continue;
     for (const id of relation.targets) {
@@ -157,7 +170,8 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
   const result = {...base, ...identity, status: gaps.length ? "NEEDS_DISCOVERY" : "RECALL_CANDIDATE",
     roots, anchors: anchors.filter(a => scope.has(a[0])).map(a => ({id:a[0], kind:a[1], name:a[2], scope:a[3], source:a[5]})),
     routes: [...edges].map(r => ({from:r[0], relation:r[1], to:r[2], qualification:r[3], source:r[4]})),
-    contracts, items, gaps:[...new Set(gaps)], stats: {relevantItems: items.length, relevantAnchors: scope.size}};
+    contracts, items, ...(navigationCandidates.length ? {navigationCandidates} : {}),
+    gaps:[...new Set(gaps)], stats: {relevantItems: items.length, relevantAnchors: scope.size}};
   if (Buffer.byteLength(JSON.stringify(result)) > maxBytes) return {...base, ...identity, roots,
     status: "NEEDS_DISCOVERY", reason: "RECALL_PACKET_TOO_LARGE", stats: result.stats,
     gaps: ["Split the task at a public boundary; no relevant obligation was silently dropped."]};

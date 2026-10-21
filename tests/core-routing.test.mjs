@@ -85,11 +85,16 @@ test("transition plan survives maintainer handoff but is not installed as runtim
   assert.equal(managed(file), false);
   assert.doesNotMatch(core, /FRAMEWORK_TRANSITION_PLAN/);
   const plan = await source(file);
+  for (const section of ["Outcome", "Accepted Baseline And Limits", "Preserve", "Next Decision And Exit",
+    "Remaining Obligations", "Evidence Navigation", "Current Checkpoint"]) assert.ok(plan.includes("## " + section), section);
+  assert.match(plan, /installed file or subtask PASS cannot close the parent outcome/);
+  assert.match(plan, /actual project's safe boundary/);
+  assert.match(plan, /whole-chain\s+accounting/);
+  assert.match(plan, /missing values remain UNKNOWN/);
+  assert.match(plan, /FRAMEWORK_TRANSITION_HISTORY\.md/);
+  const history = await source("docs/FRAMEWORK_TRANSITION_HISTORY.md");
   for (const section of ["Outcome And Rationale", "Decisions To Preserve", "Stages And Exit Gates",
-    "Evidence Plan", "Current Checkpoint", "Release Decision"]) assert.ok(plan.includes("## " + section), section);
-  assert.match(plan, /Do not mark a stage complete solely because its instructions or tests exist/);
-  assert.match(plan, /project owner/);
-  assert.match(plan, /subscription allowance are different measures/);
+    "Evidence Plan", "Current Checkpoint", "Release Decision"]) assert.ok(history.includes("## " + section), section);
 });
 
 test("local fact inspection is execution; a real supplement keeps owner and access boundaries", async () => {
