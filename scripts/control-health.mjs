@@ -330,6 +330,25 @@ export function healthControl({state,update,config,observeReviewRun}) {
         else delete row.reviewBasis;
       });
     },
+    async resumeReview(offer) {
+      const s=await state(),h=s.health;
+      need(!s.paused && h.enrollment==="REVIEW_RECONCILIATION_REQUIRED" &&
+        h.reviewLease?.runId===offer?.runId && !h.reviewLease.captured && typeof observeReviewRun==="function",
+        "HEALTH_CONTINUATION_NOT_AVAILABLE");
+      const observed=await observeReviewRun(offer.runId);
+      need(observed.runId===offer.runId && observed.state==="STOPPED" && observed.resumable===true && !observed.verdict &&
+        observed.offerSha256===hash(offer) && filled(observed.evidence) &&
+        Date.now()<Date.parse(observed.deadline),"HEALTH_CONTINUATION_NOT_PROVED");
+      const restored=structuredClone(s);restored.health.enrollment="REVIEW_IN_FLIGHT";
+      const fresh=await input(s);
+      need(scopeKey(restored)===offer.stateRevision && hash(fresh)===offer.key && hash(fresh)===hash(offer.input),
+        "HEALTH_SOURCE_CHANGED");
+      await update(current=>{
+        need(scopeKey(current)===scopeKey(s),"HEALTH_STATE_CHANGED");
+        current.health.enrollment="REVIEW_IN_FLIGHT";
+      });
+      return {action:"REVIEW_IN_FLIGHT",runId:offer.runId,resumed:true};
+    },
     async reviewFailure(_id,runId) {
       const before=await state();
       if(before.health.reviewEpisode)await assertEpisodeBasis(before,await input(before),false);

@@ -1,5 +1,6 @@
 // Durable reviewer output is evidence, not authority to execute or close work.
-import {open, readFile} from "node:fs/promises";
+import {open, readFile, mkdir} from "node:fs/promises";
+import {openControlStore} from "./control-store.mjs";
 import path from "node:path";
 import {readPrivateControlJson, validateReviewSourceScope} from "./control-review-sources.mjs";
 import {validateWindowAcquisition, completeWindowSources} from "./control-review-acquisition.mjs";
@@ -55,9 +56,22 @@ export async function openReviewSubmission(file,sources,reader,policy) {
   const receiptFile=file+".receipt.json";
   const before=await sources.snapshot(context.before.scope);
   need(hash(before)===hash(context.before),"MODEL_REVIEW_SOURCE_DRIFT");
+  let acquisitionStore;
+  if(context.retainAcquisition === true) {
+    const directory=file+".acquisition";
+    await mkdir(directory,{mode:0o700}).catch(e=>{if(e.code!=="EEXIST")throw e;});
+    acquisitionStore=await openControlStore(directory);
+    if(!await acquisitionStore.read())await acquisitionStore.initialize({context:hash(context),policy:hash(policy??null),calls:[]});
+    const saved=(await acquisitionStore.read()).state;
+    need(saved.context===hash(context) && saved.policy===hash(policy??null),"MODEL_REVIEW_ACQUISITION_BINDING_INVALID");
+    calls.push(...saved.calls);
+    if(policy)reader.restoreUsedBytes(Math.max(0,...calls.map(c=>c.value.window?.afterBytes??0)));
+  }
   return {
     async read(args) {
-      const value=await reader.read(args);calls.push({args:structuredClone(args),value});return value;
+      const value=await reader.read(args),call={args:structuredClone(args),value};
+      if(acquisitionStore)await acquisitionStore.transact(s=>{s.calls.push(call);return s;});
+      calls.push(call);return value;
     },
     async submit(args) {
       need(args && Object.keys(args).join()==="answer" && args.answer?.schema==="control.review-answer.v2",

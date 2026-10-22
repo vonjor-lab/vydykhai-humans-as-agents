@@ -1,5 +1,19 @@
 # Collaboration Framework Changelog
 
+## 2.1.7 - 2026-10-22
+
+Прерванная независимая проверка может продолжить чтение и оценку с сохранённой
+точки, вместо повторного сбора тех же источников. История, расходы и ограничения
+сохраняются. Изменение исходных данных запрещает использовать прежнее основание;
+неполная или отрицательная приёмка по-прежнему не разрешает использовать результат.
+
+Evolution Gate: the actual-model interruption/resumption test reused ten sources
+and enforced a negative verdict, with two accounted turns and unknown token
+usage retained. Local source-drift, concurrency, budget and host-lease checks
+cover the changed boundary. Cost: opt-in continuation in existing reviewer,
+source receipt and host APIs, no new control actor or scheduler. Verdict:
+qualified isolated candidate, not a release or project-adoption claim.
+
 ## 2.1.6 - 2026-10-22
 
 Готовое решение независимого проверяющего можно сохранить и передать

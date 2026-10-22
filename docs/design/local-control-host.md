@@ -67,6 +67,40 @@ the existing recovery route, preserving the old lease and spent allocation.
    older reader may not enforce `resultUse`; successful reopening is data
    compatibility, NOT permission to resume or consume a rejected result.
 
+## Interrupted Review Continuation
+
+Opt-in native configuration uses `reviewSubmission: true`,
+`reviewContinuation: true` and finite `reviewTotalTimeoutMs` (at most one
+hour). Existing per-turn timeout, profile expiry and maxCalls still apply.
+Every explicit continuation consumes a call; no automatic retry is introduced.
+Fresh assignments start independent sessions. Only the unchanged assignment may
+continue its retained session with `review.review(originalOffer, {resume:true})`.
+
+After a normal host tick has recorded reviewFailure, the trusted owner first
+calls `host.resumeReview(id, originalOffer)` (POST) or
+`health.resumeReview(originalOffer)` (HEALTH). The API requires the exact
+observed-stopped run, unchanged original binding and an unpaused host.
+Then continue the reviewer and apply its verdict through the existing host and
+owner APIs. A receipt is not owner application. These APIs are not model tools.
+Polling alone never spends a call or resumes work.
+
+Continuation preserves raw attempts, source receipts, source-window byte budget,
+original deadline and unknown usage. Only complete supported trace prefixes are
+resumable: a partially recorded tool call or truncated/corrupt trace is retained
+but refused before another allocation. Missing process-stop proof, changed
+sources/assignment, final negative verdict and exhausted limits remain closed.
+This path does not repair a lost parent process or guarantee that every
+interruption can resume. Token-accounted episodes and captured confined-command
+HEALTH leases remain unsupported by this path.
+
+At an update boundary, preserve journals and install the complete pinned runtime;
+change the private profile only through the existing approved transition.
+Do not reinterpret an old stopped run as a new continuable session.
+Qualify only the affected route with retained evidence and an isolated
+interruption/reopen check. Rollback keeps the host paused and retains all new
+session/acquisition/expense records; an older reader cannot certify continuation
+or authorize consumption of rejected results. No budget reset or product restart.
+
 ## Boundaries
 
 - `control-store.mjs` owns append-only control revisions outside the worktree.

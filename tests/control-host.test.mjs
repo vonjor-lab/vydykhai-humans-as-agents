@@ -62,6 +62,25 @@ async function acceptAndReview(x, amend = () => {}) {
   await x.host.review("previous", offer, verdict);
   return verdict;
 }
+test("stopped POST transport restores its exact lease only with trusted unchanged evidence",async t=>{
+  const x=await setup(t);let observed,offer;
+  const host=await openControlHost(x.dir,x.config,{...services,observeReviewRun:async()=>observed});
+  await host.accept(x.acceptance);
+  const tick=await runControlTick(host,{review:async o=>{offer=o;throw Error('injected stop');}});
+  assert.equal(tick.results[0].action,'REVIEW_RECONCILIATION_REQUIRED');
+  observed={runId:offer.runId,state:'UNKNOWN',resumable:true,offerSha256:hash(offer),
+    deadline:new Date(Date.now()+60000).toISOString(),evidence:'trusted-transport-fixture'};
+  await assert.rejects(host.resumeReview('previous',offer),/CONTINUATION_NOT_PROVED/);
+  observed.state='STOPPED';
+  await x.f.put('artifact.md','changed');
+  await assert.rejects(host.resumeReview('previous',offer),/REVIEW_SOURCE_CHANGED/);
+  await x.f.put('artifact.md','artifact');
+  await host.resumeReview('previous',offer);
+  assert.deepEqual({...await host.reviewInput('previous'),runId:offer.runId},offer);
+  await host.review('previous',offer,verdictFor(x,offer));
+  assert.equal((await host.snapshot()).acceptances.previous.enrollment,'OWNER_DISPOSITION_DUE');
+  await assert.rejects(host.resumeReview('previous',offer),/CONTINUATION_NOT_AVAILABLE/);
+});
 const disposition = (x, verdict) => ({owner: x.config.owner, reviewKey: hash(verdict),
   action: "CONTINUE", nextAction: x.binding.taskId, evidence: "fixture:owner-applied-verdict"});
 

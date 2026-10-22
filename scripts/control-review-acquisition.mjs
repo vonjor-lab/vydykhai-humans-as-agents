@@ -43,7 +43,11 @@ export function sourceWindow(source, args, policy, usedBytes = 0) {
 export function openWindowReader(sources, policy) {
   validateReviewAcquisition(policy);
   let usedBytes = 0;
-  return {async read(args) {
+  return {restoreUsedBytes(value) {
+    need(usedBytes===0 && Number.isSafeInteger(value) && value>=0 && value<=policy.maxBytes,
+      "MODEL_REVIEW_WINDOW_RESTORE_INVALID");
+    usedBytes=value;
+  },async read(args) {
     validateWindowArguments(args, policy);
     const original = await sources.read({id: args.id});
     const result = sourceWindow(original, args, policy, usedBytes);

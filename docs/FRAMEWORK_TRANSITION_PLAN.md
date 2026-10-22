@@ -1,5 +1,64 @@
 # Framework Efficiency Transition
 
+## Isolated Review Continuation 2026-10-22
+
+Current authority: finish the scoped 2.1.7 release candidate, independent code
+review, full tests and package/update/paused-rollback checks. No project activation
+or publication. Earlier release/adoption records
+below remain history, not permission to repeat their model calls.
+
+The existing reviewer can opt into `native.reviewContinuation: true` with a
+finite `reviewTotalTimeoutMs` (at most one hour), existing finite maxCalls and
+profile expiry. One new assignment starts fresh; subsequent explicit
+`review(offer, {resume:true})` calls resume only its saved native session.
+Each dispatch consumes another call. Original deadline, raw attempts, UNKNOWN
+usage and source-acquisition budget survive; unknown tokens never become zero.
+This is not compatible with token-accounted episodes and does not change their
+existing refusal. No automatic retry or extra model is scheduled.
+
+When the normal host has recorded reviewFailure, use trusted
+`host.resumeReview(id, originalOffer)` before continuing. It restores only the
+same observed-stopped lease when the full original binding is unchanged and
+the host is unpaused. It cannot replace a negative verdict, override pause,
+resume unknown effects, extend budgets, or restore a changed source. Captured
+confined-command HEALTH leases are deliberately unsupported by this narrow path.
+The caller still performs normal host.review and owner disposition afterward.
+Ordinary observer polling does not dispatch a turn. A timeout is still a finite
+stop, but no longer necessarily destroys evidence acquired for this assignment.
+
+Qualification: injected interruption/reopen, unchanged-source continuation,
+source drift, concurrent allocation, read-budget retention and host lease
+restoration tested locally. Real independent model was interrupted after reading
+10 originals, then resumed the same thread and reused all 10 without rereading.
+It returned 87 criteria and a genuine result-use REJECT in approximately 181s
+after resume; CONTINUE/DONE were refused and owned REPAIR retained. Two model
+turns spent, previous pilot attempts retained separately, token usage UNKNOWN.
+A local runner initially omitted repair leases after the verdict; the recorded
+verdict was reused to finish owner application without another inference.
+
+Limits: abrupt parent-machine loss, every CLI/provider combination, automatic
+scheduler continuation, broad-project health and net economy are not proved.
+Parent-process loss without a trusted stopped observation remains fail-closed.
+No new rules catalog, role, daemon, graph or alternative acceptance mechanism.
+Release readiness: scoped independent code review completed; its P2 was corrected
+and confirmed by the same reviewer (14 PASS, 0 FAIL, 3 opt-in SKIP). Full suite:
+1548 PASS, 0 FAIL, 100 SKIP; skips are not evidence. Validator and diff check pass.
+Archive round-trip, fresh install, actual 2.1.6 updater, complete runtime loading
+and paused kit/runtime rollback passed. Local data, journals, spent counters and
+pause remained byte-exact; the isolated paused observer used zero model calls.
+The schedule-absence probe was scripted, not project automation proof.
+Disposition: READY_FOR_RELEASE_APPROVAL for scoped 2.1.7; NO_PUBLICATION and
+NO_PRODUCT_ACTIVATION. Project use still requires safe-boundary adoption with
+preserved journals. Net economy and general autonomous recovery remain unproved.
+
+Independent review identified one P2: a stop during an unfinished source-tool
+call or truncated trace could spend a continuation that cannot pass validation.
+The same trace validator now qualifies stopped prefixes, and trace hashes plus
+prefix validity are rechecked before allocating a continuation. Such unsupported
+interruptions remain retained and closed without another model call. Focused
+tests cover incomplete tools, truncated JSON and post-stop trace tampering;
+the genuine completed-source resume evidence is retained, not replayed.
+
 ## Release Package Checkpoint 2026-10-22
 
 Current authority: finish the isolated 2.1.6 release candidate, scoped independent

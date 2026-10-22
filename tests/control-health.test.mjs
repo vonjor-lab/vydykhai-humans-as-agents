@@ -46,6 +46,28 @@ function add(v,f) {v.findings.push(f);Object.assign(v.rows.find(r=>r.id===f.chec
 const leases=f=>[{owner:f.owner,work:f.work,state:"WORKING",evidence:"fixture:owned",checkpoint:"repair",
   reviewAt:f.reviewAt}];
 
+test("interrupted HEALTH resumes the same trusted assignment, not a new retry",async t=>{
+  let observed,offer;
+  const x=await setup(t,{observeReviewRun:async()=>observed});
+  const tick=await runControlTick(x.host,{review:async o=>{offer=o;throw Error('injected stop');}});
+  assert.equal(tick.results[0].action,'REVIEW_RECONCILIATION_REQUIRED');
+  observed={runId:offer.runId,state:'STOPPED',resumable:true,offerSha256:hash(offer),
+    deadline:new Date(Date.now()+60000).toISOString(),evidence:'trusted-transport-fixture'};
+  await x.host.pause(true);
+  await assert.rejects(x.host.resumeReview('@health',offer),/CONTINUATION_NOT_AVAILABLE/);
+  await x.host.pause(false);
+  const original=await readFile(path.join(x.f.root,'health-policy.md'));
+  await x.f.put('health-policy.md','changed');
+  await assert.rejects(x.host.resumeReview('@health',offer),/HEALTH_SOURCE_CHANGED/);
+  await x.f.put('health-policy.md',original.toString('utf8'));
+  const resumed=await x.host.resumeReview('@health',offer);
+  assert.equal(resumed.runId,offer.runId);
+  assert.deepEqual({...await x.host.health.reviewInput(),runId:offer.runId},offer);
+  await x.host.review('@health',offer,verdict(x,offer));
+  assert.equal((await x.host.snapshot()).health.enrollment,'OWNER_DISPOSITION_DUE');
+  await assert.rejects(x.host.resumeReview('@health',offer),/CONTINUATION_NOT_AVAILABLE/);
+});
+
 async function waitingRepair(t) {
   const x=await setup(t),f=defect(),lease={...leases(f)[0],state:"WAITING",resumeWhen:"replacement input retained"};
   const v=await review(x,v=>add(v,f));await consume(x,v,"REPAIR",[lease]);

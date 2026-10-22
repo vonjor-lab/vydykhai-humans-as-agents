@@ -459,6 +459,26 @@ export async function openControlHost(directory, config, {createReturnSync, obse
         row.enrollment = "REVIEW_RECONCILIATION_REQUIRED";
       });
     },
+    async resumeReview(id, offer) {
+      if(id === healthId && health)return health.resumeReview(offer);
+      const s=await state(),row=rowFor(s,id);
+      need(!s.paused && row.enrollment==="REVIEW_RECONCILIATION_REQUIRED" &&
+        row.reviewLease?.runId===offer?.runId && typeof observeReviewRun==="function",
+        "REVIEW_CONTINUATION_NOT_AVAILABLE");
+      const observed=await observeReviewRun(offer.runId);
+      need(observed.runId===offer.runId && observed.state==="STOPPED" && observed.resumable===true && !observed.verdict &&
+        observed.offerSha256===hash(offer) && filled(observed.evidence) &&
+        Date.now()<Date.parse(observed.deadline),"REVIEW_CONTINUATION_NOT_PROVED");
+      const restored=structuredClone(s);rowFor(restored,id).enrollment="REVIEW_IN_FLIGHT";
+      const fresh=await inputFor(s,id);
+      need(reviewScope(restored,id)===offer.stateRevision && postAcceptKey(fresh)===offer.key,
+        "REVIEW_SOURCE_CHANGED");
+      await update(current=>{
+        need(reviewScope(current,id)===reviewScope(s,id),"REVIEW_SOURCE_CHANGED");
+        rowFor(current,id).enrollment="REVIEW_IN_FLIGHT";
+      });
+      return {action:"REVIEW_IN_FLIGHT",runId:offer.runId,resumed:true};
+    },
     async reconcileReview(id, decision) {
       if(id === healthId && health)return health.reconcile(decision);
       let s = await state(), row = rowFor(s, id);

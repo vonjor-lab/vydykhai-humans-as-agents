@@ -1,5 +1,6 @@
 // Explicit isolated native worker launch. No inherited user config, tool fallback
-// or continuation of an existing chat. Authentication must already be provisioned
+// or arbitrary reuse of a chat. A review may explicitly resume its pinned session.
+// Authentication must already be provisioned
 // by the operator in the private CLI home; this module never copies credentials.
 import {realpath, lstat} from "node:fs/promises";
 import path from "node:path";
@@ -23,7 +24,7 @@ export function controlledWorkerPrompt(prompt,endpoint) {
 }
 export async function runControlledWorker({binary, workspace, endpointFile, controlEndpointFile, home, model, effort,
   prompt, timeoutMs = 120000, maxBytes = 4 * 1024 * 1024, provider, signal, role = "worker", authHome = home,
-  enableMemoryRecall = false, reviewAcquisition, reviewSubmissionFile}) {
+  enableMemoryRecall = false, reviewAcquisition, reviewSubmissionFile, reviewContinuation}) {
   need(process.platform === "darwin", "CONTROL_WORKER_HOST_UNSUPPORTED");
   need([binary, workspace, endpointFile, home].every(v => typeof v === "string" && path.isAbsolute(v)) &&
     typeof model === "string" && model.trim() && ["low", "medium", "high", "xhigh", "max"].includes(effort) &&
@@ -43,6 +44,9 @@ export async function runControlledWorker({binary, workspace, endpointFile, cont
   need(typeof enableMemoryRecall === "boolean" && (!enableMemoryRecall || role === "review"), "CONTROL_WORKER_RECALL_PROFILE_INVALID");
   need(reviewAcquisition === undefined || role === "review", "CONTROL_WORKER_ACQUISITION_ROLE_INVALID");
   need(reviewSubmissionFile === undefined || role === "review", "CONTROL_WORKER_SUBMISSION_ROLE_INVALID");
+  need(reviewContinuation === undefined || role === "review" && reviewSubmissionFile &&
+    (reviewContinuation === true || typeof reviewContinuation === "string" &&
+      /^[a-f0-9-]{36}$/.test(reviewContinuation)), "CONTROL_REVIEW_CONTINUATION_INVALID");
   let controlEndpointDigest, preparationHost, preparationIds;
   if (role === "preparation") {
     need(typeof controlEndpointFile === "string" && path.isAbsolute(controlEndpointFile), "PREPARATION_CONTROL_ENDPOINT_REQUIRED");
@@ -77,8 +81,11 @@ export async function runControlledWorker({binary, workspace, endpointFile, cont
     catch(e){if(e.code!=="ENOENT")throw e;}
   }
   const result = await runControlChild({executable,
-    args: ["exec", "--ignore-user-config", "--strict-config", "--skip-git-repo-check",
-      "--ephemeral", "--model", model, ...codexConfigArgs(config), "--json", "-"], cwd: workspace,
+    args: ["exec", ...(typeof reviewContinuation === "string" ? ["resume"] : []),
+      "--ignore-user-config", "--strict-config", "--skip-git-repo-check",
+      ...(reviewContinuation ? [] : ["--ephemeral"]), "--model", model,
+      ...codexConfigArgs(config), "--json",
+      ...(typeof reviewContinuation === "string" ? [reviewContinuation] : []), "-"], cwd: workspace,
     env: {HOME: home, CODEX_HOME: authHome, PATH: "/usr/local/bin:/usr/bin:/bin"},
     input: launchPrompt, timeoutMs, maxBytes, signal,
     ...(reviewSubmissionFile === undefined ? {} : {completedOutput:reviewSubmissionCompletion})});
