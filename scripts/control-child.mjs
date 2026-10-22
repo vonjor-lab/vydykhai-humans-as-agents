@@ -3,7 +3,7 @@ import {spawn} from "node:child_process";
 import {StringDecoder} from "node:string_decoder";
 
 export async function runControlChild({executable, args, cwd, env, input, timeoutMs,
-  maxBytes, signal, stopGraceMs = 250}) {
+  maxBytes, signal, stopGraceMs = 250, completedOutput}) {
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > 300000 ||
       !Number.isSafeInteger(maxBytes) || maxBytes < 1024 || maxBytes > 16 * 1024 * 1024 ||
       !Number.isSafeInteger(stopGraceMs) || stopGraceMs < 1 || stopGraceMs > 2000)
@@ -37,6 +37,12 @@ export async function runControlChild({executable, args, cwd, env, input, timeou
       output += stdoutDecoder.write(chunk);
       if (stdoutChunks.length < 256) stdoutChunks.push({endByte: stdoutBytes, atMs: lastStdoutMs});
       else stdoutChunksTruncated = true;
+      // A protocol-specific durable receipt can end a read-only reviewer. The
+      // caller must still verify it and observe actual process termination.
+      if(completedOutput) {
+        try {const completion=completedOutput(output);if(completion) stop(completion===true?"RESULT_SUBMITTED":completion);}
+        catch {stop("RESULT_OBSERVATION_FAILED");}
+      }
     } else {stdoutChunksTruncated = true; stop("OUTPUT_CAPACITY");}
   });
   child.stderr.on("data", chunk => {

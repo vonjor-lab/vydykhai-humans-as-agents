@@ -1,7 +1,7 @@
 // Fresh model REVIEW: protected journal + independent source tools, no worker
 // actions or owner mutations. The scheduler owns the explicit finite call budget.
 import path from "node:path";
-import {realpath,open} from "node:fs/promises";
+import {realpath,open,readFile} from "node:fs/promises";
 import {openControlStore} from "./control-store.mjs";
 import {openReviewSources, validateReviewSourceScope} from "./control-review-sources.mjs";
 import {runControlledWorker} from "./control-worker-run.mjs";
@@ -14,6 +14,8 @@ import {validateControlFindings} from "./control-findings.mjs";
 import {openControlHost} from "./control-host.mjs";
 import {validateReviewAcquisition, validateWindowArguments, validateWindowAcquisition, completeWindowSources} from "./control-review-acquisition.mjs";
 import {reviewPromptView} from "./control-review-context.mjs";
+import {validateModelReviewAcquisition,submissionErrorCode} from "./control-review-submission.mjs";
+export {validateModelReviewAcquisition} from "./control-review-submission.mjs";
 
 const hash = v => sha256(canonicalJson(v));
 const need = (v,c) => {if(!v) throw Error(c);};
@@ -21,19 +23,22 @@ export function modelReviewConfigKey({root,reviewer,sourceFile,registry,sourceWo
   return hash({root,reviewer,sourceFile,...(scope.host===undefined?{registry}:{}),sourceWorkspace,native,maxCalls,expiresAt,scope,
     ...(checkIds?{checkIds}: {})});
 }
-function reviewTrace(events, acquisitionPolicy) {
+function reviewTrace(events, acquisitionPolicy, submission) {
   const started=events.flatMap((e,i)=>e.type==="turn.started"?[i]:[]);
   const completed=events.flatMap((e,i)=>e.type==="turn.completed"?[i]:[]);
-  need(started.length===1 && completed.length===1 && completed[0]===events.length-1 &&
-    started[0]<completed[0] && !events.some(e=>["turn.failed","error","item.error"].includes(e.type)),"MODEL_REVIEW_INCOMPLETE");
+  const end=submission?events.length:completed[0];
+  need(started.length===1 && (submission?completed.length<=1:completed.length===1 && completed[0]===events.length-1) &&
+    started[0]<end && !events.some(e=>["turn.failed","error","item.error"].includes(e.type)),"MODEL_REVIEW_INCOMPLETE");
   const threads=events.flatMap((e,i)=>e.type==="thread.started"?[i]:[]);
   need(threads.length<=1 && threads.every(i=>i<started[0]),"MODEL_REVIEW_CROSSED_THREAD");
   const judgments=events.flatMap((e,i)=>{
+    if(submission && e.type==="item.completed" && e.item?.type==="mcp_tool_call" &&
+      e.item.server==="vydykhai_review" && e.item.tool==="submit_review")return [{index:i,parsed:e.item.arguments?.answer}];
     if(e.type!=="item.completed" || e.item?.type!=="agent_message")return [];
     let value;try{value=JSON.parse(e.item.text);}catch{return [];}
-    return value && typeof value==="object" && !Array.isArray(value)?[{index:i,parsed:value}]:[];
+    return !submission && value && typeof value==="object" && !Array.isArray(value)?[{index:i,parsed:value}]:[];
   });
-  need(judgments.length===1 && judgments[0].index>started[0] && judgments[0].index<completed[0],"MODEL_REVIEW_JUDGMENT_INVALID");
+  need(judgments.length===1 && judgments[0].index>started[0] && judgments[0].index<end,"MODEL_REVIEW_JUDGMENT_INVALID");
   const calls=new Map(), kinds=new Map(), readbacks=[], acquisitionCalls=[];
   for(const [index,event] of events.entries()) {
     if(!["item.started","item.updated","item.completed"].includes(event.type))continue;
@@ -46,15 +51,17 @@ function reviewTrace(events, acquisitionPolicy) {
       Object.keys(item).sort().join()==="id,message,type" && typeof item.message==="string" &&
       item.message.startsWith("Under-development features enabled: skip_host_skill_discovery. "))continue;
     need(["agent_message","reasoning","mcp_tool_call"].includes(item.type) &&
-      index>started[0] && index<completed[0],"MODEL_REVIEW_ITEM_INVALID");
+      index>started[0] && index<end,"MODEL_REVIEW_ITEM_INVALID");
     if(item.type!=="mcp_tool_call")continue;
-    need(index<judgments[0].index,"MODEL_REVIEW_SOURCE_AFTER_JUDGMENT");
+    const submitting=!!submission && item.server==="vydykhai_review" && item.tool==="submit_review";
+    need(index<judgments[0].index || submitting && index===judgments[0].index,"MODEL_REVIEW_SOURCE_AFTER_JUDGMENT");
     const emptyDiscovery=item.server==="codex" && item.tool==="list_mcp_resources";
-    need(emptyDiscovery || item.server==="vydykhai_review" && ["list_sources","read_source"].includes(item.tool),"MODEL_REVIEW_SOURCE_TOOL_INVALID");
+    need(emptyDiscovery || submitting || item.server==="vydykhai_review" && ["list_sources","read_source"].includes(item.tool),"MODEL_REVIEW_SOURCE_TOOL_INVALID");
     need(!item.error && !item.result?.isError &&
       (item.status==null || ["in_progress","completed"].includes(item.status)),"MODEL_REVIEW_SOURCE_TOOL_FAILED");
     need(item.arguments && typeof item.arguments==="object" && !Array.isArray(item.arguments),"MODEL_REVIEW_SOURCE_ARGUMENTS_INVALID");
-    if(emptyDiscovery || item.tool==="list_sources")need(Object.keys(item.arguments).length===0,"MODEL_REVIEW_SOURCE_ARGUMENTS_INVALID");
+    if(submitting)need(Object.keys(item.arguments).join()==="answer" && hash(item.arguments.answer)===hash(submission.receipt.answer),"MODEL_REVIEW_SUBMISSION_CONFLICT");
+    else if(emptyDiscovery || item.tool==="list_sources")need(Object.keys(item.arguments).length===0,"MODEL_REVIEW_SOURCE_ARGUMENTS_INVALID");
     else if(acquisitionPolicy)validateWindowArguments(item.arguments,acquisitionPolicy);
     else need(Object.keys(item.arguments).join()==="id" && typeof item.arguments.id==="string","MODEL_REVIEW_SOURCE_ARGUMENTS_INVALID");
     const prior=calls.get(item.id);
@@ -71,7 +78,9 @@ function reviewTrace(events, acquisitionPolicy) {
       item.result.content[0].type==="text" && typeof item.result.content[0].text==="string","MODEL_REVIEW_SOURCE_READBACK_INVALID");
     const value=JSON.parse(item.result.content[0].text);
     // Exact empty built-in discovery is transport only, never acquired evidence.
-    if(emptyDiscovery)need(Object.keys(item.result).sort().join()==="content,structured_content" &&
+    if(submitting)need(value.status==="REVIEW_RECEIVED" && value.receiptSha256===submission.sha256 &&
+      value.admission==="HOST_VALIDATION_REQUIRED","MODEL_REVIEW_SUBMISSION_READBACK_INVALID");
+    else if(emptyDiscovery)need(Object.keys(item.result).sort().join()==="content,structured_content" &&
       item.result.structured_content===null && Object.keys(item.result.content[0]).sort().join()==="text,type" &&
       /^[\t\r\n ]*\{[\t\r\n ]*"resources"[\t\r\n ]*:[\t\r\n ]*\[[\t\r\n ]*\][\t\r\n ]*\}[\t\r\n ]*(?![^])/.test(item.result.content[0].text) &&
       value && Object.keys(value).join()==="resources" && Array.isArray(value.resources) && value.resources.length===0,
@@ -85,24 +94,6 @@ function reviewTrace(events, acquisitionPolicy) {
   }
   need([...calls.values()].every(call=>call.completed),"MODEL_REVIEW_SOURCE_LIFECYCLE_INCOMPLETE");
   return {readbacks,acquisitionCalls,parsed:judgments[0].parsed};
-}
-export function validateModelReviewAcquisition(before, readbacks, requiredSourceIds, sourceScope, acquisition) {
-  if(sourceScope !== undefined) validateReviewSourceScope(sourceScope);
-  need(readbacks.length > 0, "MODEL_REVIEW_NO_SOURCE_ACQUISITION");
-  if(acquisition) {
-    validateWindowAcquisition(before,acquisition.calls,acquisition.originals,acquisition.policy);
-    const acquired=acquisition.calls.map(call=>call.value).filter(r=>r.status!=="NEEDS_DISCOVERY");
-    const allowed=[...acquired,...completeWindowSources(acquired,acquisition.originals)];
-    need(readbacks.every(r=>allowed.some(a=>hash(a)===hash(r))),"MODEL_REVIEW_WINDOW_READBACK_INVALID");
-  }
-  need(!sourceScope || readbacks.every(r=>sourceScope.sourceIds.includes(r.window?.sourceId??r.id)),
-    "MODEL_REVIEW_SOURCE_SCOPE_EXPANSION_REQUIRED");
-  if(!acquisition)need(readbacks.every(({text,...r})=>before.rows.some(s=>hash(s)===hash(r)) &&
-    (r.status === "MISSING" ? text === undefined : typeof text === "string" && sha256(text) === r.sha256)),
-    "MODEL_REVIEW_SOURCE_DRIFT");
-  need([...(sourceScope?.sourceIds??[]),...requiredSourceIds].every(id=>readbacks.some(r=>r.id===id &&
-    (!r.window || r.window.offset===0 && r.window.length===r.window.characters))),
-    "MODEL_REVIEW_REQUIRED_SOURCE_UNREAD");
 }
 export function modelReviewCatalog(checkIds) {
   return controlCatalog.filter(group => !checkIds || group.checks.some(c=>checkIds.includes(c.id)))
@@ -133,7 +124,8 @@ ${!health ? "Host input.execution is the protected host's historical grant/reser
 ${!health && offer.input?.terminalObservation && (!checkIds || checkIds.includes("C20.03")) ? "For host input.terminalObservation, independently read the registered durable disposition artifact and accepted producerReturn, goal and technicalProof using read_source. Explicitly judge WAIT owner, trigger, return condition and checkpoint, or DONE accepted scope and DOD. Matching bytes and an owner assertion alone do not prove meaning. Only when established, emit terminalDisposition:{action:WAIT or DONE,sourceIds:[all four acquired source ids],evidence:your independent rationale}; C20.03 must be PASS. Do not copy hashes. Missing or uncertain proof requires an owned finding and no terminalDisposition. No terminal verdict grants execution, overrides pause, closes findings, or substitutes for the other 86 criteria." : "Do not emit terminalDisposition for HEALTH, absent terminal observation, or a part not assigned C20.03."}
 ${health && offer.input?.domainCandidate && (!checkIds || checkIds.includes("C05.02")) ? "For host input.domainCandidate, acquire every sourceBinding through read_source and independently judge the pinned packet/module rights and the precise one-file exclusion from the registered HEALTH resource domain. Declared rights are not effects. Only when established emit healthDomain:{sourceIds:[all candidate source ids],evidence:independent rationale}; C05.02 must be PASS. No owner assertion alone suffices. Do not copy hashes. Uncertain independence requires a finding and no healthDomain." : "Do not emit healthDomain without a HEALTH domainCandidate or outside assigned C05.02."}
 ${health ? "A captured HEALTH lease is historical diagnosis, not a statement that its old execution/repository facts remain current. The host separately admits current dependencies and at most one proven confined completed command; no exemption for source, authority, pause or global finding drift." : ""}
-Return ONLY compact JSON {schema:"control.review-answer.v2",rowGroups,newFindings,resolutions}, with optional transitions, terminalDisposition or healthDomain only as instructed below; no prose or markdown.
+${!health && (!checkIds || checkIds.includes("C20.02")) ? "Include resultUse:{status:ALLOW or REJECT or UNKNOWN,sourceIds:[acquired evidence ids],evidence:independent rationale,findingIds:[owned OPEN finding ids supporting rejection/uncertainty, empty for ALLOW]}. Judge whether THIS accepted result satisfies its contract and DOD and can be consumed unchanged, including retained guidance. REJECT an evidenced unmet mandatory outcome; UNKNOWN missing necessary proof. ALLOW requires C20.02 PASS and positive evidence, not merely a manager acceptance or nonblocking findings. resultUse is independent of blocksResume: false on an advisory finding never authorizes a rejected result. REJECT/UNKNOWN prevents use of this result, not unrelated work or read-only repair. No part alone permits consumption." : "Do not emit resultUse for HEALTH or a part not assigned C20.02."}
+Return ONLY compact JSON {schema:"control.review-answer.v2",rowGroups,newFindings,resolutions}, with resultUse as instructed above and optional transitions, terminalDisposition or healthDomain only as instructed; no prose or markdown.
 Each rowGroup is {ids:[explicit criterion IDs],status,sourceIds:[registered source ids actually read this run],reason?,findingId?}. Include every criterion exactly once; no ranges or implied defaults.
 status MUST be exactly PASS, FINDING, UNKNOWN, DEFERRED or NOT_APPLICABLE. Never use FAIL: use FINDING instead. Every non-PASS group needs reason.
 For a single-criterion FINDING/UNKNOWN/DEFERRED linked to a new finding with identical sourceIds, its evidence text also supplies the row reason; duplication is optional. NOT_APPLICABLE and retained findings still require an explicit reason.
@@ -161,11 +153,16 @@ export async function openModelReview(options) {
   need(Number.isSafeInteger(partitionCount)&&partitionCount>=1&&partitionCount<=4,"MODEL_REVIEW_PARTITION_CONFIG_INVALID");
   need(options.scope?.sourceScope === undefined, "MODEL_REVIEW_STATIC_SOURCE_SCOPE_UNSUPPORTED");
   need(options.episode===undefined,"MODEL_REVIEW_EPISODE_USE_GROUPS");
+  // Receipt completion intentionally does not wait for turn-completed usage.
+  // Do not consume a token-bounded episode slot that cannot be accounted for.
+  need(!(options.native?.reviewSubmission && options.episodeGroups!==undefined),
+    "MODEL_REVIEW_SUBMISSION_TOKEN_EPISODE_UNSUPPORTED");
   if(options.episodeGroups!==undefined || partitionCount>1)return openPartitionModelReview(options,openSingleModelReview);
   return openSingleModelReview(options);
 }
 async function openSingleModelReview({directory, controlRoot, reviewer, sourceFile, native, maxCalls, expiresAt, scope}, checkIds) {
   if(native?.reviewAcquisition!==undefined)validateReviewAcquisition(native.reviewAcquisition);
+  need(native.reviewSubmission===undefined || typeof native.reviewSubmission==="boolean","MODEL_REVIEW_SUBMISSION_CONFIG_INVALID");
   const root = await realpath(controlRoot), dir = await realpath(directory);
   need(dir.startsWith(root+path.sep) && typeof reviewer === "string" && reviewer.trim() &&
     Number.isSafeInteger(maxCalls) && maxCalls >= 1 && maxCalls <= 20 &&
@@ -293,25 +290,36 @@ async function openSingleModelReview({directory, controlRoot, reviewer, sourceFi
           offerKey:offer.key,startedAt:new Date().toISOString(),model:native.model,effort:native.effort}; return s;
       });
       if(allocationError)throw Error(allocationError);
-      let before,prompt,sourceScope;
+      let before,prompt,sourceScope,submissionFile,submissionContext;
       try {
         before=await preflight(offer);sourceScope=before.scope;
         const {host:privateHost,...publicScope}=scope;
         prompt=modelReviewPrompt(offer,{...publicScope,reviewer,now:new Date().toISOString(),
           ...(native.reviewAcquisition?{reviewAcquisition:native.reviewAcquisition}:{})},checkIds,host !== undefined);
+        if(native.reviewSubmission) {
+          prompt=prompt.replace('Return ONLY compact JSON', 'Call submit_review with {answer: the following compact JSON}. Do not return the verdict in chat. After REVIEW_RECEIVED stop; the durable receipt completes your assignment. Answer format');
+          submissionFile=path.join(dir,`submission-${offer.runId}.json`);
+          submissionContext={schema:"control.review-submission-context.v1",offer,reviewer,before,requiredSourceIds,
+            ...(checkIds?{checkIds}:{}),expiresAt:new Date(Math.min(Date.parse(expiresAt),Date.now()+(native.timeoutMs??120000))).toISOString()};
+          const contextBytes=JSON.stringify(submissionContext);
+          need(Buffer.byteLength(contextBytes)<=1024*1024,"MODEL_REVIEW_SUBMISSION_CONTEXT_CAPACITY");
+          const handle=await open(submissionFile,"wx",0o600);
+          try{await handle.writeFile(contextBytes);await handle.sync();}finally{await handle.close();}
+        }
         need(Buffer.byteLength(prompt)<=1024*1024,"MODEL_REVIEW_INPUT_CAPACITY");
         await store.transact(s=>{check(s);Object.assign(s.runs[offer.runId],{sourceDigest:before.digest,inputSha256:sha256(prompt)});return s;});
       } catch(e) {
         await store.transact(s=>{check(s);Object.assign(s.runs[offer.runId],{state:"STOPPED",reason:e.message,dispatched:false});return s;});throw e;
       }
       let result;
-      try {result=await runControlledWorker({...native,endpointFile:sourceFile,role:"review",prompt,signal});}
+      try {result=await runControlledWorker({...native,endpointFile:sourceFile,role:"review",prompt,signal,
+        ...(submissionFile?{reviewSubmissionFile:submissionFile}:{})});}
       catch(e) {
         // Dispatch may have begun before a transport failure. Preserve uncertainty.
         await store.transact(s=>{check(s);s.runs[offer.runId].transportError=e.message;return s;});throw e;
       }
       const record={runId:offer.runId,state:result.state === "CLOSED" || result.state === "NOT_STARTED" ? "STOPPED":"UNKNOWN",
-        reason:result.reason,code:result.code,signal:result.signal,outputSha256:sha256(result.output),
+        reason:result.reason,transportReason:result.reason,code:result.code,signal:result.signal,outputSha256:sha256(result.output),
         finishedAt:new Date().toISOString(),usage:null};
       // Diagnostics are a separate immutable blob, not an ever-growing journal
       // field or an alternative source of authority. Preserve incomplete attempts.
@@ -323,7 +331,22 @@ async function openSingleModelReview({directory, controlRoot, reviewer, sourceFi
         const events=result.output.trim().split("\n").filter(Boolean).map(line=>JSON.parse(line));
         const turns=events.filter(e=>e.type==="turn.completed");
         if(turns.length===1) record.usage=turns[0].usage??null;
-        const {readbacks,acquisitionCalls,parsed}=reviewTrace(events,native.reviewAcquisition);
+        let submission;
+        if(submissionFile) {
+          if(result.reason==="RESULT_REJECTED") {
+            const failed=events.find(e=>e.type==="item.completed" && e.item?.type==="mcp_tool_call" &&
+              e.item.server==="vydykhai_review" && e.item.tool==="submit_review")?.item;
+            throw Error(submissionErrorCode(failed?.result?.content?.[0]?.text));
+          }
+          const bytes=await readFile(submissionFile+".receipt.json"),receipt=JSON.parse(bytes);
+          need(receipt.schema==="control.review-submission.v1" && receipt.contextSha256===hash(submissionContext) &&
+            receipt.runId===offer.runId && receipt.key===offer.key && receipt.sourceDigest===before.digest &&
+            Number.isFinite(Date.parse(receipt.submittedAt)) && Date.parse(receipt.submittedAt)<Date.parse(submissionContext.expiresAt),
+            "MODEL_REVIEW_SUBMISSION_BINDING_INVALID");
+          submission={receipt,sha256:sha256(bytes)};
+          record.submission={file:path.basename(submissionFile)+".receipt.json",sha256:submission.sha256,submittedAt:receipt.submittedAt};
+        }
+        const {readbacks,acquisitionCalls,parsed}=reviewTrace(events,native.reviewAcquisition,submission);
         need(!native.reviewAcquisition || parsed.schema==="control.review-answer.v2","MODEL_REVIEW_WINDOW_V2_REQUIRED");
         let acquisition;
         if(native.reviewAcquisition) {
@@ -335,7 +358,8 @@ async function openSingleModelReview({directory, controlRoot, reviewer, sourceFi
         validateModelReviewAcquisition(before, readbacks, requiredSourceIds, sourceScope,acquisition);
         record.readSources=readbacks.map(({id,sha256,status,window})=>({id,sha256,status,...(window?{window}:{})}));
         if(acquisition)record.acquisition=validateWindowAcquisition(before,acquisitionCalls,acquisition.originals,acquisition.policy);
-        need(record.state==="STOPPED" && result.code===0 && !result.reason && turns.length===1,"MODEL_REVIEW_INCOMPLETE");
+        need(record.state==="STOPPED" && (submission ? result.reason==="RESULT_SUBMITTED" || result.code===0 && !result.reason :
+          result.code===0 && !result.reason && turns.length===1),"MODEL_REVIEW_INCOMPLETE");
         const answer=decodeReviewAnswer(parsed,{readbacks,offer,reviewer,observedAt:record.finishedAt});record.candidate=answer;
         if(checkIds){
           validateReviewPart(parsed,checkIds,{readbacks,offer,reviewer,observedAt:record.finishedAt});
@@ -352,7 +376,11 @@ async function openSingleModelReview({directory, controlRoot, reviewer, sourceFi
           need(!record.validationFailure,"MODEL_REVIEW_FINDINGS_INVALID");
         }
         record.verdict=verdict;
-      } catch(e) {record.reason ??= e.message;}
+        if(submission){record.reason=null;record.completion="DURABLE_SUBMISSION";record.usageUnknown=record.usage===null;}
+      } catch(e) {
+        record.validationError=e.message;
+        if(!record.reason || ["RESULT_SUBMITTED","RESULT_REJECTED"].includes(record.reason))record.reason=e.message;
+      }
       await store.transact(s=>{check(s);need(s.runs[offer.runId]?.state==="IN_FLIGHT","MODEL_REVIEW_OBSERVATION_CONFLICT");
         Object.assign(s.runs[offer.runId],record);return s;});
       if(!record.verdict)throw Error(record.reason??"MODEL_REVIEW_INCOMPLETE");

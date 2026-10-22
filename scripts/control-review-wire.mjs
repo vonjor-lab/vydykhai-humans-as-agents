@@ -2,7 +2,7 @@
 // wording and immutable history rather than asking a model to transcribe them.
 import {controlCatalog,expandControlRows} from "./control-catalog.mjs";
 import {validAffectedTasks} from "./control-findings.mjs";
-import {validTerminalDisposition} from "./post-accept.mjs";
+import {validTerminalDisposition, reviewedResultUse, validProductAcceptance} from "./post-accept.mjs";
 import {canonicalJson,sha256} from "./memory-brief.mjs";
 const hash=v=>sha256(canonicalJson(v));
 const need=(v,c)=>{if(!v)throw Error(c);};
@@ -13,6 +13,7 @@ export function decodeReviewAnswer(answer,{readbacks,offer,reviewer,observedAt})
   if(answer?.schema!=="control.review-answer.v2") {
     need(!Object.hasOwn(answer??{},"terminalDisposition"),"MODEL_REVIEW_TERMINAL_V2_REQUIRED");
     need(!Object.hasOwn(answer??{},"healthDomain"),"MODEL_REVIEW_DOMAIN_V2_REQUIRED");
+    need(!Object.hasOwn(answer??{},"resultUse"),"MODEL_REVIEW_RESULT_USE_V2_REQUIRED");
     return {rows:expandControlRows(answer),findings:answer.findings,
     ...(answer.evidence?{evidenceIndex:answer.evidence}:{})};
   }
@@ -97,6 +98,17 @@ export function decodeReviewAnswer(answer,{readbacks,offer,reviewer,observedAt})
       row.reason=current.evidence;
   }
   // Unmentioned original findings remain unchanged, never silently disappear.
+  let resultUse;
+  if(Object.hasOwn(answer,"resultUse")) {
+    const d=answer.resultUse;
+    need(offer.phase!=="HEALTH" && validProductAcceptance(offer.input.acceptance) && d &&
+      Object.keys(d).sort().join()==="evidence,findingIds,sourceIds,status" && filled(d.evidence),
+      "MODEL_REVIEW_RESULT_USE_INVALID");
+    resultUse={status:d.status,acceptanceSha256:hash(offer.input.acceptance),
+      evidence:`${references(d.sourceIds)} ${d.evidence}`,findingIds:d.findingIds};
+    need(reviewedResultUse({resultUse,rows,findings},offer.input.acceptance)!=="INVALID",
+      "MODEL_REVIEW_RESULT_USE_INVALID");
+  }
   let terminalDisposition;
   if(Object.hasOwn(answer,"terminalDisposition")) {
     const t=answer.terminalDisposition, o=offer.input.terminalObservation;
@@ -131,5 +143,5 @@ export function decodeReviewAnswer(answer,{readbacks,offer,reviewer,observedAt})
       sourceBindings:structuredClone(candidate.sourceBindings),
       reviewer,key:offer.key,evidence:`${evidence} ${d.evidence}`};
   }
-  return {rows,findings,...(terminalDisposition?{terminalDisposition}:{}),...(healthDomain?{healthDomain}:{})};
+  return {rows,findings,...(resultUse?{resultUse}:{}),...(terminalDisposition?{terminalDisposition}:{}),...(healthDomain?{healthDomain}:{})};
 }

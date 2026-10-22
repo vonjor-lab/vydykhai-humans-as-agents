@@ -25,7 +25,8 @@ export function compactOwnerVerdict(packet) {
     repairs.set(key,group);
   }
   return {...identity,view:"COMPACT_EXACT_VERDICT",phase:verdict.phase,runId:verdict.runId,
-    observedAt:verdict.observedAt,criteriaByStatus:groups,findings:verdict.findings,repairGroups:[...repairs.values()]};
+    observedAt:verdict.observedAt,...(verdict.resultUse?{resultUse:verdict.resultUse}:{}),
+    criteriaByStatus:groups,findings:verdict.findings,repairGroups:[...repairs.values()]};
 }
 export function ownerControl(host, owner) {
   const delivered = new Map();
@@ -97,7 +98,8 @@ export function ownerControl(host, owner) {
       await host.recordRetentionRepair(id, {...repair, owner});
       return {id, action:"REVIEW_DUE", productAcceptance:"PRESERVED"};
     },
-    ...(host.health ? {async proposeHealthDomain(request) {await host.health.proposeDomain({...request,owner});return {id:healthId,action:"REVIEW_DUE"};},
+    ...(host.health ? {async resumeHealthRepair(request) {return host.health.resumeRepair({...request,owner});},
+      async proposeHealthDomain(request) {await host.health.proposeDomain({...request,owner});return {id:healthId,action:"REVIEW_DUE"};},
       async requestHealthRepairReview(request) {
       await host.health.requestRepairReview({...request,owner}); return {id:healthId,action:"REVIEW_DUE"};
     }} : {})

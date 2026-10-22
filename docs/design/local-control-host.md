@@ -4,6 +4,69 @@ Status: candidate implementation, not installed or a release qualification.
 The contract covers the local controlled-command route only. It is not a claim
 that ordinary native tools, hooks or other hosts are intercepted.
 
+## Independent Result Use
+
+POST_ACCEPT carries a separate `resultUse` judgment: `ALLOW`, `REJECT` or
+`UNKNOWN`, with acquired source evidence. The host binds it to the exact product
+acceptance, alongside the current review key. REJECT/UNKNOWN cite owned OPEN
+findings; their `blocksResume` flags do not override this result-use decision.
+ALLOW requires C20.02 PASS and cannot contradict an adverse C07.03 or C19.01
+assessment of promised combined behavior or exact-candidate tests. Nonblocking
+advisory debt can remain OPEN without rejecting an otherwise accepted result.
+
+The C20.02 part supplies this judgment when partitioned; merge retains it and
+global validation rechecks consistency. It is not a HEALTH judgment or a command
+grant. The compact owner readback preserves it. The host refuses CONTINUE/DONE
+without ALLOW; current assessment also guards command authorization, reservation,
+historical grants and closure. REPAIR remains available. An independently
+validated WAIT can retain obligations without permitting consumption or DONE.
+
+Legacy verdicts without this field remain readable and unchanged, but confer no
+new result-use permission. No automatic migration creates ALLOW or clears old
+findings. Missing decisions require one source-bound review at the next needed
+use boundary, not mass replay of prior tasks. At that boundary the trusted host's
+existing `requestRepairReview(id, evidence, [])` accepts an empty finding selection
+only for an owned REPAIR whose legacy verdict lacks `resultUse`. It preserves the
+previous verdict in repair history and does not increment unrelated failed repairs
+or bypass their retry requirements. Once the decision exists this exception is
+unavailable. Activation is explicit and outside
+this candidate test. Host enforcement cannot prove that a model's positive
+semantic judgment is correct, or intercept actions outside the controlled route.
+
+## Result-Use Update And Rollback
+
+The existing transition owner and maintenance participant apply this change only
+at a stopped, exclusive runtime boundary. Do not erase an unresolved review or
+command to make the boundary appear safe: reconcile its actual outcome through
+the existing recovery route, preserving the old lease and spent allocation.
+
+1. Retain the accepted kit/runtime identity, activation/profile, journal revisions,
+   findings, verdicts, grants, pending work and human pauses. Stage the complete
+   pinned source package, including `control-review-submission.mjs`; a kit update
+   alone does not switch the private runtime. Reuse the canonical update and
+   explicit paused runtime-switch APIs; do not rewrite journal state.
+2. Keep the current profile unless a separate same-host profile transition
+   authorizes `native.reviewSubmission`. The opt-in return path preserves source
+   acquisition and host validation. Missing final usage remains UNKNOWN, never
+   zero; exact-token-accounted episodes cannot use it. A stopped HEALTH lease
+   still needs its existing independent reconciliation, not an automatic retry.
+3. Read legacy verdicts without changing them. Missing `resultUse` is UNKNOWN,
+   not ALLOW. Only when that result is actually needed, the existing owner takes
+   REPAIR and requests the missing decision through `requestRepairReview`; the
+   legacy-only empty selection does not regenerate product work or erase failed
+   repairs. Reuse current sources; no mass HEALTH/PRE/POST replay is required.
+4. Verify the changed boundary with retained or scoped evidence: REJECT/UNKNOWN
+   cannot authorize use or DONE; owned repair is possible; an explicit ALLOW can
+   continue only while the normal source, grant, health and pause checks hold.
+   Publish the rule through existing shared sync and read back actual
+   owner/reviewer/consumer retrieval and application. Mark unavailable proof
+   pending; copying files or an isolated test never closes project adoption.
+5. If switching fails, use the existing paused rollback route. Restore only the
+   selected code/kit, not old journal snapshots: new findings, spend and unknown
+   effects must survive. Keep scheduling stopped and human pauses intact. An
+   older reader may not enforce `resultUse`; successful reopening is data
+   compatibility, NOT permission to resume or consume a rejected result.
+
 ## Boundaries
 
 - `control-store.mjs` owns append-only control revisions outside the worktree.
@@ -100,10 +163,22 @@ that ordinary native tools, hooks or other hosts are intercepted.
   registry, independently of the preparer's packet. Registered reads have hashes,
   explicit missing status and bounded size; unregistered paths are unavailable.
 - `control-model-review.mjs` starts fresh native REVIEW contexts with source-read
-  tools only. It records dispatch, incomplete diagnostics, usage when available
+  tools and, when explicitly selected, a verdict-submission capability only. It records dispatch, incomplete diagnostics, usage when available
   and result before consumption. Verdict citations must refer to actual reads in
   that run; changed sources invalidate the response. This establishes acquisition,
   not the truth or completeness of a model's interpretation or the registry.
+- Candidate opt-in `native.reviewSubmission:true` uses `submit_review` rather than
+  a final conversational message. The existing wire/coverage/acquisition validators
+  check the assigned complete answer before an immutable private receipt is written.
+  Its acknowledgment ends the read-only child; the parent still requires observed
+  termination, matching receipt and transport, unchanged source/host binding and
+  finding validation before returning a verdict. The receipt itself grants nothing.
+  A rejected submission stops without automatic retry. Existing final-message
+  profiles are unchanged. If no turn-completed usage was delivered, spend remains
+  UNKNOWN, not zero. This mode is refused before dispatch for token-bounded episodes,
+  which require completed usage; their old unknown-usage guard is not weakened.
+  This route does not make a model finish reasoning, replace missing judgments,
+  revive an expired budget, clear historical holds or prove production readiness.
 - `control-owner.mjs` and its MCP expose the retained inbox, exact verdict readback,
   owned response and observed retention-repair submission. They expose no command
   grant, independent verdict creation or finding closure. Native per-tool approval

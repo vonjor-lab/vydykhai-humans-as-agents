@@ -4,6 +4,7 @@ import fs, {mkdtemp, mkdir, realpath, writeFile, readFile, rm, symlink} from "no
 import {syncBuiltinESMExports} from "node:module";
 import {tmpdir} from "node:os";
 import path from "node:path";
+import {fileURLToPath, pathToFileURL} from "node:url";
 import {spawn, spawnSync} from "node:child_process";
 import {openControlStore} from "../scripts/control-store.mjs";
 import {openControlHost} from "../scripts/control-host.mjs";
@@ -51,6 +52,7 @@ async function setup(t, options) {
   return {f, dir, config, host, binding, acceptance, approve, run};
 }
 const verdictFor = (x, offer) => ({phase: "POST_ACCEPT", key: offer.key, reviewer: x.config.reviewer, runId: offer.runId,
+    resultUse:{status:"ALLOW",acceptanceSha256:hash(x.acceptance),evidence:"fixture:independent-result-judgment",findingIds:[]},
     observedAt: new Date().toISOString(), findings: [],
     rows: controlCheckIds.map(id => ({id, status: "PASS", evidence: `fixture:${id}`}))});
 async function acceptAndReview(x, amend = () => {}) {
@@ -62,6 +64,101 @@ async function acceptAndReview(x, amend = () => {}) {
 }
 const disposition = (x, verdict) => ({owner: x.config.owner, reviewKey: hash(verdict),
   action: "CONTINUE", nextAction: x.binding.taskId, evidence: "fixture:owner-applied-verdict"});
+
+for (const status of ["REJECT", "UNKNOWN", "legacy"]) {
+  test(`independent result use ${status} blocks CONTINUE, DONE and a historical grant; REPAIR remains available`, async t => {
+    const x = await setup(t);
+    const verdict = await acceptAndReview(x, v => {
+      const checkId="C19.01", f={id:"result-defect",checkId,area:"C19",
+        criterion:controlCatalog.flatMap(g=>g.checks).find(c=>c.id===checkId).criterion,
+        evidence:"Exact variant violates the mandatory result",owner:"maintenance",work:"repair-result",
+        status:"OPEN",firstSeen:new Date().toISOString(),reviewAt:new Date(Date.now()+60000).toISOString(),
+        attempts:0,blocksResume:false};
+      v.findings=[f];Object.assign(v.rows.find(r=>r.id===checkId),{status:"FINDING",findingId:f.id,reason:f.evidence});
+      if(status==="legacy")delete v.resultUse;
+      else v.resultUse={status,acceptanceSha256:hash(x.acceptance),evidence:f.evidence,findingIds:[f.id]};
+    });
+    const f=verdict.findings[0],leases=[{owner:f.owner,work:f.work,state:"WORKING",
+      checkpoint:"Correct fixture only",reviewAt:f.reviewAt,evidence:"owned correction"}];
+    const expected=status==="REJECT"?/RESULT_USE_REJECTED/:/RESULT_USE_UNPROVEN/;
+    await assert.rejects(x.host.disposition("previous",disposition(x,verdict),leases),expected);
+    await assert.rejects(x.host.disposition("previous",{owner:x.config.owner,reviewKey:hash(verdict),
+      action:"DONE",evidence:"claimed done",recordSha256:sha256("terminal")},leases),expected);
+    // Simulate a historical manager CONTINUE, not a newly authorized write.
+    await (await openControlStore(x.dir)).transact(s=>{
+      Object.assign(s.acceptances.previous,{disposition:disposition(x,verdict),repairLeases:leases,
+        enrollment:"CONTINUATION_OR_REPAIR_DUE"});return s;
+    });
+    await x.approve(["previous"]);
+    const restarted=await openControlHost(x.dir,x.config,services);
+    assert.match((await restarted.assess("previous")).action,expected);
+    await assert.rejects(restarted.control.authorize(x.binding),/POST_ACCEPT_CONTROL_PENDING/);
+    await assert.rejects(restarted.close("previous"),/CONTROL_NOT_COMPLETE/);
+    await restarted.disposition("previous",{owner:x.config.owner,reviewKey:hash(verdict),action:"REPAIR",
+      evidence:"Use exact independent finding, not a replacement verdict"},leases);
+    const quiet=await runControlTick(restarted,{review:async()=>{throw Error("UNEXPECTED_MODEL_CALL");}});
+    assert.equal(quiet.calls,0);
+    const saved=await restarted.snapshot();
+    assert.deepEqual(saved.acceptances.previous.review,verdict);
+    assert.deepEqual(saved.reservations,{});
+    await assert.rejects(accessOutput(x),/ENOENT/);
+  });
+}
+const accessOutput=x=>readFile(path.join(x.f.root,"result.json"));
+
+test("closed 2.1.5 legacy history stays quiet after update, but reuse stays blocked and real drift is due", async t => {
+  const x = await setup(t), historical = path.join(x.dir, "source-215");
+  await mkdir(historical);
+  const archived = spawnSync("git", ["archive", "v2.1.5", "scripts"], {
+    cwd: fileURLToPath(new URL("..", import.meta.url)), maxBuffer: 16 * 1024 * 1024});
+  assert.equal(archived.status, 0, archived.stderr?.toString());
+  assert.equal(spawnSync("tar", ["-x", "-C", historical], {input: archived.stdout}).status, 0);
+  const oldApi = await import(pathToFileURL(path.join(historical, "scripts/control-host.mjs")));
+  const old = await oldApi.openControlHost(x.dir, x.config, services);
+  await old.accept(x.acceptance);
+  const offer = await old.claimReview("previous"), legacy = verdictFor(x, offer);
+  delete legacy.resultUse;
+  await old.review("previous", offer, legacy);
+  await old.disposition("previous", disposition(x, legacy));
+  await old.approveCommand(x.binding, {reviewer: x.config.reviewer, reviewReceipt: "fixture:old-proof",
+    dependencies: ["previous"], expiresAt: Date.now() + 120000});
+  const reservation = await old.control.reserve(await old.control.authorize(x.binding));
+  await old.control.observe(reservation, {outcome: "COMPLETED", bindingSha256: hash(x.binding),
+    resultSha256: sha256("historical protocol observation, no product execution")});
+  await old.close("previous");
+  assert.deepEqual(await old.due(), []);
+  const retained = await (await openControlStore(x.dir)).read();
+  const current = await openControlHost(x.dir, x.config, services);
+  assert.equal((await current.assess("previous")).action, "RESULT_USE_UNPROVEN");
+  assert.deepEqual(await current.due(), []);
+  await assert.rejects(current.claimReview("previous"), /REVIEW_NOT_DUE/);
+  assert.equal((await runControlTick(current, {review: async () => {throw Error("UNEXPECTED_REVIEW");}})).calls, 0);
+  assert.deepEqual(await (await openControlStore(x.dir)).read(), retained);
+  const next = {...x.binding, commandSha256: sha256("future consumer")};
+  await current.approveCommand(next, {reviewer: x.config.reviewer, reviewReceipt: "fixture:next-proof",
+    dependencies: ["previous"], expiresAt: Date.now() + 120000});
+  await assert.rejects(current.control.authorize(next), /POST_ACCEPT_CONTROL_PENDING/);
+  await assert.rejects(current.close("previous"), /CONTROL_NOT_COMPLETE/);
+  await x.f.put("memory.md", "actual source drift");
+  assert.deepEqual(await current.due(), [{id: "previous", action: "REVIEW_DUE"}]);
+  assert.ok((await current.claimReview("previous")).runId);
+});
+
+test("legacy missing decision has one owned review path without repeating work or rewriting history", async t => {
+  const x=await setup(t),legacy=await acceptAndReview(x,v=>{delete v.resultUse;});
+  await x.host.disposition("previous",{...disposition(x,legacy),action:"REPAIR"});
+  assert.equal((await x.host.assess("previous")).action,"REPAIR_REQUIRED");
+  await x.host.requestRepairReview("previous","Judge only the missing result-use permission on retained sources",[]);
+  const offer=await x.host.claimReview("previous");
+  assert.deepEqual(offer.input.acceptance,x.acceptance);
+  await x.host.review("previous",offer,verdictFor(x,offer));
+  const row=(await x.host.snapshot()).acceptances.previous;
+  assert.deepEqual(row.repairHistory[0].previousReview,legacy);
+  assert.deepEqual(row.acceptance,x.acceptance);
+  await x.host.disposition("previous",{...disposition(x,row.review),action:"REPAIR"});
+  await assert.rejects(x.host.requestRepairReview("previous","Do not repeat an existing decision",[]),/FINDING_IDS_REQUIRED/);
+  assert.deepEqual((await x.host.snapshot()).reservations,{});
+});
 
 async function historicalGrant(x, taskId = x.acceptance.task) {
   const binding = {...x.binding, taskId, operation: "accept", kind: "verification",
@@ -680,6 +777,7 @@ test("fresh reviewer subprocess and retained result survive controller recreatio
     let protectedWrites=0;for(const p of ${JSON.stringify([path.join(x.f.root,"forbidden"),path.join(x.dir,"forbidden")])}){
       try{writeFileSync(p,'bad')}catch{protectedWrites++}}
     console.log(JSON.stringify({phase:'POST_ACCEPT',key:offer.key,reviewer:'forged',runId:'forged',
+      resultUse:${JSON.stringify({status:"ALLOW",acceptanceSha256:hash(x.acceptance),evidence:"protocol-fixture:independent-result",findingIds:[]})},
       findings:[],rows:${JSON.stringify(controlCheckIds)}.map(id=>({id,status:'PASS',evidence:'protocol-fixture:'+id})),protectedWrites}));`);
   const result = await runControlTick(x.host, {review: transport.review, timeoutMs: 3000});
   assert.equal(result.results[0].action, "OWNER_DISPOSITION_DUE");

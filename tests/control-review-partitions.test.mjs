@@ -4,6 +4,7 @@ import {reviewPartitions, validateReviewPart, mergeReviewParts} from "../scripts
 import {controlCatalog, controlCheckIds, checkControlCoverage} from "../scripts/control-catalog.mjs";
 import {decodeReviewAnswer} from "../scripts/control-review-wire.mjs";
 import {validateControlFindings} from "../scripts/control-findings.mjs";
+import {sha256,canonicalJson} from "../scripts/memory-brief.mjs";
 
 const options = () => ({readbacks: [{id: "contract", status: "AVAILABLE", sha256: "a".repeat(64)},
   {id: "memory", status: "MISSING"}], offer: {key: "b".repeat(64), input: {previousFindings: []}},
@@ -13,6 +14,32 @@ const answer = ids => ({schema: "control.review-answer.v2", rowGroups: [
 const newFinding = (checkId, id = "retained-problem") => ({id, checkId, sourceIds: ["contract"],
   evidence: "Observed missing bounded evidence", owner: "repair-owner", work: "repair-work",
   reviewAt: "2026-10-08T10:00:00Z", blocksResume: true});
+
+test("result-use survives decode and partition merge, cannot be invented by an unassigned or HEALTH part", () => {
+  const opts=options(),ref={path:"fixture.md",sha256:"a".repeat(64)};
+  opts.offer.input.acceptance={schema:"work.product-acceptance.v1",id:"a",project:"p",task:"t",
+    owner:"owner",executor:"executor",status:"ACCEPTED",acceptedAt:"2026-10-07T09:00:00Z",
+    producerReturn:ref,artifact:ref,technicalProof:ref,goal:ref,
+    retention:["memory","map","tracker","custody"].map(id=>({id,required:true,expected:ref}))};
+  const parts=reviewPartitions(2),raw=parts.map(answer),index=parts.findIndex(ids=>ids.includes("C20.02"));
+  raw[index].resultUse={status:"ALLOW",sourceIds:["contract"],evidence:"Result contract proven",findingIds:[]};
+  const decoded=validateReviewPart(raw[index],parts[index],opts);
+  assert.equal(decoded.resultUse.acceptanceSha256,sha256(canonicalJson(opts.offer.input.acceptance)));
+  const merged=mergeReviewParts(raw,parts);
+  assert.deepEqual(decodeReviewAnswer(merged,opts).resultUse,decoded.resultUse);
+  assert.throws(()=>decodeReviewAnswer(merged,{...opts,offer:{...opts.offer,phase:"HEALTH"}}),/RESULT_USE_INVALID/);
+  const bad=structuredClone(raw[index]);bad.resultUse.sourceIds=["not-read"];
+  assert.throws(()=>validateReviewPart(bad,parts[index],opts),/UNREAD_EVIDENCE/);
+  raw[1-index].resultUse=raw[index].resultUse;
+  assert.throws(()=>mergeReviewParts(raw,parts),/RESULT_USE_UNASSIGNED/);
+  const conflict=answer(controlCheckIds),f=newFinding("C19.01");f.blocksResume=false;
+  conflict.newFindings=[f];conflict.resultUse=raw[index].resultUse;
+  conflict.rowGroups=[{ids:controlCheckIds.filter(id=>id!==f.checkId),status:"PASS",sourceIds:["contract"]},
+    {ids:[f.checkId],status:"FINDING",sourceIds:["contract"],reason:f.evidence,findingId:f.id}];
+  assert.throws(()=>validateReviewPart(conflict,controlCheckIds,opts),/RESULT_USE_INVALID/);
+  conflict.resultUse={...conflict.resultUse,status:"REJECT",findingIds:[f.id]};
+  assert.equal(validateReviewPart(conflict,controlCheckIds,opts).resultUse.status,"REJECT");
+});
 function ownedAnswer(ids, status = "UNKNOWN", id = "retained-problem") {
   const a = answer(ids), checkId = ids[0];
   a.rowGroups = [{ids: [checkId], status, sourceIds: ["memory"], reason: "Relevant evidence is missing", findingId: id},

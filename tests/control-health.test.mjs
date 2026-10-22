@@ -46,6 +46,67 @@ function add(v,f) {v.findings.push(f);Object.assign(v.rows.find(r=>r.id===f.chec
 const leases=f=>[{owner:f.owner,work:f.work,state:"WORKING",evidence:"fixture:owned",checkpoint:"repair",
   reviewAt:f.reviewAt}];
 
+async function waitingRepair(t) {
+  const x=await setup(t),f=defect(),lease={...leases(f)[0],state:"WAITING",resumeWhen:"replacement input retained"};
+  const v=await review(x,v=>add(v,f));await consume(x,v,"REPAIR",[lease]);
+  await x.host.pause(true);
+  const request={repairOwner:f.owner,work:f.work,expectedLeaseSha256:hash(lease),
+    evidence:"fixture:replacement input retained",checkpoint:"fixture:owner acknowledged repair preparation"};
+  return {x,f,lease,request};
+}
+test("repair lease resume preserves obligations and requires a separate repair review",async t=>{
+  const {x,f,lease,request}=await waitingRepair(t),before=await x.host.snapshot();
+  assert.deepEqual(await x.owner.resumeHealthRepair(request),
+    {action:"REPAIR_PREPARED",executionGranted:false,reviewGranted:false});
+  const after=await x.host.snapshot(),expected=structuredClone(before);
+  const next={...lease,state:"PREPARED",evidence:request.evidence,checkpoint:request.checkpoint};
+  expected.health.repairLeases=[next];
+  const event=after.health.history.at(-1);
+  assert.deepEqual(event.repairLeaseResume,{owner:x.config.owner,previous:lease,next,
+    observedAt:event.repairLeaseResume.observedAt,receipt:"COORDINATION_ONLY_NOT_REPAIR_PROOF"});
+  assert.ok(Number.isFinite(Date.parse(event.repairLeaseResume.observedAt)));
+  expected.health.history.push(event);
+  assert.deepEqual(after,expected);
+  await assert.rejects(x.owner.requestHealthRepairReview({evidence:"fixture:repair",findingIds:[f.id]}),/HEALTH_REPAIR_NOT_OWNED/);
+  await assert.rejects(x.owner.resumeHealthRepair(request),/HEALTH_REPAIR_RESUME_STALE/);
+  await x.host.pause(false);
+  await x.owner.requestHealthRepairReview({evidence:"fixture:repair",findingIds:[f.id]});
+  const offer=await x.host.claimReview("@health");
+  assert.equal(offer.input.lifecycle.phase,"REPAIR_VERIFICATION");
+  assert.deepEqual(offer.input.lifecycle.requestedRepairFindingIds,[f.id]);
+  assert.equal(offer.input.previousFindings[0].status,"OPEN");
+});
+test("repair lease resume refuses stale authority and in-flight work without mutation",async t=>{
+  const {x,request}=await waitingRepair(t);
+  const unchanged=async (action,pattern)=>{
+    const before=await x.host.snapshot();await assert.rejects(action,pattern);
+    assert.deepEqual(await x.host.snapshot(),before);
+  };
+  await unchanged(()=>x.host.health.resumeRepair({...request,owner:"stranger"}),/HEALTH_REPAIR_RESUME_INVALID/);
+  await unchanged(()=>x.owner.resumeHealthRepair({...request,work:"other"}),/HEALTH_REPAIR_RESUME_NOT_OWNED/);
+  await unchanged(()=>x.owner.resumeHealthRepair({...request,expectedLeaseSha256:"0".repeat(64)}),/HEALTH_REPAIR_RESUME_STALE/);
+  await unchanged(()=>x.owner.resumeHealthRepair({...request,reviewAt:new Date().toISOString()}),/HEALTH_REPAIR_RESUME_INVALID/);
+  await x.host.pause(false);
+  await unchanged(()=>x.owner.resumeHealthRepair(request),/HEALTH_REPAIR_RESUME_NOT_QUIESCENT/);
+  await x.host.pause(true);
+  const store=await openControlStore(x.directory),base=await x.host.snapshot();
+  for(const patch of [{reviewLease:{runId:"pending"}},{reviewEpisode:{id:"pending"}},
+    {repairIds:["pending"]},{enrollment:"REVIEW_RECONCILIATION_REQUIRED"}]) {
+    await store.transact(s=>{Object.assign(s.health,patch);return s;});
+    await unchanged(()=>x.owner.resumeHealthRepair(request),/HEALTH_REPAIR_RESUME_NOT_QUIESCENT/);
+    await store.transact(()=>structuredClone(base));
+  }
+});
+test("repair lease resume cannot authorize retry of a failed repair",async t=>{
+  const {x,f,request}=await waitingRepair(t),store=await openControlStore(x.directory);
+  await store.transact(s=>{Object.assign(s.health.findings[0],{lastResult:"FAILED",attempts:1});return s;});
+  const before=await x.host.snapshot();await x.owner.resumeHealthRepair(request);
+  assert.deepEqual((await x.host.snapshot()).health.findings,before.health.findings);
+  await x.host.pause(false);
+  await assert.rejects(x.owner.requestHealthRepairReview({evidence:"fixture:repair",findingIds:[f.id]}),
+    /HEALTH_FAILED_REPAIR_NEEDS_DECISION/);
+});
+
 test("review sees stable lifecycle and actual owned repair assignments without treating them as proof",async t=>{
   const x=await setup(t),f=defect();
   const initial=await x.host.claimReview("@health");

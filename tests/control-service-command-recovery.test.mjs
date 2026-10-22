@@ -102,6 +102,7 @@ async function priorAcceptance(x) {
   const offer = await x.service.host.claimReview("prior");
   // Prior acceptance is protocol setup, not model semantic qualification. No review is dispatched.
   await x.service.host.review("prior", offer, {phase: "POST_ACCEPT", key: offer.key, reviewer: "reviewer", runId: offer.runId,
+    resultUse:{status:"ALLOW",acceptanceSha256:hash(offer.input.acceptance),evidence:"fixture:independent-result",findingIds:[]},
     observedAt: new Date().toISOString(), findings: [],
     rows: controlCheckIds.map(id => ({id, status: "PASS", evidence: "synthetic-protocol-only"}))});
   await x.service.owner.readVerdict("prior");

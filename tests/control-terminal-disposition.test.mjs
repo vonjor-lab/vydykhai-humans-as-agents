@@ -59,6 +59,7 @@ async function fixture(t, action, {lateEnrollment = false, registeredEvidence = 
   if (lateEnrollment) await host.recordTerminalDisposition(acceptance.id, terminalArtifact);
   const offer = await host.claimReview(acceptance.id);
   const verdict = {phase: "POST_ACCEPT", key: offer.key, runId: offer.runId, reviewer: "reviewer",
+    resultUse:{status:"ALLOW",acceptanceSha256:sha256(canonicalJson(acceptance)),evidence:"fixture:independent-result",findingIds:[]},
     observedAt: new Date().toISOString(), findings: [],
     rows: controlCheckIds.map(id => ({id, status: "PASS", evidence: "fixture: independently read sources"})),
     terminalDisposition: {action, recordSha256: terminalArtifact.sha256, evidence: "fixture: independent scope/owner-wait verdict"}};

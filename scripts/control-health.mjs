@@ -427,6 +427,35 @@ export function healthControl({state,update,config,observeReviewRun}) {
       });
       return {action:blocked ? "REPAIR_DUE" : "HEALTH_WINDOW_CONFIRMED",nextDueAt:(await state()).health.nextDueAt};
     },
+    async resumeRepair(request) {
+      need(request && Object.keys(request).sort().join() ===
+        ['owner','repairOwner','work','expectedLeaseSha256','evidence','checkpoint'].sort().join(),
+        "HEALTH_REPAIR_RESUME_INVALID");
+      const {owner,repairOwner,work,expectedLeaseSha256,evidence,checkpoint}=request;
+      need(owner===config.owner && [repairOwner,work,evidence,checkpoint].every(filled) &&
+        /^[a-f0-9]{64}$/.test(expectedLeaseSha256),"HEALTH_REPAIR_RESUME_INVALID");
+      await update(s=>{
+        const h=s.health;
+        need(s.paused && !h.reviewLease && !h.reviewEpisode && !h.repairIds.length &&
+          ['REPAIR_DUE','REVIEW_DUE','SETTLED'].includes(h.enrollment) && h.disposition?.action==='REPAIR',
+          "HEALTH_REPAIR_RESUME_NOT_QUIESCENT");
+        const matches=h.repairLeases.filter(l=>l.owner===repairOwner && l.work===work);
+        const findings=h.findings.filter(f=>f.status==='OPEN' && f.owner===repairOwner && f.work===work);
+        need(matches.length===1 && findings.length>0 && !checkFindingLeases(findings,matches),
+          "HEALTH_REPAIR_RESUME_NOT_OWNED");
+        const previous=matches[0];
+        need(previous.state==='WAITING' && hash(previous)===expectedLeaseSha256,
+          "HEALTH_REPAIR_RESUME_STALE");
+        // Resume coordination only: no finding, deadline, pause or retry-budget change.
+        const next={...previous,state:'PREPARED',evidence,checkpoint};
+        const leases=h.repairLeases.map(l=>l===previous?next:l);
+        need(!checkFindingLeases(h.findings,leases),"HEALTH_REPAIR_RESUME_NOT_OWNED");
+        h.history.push({repairLeaseResume:{owner,previous:structuredClone(previous),next:structuredClone(next),
+          observedAt:new Date().toISOString(),receipt:'COORDINATION_ONLY_NOT_REPAIR_PROOF'}});
+        h.repairLeases=leases;
+      });
+      return {action:'REPAIR_PREPARED',executionGranted:false,reviewGranted:false};
+    },
     async requestRepairReview({owner,evidence,findingIds}) {
       need(owner === config.owner && filled(evidence) && Array.isArray(findingIds) && findingIds.length &&
         new Set(findingIds).size === findingIds.length,"HEALTH_REPAIR_REQUEST_INVALID");

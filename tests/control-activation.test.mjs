@@ -69,6 +69,7 @@ test("installed observer executes only an explicit continuation grant and closes
   await service.host.accept(accepted);
   for(const id of ["@health","consumer"]){
     const offer=await service.host.claimReview(id),verdict={phase:id==="@health"?"HEALTH":"POST_ACCEPT",key:offer.key,
+      ...(id!=="@health"?{resultUse:{status:"ALLOW",acceptanceSha256:hash(accepted),evidence:"fixture:independent-result",findingIds:[]}}:{}),
       runId:offer.runId,reviewer:"reviewer",observedAt:new Date().toISOString(),findings:[],
       rows:controlCheckIds.map(id=>({id,status:"PASS",evidence:"fixture-only protocol, not semantic proof"}))};
     await service.host.review(id,offer,verdict);await service.owner.readVerdict(id);

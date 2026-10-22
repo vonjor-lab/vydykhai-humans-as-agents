@@ -206,6 +206,7 @@ test(`removing automatic opt-in ${boundary} cannot execute or close`, darwin, as
   for (const id of retentionKinds) acceptance.retention.push({id, required: true, expected: await ref(id)});
   await x.host.accept(acceptance);
   await runControlTick(x.host, {review: async offer => ({phase: "POST_ACCEPT", key: offer.key,
+    resultUse:{status:"ALLOW",acceptanceSha256:sha256(canonicalJson(acceptance)),evidence:"fixture:independent-result",findingIds:[]},
     runId: offer.runId, reviewer: "reviewer", observedAt: new Date().toISOString(), findings: [],
     rows: controlCheckIds.map(id => ({id, status: "PASS", evidence: "Synthetic protocol, not semantic proof"}))})});
   const owner = ownerControl(x.host, "owner");

@@ -225,6 +225,7 @@ test("owner inbox requires exact verdict acquisition and cannot mint independent
     retention:retentionKinds.map(id=>({id,required:true,expected:ref(id)}))};
   await x.host.accept(acceptance);
   const result=await runControlTick(x.host,{review:async offer=>({phase:"POST_ACCEPT",key:offer.key,runId:offer.runId,
+    resultUse:{status:"ALLOW",acceptanceSha256:sha256(canonicalJson(acceptance)),evidence:"fixture:independent-result",findingIds:[]},
     reviewer:config.reviewer,observedAt:new Date().toISOString(),findings:[],rows:controlCheckIds.map(id=>({id,status:"PASS",evidence:"fixture"}))})});
   assert.equal(result.calls,1);
   const restarted=await openControlHost(x.profile.directory,config,endpointServices);

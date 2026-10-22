@@ -7,7 +7,7 @@ import {controlCatalog, controlCheckIds, checkControlCoverage} from "../scripts/
 import {sha256, canonicalJson} from "../scripts/memory-brief.mjs";
 import {createReturnSync, validateDurableOutbox} from "../scripts/vydykhai.mjs";
 import {validProductAcceptance, recordProductAcceptance, readProductAcceptance,
-  observeRetention, postAcceptKey, assessPostAccept, retentionKinds} from "../scripts/post-accept.mjs";
+  observeRetention, postAcceptKey, assessPostAccept, retentionKinds, reviewedResultUse} from "../scripts/post-accept.mjs";
 
 const hash = value => sha256(canonicalJson(value));
 const ref = name => ({path: `${name}.md`, sha256: sha256(name)});
@@ -25,6 +25,7 @@ function sample() {
 }
 function review(x, findings = []) {
   x.review = {phase: "POST_ACCEPT", key: postAcceptKey(x), reviewer: "fresh-reviewer", runId: "fresh-run",
+    resultUse:{status:"ALLOW",acceptanceSha256:hash(x.acceptance),evidence:"fixture:independent-result-judgment",findingIds:[]},
     observedAt: "2026-10-06T10:02:00Z", rows: rows(), findings};
   return x;
 }
@@ -46,6 +47,24 @@ function finding(x, checkId = "C16.03", blocking = true) {
   return f;
 }
 const action = (x, expected) => assert.equal(assessPostAccept(x).action, expected);
+
+test("result-use decision is pinned, explicit and consistent; advisory debt alone does not reject it", () => {
+  const x=review(sample());assert.equal(reviewedResultUse(x.review,x.acceptance),"ALLOW");
+  finding(x,"C08.01",false);assert.equal(reviewedResultUse(x.review,x.acceptance),"ALLOW");
+  disposition(x);action(x,"CONTROL_CONFIRMED");
+  for(const mutate of [d=>d.acceptanceSha256=sha256("another acceptance"),d=>d.findingIds=["missing"],
+    d=>d.status="PASS",d=>d.evidence="",d=>d.extra=true]) {
+    const bad=structuredClone(x.review);mutate(bad.resultUse);
+    assert.equal(reviewedResultUse(bad,x.acceptance),"INVALID");
+  }
+  const negative=review(sample());finding(negative,"C19.01",false);
+  assert.equal(reviewedResultUse(negative.review,negative.acceptance),"INVALID");
+  negative.review.resultUse={...negative.review.resultUse,status:"REJECT",findingIds:["finding-1"]};
+  disposition(negative);action(negative,"RESULT_USE_REJECTED");
+  const legacy=review(sample());delete legacy.review.resultUse;
+  disposition(legacy);action(legacy,"RESULT_USE_UNPROVEN");
+  assert.equal(legacy.review.resultUse,undefined);
+});
 async function storage(t) {
   const root = await mkdtemp(path.join(tmpdir(), "vydykhai-post-accept-"));
   t.after(() => rm(root, {recursive: true, force: true}));

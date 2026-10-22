@@ -24,17 +24,22 @@ export function controlledCodexConfig({workspace, endpointFile, nodeExecutable =
   };
 }
 
-export function reviewCodexConfig({workspace, endpointFile, nodeExecutable = process.execPath, enableMemoryRecall = false, reviewAcquisition}) {
+export function reviewCodexConfig({workspace, endpointFile, nodeExecutable = process.execPath, enableMemoryRecall = false, reviewAcquisition, reviewSubmissionFile}) {
   if (typeof enableMemoryRecall !== "boolean") throw Error("CONTROL_PROFILE_RECALL_INVALID");
   if (reviewAcquisition !== undefined) validateReviewAcquisition(reviewAcquisition);
   if (reviewAcquisition !== undefined && enableMemoryRecall) throw Error("CONTROL_PROFILE_RECALL_WINDOW_UNSUPPORTED");
+  if (reviewSubmissionFile !== undefined && !path.isAbsolute(reviewSubmissionFile)) throw Error("CONTROL_PROFILE_SUBMISSION_INVALID");
   const config = controlledCodexConfig({workspace, endpointFile, nodeExecutable});
   config.project_doc_max_bytes = 0;
   delete config["mcp_servers.vydykhai_control"];
   config["mcp_servers.vydykhai_review"] = {command: nodeExecutable,
     args: [fileURLToPath(new URL("./control-review-mcp.mjs", import.meta.url)), endpointFile,
-      ...(reviewAcquisition === undefined ? [] : [JSON.stringify(reviewAcquisition)])],
-    required: true, enabled: true, enabled_tools: ["list_sources", "read_source", ...(enableMemoryRecall ? ["recall_memory"] : [])], startup_timeout_sec: 10, tool_timeout_sec: 15};
+      ...(reviewAcquisition === undefined && reviewSubmissionFile === undefined ? [] : [JSON.stringify(reviewAcquisition??null)]),
+      ...(reviewSubmissionFile === undefined ? [] : [reviewSubmissionFile])],
+    required: true, enabled: true, enabled_tools: ["list_sources", "read_source", ...(enableMemoryRecall ? ["recall_memory"] : []),
+      ...(reviewSubmissionFile === undefined ? [] : ["submit_review"])],
+    ...(reviewSubmissionFile === undefined ? {} : {tools:{submit_review:{approval_mode:"approve"}}}),
+    startup_timeout_sec: 10, tool_timeout_sec: 15};
   return config;
 }
 

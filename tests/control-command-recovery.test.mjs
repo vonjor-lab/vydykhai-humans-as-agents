@@ -309,6 +309,7 @@ test("failed dependency cannot earn continuation or acceptance closure, even aft
   await x.host.accept(acceptance);
   const offer = await x.host.claimReview("prior");
   const verdict = {phase: "POST_ACCEPT", key: offer.key, reviewer: "reviewer", runId: offer.runId,
+    resultUse:{status:"ALLOW",acceptanceSha256:hash(acceptance),evidence:"fixture:independent-result",findingIds:[]},
     observedAt: new Date().toISOString(), findings: [], rows: controlCheckIds.map(id => ({id, status: "PASS", evidence: "protocol-only"}))};
   await x.host.review("prior", offer, verdict);
   await x.host.disposition("prior", {owner: "owner", reviewKey: hash(verdict), action: "CONTINUE",

@@ -1,5 +1,29 @@
 # Collaboration Framework Changelog
 
+## 2.1.6 - 2026-10-22
+
+Готовое решение независимого проверяющего можно сохранить и передать
+владельцу, не ожидая заключительного сообщения в чате. Неполное решение не
+принимается; история замечаний, проверка источников и запреты на выполнение
+сохраняются. Старый способ возврата совместим, новый включается явно.
+
+Отрицательная независимая приёмка теперь запрещает использовать результат и
+закрывать его как готовый, даже если отдельные замечания не отмечены блокирующими.
+Ремонт остаётся доступен. Старые решения сохраняются, но отсутствие явного допуска
+не превращается в разрешение. Обычный неблокирующий долг сам по себе не запрещает
+использовать результат, который действительно прошёл приёмку.
+
+Evolution Gate: benefit is fewer lost completed decisions and repeated reviews;
+evidence includes a real Sol6.1High source-based rejection in219505ms, delivered
+and enforced with all10 finding holds false, plus local legacy/positive/negative,
+restart, packaging and closure checks. The earlier failed semantic trial remains
+recorded. This is one scoped synthetic challenge, not project acceptance or
+measured savings. Cost: one receipt capability on the existing MCP,
+no new service, role, audit or scheduler. Unknown model usage stays unknown.
+Verdict: release candidate; publication and actual project activation remain
+separate. The existing own-transition adoption requirement owns retained history,
+legacy decisions and paused rollback, without automatically repeating old work.
+
 ## 2.1.5 - 2026-10-20
 
 The existing v4 locator distinguishes association from obligation expansion.

@@ -11,6 +11,7 @@ import {controlCheckIds} from "../scripts/control-catalog.mjs";
 import {retentionKinds} from "../scripts/post-accept.mjs";
 import {ownerControl} from "../scripts/control-owner.mjs";
 import {resumeCycle} from "../scripts/resume-control-cycle.mjs";
+import {sha256,canonicalJson} from "../scripts/memory-brief.mjs";
 async function setup(t,{expiresInMs=60000}={}){
   const x=await endpointFixture(t),out=path.join(x.privateRoot,"qualification"),packages=path.join(x.privateRoot,"packages");
   await mkdir(out,{mode:0o700});await mkdir(packages,{mode:0o700});
@@ -23,6 +24,7 @@ async function setup(t,{expiresInMs=60000}={}){
   for(const id of retentionKinds)a.retention.push({id,required:true,expected:await ref(id)});
   await x.host.accept(a);
   await runControlTick(x.host,{review:async offer=>({phase:"POST_ACCEPT",key:offer.key,runId:offer.runId,reviewer:"reviewer",observedAt:new Date().toISOString(),findings:[],
+    resultUse:{status:"ALLOW",acceptanceSha256:sha256(canonicalJson(a)),evidence:"fixture:independent-result",findingIds:[]},
     rows:controlCheckIds.map(id=>({id,status:"PASS",evidence:"synthetic protocol only"}))})});
   const owner=ownerControl(x.host,"owner");await owner.readVerdict("consumer");
   await owner.respond("consumer",{owner:"owner",action:"CONTINUE",nextAction:"TASK-1",evidence:"fixture:approved"});

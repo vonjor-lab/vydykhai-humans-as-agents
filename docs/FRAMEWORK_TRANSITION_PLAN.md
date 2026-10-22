@@ -1,5 +1,79 @@
 # Framework Efficiency Transition
 
+## Release Package Checkpoint 2026-10-22
+
+Current authority: finish the isolated 2.1.6 release candidate, scoped independent
+code review, adoption requirements and archive/install/update/rollback checks.
+Do not publish, change product repositories, execute Lab48 or resume orchestrators.
+All prior sections below are retained history, not instructions to replay them.
+
+Completed: scoped independent review found and closed one migration P2. Closed
+legacy results no longer enroll a model review solely because resultUse is absent;
+use remains blocked until an owned decision, and real drift/debt still triggers
+review. The same reviewer confirmed the correction with five focused checks.
+The final host/POST suite passed 100/100. Release-boundary checks passed 84 with
+zero failures and one platform-specific skip. The source archive contains 379
+exact files; fresh install, actual 2.1.5 updater, complete runtime loading and
+paused forward/back switching passed. Local data, history, spent counters and
+pauses were retained. Scheduler absence in the isolated switch check was scripted,
+not live project automation proof. No new semantic-model trial was needed.
+
+Disposition: READY_FOR_RELEASE_APPROVAL for this scoped 2.1.6 patch; NO_RELEASE,
+NO_PRODUCT_ACTIVATION. Publication still requires authorization and exact remote
+readback. A separately authorized project adoption must prove actual use through
+the existing route; it is not implied by the isolated release package.
+
+The actual-model negative result-use test passed: the retained REJECT prevents
+CONTINUE/DONE even when individual findings are nonblocking. The existing suite
+finished with 1538 PASS, 0 FAIL and 100 SKIP; skips are not proof. Reuse these
+unchanged results. This turn checks only the remaining release boundaries and
+addresses concrete reviewer findings, not another whole-project audit.
+
+The release candidate carries the existing own-transition requirement for legacy
+verdicts, durable return opt-in and a paused rollback that retains history and
+does not authorize use under an older reader. Project adoption, ordinary positive
+model reliability, whole-project memory coverage and net economy remain unproved
+by this narrow negative fixture. Publishing is a later authorized action.
+
+## Result-Use Gate Repair 2026-10-22
+
+The first actual-model durable-submission trial returned a correct defect
+diagnosis but nonblocking findings; unchanged CONTINUE was accepted. Preserve
+that negative result. The next narrow candidate adds explicit independent
+result-use judgment to the existing POST verdict, not another control role.
+Legacy answers remain stored and readable but never gain permission by omission.
+The connected runtime package must include the existing submission module.
+
+Only the isolated fixture and candidate are authorized here. Do not update or
+resume breetho, execute Lab48, publish or rerun historical HEALTH/PRE episodes.
+Use one changed-contract real-model trial with the same original fixture evidence,
+plus local boundary regressions. Keep the old ten spent attempts and record the
+new actual call separately. A positive scoped result is not full project adoption.
+
+Future adoption, when separately authorized: the existing maintenance owner at
+a stopped runtime boundary installs the complete package, preserves journals and
+findings, and verifies owner/preparer readback of result-use status. Existing
+legacy work may not resume until its exact result has an explicit independent
+judgment; do not regenerate its product work. Prefer existing current evidence;
+review only the required use boundary. A rejected result stays owned for repair.
+
+## Isolated Acceptance Repair 2026-10-22
+
+The current request authorizes repairing the acceptance return mechanism, not
+product work, publication or product restart. The candidate adds an opt-in durable
+review submission to the existing source MCP and existing validators. It does not
+add a reviewer role, catalog, scheduler or memory store. Original checkpoints below
+remain historical evidence, not orders to replay completed work.
+
+The real CLI with scripted local responses completed source acquisition, durable
+POST submission, host admission, owner read/application, restart and quiet next
+tick without a final model message. Incomplete output is rejected immediately;
+source drift, unread citations and overwrite attempts stay refused. Scripted
+responses establish transport behavior, not independent semantic acceptance.
+Existing native final-message/windowed paths remain compatible. No old stopped
+review is reclassified or admitted; usage absent after submission remains unknown.
+Independent code review and exact evidence limits belong in the repair receipt.
+
 ## Current Checkpoint 2026-10-20
 
 The user authorized narrow independent reader review and local packaging/update

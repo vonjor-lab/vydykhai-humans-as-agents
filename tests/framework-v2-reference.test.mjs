@@ -38,6 +38,7 @@ function postControl(acceptance) {
   const x = {acceptance, policy: sha256("policy"), previousFindings: [], repairLeases: [],
     observation: acceptance.retention.map(r => ({id: r.id, status: "MATCH", sha256: r.expected.sha256}))};
   x.review = {key: postAcceptKey(x), phase: "POST_ACCEPT", reviewer: "fresh-post-review", runId: "new-run",
+    resultUse:{status:"ALLOW",acceptanceSha256:sha256(canonicalJson(acceptance)),evidence:"fixture:independent-result",findingIds:[]},
     observedAt: "2026-10-06T10:01:00Z", findings: [],
     rows: controlCheckIds.map(id => ({id, status: "PASS", evidence: `fixture:${id}`}))};
   x.disposition = {owner: actors.owner, reviewKey: sha256(canonicalJson(x.review)),

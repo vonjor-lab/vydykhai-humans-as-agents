@@ -1,7 +1,7 @@
 // Local trusted host capabilities. Never expose these mutation methods directly
 // as worker tools. OS/process identity and sandbox setup belong to the launcher.
 import {openControlStore} from "./control-store.mjs";
-import {validProductAcceptance, observeRetention, observeAcceptanceSources, postAcceptKey, assessPostAccept,
+import {validProductAcceptance, observeRetention, observeAcceptanceSources, postAcceptKey, assessPostAccept, reviewedResultUse,
   observeTerminalDisposition, reviewedTerminalDisposition, terminalActions, confirmedControlActions} from "./post-accept.mjs";
 import {canonicalJson, sha256} from "./memory-brief.mjs";
 import {randomUUID} from "node:crypto";
@@ -80,6 +80,13 @@ export async function openControlHost(directory, config, {createReturnSync, obse
   };
   const reviewScope = (s, id) => hash({row: rowFor(s, id), paused: s.paused, execution: executionFor(s, id)});
   const overdue = row => row.findings.some(f => f.status === "OPEN" && Date.parse(f.reviewAt) <= Date.now());
+  // Legacy closure is history, not permission to reuse. Missing result-use
+  // proof alone must not spend review budget before an owned use request.
+  const closedReviewDue = input => {
+    const action = assessPostAccept(input).action;
+    return !confirmedControlActions.includes(action) &&
+      !(action === "RESULT_USE_UNPROVEN" && input.review?.resultUse === undefined);
+  };
   const reviewPending = row => row.reviewLease || ["REVIEW_DUE", "REVIEW_EPISODE_DUE", "REVIEW_IN_FLIGHT", "REVIEW_RECONCILIATION_REQUIRED"].includes(row.enrollment);
   const episodeBasis = (key,input) => hash({key,input:{...input,review:null,disposition:null}});
   const assertEpisodeBasis = async (s,id,fresh,reject=true) => {
@@ -321,8 +328,7 @@ export async function openControlHost(directory, config, {createReturnSync, obse
             pending.push({id,action:"REVIEW_DUE"});continue;
           }
           if (row.enrollment !== "CLOSED") {pending.push({id, action: row.enrollment}); continue;}
-          const checked = assessPostAccept(input);
-          if (!confirmedControlActions.includes(checked.action)) pending.push({id, action: "REVIEW_DUE"});
+          if (closedReviewDue(input)) pending.push({id, action: "REVIEW_DUE"});
           else if (overdue(row))
             pending.push({id, action: "REPAIR_REVIEW_DUE"});
         } catch {pending.push({id, action: "OBSERVATION_UNKNOWN"});}
@@ -357,7 +363,7 @@ export async function openControlHost(directory, config, {createReturnSync, obse
         }
       }
       const drift = (row.review && row.review.key !== postAcceptKey(input)) ||
-        (row.enrollment === "CLOSED" && !confirmedControlActions.includes(assessPostAccept(input).action));
+        (row.enrollment === "CLOSED" && closedReviewDue(input));
       need(continuing || row.enrollment === "REVIEW_DUE" || drift || (row.enrollment === "CLOSED" && overdue(row)), "REVIEW_NOT_DUE");
       await update(current => {
         need(reviewScope(current, id) === reviewScope(s, id), "REVIEW_SOURCE_CHANGED");
@@ -515,12 +521,15 @@ export async function openControlHost(directory, config, {createReturnSync, obse
     },
     async requestRepairReview(id, evidence, findingIds) {
       need(filled(evidence), "REPAIR_EVIDENCE_REQUIRED");
-      need(Array.isArray(findingIds) && findingIds.length && findingIds.every(filled) &&
+      need(Array.isArray(findingIds) && findingIds.every(filled) &&
         new Set(findingIds).size === findingIds.length, "REPAIR_FINDING_IDS_REQUIRED");
       findingIds=[...findingIds];
       await update(s => {
         const row = rowFor(s, id);
         need(!s.paused && !row.reviewLease && row.review && row.disposition?.action === "REPAIR", "REPAIR_NOT_OWNED");
+        // A legacy verdict can lack a result-use decision without having an OPEN
+        // finding. Reuse the bounded review request; do not invent product repairs.
+        need(findingIds.length || row.review.resultUse === undefined, "REPAIR_FINDING_IDS_REQUIRED");
         need(!row.repairRequest, "REPAIR_ALREADY_PENDING");
         for(const findingId of findingIds) {
           const f=row.findings.find(f=>f.id===findingId);
@@ -617,6 +626,10 @@ export async function openControlHost(directory, config, {createReturnSync, obse
         need(!reviewPending(row), "REVIEW_PENDING");
         need(row.review && disposition.reviewKey === hash(row.review), "VERDICT_NOT_CONSUMED");
         need(!checkFindingLeases(row.findings, repairLeases), "POST_ACCEPT_REPAIR_OWNER_REQUIRED");
+        if (["CONTINUE", "DONE"].includes(disposition.action)) {
+          const use = reviewedResultUse(row.review, row.acceptance);
+          need(use === "ALLOW", use === "REJECT" ? "RESULT_USE_REJECTED" : "RESULT_USE_UNPROVEN");
+        }
         need(disposition.action === "REPAIR" || !row.findings.some(f => f.status === "OPEN" && f.blocksResume),
           "POST_ACCEPT_REPAIR_REQUIRED");
         if (fresh) need(reviewScope(s, id) === reviewScope(observed, id) && row.review.key === postAcceptKey(fresh),

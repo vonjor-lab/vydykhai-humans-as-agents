@@ -8,6 +8,7 @@ import {runControlChild} from "./control-child.mjs";
 import {readPrivateControlJson, openReviewSources} from "./control-review-sources.mjs";
 import {openControlHost, validPreparationAcceptanceIds} from "./control-host.mjs";
 import {canonicalJson, sha256} from "./memory-brief.mjs";
+import {reviewSubmissionCompletion} from "./control-review-submission.mjs";
 
 const need = (value, code) => {if (!value) throw Error(code);};
 export function controlledWorkerPrompt(prompt,endpoint) {
@@ -22,7 +23,7 @@ export function controlledWorkerPrompt(prompt,endpoint) {
 }
 export async function runControlledWorker({binary, workspace, endpointFile, controlEndpointFile, home, model, effort,
   prompt, timeoutMs = 120000, maxBytes = 4 * 1024 * 1024, provider, signal, role = "worker", authHome = home,
-  enableMemoryRecall = false, reviewAcquisition}) {
+  enableMemoryRecall = false, reviewAcquisition, reviewSubmissionFile}) {
   need(process.platform === "darwin", "CONTROL_WORKER_HOST_UNSUPPORTED");
   need([binary, workspace, endpointFile, home].every(v => typeof v === "string" && path.isAbsolute(v)) &&
     typeof model === "string" && model.trim() && ["low", "medium", "high", "xhigh", "max"].includes(effort) &&
@@ -41,6 +42,7 @@ export async function runControlledWorker({binary, workspace, endpointFile, cont
     authHome !== workspace && !authHome.startsWith(workspace + path.sep), "CONTROL_WORKER_AUTH_OR_ROLE_INVALID");
   need(typeof enableMemoryRecall === "boolean" && (!enableMemoryRecall || role === "review"), "CONTROL_WORKER_RECALL_PROFILE_INVALID");
   need(reviewAcquisition === undefined || role === "review", "CONTROL_WORKER_ACQUISITION_ROLE_INVALID");
+  need(reviewSubmissionFile === undefined || role === "review", "CONTROL_WORKER_SUBMISSION_ROLE_INVALID");
   let controlEndpointDigest, preparationHost, preparationIds;
   if (role === "preparation") {
     need(typeof controlEndpointFile === "string" && path.isAbsolute(controlEndpointFile), "PREPARATION_CONTROL_ENDPOINT_REQUIRED");
@@ -56,7 +58,7 @@ export async function runControlledWorker({binary, workspace, endpointFile, cont
   }
   const profile = {review:reviewCodexConfig,owner:ownerCodexConfig,"owner-disposition":dispositionCodexConfig,
     preparation:preparationCodexConfig,worker:controlledCodexConfig}[role];
-  const config = {...profile({workspace, endpointFile, controlEndpointFile, controlEndpointDigest, enableMemoryRecall, reviewAcquisition}), model_reasoning_effort: effort};
+  const config = {...profile({workspace, endpointFile, controlEndpointFile, controlEndpointDigest, enableMemoryRecall, reviewAcquisition, reviewSubmissionFile}), model_reasoning_effort: effort};
   if (provider !== undefined) {
     need(provider && typeof provider.baseUrl === "string" && typeof provider.requiresAuth === "boolean",
       "CONTROL_WORKER_PROVIDER_INVALID");
@@ -78,7 +80,8 @@ export async function runControlledWorker({binary, workspace, endpointFile, cont
     args: ["exec", "--ignore-user-config", "--strict-config", "--skip-git-repo-check",
       "--ephemeral", "--model", model, ...codexConfigArgs(config), "--json", "-"], cwd: workspace,
     env: {HOME: home, CODEX_HOME: authHome, PATH: "/usr/local/bin:/usr/bin:/bin"},
-    input: launchPrompt, timeoutMs, maxBytes, signal});
+    input: launchPrompt, timeoutMs, maxBytes, signal,
+    ...(reviewSubmissionFile === undefined ? {} : {completedOutput:reviewSubmissionCompletion})});
   // A stopped CLI is not proof that a tool effect finished. Unresolved command
   // reservations remain IN_FLIGHT in the separate host and cannot be replayed.
   const nativeStatus = result.state === "UNKNOWN" ? "OUTCOME_UNKNOWN" :

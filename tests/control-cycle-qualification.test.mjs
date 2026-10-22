@@ -257,6 +257,7 @@ async function syntheticReview(x) {
   // Synthetic reviewer transport, deliberately not semantic or native proof.
   const observedAt = new Date().toISOString();
   const answer = decodeReviewAnswer({schema: "control.review-answer.v2",
+    resultUse:{status:"ALLOW",sourceIds:readbacks.map(r=>r.id),evidence:"Synthetic independent result decision",findingIds:[]},
     rowGroups: [{ids: controlCheckIds, status: "PASS", sourceIds: readbacks.map(r => r.id)}], newFindings: [], resolutions: []},
   {readbacks, offer, reviewer: x.config.reviewer, observedAt});
   await x.host.review("consumer", offer, {...answer, phase: "POST_ACCEPT", key: offer.key,

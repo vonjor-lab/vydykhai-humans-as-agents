@@ -117,6 +117,23 @@ const exactKeys = (v, keys) => v && typeof v === "object" && !Array.isArray(v) &
   Object.keys(v).sort().join() === [...keys].sort().join();
 export const terminalActions = Object.freeze(["WAIT", "DONE"]);
 export const confirmedControlActions = Object.freeze(["CONTROL_CONFIRMED", "CONTROL_WAIT_CONFIRMED", "CONTROL_DONE_CONFIRMED"]);
+// Product acceptance is a manager claim. Use needs a separate, source-bound
+// independent judgment; finding-level holds cannot substitute for that judgment.
+export function reviewedResultUse(review, acceptance) {
+  const decision = review?.resultUse;
+  if (decision === undefined) return "UNKNOWN"; // Retain legacy history, never upgrade its authority.
+  if (!exactKeys(decision, ["status", "acceptanceSha256", "evidence", "findingIds"]) ||
+      !["ALLOW", "REJECT", "UNKNOWN"].includes(decision.status) ||
+      decision.acceptanceSha256 !== hash(acceptance) || !filled(decision.evidence) ||
+      !Array.isArray(decision.findingIds) || new Set(decision.findingIds).size !== decision.findingIds.length ||
+      !decision.findingIds.every(id => filled(id) && review.findings?.some(f => f.id === id && f.status === "OPEN")) ||
+      (decision.status === "ALLOW" ? decision.findingIds.length !== 0 ||
+        !review.rows?.some(r => r.id === "C20.02" && r.status === "PASS") ||
+        review.rows.some(r => ["C07.03", "C19.01"].includes(r.id) &&
+          !["PASS", "NOT_APPLICABLE"].includes(r.status)) : decision.findingIds.length === 0))
+    return "INVALID";
+  return decision.status;
+}
 export function validTerminalDisposition(record, acceptance) {
   const common = ["schema", "acceptanceSha256", "owner", "action", "evidence", "producerReturn"];
   return validProductAcceptance(acceptance) && terminalActions.includes(record?.action) &&
@@ -211,6 +228,8 @@ export function assessPostAccept(input) {
     return result("POST_ACCEPT_REVIEW_DUE", "Fresh source-bound review follows orchestrator acceptance", {key});
   const invalid = validateControlFindings({review: r, previousFindings: input.previousFindings, key});
   if (invalid) return result(invalid.action, invalid.reason, {key});
+  const resultUse = reviewedResultUse(r, a);
+  if (resultUse === "INVALID") return result("RECONCILE_REVIEW", "Independent result-use decision is invalid", {key});
   for (const expected of retained.filter(o => o.required)) {
     const actual = observed.find(o => o.id === expected.id);
     if (actual.status === "MATCH" && actual.sha256 === expected.expected.sha256) continue;
@@ -232,6 +251,11 @@ export function assessPostAccept(input) {
     return result("REPAIR_REQUIRED", "Preserve acceptance and hold affected dependencies until independent repair readback", {key});
   if (input.paused === true) return result("PRESERVE_PAUSE", "Control verdict cannot override the human pause", {key});
   if (input.externalUnknown === true) return result("RECONCILE_EXTERNAL_OUTCOME", "Do not replay an uncertain action", {key});
+  if (["CONTINUE", "DONE"].includes(d.action) && resultUse !== "ALLOW")
+    return result(resultUse === "REJECT" ? "RESULT_USE_REJECTED" : "RESULT_USE_UNPROVEN",
+      "Independent acceptance does not permit using this result", {key});
+  if (d.action === "REPAIR" && resultUse !== "ALLOW")
+    return result("REPAIR_REQUIRED", "Owned correction or missing independent result-use judgment remains", {key});
   if (terminalActions.includes(d.action)) {
     if (!reviewedTerminalDisposition(input, d.action, d.recordSha256))
       return result("VERIFY_TERMINAL_DISPOSITION", "Actual durable disposition and explicit independent verdict required", {key});

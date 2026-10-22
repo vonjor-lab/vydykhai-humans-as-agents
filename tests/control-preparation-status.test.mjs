@@ -46,6 +46,7 @@ async function setup(t) {
     evidence: `private evidence ${x.privateRoot}/do-not-disclose`, owner: "maintenance", work: "cleanup",
     status: "OPEN", firstSeen: now, reviewAt: new Date(Date.now() + 3600000).toISOString(), attempts: 0, blocksResume: false};
   const verdict = {phase: "POST_ACCEPT", key: offer.key, reviewer: config.reviewer, runId: offer.runId,
+    resultUse:{status:"ALLOW",acceptanceSha256:hash(acceptance),evidence:"fixture:independent-result",findingIds:[]},
     observedAt: now, findings: [finding], rows: controlCheckIds.map(id => id === finding.checkId ?
       {id, status: "FINDING", findingId: finding.id, reason: "Owned debt", evidence: "fixture"} :
       {id, status: "PASS", evidence: "fixture"})};

@@ -42,7 +42,7 @@ function exactRows(rows, assigned) {
 
 function wirePart(answer, assigned) {
   need(answer?.schema === schema, "MODEL_REVIEW_PART_V2_REQUIRED");
-  need(Object.keys(answer).every(k => ["schema", "rowGroups", "newFindings", "resolutions", "transitions", "terminalDisposition", "healthDomain"].includes(k)) &&
+  need(Object.keys(answer).every(k => ["schema", "rowGroups", "newFindings", "resolutions", "transitions", "terminalDisposition", "healthDomain", "resultUse"].includes(k)) &&
     Array.isArray(answer.rowGroups) && answer.rowGroups.length > 0 && answer.rowGroups.length <= assigned.size &&
     uniqueRecords(answer.newFindings) && uniqueRecords(answer.resolutions) &&
     (answer.transitions===undefined||uniqueRecords(answer.transitions)), "MODEL_REVIEW_PART_WIRE_INVALID");
@@ -55,6 +55,7 @@ function wirePart(answer, assigned) {
   exactRows(rows, assigned);
   need(!Object.hasOwn(answer,"terminalDisposition") || assigned.has("C20.03"), "MODEL_REVIEW_TERMINAL_UNASSIGNED");
   need(!Object.hasOwn(answer,"healthDomain") || assigned.has("C05.02"),"MODEL_REVIEW_DOMAIN_UNASSIGNED");
+  need(!Object.hasOwn(answer,"resultUse") || assigned.has("C20.02"),"MODEL_REVIEW_RESULT_USE_UNASSIGNED");
   need(answer.newFindings.every(f => assigned.has(f.checkId)), "MODEL_REVIEW_PART_FINDING_UNASSIGNED");
 }
 
@@ -178,6 +179,10 @@ export function mergeReviewParts(rawAnswers, partitions) {
   for (let i = 0; i < rawAnswers.length; i++) {
     const answer = rawAnswers[i];
     wirePart(answer, assigned[i]);
+    if(Object.hasOwn(answer,"resultUse")) {
+      need(!Object.hasOwn(merged,"resultUse"),"MODEL_REVIEW_RESULT_USE_DUPLICATE");
+      merged.resultUse=answer.resultUse;
+    }
     if(Object.hasOwn(answer,"healthDomain")) {
       need(!Object.hasOwn(merged,"healthDomain"),"MODEL_REVIEW_DOMAIN_DUPLICATE");merged.healthDomain=answer.healthDomain;
     }
