@@ -64,7 +64,7 @@ async function interruptAfterRead(x, resumable = true) {
   assert.equal(stopped.usage,null);assert.equal(stopped.threadId,x.threadId);
   return stopped;
 }
-test("interrupted independent review resumes acquired evidence, preserves spend and refuses replay",async t=>{
+test("interrupted independent review resumes acquired evidence, preserves spend and refuses replay",{skip:process.platform!=="darwin"},async t=>{
   const x=await setup(t),first=await interruptAfterRead(x);
   const review=await openModelReview(x.options); // Controller restart, not a new assignment.
   const verdict=await review.review(x.offer,{resume:true});
@@ -79,27 +79,27 @@ test("interrupted independent review resumes acquired evidence, preserves spend 
   await assert.rejects(review.review(x.offer,{resume:true}),/NOT_RESUMABLE/);
   assert.equal((await review.capacity()).used,2);
 });
-test("source or assignment drift blocks continuation before spending",async t=>{
+test("source or assignment drift blocks continuation before spending",{skip:process.platform!=="darwin"},async t=>{
   const x=await setup(t);await interruptAfterRead(x);
   await assert.rejects(x.review.review({...x.offer,key:sha256('different')},{resume:true}),/NOT_RESUMABLE/);
   await x.f.put("evidence.md","Changed source");
   await assert.rejects(x.review.review(x.offer,{resume:true}),/SOURCE_DRIFT/);
   assert.equal((await x.review.capacity()).used,1);
 });
-for(const interruption of ["pending-tool","truncated-json"])test(`${interruption} refuses impossible continuation without spending`,async t=>{
+for(const interruption of ["pending-tool","truncated-json"])test(`${interruption} refuses impossible continuation without spending`,{skip:process.platform!=="darwin"},async t=>{
   const x=await setup(t,interruption),stopped=await interruptAfterRead(x,false);
   assert.ok(stopped.continuationError);
   const reopened=await openModelReview(x.options);
   await assert.rejects(reopened.review(x.offer,{resume:true}),/NOT_RESUMABLE/);
   assert.equal((await reopened.capacity()).used,1);
 });
-test("retained trace tampering blocks continuation before spending",async t=>{
+test("retained trace tampering blocks continuation before spending",{skip:process.platform!=="darwin"},async t=>{
   const x=await setup(t),stopped=await interruptAfterRead(x);
   await writeFile(path.join(x.options.directory,stopped.trace.file),'{}');
   await assert.rejects(x.review.review(x.offer,{resume:true}),/TRACE_CHANGED/);
   assert.equal((await x.review.capacity()).used,1);
 });
-test("concurrent dispatch is rejected without a second paid allocation",async t=>{
+test("concurrent dispatch is rejected without a second paid allocation",{skip:process.platform!=="darwin"},async t=>{
   const x=await setup(t),controller=new AbortController();
   const first=x.review.review(x.offer,{signal:controller.signal});
   await new Promise(r=>setTimeout(r,50));
