@@ -63,7 +63,7 @@ the genuine completed-source resume evidence is retained, not replayed.
 
 Current authority: finish the isolated 2.1.6 release candidate, scoped independent
 code review, adoption requirements and archive/install/update/rollback checks.
-Do not publish, change product repositories, execute Lab48 or resume orchestrators.
+Do not publish, change product repositories, execute product experiments or resume orchestrators.
 All prior sections below are retained history, not instructions to replay them.
 
 Completed: scoped independent review found and closed one migration P2. Closed
@@ -104,7 +104,7 @@ Legacy answers remain stored and readable but never gain permission by omission.
 The connected runtime package must include the existing submission module.
 
 Only the isolated fixture and candidate are authorized here. Do not update or
-resume breetho, execute Lab48, publish or rerun historical HEALTH/PRE episodes.
+resume a product project, execute product experiments, publish or rerun historical HEALTH/PRE episodes.
 Use one changed-contract real-model trial with the same original fixture evidence,
 plus local boundary regressions. Keep the old ten spent attempts and record the
 new actual call separately. A positive scoped result is not full project adoption.
