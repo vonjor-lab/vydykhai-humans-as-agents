@@ -1,8 +1,9 @@
 // One bounded host tick, independent of manager turns. The caller supplies the
 // actual scheduler and fresh reviewer transport; no role can make its own verdict.
+import {MAX_CONTROL_WORK_MS} from "./control-child.mjs";
 export async function runControlTick(host, {review, maxReviews = 1, timeoutMs = 30000, episode} = {}) {
   if (!Number.isSafeInteger(maxReviews) || maxReviews < 0 || maxReviews > 4 ||
-      !Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 300000) throw Error("CONTROL_TICK_BUDGET_INVALID");
+      !Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > MAX_CONTROL_WORK_MS) throw Error("CONTROL_TICK_BUDGET_INVALID");
   const due = await host.due(), results = [];
   let calls = 0;
   for (const item of due) {

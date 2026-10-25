@@ -1,6 +1,6 @@
 // Candidate command boundary, not an authenticated/native host adapter. Host code
 // supplies protected observation/reservation services; task JSON cannot supply them.
-import {runContextTransition, readCommandFailure} from "./context-run.mjs";
+import {runContextTransition, readCommandFailure, bindCommandEnvironment} from "./context-run.mjs";
 import {canonicalJson, sha256} from "./memory-brief.mjs";
 import {observeConfinedFile,sealCommandEffects} from "./control-health-domain.mjs";
 
@@ -87,6 +87,7 @@ export async function runControlledContextTransition(request, services = {}) {
     const {reserved, observed, result:commandResult, grant, before} = pendingObservation;
     try {
       enter("OBSERVE");
+      bindCommandEnvironment(observed, commandResult);
       if(before)sealCommandEffects(observed,{result:commandResult,grant,claim:reserved,before,
         after:await observeConfinedFile(request.workspace,grant.binding.confined.writeFiles[0])});
       const receipt = await bounded(signal => observe(reserved, observed, {signal}), timeoutMs);

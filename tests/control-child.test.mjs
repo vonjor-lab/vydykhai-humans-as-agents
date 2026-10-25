@@ -1,10 +1,31 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {runControlChild} from "../scripts/control-child.mjs";
+import {runControlChild, MAX_CONTROL_WORK_MS} from "../scripts/control-child.mjs";
+import {runControlTick} from "../scripts/control-loop.mjs";
 
 const run = (program, options = {}) => runControlChild({executable: process.execPath,
   args: ["--input-type=module", "-e", program], cwd: process.cwd(), env: {PATH: process.env.PATH},
   input: "", timeoutMs: 3000, maxBytes: 4096, ...options});
+test('durable result drains final usage without unbounded waiting or delaying a rejection',async()=>{
+  const completedOutput=s=>s.includes('receipt')?'RESULT_SUBMITTED':null;
+  const full=await run("console.log('receipt');setTimeout(()=>console.log('final usage'),40)",
+    {completedOutput,completionDrainMs:1000});
+  assert.equal(full.reason,null);assert.equal(full.code,0);assert.match(full.output,/final usage/);
+  const bounded=await run("console.log('receipt');setInterval(()=>{},1000)",
+    {completedOutput,completionDrainMs:50});
+  assert.equal(bounded.reason,'RESULT_SUBMITTED');assert.equal(bounded.state,'CLOSED');
+  const rejected=await run("console.log('bad');setInterval(()=>{},1000)",
+    {completedOutput:()=> 'RESULT_REJECTED',completionDrainMs:30000});
+  assert.equal(rejected.reason,'RESULT_REJECTED');assert.ok(rejected.timing.elapsedMs<1000);
+});
+test("explicit work budget can exceed observation wait without becoming unbounded", async()=>{
+  assert.equal(MAX_CONTROL_WORK_MS,900000);
+  assert.equal((await run("process.exit(0)",{timeoutMs:MAX_CONTROL_WORK_MS})).code,0);
+  await assert.rejects(run("process.exit(0)",{timeoutMs:MAX_CONTROL_WORK_MS+1}),/CONTROL_CHILD_BUDGET_INVALID/);
+  const host={due:async()=>[]};
+  assert.equal((await runControlTick(host,{timeoutMs:MAX_CONTROL_WORK_MS})).calls,0);
+  await assert.rejects(runControlTick(host,{timeoutMs:MAX_CONTROL_WORK_MS+1}),/CONTROL_TICK_BUDGET_INVALID/);
+});
 test("detached inherited pipe cannot keep control waiting past its termination budget", {timeout: 4000}, async t => {
   const start = Date.now();
   const result = await run(`import{spawn}from'node:child_process';

@@ -8,7 +8,8 @@ import childProcess from "node:child_process";
 import {syncBuiltinESMExports} from "node:module";
 import {activateControl,acquireControlLease} from "../scripts/control-activation.mjs";
 import {inspectControlRuntime,stageControlRuntime,loadControlRuntime} from "../scripts/control-runtime.mjs";
-import {controlSchedulePlan,registerControlSchedule,startControlSchedule,unregisterControlSchedule,matchesControlRegistration} from "../scripts/control-schedule.mjs";
+import {controlSchedulePlan,registerControlSchedule,startControlSchedule,unregisterControlSchedule,matchesControlRegistration,
+  startScheduledControl,waitControlObservation,requestScheduledObservation} from "../scripts/control-schedule.mjs";
 import {openControlStore} from "../scripts/control-store.mjs";
 import {runControlChild} from "../scripts/control-child.mjs";
 import {sha256} from "../scripts/memory-brief.mjs";
@@ -16,12 +17,12 @@ import {sha256} from "../scripts/memory-brief.mjs";
 const source=fileURLToPath(new URL("..",import.meta.url));
 const darwin={skip:process.platform!=="darwin"};
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-async function fixture(mode="SESSION",holdAfterTick=false,entryFailure=false) {
+async function fixture(mode="SESSION",holdAfterTick=false,entryFailure=false,delayBeforeTick=0) {
   const temp=await realpath(await mkdtemp(path.join(os.tmpdir(),"schedule-test-")));
   const workspace=path.join(temp,"workspace"),root=path.join(temp,"control"),packages=path.join(temp,"packages");
   for(const d of [workspace,root,packages])await mkdir(d,{mode:0o700});
   let sourceRoot=source;
-  if(holdAfterTick||entryFailure) {
+  if(holdAfterTick||entryFailure||delayBeforeTick) {
     sourceRoot=path.join(temp,"delayed-source");
     for(const name of Object.keys((await inspectControlRuntime(source)).description.files)) {
       await mkdir(path.dirname(path.join(sourceRoot,name)),{recursive:true});
@@ -29,6 +30,8 @@ async function fixture(mode="SESSION",holdAfterTick=false,entryFailure=false) {
     }
     const file=path.join(sourceRoot,"scripts/control-observer-run.mjs");
     let observer=await readFile(file,"utf8");
+    if(delayBeforeTick)observer=observer.replace("const result = await service.tick();",
+      `await new Promise(resolve=>setTimeout(resolve,${delayBeforeTick})); const result = await service.tick();`);
     if(entryFailure) {
       assert.ok(observer.includes("const result = await service.tick();"));
       observer=observer.replace("const result = await service.tick();","throw Error('INJECTED_POST_ENTRY_FAILURE');");
@@ -60,6 +63,47 @@ async function fixture(mode="SESSION",holdAfterTick=false,entryFailure=false) {
   await service.host.pause(true);
   return {temp,root,profile,service,options:{descriptorFile:descriptor.descriptorFile,intervalSeconds:3600,mode}};
 }
+test("scheduler-owned work outlives receipt wait without abort or redispatch",darwin,async()=>{
+  const x=await fixture("SESSION",false,false,1000);
+  x.options.intervalSeconds=60;
+  let registered=false;
+  try {
+    const started=await startScheduledControl(x.options);registered=true;
+    assert.equal(started.status,"REGISTERED_AWAITING_TICK");
+    const pending=await waitControlObservation({descriptorFile:x.options.descriptorFile,waitMs:0});
+    assert.equal(pending.status,"PENDING");
+    assert.equal(pending.executionInterrupted,false);
+    const reused=await startScheduledControl(x.options);
+    assert.equal(reused.schedule.reused,true);
+    const finished=await waitControlObservation({descriptorFile:x.options.descriptorFile,waitMs:90000});
+    assert.equal(finished.status,"OBSERVED");
+    assert.equal(finished.receipt.calls,0);
+    const next=await waitControlObservation({descriptorFile:x.options.descriptorFile,
+      afterReceiptSha256:finished.receiptSha256,waitMs:0});
+    assert.equal(next.status,"PENDING");
+  } finally {
+    if(registered)await stop(x.options);
+    await rm(x.temp,{recursive:true,force:true});
+  }
+});
+test('persisted events wake the same schedule promptly; pause and active work survive',darwin,async()=>{
+  const x=await fixture('SESSION',false,false,1000);let registered=false;
+  try {
+    await registerControlSchedule(x.options);registered=true;
+    assert.equal((await requestScheduledObservation(x.options)).status,'PAUSED');
+    await x.service.host.pause(false);
+    const started=Date.now();
+    assert.equal((await requestScheduledObservation(x.options,{directory:x.profile.directory,config:x.profile.config})).status,'WAKE_REQUESTED');
+    const pending=await waitControlObservation({descriptorFile:x.options.descriptorFile,waitMs:20});
+    assert.equal(pending.status,'PENDING');
+    await requestScheduledObservation(x.options);
+    const done=await waitControlObservation({descriptorFile:x.options.descriptorFile,waitMs:10000});
+    assert.equal(done.status,'OBSERVED');assert.equal(done.receipt.calls,0);
+    assert.ok(Date.now()-started<15000);
+    assert.equal((await requestScheduledObservation(x.options,{directory:'/wrong',config:x.profile.config})).reason,'CONTROL_EVENT_HOST_MISMATCH');
+    await x.service.host.pause(true);
+  } finally {if(registered)await stop(x.options);await rm(x.temp,{recursive:true,force:true});}
+});
 async function stop(options) {
   const observations = [], root = path.dirname(options.descriptorFile);
   for(let i=0;i<100;i++) {
@@ -79,6 +123,22 @@ async function stop(options) {
   }
   throw Error(`TEST_SCHEDULE_STILL_RUNNING_STATE_RETAINED:${JSON.stringify({root,observations})}`);
 }
+test("passive wait observes final failure after an intermediate receipt with the same invocation",darwin,async()=>{
+  const x=await fixture(),plan=await controlSchedulePlan(x.options);
+  try {
+    const file=path.join(x.root,"observer-latest.json"),receipt={schema:"control.observer-readback.v1",
+      descriptorHash:plan.descriptorHash,invocationId:"00000000-0000-0000-0000-000000000001",
+      stage:"IN_PROGRESS",status:"ONE_TICK_OBSERVED"};
+    await writeFile(file,JSON.stringify(receipt),{mode:0o600});
+    assert.equal((await waitControlObservation({...x.options,waitMs:0})).status,"PENDING");
+    Object.assign(receipt,{stage:"FAILED",status:"UNKNOWN_RECONCILIATION_REQUIRED"});
+    await writeFile(file,JSON.stringify(receipt));
+    const observed=await waitControlObservation({...x.options,waitMs:0});
+    assert.equal(observed.status,"OBSERVED");
+    assert.equal(observed.receipt.status,"UNKNOWN_RECONCILIATION_REQUIRED");
+    assert.equal((await waitControlObservation({...x.options,afterReceiptSha256:observed.receiptSha256,waitMs:0})).status,"PENDING");
+  } finally {await rm(x.temp,{recursive:true,force:true});}
+});
 async function registerAtCheckpoint(options) {
   for(let i=0;i<100;i++){
     try{return await registerControlSchedule(options);}catch(e){

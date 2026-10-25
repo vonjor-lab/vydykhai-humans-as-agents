@@ -16,7 +16,7 @@ import {openReviewProcess} from "../scripts/control-review-process.mjs";
 import {runControlledContextTransition} from "../scripts/controlled-context-run.mjs";
 import {createReturnSync, parseDurableOutboxComment} from "../scripts/vydykhai.mjs";
 import {controlCatalog, controlCheckIds} from "../scripts/control-catalog.mjs";
-import {retentionKinds} from "../scripts/post-accept.mjs";
+import {retentionKinds,postAcceptKey} from "../scripts/post-accept.mjs";
 import {modelReviewPrompt} from "../scripts/control-model-review.mjs";
 import {decodeReviewAnswer} from "../scripts/control-review-wire.mjs";
 import {sha256} from "../scripts/memory-brief.mjs";
@@ -28,6 +28,7 @@ async function setup(t, options) {
   const dir = await realpath(await mkdtemp(path.join(tmpdir(), "vydykhai-control-")));
   t.after(() => rm(dir, {recursive: true, force: true}));
   const config = {workspace: f.root, policy: sha256("candidate-policy"), owner: "owner", executor: "worker", reviewer: "reviewer"};
+  if(options?.requirePreparation)config.requirePreparation=true;
   if(options?.registeredEvidence) {
     config.evidenceRegistry=path.join(dir,"sources.json");
     await f.put("public-contract.md","accepted public contract");
@@ -83,6 +84,117 @@ test("stopped POST transport restores its exact lease only with trusted unchange
 });
 const disposition = (x, verdict) => ({owner: x.config.owner, reviewKey: hash(verdict),
   action: "CONTINUE", nextAction: x.binding.taskId, evidence: "fixture:owner-applied-verdict"});
+
+test("POST receives trusted local environment proof, not owner-supplied assertions",async t=>{
+  const x=await setup(t);await x.approve();
+  assert.equal((await x.run()).status,"ACTION_COMPLETED");
+  const row=Object.values((await x.host.snapshot()).reservations)[0];
+  assert.equal(row.commandEnvironment.environment.commandSha256,x.binding.commandSha256);
+  x.acceptance.task=x.binding.taskId;await x.host.accept(x.acceptance);
+  const offer=await x.host.claimReview(x.acceptance.id);
+  assert.deepEqual(offer.input.execution.reservations[0].commandEnvironment,row.commandEnvironment);
+  await assert.rejects(x.host.control.observe({},{outcome:"COMPLETED",resultSha256:sha256("forged"),
+    commandEnvironment:row.commandEnvironment}),/ENVIRONMENT_NOT_CALLER_SUPPLIED/);
+});
+
+test("event route requires current independently reviewed preparation, not an arbitrary receipt", async t => {
+  const x=await setup(t,{registeredEvidence:true,requirePreparation:true});
+  await assert.rejects(x.approve(),/PREPARATION_REVIEW_REQUIRED/);
+  const options={reviewSourceIds:["contract"],preparationBinding:x.binding};
+  await x.host.accept(x.acceptance,options);
+  await x.host.accept(x.acceptance,options);
+  assert.equal(Object.keys((await x.host.snapshot()).acceptances).length,1);
+  assert.equal((await x.host.due())[0].action,"REVIEW_DUE");
+  await assert.rejects(x.approve(["previous"]),/REVIEW_PENDING/);
+  const offer=await x.host.claimReview("previous"),v=verdictFor(x,offer);
+  assert.equal(offer.input.preparation.kind,"PREPARED_PACKAGE_NOT_TASK_OUTPUT");
+  await x.host.review("previous",offer,v);
+  await x.host.disposition("previous",disposition(x,v),[]);
+  await x.approve(["previous"]);
+  assert.equal((await x.host.control.authorize(x.binding)).decision,"ALLOW");
+  for(const delta of [{operation:"accept"},{commandSha256:"b".repeat(64)},{cwd:"/tmp"},
+    {executable:"/usr/bin/false"},{kind:"verification"},{confined:true},{candidateSha256:"c".repeat(64)}])
+    await assert.rejects(x.host.approveCommand({...x.binding,...delta},
+      {reviewer:x.config.reviewer,reviewReceipt:"claimed",dependencies:["previous"],expiresAt:Date.now()+10000}),
+      /PREPARATION_REVIEW_REQUIRED/);
+  await assert.rejects(x.host.approveCommand({...x.binding,capsuleSha256:"f".repeat(64)},
+    {reviewer:x.config.reviewer,reviewReceipt:"claimed",dependencies:["previous"],expiresAt:Date.now()+10000}),
+    /PREPARATION_REVIEW_REQUIRED/);
+  await x.f.put("public-contract.md","changed independently");
+  await assert.rejects(x.host.control.authorize(x.binding),/POST_ACCEPT_CONTROL_PENDING/);
+});
+test("dormant exact continuation can precede PRE but cannot execute until independent review and owner application",async t=>{
+  const x=await setup(t,{registeredEvidence:true,requirePreparation:true});
+  await x.host.acceptPreparation(x.acceptance,{binding:x.binding,reviewSourceIds:["contract"]});
+  await x.host.approveCommand(x.binding,{reviewer:x.config.reviewer,reviewReceipt:"conditional exact request",
+    dependencies:["previous"],expiresAt:Date.now()+600000,executionRequest:{...x.f.request,operation:"resume"}});
+  await assert.rejects(x.host.control.authorize(x.binding),/REVIEW_PENDING/);
+  const {runRegisteredContinuations}=await import("../scripts/control-continuation.mjs");
+  const run=()=>runRegisteredContinuations({mode:"REGISTERED_PREAPPROVED_ONLY",maxActions:1},
+    {host:x.host,workspace:x.f.root,controlRoot:x.dir,services});
+  assert.equal((await run()).calls,0);
+  const offer=await x.host.claimReview("previous"),v=verdictFor(x,offer);
+  await x.host.review("previous",offer,v);
+  assert.equal((await run()).calls,0);
+  await x.host.disposition("previous",disposition(x,v),[]);
+  const result=await run();
+  assert.equal(result.calls,1);
+  assert.equal(result.results[0].action,"CLOSED_AFTER_OBSERVED_CONTINUATION");
+  assert.equal(await readFile(path.join(x.f.root,"actions.log"),"utf8"),"called\n");
+  assert.equal((await run()).calls,0);
+  const post={...x.acceptance,id:"consumer",task:x.binding.taskId};
+  await x.host.accept(post);
+  const input=(await x.host.reviewInput("consumer")).input;
+  assert.equal(input.execution.preparations[0].review.runId,v.runId);
+  assert.equal(input.execution.preparations[0].review.resultUse.status,"ALLOW");
+  assert.deepEqual(input.execution.preparations[0].bindings,[x.binding]);
+  assert.equal(input.execution.preparations[0].ownerDisposition.action,"CONTINUE");
+});
+test("related source exposes authenticated outcome without turning owner prose into approval",async t=>{
+  const x=await setup(t,{registeredEvidence:true});
+  await acceptAndReview(x);
+  const next={...x.acceptance,id:"next",task:"next-task",artifact:{path:"new.md",sha256:sha256("new")}};
+  await x.f.put("new.md","new");
+  const registry=JSON.parse(await readFile(x.config.evidenceRegistry));
+  registry.sources.push({id:"prior-artifact",path:"artifact.md",purpose:"Required preceding result"});
+  await writeFile(x.config.evidenceRegistry,JSON.stringify(registry),{mode:0o600});
+  await x.host.accept(next,{reviewSourceIds:["contract","prior-artifact"]});
+  const before=(await x.host.reviewInput("next")).input.relatedAcceptances;
+  assert.equal(before.length,1);
+  assert.equal(before[0].id,"previous");
+  assert.equal(before[0].acceptanceSha256,hash(x.acceptance));
+  assert.equal(before[0].review.resultUse.status,"ALLOW");
+  assert.equal(before[0].ownerDisposition,null);
+  assert.notEqual(before[0].enrollment,"CLOSED");
+  const input=(await x.host.reviewInput("next")).input;
+  const altered=structuredClone(input);altered.relatedAcceptances[0].enrollment="CLOSED";
+  assert.notEqual(postAcceptKey(input),postAcceptKey(altered));
+  await (await openControlStore(x.dir)).transact(s=>{delete s.acceptances.next.relatedControlEvidence;return s;});
+  const legacy=(await x.host.reviewInput("next")).key,history=await x.host.snapshot();
+  assert.equal((await x.host.relatedAcceptanceEvidence("next"))[0].acceptanceSha256,hash(x.acceptance));
+  assert.equal((await x.host.reviewInput("next")).input.relatedAcceptances,undefined);
+  assert.equal((await x.host.reviewInput("next")).key,legacy);
+  assert.deepEqual(await x.host.snapshot(),history);
+  await x.f.put("artifact.md","changed");
+  assert.equal((await x.host.reviewInput("next")).input.relatedAcceptances,undefined);
+});
+test("unselected prior results never flood a scoped review",async t=>{
+  const x=await setup(t,{registeredEvidence:true});await acceptAndReview(x);
+  const next={...x.acceptance,id:"next",task:"next-task"};
+  await x.host.accept(next,{reviewSourceIds:["contract"]});
+  assert.equal((await x.host.reviewInput("next")).input.relatedAcceptances,undefined);
+});
+test("mechanical sweep exposes a missing review enrollment without inventing verdicts or calls",async t=>{
+  const x=await setup(t);await x.host.accept(x.acceptance);
+  await (await openControlStore(x.dir)).transact(s=>{delete s.acceptances.previous.enrollment;return s;});
+  const before=await x.host.snapshot();
+  const result=await runControlTick(x.host,{review:async()=>{throw Error("UNEXPECTED_MODEL_CALL");}});
+  assert.equal(result.calls,0);
+  assert.deepEqual(result.results,[{id:"previous",action:"OBSERVATION_UNKNOWN",reason:"REVIEW_REGISTRATION_MISSING",invoked:false}]);
+  const {ownerControl}=await import("../scripts/control-owner.mjs");
+  assert.equal((await ownerControl(x.host,x.config.owner).inbox())[0].reason,"REVIEW_REGISTRATION_MISSING");
+  assert.deepEqual(await x.host.snapshot(),before);
+});
 
 for (const status of ["REJECT", "UNKNOWN", "legacy"]) {
   test(`independent result use ${status} blocks CONTINUE, DONE and a historical grant; REPAIR remains available`, async t => {

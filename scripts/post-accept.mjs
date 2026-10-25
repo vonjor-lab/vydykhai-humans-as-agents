@@ -8,6 +8,7 @@ import {checkFindingLeases} from "./finding-history.mjs";
 import {validateControlFindings} from "./control-findings.mjs";
 import {artifactRef, artifactHash, parseContextJson} from "./context-run.mjs";
 import {validateReviewSourceScope} from "./control-review-sources.mjs";
+import {phaseControlIds} from "./control-catalog.mjs";
 
 const filled = v => typeof v === "string" && v.trim().length > 0;
 const digest = v => typeof v === "string" && /^[a-f0-9]{64}$/.test(v);
@@ -181,8 +182,11 @@ export function reviewedTerminalDisposition(input, action, recordSha256) {
     verdict.action === action && verdict.recordSha256 === recordSha256 && filled(verdict.evidence);
 }
 
-export const postAcceptKey = ({acceptance, observation, previousFindings, policy, retentionRevision, sourceScopeRevision, sourceObservation, sourceEvidence, execution, terminalObservation}) =>
+export const postAcceptKey = ({acceptance, observation, previousFindings, policy, reviewPolicy, retentionRevision, sourceScopeRevision, sourceObservation, sourceEvidence, execution, terminalObservation, preparation, relatedAcceptances}) =>
   hash({acceptance, observation, previousFindings, policy, ...(retentionRevision ? {retentionRevision} : {}),
+    ...(reviewPolicy === undefined ? {} : {reviewPolicy}),
+    ...(preparation ? {preparation} : {}),
+    ...(relatedAcceptances?.length ? {relatedAcceptances} : {}),
     ...(sourceScopeRevision ? {sourceScopeRevision} : {}),
     ...(sourceObservation ? {sourceObservation} : {}),...(sourceEvidence?{sourceEvidence}: {}),
     ...(execution !== undefined ? {execution} : {}), ...(terminalObservation ? {terminalObservation} : {})});
@@ -226,10 +230,15 @@ export function assessPostAccept(input) {
       [a.owner, a.executor].includes(r.reviewer) || !filled(r.runId) || !instant(r.observedAt) ||
       Date.parse(r.observedAt) < Date.parse(a.acceptedAt))
     return result("POST_ACCEPT_REVIEW_DUE", "Fresh source-bound review follows orchestrator acceptance", {key});
-  const invalid = validateControlFindings({review: r, previousFindings: input.previousFindings, key});
+  let expectedIds;
+  try {expectedIds = phaseControlIds(input);} catch {return result('RECONCILE_INPUT', 'Invalid phase coverage policy');}
+  const invalid = validateControlFindings({review: r, previousFindings: input.previousFindings, key, expectedIds});
   if (invalid) return result(invalid.action, invalid.reason, {key});
   const resultUse = reviewedResultUse(r, a);
   if (resultUse === "INVALID") return result("RECONCILE_REVIEW", "Independent result-use decision is invalid", {key});
+  if(input.reviewPolicy && resultUse === 'ALLOW' &&
+    !['PASS','NOT_APPLICABLE'].includes(r.rows.find(row=>row.id==='C24.02')?.status))
+    return result('RECONCILE_REVIEW','Unknown relevant phase coverage cannot authorize result use',{key});
   for (const expected of retained.filter(o => o.required)) {
     const actual = observed.find(o => o.id === expected.id);
     if (actual.status === "MATCH" && actual.sha256 === expected.expected.sha256) continue;

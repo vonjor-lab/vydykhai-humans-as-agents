@@ -5,6 +5,27 @@ import {canonicalJson, sha256} from "./memory-brief.mjs";
 import {artifactRef, artifactBytes} from "./context-run.mjs";
 
 const need = (v,c) => {if(!v) throw Error(c);};
+const batchSchema = "control.review-source-batch.v1";
+const maxBatchBytes = 256*1024;
+export function reviewSourceRequests(args) {
+  need(args && typeof args === "object" && !Array.isArray(args), "REVIEW_SOURCE_REQUEST_INVALID");
+  if(Object.keys(args).join() === "id" && typeof args.id === "string")return [args];
+  need(Object.keys(args).join() === "ids" && Array.isArray(args.ids) && args.ids.length > 0 &&
+    args.ids.length <= 32 && Array.from(args.ids).every(id=>typeof id === "string" && id.trim()) &&
+    new Set(args.ids).size === args.ids.length, "REVIEW_SOURCE_REQUEST_INVALID");
+  return args.ids.map(id=>({id}));
+}
+// A batch is transport only: each original keeps its identity, bytes and proof.
+export function reviewSourceReadbacks(args,value) {
+  const requests=reviewSourceRequests(args);
+  const rows=Object.hasOwn(args,"ids") ? value?.sources : [value];
+  if(Object.hasOwn(args,"ids"))need(value?.schema === batchSchema &&
+    Object.keys(value).sort().join() === "schema,sources" && Array.isArray(rows) &&
+    Buffer.byteLength(JSON.stringify(value)) <= maxBatchBytes, "REVIEW_SOURCE_BATCH_INVALID");
+  need(Array.isArray(rows) && rows.length === requests.length && requests.every((r,i)=>rows[i]?.id===r.id),
+    "REVIEW_SOURCE_BATCH_INVALID");
+  return rows;
+}
 const sourceReference = entry => ({path:entry.path,sha256:"0".repeat(64),
   ...(Object.hasOwn(entry,"startMarker") || Object.hasOwn(entry,"endMarker") ?
     {startMarker:entry.startMarker,endMarker:entry.endMarker} : {})});
@@ -61,8 +82,15 @@ export async function openReviewSources(file) {
     workspace:root,
     async list() {return Array.from(entries.values());},
     async read(args) {
-      need(args && Object.keys(args).length === 1 && typeof args.id === "string", "REVIEW_SOURCE_REQUEST_INVALID");
-      return read(args.id);
+      const requests=reviewSourceRequests(args);
+      if(!Object.hasOwn(args,"ids"))return read(args.id);
+      need(requests.every(r=>entries.has(r.id)), "REVIEW_SOURCE_NOT_REGISTERED");
+      const value={schema:batchSchema,sources:[]};
+      for(const request of requests) {
+        value.sources.push(await read(request.id));
+        need(Buffer.byteLength(JSON.stringify(value)) <= maxBatchBytes, "REVIEW_SOURCE_BATCH_CAPACITY");
+      }
+      return value;
     },
     async recallMemory(args) {
       need(args && Object.keys(args).sort().join() === "id,request" && typeof args.id === "string" &&

@@ -17,7 +17,9 @@ test("controlled policy is reachable through ordinary managed events, not only m
   assert.match(policy, /Opt-in controlled operating contract/);
   assert.match(policy, /Optimize the total effort to achieve and retain accepted outcomes/);
   assert.match(policy, /Never remove required evidence just to make control cheaper/);
-  assert.match(policy, /The verdict still covers the full catalog/);
+  assert.match(policy, /Default profiles cover the full catalog/);
+  assert.match(policy, /PHASED_V1.*requires HEALTH, registered evidence and mandatory preparation/);
+  assert.match(policy, /Rules assigned elsewhere are not synthesized PASS or NOT_APPLICABLE/);
 });
 
 test("structural route: authorized continuation omits global reread and repeated approval", async () => {

@@ -1,5 +1,92 @@
 # Local Control Host Candidate
 
+## Bounded Review Cost
+
+Host-bound review prompts carry the full current independent source index as
+metadata, not acquired evidence. Original reads, drift checks, scoped expansion,
+fresh contexts and verdict admission remain mandatory. `list_sources` remains
+available but need not repeat an index already supplied by the host.
+
+An explicit `review.native.preparationEffort` may select the effort for a trusted
+`PHASED_V1` preparation review only. It is opt-in and requires comparable scoped
+qualification. HEALTH and result POST retain `native.effort`; model identity,
+deadlines, shared cumulative call budget and prior history do not change. Record
+the selected effort in each run. This is not a universal model downgrade or a
+claim that PRE qualification establishes POST/HEALTH reliability.
+
+## Negative-Path Completion
+
+Successful controlled local commands retain `context.command-environment.v1`
+evidence from before execution: resolved workspace/cwd/executable, executable
+permission, current context recheck and the exact command digest. The existing
+host observation stores an in-process sealed proof and exposes it to POST.
+Caller prose cannot supply that proof. It covers local process launch only, not
+remote identity, business permissions or a filesystem lock. Historical records
+without it remain unknown; updating the runtime does not backfill old success.
+
+The durable owner journal records a native exit and its usage even when the
+owner forgot a continuation checkpoint. `CHECKPOINT_MISSING` is fail-closed:
+no active model is fabricated, no completion or automatic next turn is allowed.
+The transport still reports the missing handoff for owned reconciliation.
+
+The existing owner handler can use explicit `EXACT_CONTROL_DISPOSITION` policy.
+Only a current positive independent verdict with no open findings and an exact
+delegated next action or terminal decision is applied without a model. The same
+owner acquisition, host freshness and notification readback APIs remain mandatory.
+Ambiguity and repairs return to the existing owner; unknown application is retained
+without retry. A new mode makes older implementations refuse instead of silently
+falling back to native delivery. Existing native delegation remains compatible.
+
+`waitControlEvent` is passive: it returns applied control, attention or observation
+expiry, never a worker cancellation or a new tick. Size the caller's transport
+wait separately from task execution. In-flight changes are not new model turns.
+
+A complete launch packet exposes current installation, planned assignments,
+dependency gates, checkpoints and the selected tracker through the same review
+source registry as product evidence. Installation integrity outside that registry
+does not prove operational readiness to a source-confined reviewer. A planned
+assignment must not claim an active execution lease before dispatch.
+
+`REPAIR` is an owned branch, not a terminal dead end and not permission to ignore
+the finding. The existing owner retains the negative verdict, repairs its named
+evidence, and uses `health.requestRepairReview`. A WAITING assignment first uses
+the paused, exact-lease `health.resumeRepair`; this grants neither execution nor
+independent approval. Only fresh independent findings and applied disposition
+permit dependent work. Positive-only transport fixtures cannot qualify this path.
+
+When selected sources identify a previous accepted artifact or terminal record,
+new reviews receive its scoped `relatedAcceptances` from the authenticated host:
+exact acceptance identity, independent result-use judgment, owner disposition,
+enrollment and current source/retention observations. A terminal proposal or owner
+narrative is not interchangeable with independent closure. This projection is
+bound into the review key and grants no new execution. Older closed histories do
+not gain new obligations retroactively; an owned repair adopts the new binding.
+Readers that cannot interpret adopted related-control evidence cannot be selected
+for rollback. Unselected history is not injected into the review context.
+
+An action-only worker endpoint does not expose source discovery or filesystem
+reads. Its trusted launcher supplies the already accepted preparation and exact
+action/verification bindings inline; the host still rechecks admission at action
+time. Do not assign source retrieval to a role without that capability. A failed
+context handoff is not permission to replay: reconcile the completed process and
+absence of registered calls/reservations first, retain its cost, and explicitly
+dispatch a new corrected handoff. Unknown effects remain blocked.
+
+Finite owner-handler capacity can be renewed on a quiescent paused host through
+`changeControlProfile`: a separate `owner-delivery-*` journal, explicit allocation,
+unchanged delegate identity and native profile, preserved old journals. This does
+not reset spent calls, clear findings or resume the host. Review and owner capacity
+must cover the whole remaining sequence, including repair verification.
+
+Observation, review work and product work have different lifetimes. A passive
+wait expiry is not failure and must not cancel or relaunch a task. The isolated
+native worker helper is bounded (five minutes for non-review roles); it is not a
+general multi-hour task host. Long product tasks retain their external task owner
+and execution lease; the controller evaluates boundary events, not their entire
+execution inside one review/tool call. This bounded helper does not establish
+survival across CLI/host loss. Unknown external effects remain unreplayable until
+reconciled. No short fixture qualifies multi-hour resilience or economic benefit.
+
 Status: candidate implementation, not installed or a release qualification.
 The contract covers the local controlled-command route only. It is not a claim
 that ordinary native tools, hooks or other hosts are intercepted.
@@ -135,11 +222,15 @@ or authorize consumption of rejected results. No budget reset or product restart
   verifies exact registration identity and holds the dispatch lease through
   unregister; missing observation inputs do not make owned cleanup impossible.
   Registration and wakeup are not successful diagnosis, owner action or readiness.
-  Registration is periodic-only: no RunAtLoad or kickstart. The trusted setup
-  `startControlSchedule` route executes one descriptor-selected bounded observer,
-  verifies its exact durable result, then registers the schedule. It does not retry
-  unknown observation and must have explicit execution scope/budget. Raw registration
+  Default registration is periodic-only: no RunAtLoad or kickstart. The trusted setup
+  `startScheduledControl` route registers the natural interval without a separate
+  initial dispatch; `waitControlObservation` follows terminal receipt hashes without
+  aborting work. Legacy synchronous startup is not this route. Raw registration
   reports initialObservation=NOT_PERFORMED even when reused; it is not startup proof.
+  Opt-in event-driven startup and host acceptance request a non-terminating wake
+  through `requestScheduledObservation` after the obligation is persisted. The
+  exact installed service/profile is checked; no `-k`, second manager or replay.
+  A missed/coalesced wake retains the obligation for the same timer to reconcile.
   Initial and interval receipts are distinct evidence. Later LOGIN loading starts
   the interval, not an immediate login tick; logout/reboot remains unqualified. A
   preexisting RunAtLoad plist requires owned unregister/re-register at a quiescent
@@ -208,6 +299,12 @@ or authorize consumption of rejected results. No budget reset or product restart
   termination, matching receipt and transport, unchanged source/host binding and
   finding validation before returning a verdict. The receipt itself grants nothing.
   A rejected submission stops without automatic retry. Existing final-message
+  profiles may opt into `native.reviewUsageDrainMs` (0..30000, default0): after a
+  successful durable receipt, allow normal CLI completion to emit final usage.
+  The original work deadline still applies; rejection stops immediately. No new
+  assignment or retry is launched. Drain expiry retains the submitted verdict
+  subject to normal admission and marks missing usage UNKNOWN. Additional native
+  response work inside that same turn is part of the measured expense. Existing
   profiles are unchanged. If no turn-completed usage was delivered, spend remains
   UNKNOWN, not zero. This mode is refused before dispatch for token-bounded episodes,
   which require completed usage; their old unknown-usage guard is not weakened.
@@ -234,7 +331,7 @@ or authorize consumption of rejected results. No budget reset or product restart
   before execution, bounded output and observed termination/result. Reopening an
   uncertain journal never grants replay. Identity comes from the trusted launch,
   not a name emitted by the child. This is not yet a semantic model transport.
-- `control-child.mjs` bounds both ordinary execution and post-kill pipe waiting.
+- `control-child.mjs` bounds actual execution separately from post-kill pipe waiting. Explicit review work may use up to 900000ms; service budget includes native work plus 1000ms. Defaults and other worker caps are unchanged. Passive observation expiry never aborts that work or replenishes its allocation.
   Unobserved close remains UNKNOWN. Offline review forbids child creation; its
   trusted inline policy must treat workspace sources as data, not load them as
   executable reviewer code. Native CLI exit does not certify all command effects.
@@ -429,3 +526,31 @@ inventory, not the newest inventory, so intact older packages remain inspectable
 
 These gates precede publication. Existing 1.34.1 validation does not qualify the
 new operating contract, and the manifest is deliberately unchanged.
+
+## Durable Owner Waiting
+
+Optional `ownerDelivery.waits` uses the existing delivery journal, not another
+manager. A trusted launcher claims `waiting.begin()`, then starts or resumes the
+exact recorded native session. The owner parks an allowlisted event and checkpoint
+and ends its turn. Only a trusted native-exit receipt changes PARKED to WAITING;
+an event before exit cannot start a concurrent owner. The existing observer records
+READY mechanically. With `waits.eventDriven:true`, native exit also calls this
+same observer, and trusted role completion calls it after saving the actual Return.
+Neither path launches a model or advances task stages; OBSERVATION waits still
+require a new periodic receipt. The launcher consumes READY once and resumes the same session;
+it makes no task-stage decisions. Workers must outlive the owner's MCP connection.
+A long pending MCP call alone does not prove zero model inference while waiting.
+
+A completed observation is quiet only with a successful outcome, no unresolved
+review/owner/action, no pending obligations or notifications, and no model or
+command activity. Unknown/failed or attention-required observations return an
+attention event with the original evidence, never quiet success. The trusted
+timer adapter establishes the interval; a changed receipt hash alone does not.
+
+Pause, expiry, unknown native exit and a changed session prevent resumption.
+Observation deadlines report attention, never cancel work or grant retries.
+Negative events wake the owner but confer no permission. Results still require
+ordinary acceptance and independent control. Account for each active turn; native
+resume usage can be session-cumulative, so calculate deltas rather than summing
+cumulative totals. Retain prior expenses. Profile replacement cannot discard this
+session allocation; cutover rejects an active/unknown owner or an incapable reader.

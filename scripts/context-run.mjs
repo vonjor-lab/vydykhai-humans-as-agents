@@ -29,8 +29,19 @@ class ContextError extends Error {
 }
 const commandFailures = new WeakMap();
 const commandSuccesses = new WeakMap();
+const commandEnvironments = new WeakMap();
 export const readCommandFailure = error => commandFailures.has(error) ? structuredClone(commandFailures.get(error)) : null;
 export const readCommandSuccess = result => commandSuccesses.has(result) ? structuredClone(commandSuccesses.get(result)) : null;
+export function bindCommandEnvironment(observation, result) {
+  const closed = readCommandSuccess(result);
+  requireThat(closed?.environment && observation.outcome === "COMPLETED" &&
+    observation.resultSha256 === hash({exitCode: closed.exitCode, commandSha256: closed.commandSha256,
+      stdoutSha256: closed.stdoutSha256, executable: closed.executable, cwd: closed.cwd}) &&
+    !commandEnvironments.has(observation), "COMMAND_ENVIRONMENT_UNBOUND");
+  commandEnvironments.set(observation, {environment: closed.environment, process: closed.process});
+}
+export const readCommandEnvironment = observation => commandEnvironments.has(observation)
+  ? structuredClone(commandEnvironments.get(observation)) : null;
 const requireThat = (condition, code = "CONTEXT_SCHEMA_INVALID", reference = null) => { if (!condition) throw new ContextError(code, false, reference); };
 
 export function artifactBytes(reference, data) {
@@ -115,6 +126,16 @@ async function command(spec, root, readPath, stats, extraEnv = {}, kind = "depen
   for (const k of ["PATH", "SystemRoot", "TMPDIR", "TEMP"]) if (process.env[k]) env[k] = process.env[k];
   const invoke = async () => {
     if (admission) await admission.recheck();
+    // Check again after admission: a grant is not a lock on the local environment.
+    requireThat(await readPath(spec.cwd, true) === cwd && await realpath(spec.executable) === executable,
+      "COMMAND_ENVIRONMENT_CHANGED");
+    requireThat((await lstat(executable)).isFile(), "COMMAND_EXECUTABLE_INVALID");
+    await access(executable, constants.X_OK);
+    const environment = {schema: "context.command-environment.v1", checkedAt: new Date().toISOString(),
+      scope: "LOCAL_PROCESS_LAUNCH_ONLY", workspace: root, cwd, executable, commandSha256: hash(spec),
+      checks: ["WORKSPACE_CWD_RESOLVED", "EXECUTABLE_FILE_RESOLVED", "EXECUTABLE_PERMISSION"],
+      contextBindings: admission ? "RECHECKED_BEFORE_EXECUTION" : "UNCONTROLLED",
+      hostIdentity: "NOT_ESTABLISHED", remotePermissions: "NOT_OBSERVED"};
     const readSandboxLaunch=admission?.binding.confined ?
       (await import("./local-control-sandbox.mjs")).readSandboxLaunch : null;
     return new Promise((resolve, reject) => {
@@ -173,8 +194,9 @@ async function command(spec, root, readPath, stats, extraEnv = {}, kind = "depen
           reject(error);
         }
         else {
-          const result={stdout,stdoutSha256:sha256(stdout),exitCode:code,commandSha256:hash(spec),cwd,executable};
+          const result={stdout,stdoutSha256:sha256(stdout),exitCode:code,commandSha256:hash(spec),cwd,executable,environment};
           commandSuccesses.set(result,{exitCode:code,signal,commandSha256:hash(spec),cwd,executable,
+            environment,
             process:{launchId,pid:child.pid??null,groupId:process.platform==="win32"?null:child.pid??null,
               startedAt,closedAt:new Date().toISOString(),launchExecutable:launch.executable,launchArgsSha256:hash(launch.args)},
             stdoutSha256:stdoutHash.digest("hex"),stderrSha256:stderrHash.digest("hex"),stdoutBytes,stderrBytes,
@@ -524,6 +546,7 @@ export async function runContextTransition(request, services = {}) {
       const result = await command(task.action, root, resolvePath, stats, {}, "dependent", admission);
       await recheck("DURING_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef]);
       return { status: "ACTION_COMPLETED", operation: "resume", enforcement: "reference", coverageBasis: basis,
+        environment: result.environment,
         action: { commandSha256: result.commandSha256, stdoutSha256: result.stdoutSha256, exitCode: result.exitCode,
           executable: result.executable, cwd: result.cwd }, sourceReceipt, stats };
     }
@@ -571,7 +594,8 @@ export async function runContextTransition(request, services = {}) {
         ? `Pending source deltas: ${pendingIntegrationSources.map(s => `${s.sourceId}/${s.eventId}`).join(", ")}; inspect pinned task/capsule and verification receipt`
         : "NO_MEMORY_DELTA; no pending source integration in the declared snapshot",
       artifactDisposition: "Candidate retained for independent review", recommendedNextAction: `Review verification receipt ${hash(receipt)} and shared meaning` });
-    return { status: "VERIFIED", operation: "accept", enforcement: "reference", coverageBasis: basis, receipt, returnSync, sourceReceipt, stats };
+    return { status: "VERIFIED", operation: "accept", enforcement: "reference", coverageBasis: basis,
+      environment: result.environment, receipt, returnSync, sourceReceipt, stats };
   } catch (error) {
     return { status: error instanceof ContextError && error.limited ? "LIMITED" : "BLOCKED",
       code: error instanceof ContextError ? error.code : "CONTEXT_IO_OR_INPUT_INVALID",

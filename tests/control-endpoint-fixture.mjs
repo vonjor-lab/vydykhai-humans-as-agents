@@ -24,5 +24,5 @@ export async function endpointFixture(t) {
   await writeFile(file, JSON.stringify(profile), {mode: 0o600});
   const approve = () => host.approveCommand(binding, {reviewer: config.reviewer, reviewReceipt: "fixture:source-reviewed",
     dependencies: [], expiresAt: Date.now() + 120000});
-  return {f, privateRoot, host, profile, file, approve};
+  return {f, prepared: p, privateRoot, host, profile, file, approve};
 }

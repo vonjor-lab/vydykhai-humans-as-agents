@@ -18,7 +18,7 @@ async function saveReceipt(root, receipt) {
   catch(e) {await unlink(temp); throw e;}
   const dir = await open(root, "r"); try {await dir.sync();} finally {await dir.close();}
 }
-export async function runControlObserver(descriptorFile,{invocationId}={}) {
+export async function runControlObserver(descriptorFile,{invocationId = randomUUID()}={}) {
   if(invocationId!==undefined&&!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(invocationId))
     throw Error("CONTROL_OBSERVER_INVOCATION_INVALID");
   const verified = await verifyControlActivation(descriptorFile), root = verified.descriptor.controlRoot.path;
@@ -39,7 +39,7 @@ export async function runControlObserver(descriptorFile,{invocationId}={}) {
     const capacity = await service.review.capacity();
     const actions = {};
     for(const item of result.results) actions[item.action] = (actions[item.action] ?? 0) + 1;
-    const receipt = {schema: "control.observer-readback.v1", descriptorHash: hash(descriptor),
+    const receipt = {schema: "control.observer-readback.v1", stage:"IN_PROGRESS", descriptorHash: hash(descriptor),
       ...(invocationId?{invocationId}:{}),
       observedAt: new Date().toISOString(), status: unknownRuns ? "UNKNOWN_RECONCILIATION_REQUIRED" : "ONE_TICK_OBSERVED",
       owner: profile.config.owner, projectReadiness: "NOT_CERTIFIED", calls: result.calls,
@@ -74,11 +74,28 @@ export async function runControlObserver(descriptorFile,{invocationId}={}) {
           ({id,action,reviewKey:reviewKey??null,...(followup?{followup}:{})})),
           ...(receipt.unknownActions?[{action:"UNKNOWN_RECONCILIATION_REQUIRED"}]:[])]});
     }
-    safeToRelease = unknownRuns === 0 && !receipt.ownerCapacity?.unknownRuns && !receipt.unknownActions;
+    // External worker endpoints also create reservations without a continuation profile.
+    const finalHost=await (await openControlStore(profile.directory)).read();
+    receipt.host={revision:finalHost.revision,digest:finalHost.digest};
+    receipt.paused=finalHost.state.paused;
+    receipt.unknownActions=Object.values(finalHost.state.reservations).filter(r=>r.status==="IN_FLIGHT").length;
+    if(receipt.unknownActions) {
+      receipt.status="UNKNOWN_RECONCILIATION_REQUIRED";
+      if(notifications&&!receipt.paused&&!profile.continuation)
+        await notifications.enqueueObservation({receipt,complete:true,actionable:[{action:"UNKNOWN_RECONCILIATION_REQUIRED"}]});
+    }
+    // A reservation owned by an external worker is not this observer's dispatch.
+    safeToRelease = unknownRuns === 0 && !receipt.ownerCapacity?.unknownRuns &&
+      (!profile.continuation || !receipt.unknownActions);
+    receipt.stage="COMPLETED";
+    await saveReceipt(root,receipt);
+    // Recording readiness is mechanical. The original launcher consumes it only
+    // after its previous native turn has exited; this observer never hires an owner.
+    if(service.ownerDelivery?.waiting)await service.ownerDelivery.waiting.observe();
     return receipt;
   } catch(e) {
     // Failure after service entry may follow dispatch. Keep ownership, never replay.
-    const receipt = {schema: "control.observer-readback.v1", status: "UNKNOWN_RECONCILIATION_REQUIRED",
+    const receipt = {schema: "control.observer-readback.v1", stage:"FAILED", status: "UNKNOWN_RECONCILIATION_REQUIRED",
       ...(invocationId?{invocationId}:{}),
       observedAt: new Date().toISOString(), owner: verified.profile.config.owner,
       descriptorHash:hash(verified.descriptor),projectReadiness: "NOT_CERTIFIED", error: String(e.message).slice(0, 512)};

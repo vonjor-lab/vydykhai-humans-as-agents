@@ -123,6 +123,29 @@ export const controlCatalog = Object.freeze(definitions.map(([id, title, source,
     Object.freeze({id: `${id}.${String(i + 1).padStart(2, "0")}`, criterion})))})));
 export const controlCheckIds = Object.freeze(controlCatalog.flatMap(group => group.checks.map(check => check.id)));
 
+// Phase ownership is policy, not an inferred PASS for another stage. HEALTH
+// retains the whole catalog; task gates always retain acceptance/use/write checks.
+const shared = ['C01','C03','C06','C07.03','C10.02','C11.01','C12.03','C14.02',
+  'C16.03','C18.01','C19.01','C20.01','C20.02','C24.02','C25','C26.01','C26.02'];
+const phaseSelectors = Object.freeze({
+  PRE: [...shared,'C02','C04','C05.01','C05.02','C07.01','C07.02','C08.01','C09','C11.02','C15.01','C15.03','C26.03'],
+  POST: [...shared,'C02.02','C02.03','C05.02','C05.03','C07.01','C07.02','C10.01','C10.03','C11.03',
+    'C12.02','C12.04','C13','C14.03','C15','C16.01','C16.02','C17','C18.02','C18.03',
+    'C19.02','C19.03','C20.03','C21.02','C21.03','C26.04','C28']
+});
+export function phaseControlIds(input = {}) {
+  if (input.reviewPolicy === undefined) return controlCheckIds;
+  if (input.reviewPolicy !== 'PHASED_V1' || !input.acceptance || !Array.isArray(input.previousFindings))
+    throw Error('CONTROL_PHASE_POLICY_INVALID');
+  const selectors = phaseSelectors[input.preparation ? 'PRE' : 'POST'];
+  const retained = new Set(input.previousFindings.map(f => f.checkId));
+  if ([...retained].some(id => !controlCheckIds.includes(id))) throw Error('CONTROL_PHASE_FINDING_INVALID');
+  return controlCheckIds.filter(id => retained.has(id) || selectors.some(s => id === s || id.startsWith(s + '.')));
+}
+export const controlPhaseOwnership = Object.freeze(Object.fromEntries(controlCheckIds.map(id => [id,
+  Object.freeze(['HEALTH', ...Object.keys(phaseSelectors).filter(phase =>
+    phaseSelectors[phase].some(s => id === s || id.startsWith(s + '.')))])])));
+
 // Compact wire representation only: no inferred PASS, ranges, defaults or omitted
 // checks. The same complete per-criterion validator still owns admission.
 export function expandControlRows(answer) {
@@ -143,12 +166,14 @@ export function expandControlRows(answer) {
 
 // Check all operational rows, including a reason for exclusions. The independent
 // source review establishes applicability/meaning; this function cannot infer it.
-export function checkControlCoverage(rows) {
+export function checkControlCoverage(rows, expectedIds = controlCheckIds) {
   const filled = v => typeof v === "string" && v.trim().length > 0;
   const fail = reason => ({ok: false, reason, semanticAcceptance: "NOT_ESTABLISHED"});
-  if (!Array.isArray(rows) || rows.length !== controlCheckIds.length ||
+  if (!Array.isArray(expectedIds) || !expectedIds.length || new Set(expectedIds).size !== expectedIds.length ||
+      expectedIds.some(id => !controlCheckIds.includes(id))) return fail('INVALID_COVERAGE_POLICY');
+  if (!Array.isArray(rows) || rows.length !== expectedIds.length ||
       new Set(rows.map(r => r?.id)).size !== rows.length ||
-      Array.from(rows).some(r => !controlCheckIds.includes(r?.id))) return fail("INCOMPLETE_CATALOG");
+      Array.from(rows).some(r => !expectedIds.includes(r?.id))) return fail("INCOMPLETE_CATALOG");
   for (const row of rows) {
     if (!["PASS", "FINDING", "UNKNOWN", "DEFERRED", "NOT_APPLICABLE"].includes(row.status))
       return fail(`INVALID_DISPOSITION:${row.id}`);

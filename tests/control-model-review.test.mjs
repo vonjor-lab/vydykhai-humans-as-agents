@@ -5,7 +5,7 @@ import path from "node:path";
 import {randomUUID} from "node:crypto";
 import {endpointFixture,endpointServices} from "./control-endpoint-fixture.mjs";
 import {nativeProvider,codeItem,answerItem} from "./native-provider-fixture.mjs";
-import {openModelReview,modelReviewPrompt} from "../scripts/control-model-review.mjs";
+import {openModelReview,modelReviewPrompt,modelReviewEffort} from "../scripts/control-model-review.mjs";
 import {openReviewSources} from "../scripts/control-review-sources.mjs";
 import {openControlHost} from "../scripts/control-host.mjs";
 import {runControlledWorker} from "../scripts/control-worker-run.mjs";
@@ -29,6 +29,54 @@ test("readiness criterion reaches the actual review prompt without enlarging the
   assert.match(prompt,/later worker readback or post-accept judgment cannot backdate/);
   assert.match(prompt,/not every read-only preparation step or legacy task/);
 });
+test("result-use prompt declares validator dependencies without widening a partition",()=>{
+  const offer={phase:"POST_ACCEPT",input:{previousFindings:[]}}, scope={kind:"controlled-route"};
+  for(const ids of [undefined,["C20.02"]]) {
+    const prompt=modelReviewPrompt(offer,scope,ids);
+    assert.match(prompt,/ALLOW requires C20\.02 PASS/);
+    assert.match(prompt,/C07\.03 and C19\.01 must each be PASS or source-backed NOT_APPLICABLE/);
+    assert.match(prompt,/FINDING, UNKNOWN or DEFERRED on either is incompatible with ALLOW/);
+    assert.match(prompt,/In a partition judge only assigned criteria/);
+    assert.match(prompt,/retaining wider historical obligations separately/);
+    assert.match(prompt,/emit UNKNOWN with its owned findingIds, not ALLOW/);
+  }
+  assert.doesNotMatch(modelReviewPrompt({...offer,phase:"HEALTH"},scope),/Include resultUse:/);
+  assert.doesNotMatch(modelReviewPrompt(offer,scope,["C19.01"]),/Include resultUse:/);
+});
+test("conditional checks require their own predicate evidence without changing catalog identity",()=>{
+  const offer={phase:"POST_ACCEPT",input:{previousFindings:[]}},scope={kind:"controlled-route"};
+  assert.equal(controlCheckIds.length,87);
+  const criteria=controlCatalog.flatMap(g=>g.checks);
+  assert.equal(criteria.find(c=>c.id==='C03.03').criterion,'Exceptions retain an authorized decision, scope and expiry or return condition');
+  assert.equal(criteria.find(c=>c.id==='C25.03').criterion,'Current environment and permissions are checked before protected action');
+  for(const ids of [undefined,['C03.03','C25.03']]){
+    const prompt=modelReviewPrompt(offer,scope,ids);
+    assert.match(prompt,/ordinary permission is not exception evidence/);
+    assert.match(prompt,/no exception is requested or used, emit NOT_APPLICABLE/);
+    assert.match(prompt,/Unknown applicability is UNKNOWN/);
+    assert.match(prompt,/Read-only preparation with no protected action in its accepted scope is NOT_APPLICABLE/);
+    assert.match(prompt,/preparation label alone never proves absence of protected effects/);
+    assert.match(prompt,/missing proof is UNKNOWN and an evidenced bypass is FINDING, never NOT_APPLICABLE/);
+  }
+  assert.doesNotMatch(modelReviewPrompt(offer,scope,['C20.02']),/For C03\.03,|For C25\.03,/);
+  assert.match(modelReviewPrompt({...offer,phase:'HEALTH'},scope),/For C03\.03,/);
+});
+test("lease predicate separates planned ownership from existing assignment evidence",()=>{
+  const offer={phase:'POST_ACCEPT',input:{previousFindings:[]}},scope={kind:'controlled-route'};
+  assert.equal(controlCheckIds.length,87);
+  assert.equal(controlCatalog.flatMap(g=>g.checks).find(c=>c.id==='C11.02').criterion,
+    'Assignment and dependencies are visible in the existing lease');
+  for(const phase of ['POST_ACCEPT','HEALTH'])for(const ids of [undefined,['C11.02']]){
+    const prompt=modelReviewPrompt({...offer,phase},scope,ids);
+    assert.match(prompt,/PASS needs acquired evidence of that lease with its assignment and dependencies/);
+    assert.match(prompt,/planned assignment or a future dispatch promise alone do not prove it/);
+    assert.match(prompt,/no required current lease, emit scoped NOT_APPLICABLE/);
+    assert.match(prompt,/old null lease field alone cannot establish that absence/);
+    assert.match(prompt,/current lease is required but unproved, emit UNKNOWN with an owned finding/);
+    assert.match(prompt,/Do not inherit C11\.01's owner proof as C11\.02 PASS/);
+  }
+  assert.doesNotMatch(modelReviewPrompt(offer,scope,['C11.01']),/For C11\.02,/);
+});
 async function setup(t,registeredEvidence=false) {
   const x=await endpointFixture(t), dirs={};
   for(const name of ["journal","room","home"]) {dirs[name]=path.join(x.privateRoot,name);await mkdir(dirs[name],{mode:0o700});}
@@ -43,6 +91,21 @@ async function setup(t,registeredEvidence=false) {
   }
   return {...x,dirs,sourceFile,sources};
 }
+test("preparation effort override requires a trusted phase host and valid explicit effort",async()=>{
+  const base={native:{preparationEffort:'medium'},scope:{}};
+  await assert.rejects(openModelReview(base),/PREPARATION_EFFORT_INVALID/);
+  for(const preparationEffort of ['automatic',null,1,{}])
+    await assert.rejects(openModelReview({...base,native:{preparationEffort},
+      scope:{host:{config:{reviewPolicy:'PHASED_V1'}}}}),/PREPARATION_EFFORT_INVALID/);
+});
+test("only bound PRE selects the explicit effort; POST, HEALTH and legacy keep the accepted profile",()=>{
+  const native={effort:'high',preparationEffort:'medium'},pre={input:{preparation:{id:'prepared'}}};
+  assert.equal(modelReviewEffort(native,pre,true),'medium');
+  assert.equal(modelReviewEffort(native,pre,false),'high');
+  assert.equal(modelReviewEffort(native,{...pre,phase:'HEALTH'},true),'high');
+  assert.equal(modelReviewEffort(native,{phase:'POST_ACCEPT',input:{}},true),'high');
+  assert.equal(modelReviewEffort({effort:'high'},pre,true),'high');
+});
 test("source registry denies traversal, symlinks and undeclared private reads; missing stays visible", async t=>{
   const x=await setup(t), sources=await openReviewSources(x.sourceFile);
   const first=await sources.snapshot();assert.equal(first.rows[0].status,"AVAILABLE");
@@ -276,7 +339,8 @@ test("native owner consumes the exact verdict through MCP without gaining worker
   for(const id of retentionKinds)acceptance.retention.push({id,required:true,expected:await ref(id)});
   await x.host.accept(acceptance);
   await runControlTick(x.host,{review:async offer=>({phase:"POST_ACCEPT",key:offer.key,runId:offer.runId,reviewer:c.reviewer,
-    observedAt:new Date().toISOString(),findings:[],rows:controlCheckIds.map(id=>({id,status:"PASS",evidence:"fixture"}))})});
+    observedAt:new Date().toISOString(),findings:[],rows:controlCheckIds.map(id=>({id,status:"PASS",evidence:"fixture"})),
+    resultUse:{status:"ALLOW",acceptanceSha256:sha256(canonicalJson(acceptance)),findingIds:[],evidence:"Scripted protocol result-use judgment"}})});
   const file=path.join(x.privateRoot,"owner.json");
   const notificationConfig={directory:path.join(x.privateRoot,"notices"),transportActor:"control-owner-transport"};
   await mkdir(notificationConfig.directory,{mode:0o700});

@@ -17,6 +17,7 @@ const filled = v => typeof v === "string" && !!v.trim();
 export const healthId = "@health";
 export function initialHealth(config) {
   const h = config.health;
+  need(h?.periodicReview === undefined || typeof h.periodicReview === "boolean", "HEALTH_PERIODIC_POLICY_INVALID");
   need(filled(config.evidenceRegistry) && h && filled(h.scope) && Number.isSafeInteger(h.intervalMs) &&
     h.intervalMs >= 60000 && h.intervalMs <= 31 * 86400000 &&
     [h.maxBranches,h.maxWorktrees].every(n => Number.isSafeInteger(n) && n >= 1) &&
@@ -132,8 +133,11 @@ export function healthControl({state,update,config,observeReviewRun}) {
   const sameCheckpoint = (a,b) => a.id===b.id&&a.reviewAt===b.reviewAt;
   const overdue = (h,now) => h.findings.filter(f=>f.status==="OPEN"&&Date.parse(f.reviewAt)<=now&&
     !(h.reviewedCheckpoints??[]).some(p=>sameCheckpoint(p,f)));
+  // Explicit reset reviews remain obligations. An event-only profile still
+  // observes sources, leases and overdue findings on every mechanical tick.
   const periodicDue = s => plan.cadence ? cadence(s).due &&
-    cadence(s).periodic.resetEpoch !== s.health.reviewedResetEpoch : Date.now() >= s.health.nextDueAt;
+    cadence(s).periodic.resetEpoch !== s.health.reviewedResetEpoch :
+    plan.periodicReview !== false && Date.now() >= s.health.nextDueAt;
   const isDue = (s,fresh) => s.health.enrollment === "REVIEW_DUE" ||
     ["SETTLED","REPAIR_DUE"].includes(s.health.enrollment) &&
     (periodicDue(s) || fresh.trigger !== s.health.trigger ||

@@ -10,10 +10,11 @@ const submission = process.argv[4] === undefined ? null : await openReviewSubmis
 const tools = [
   {name:"list_sources",description:"List host-registered original evidence. Not a preparer summary; missing evidence stays unknown.",
     inputSchema:{type:"object",properties:{},additionalProperties:false},annotations:{readOnlyHint:true}},
-  {name:"read_source",description:policy === undefined ? "Read one original evidence source by registered id, with actual content hash. Cannot write or approve actions." :
+  {name:"read_source",description:policy === undefined ? "Read exact original evidence by id, or a related batch via ids (1-32 unique registered ids, total reply <=256 KiB). Prefer a batch for sources already selected from the index, avoiding repeated context exchange. Every source retains its own actual content hash; no summaries or inherited judgments. Oversized batch fails, never silently truncates. Cannot write or approve actions." :
     `Read an exact original window by registered id. Offsets/length count Unicode code points; default length ${policy.maxChars}. Paginate required sources until fully acquired. Slice ids/hashes do not prove whole-source acquisition. Total text budget ${policy.maxBytes} bytes; exhaustion returns NEEDS_DISCOVERY, never missing or PASS. No write or approval.`,
-    inputSchema:{type:"object",properties:{id:{type:"string"},...(policy === undefined ? {} :
-      {offset:{type:"integer",minimum:0},length:{type:"integer",minimum:1,maximum:policy.maxChars}})},required:["id"],additionalProperties:false},annotations:{readOnlyHint:true}},
+    inputSchema:policy === undefined ? {type:"object",properties:{id:{type:"string"},ids:{type:"array",items:{type:"string"},minItems:1,maxItems:32,uniqueItems:true}},
+      oneOf:[{required:["id"]},{required:["ids"]}],additionalProperties:false} :
+      {type:"object",properties:{id:{type:"string"},offset:{type:"integer",minimum:0},length:{type:"integer",minimum:1,maximum:policy.maxChars}},required:["id"],additionalProperties:false},annotations:{readOnlyHint:true}},
   {name:"recall_memory",description:"Locate candidate public routes and prior obligations from an ordinary request in a registered Graph v4 or manifest with independently registered whole parts. Parts are verified locally, not dumped into context. Not completeness or admission; unavailable evidence remains a gap. Cannot follow unregistered paths, read implementations or change memory.",
     inputSchema:{type:"object",properties:{id:{type:"string"},request:{type:"string"}},required:["id","request"],additionalProperties:false},annotations:{readOnlyHint:true}}
 ];

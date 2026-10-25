@@ -13,14 +13,14 @@ export const validAffectedTasks = tasks => tasks === undefined || Array.isArray(
 
 // Shared by post-accept and periodic health review. Neither route may weaken
 // the catalog, original finding identity or independent repair history.
-export function validateControlFindings({review: r, previousFindings, key}) {
+export function validateControlFindings({review: r, previousFindings, key, expectedIds}) {
   const error = (action, reason) => ({action, reason});
-  const coverage = checkControlCoverage(r.rows);
+  const coverage = checkControlCoverage(r.rows, expectedIds);
   if (!coverage.ok) return error("RECONCILE_REVIEW", coverage.reason);
   if (!unique(r.findings)) return error("RECONCILE_FINDINGS", "Explicit complete finding set required");
   for (const f of r.findings) {
     const check = controlCatalog.flatMap(g => g.checks).find(c => c.id === f.checkId);
-    if (!check || f.criterion !== check.criterion || f.area !== f.checkId.split(".")[0] ||
+    if (!check || (expectedIds && !expectedIds.includes(f.checkId)) || f.criterion !== check.criterion || f.area !== f.checkId.split(".")[0] ||
         ![f.evidence, f.owner, f.work].every(filled) || !instant(f.firstSeen) || !instant(f.reviewAt) ||
         !Number.isSafeInteger(f.attempts) || f.attempts < 0 || typeof f.blocksResume !== "boolean" ||
         !validAffectedTasks(f.affectedTasks) ||

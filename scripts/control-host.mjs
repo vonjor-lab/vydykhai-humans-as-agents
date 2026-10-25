@@ -9,6 +9,7 @@ import {openReviewSources, validateReviewSourceScope} from "./control-review-sou
 import {initialHealth, healthControl, healthId} from "./control-health.mjs";
 import {checkFindingLeases} from "./finding-history.mjs";
 import {readCommandEffects} from "./control-health-domain.mjs";
+import {readCommandEnvironment} from "./context-run.mjs";
 import {reviewEpisodeDescriptor as episodeDescriptor,reviewEpisodeProgress as episodeProgress,
   validateReviewEpisodeSpec} from "./control-review-partitions.mjs";
 
@@ -37,6 +38,15 @@ export const validPreparationAcceptanceIds = ids => Array.isArray(ids) && ids.le
     !["__proto__", "constructor", "prototype"].includes(id)) && new Set(ids).size === ids.length;
 
 export async function openControlHost(directory, config, {createReturnSync, observeReviewRun, observeCommandFailure}) {
+  need(config.reviewPolicy === undefined || config.reviewPolicy === 'PHASED_V1' &&
+    config.health && config.requirePreparation === true && config.evidenceRegistry, 'CONTROL_PHASE_POLICY_INVALID');
+  need(config.observationEvents === undefined || config.observationEvents &&
+    exactKeys(config.observationEvents,['descriptorFile','mode','intervalSeconds']) &&
+    typeof config.observationEvents.descriptorFile === 'string' && config.observationEvents.descriptorFile.startsWith('/') &&
+    ['LOGIN','SESSION'].includes(config.observationEvents.mode) &&
+    Number.isSafeInteger(config.observationEvents.intervalSeconds) && config.observationEvents.intervalSeconds >= 60 &&
+    config.observationEvents.intervalSeconds <= 86400, 'CONTROL_EVENT_CONFIG_INVALID');
+  need(config.requirePreparation === undefined || typeof config.requirePreparation === "boolean", "CONTROL_PREPARATION_POLICY_INVALID");
   need(config.reviewSourceScopes === undefined, "CONTROL_SCOPE_TABLE_UNSUPPORTED");
   need(filled(config.workspace) && digest(config.policy) && [config.owner, config.executor, config.reviewer].every(filled) &&
     new Set([config.owner, config.executor, config.reviewer]).size === 3, "CONTROL_CONFIG_INVALID");
@@ -62,9 +72,18 @@ export async function openControlHost(directory, config, {createReturnSync, obse
       approvedCommands: null, reservations: null};
     const grants = Object.values(s.grants).filter(g => g.binding.taskId === taskId && !g.dependencies.includes(id));
     const grantIds = new Set(grants.map(g => g.id)), optionalDigest = value => digest(value) ? value : null;
+    const preparations = [...new Set(grants.flatMap(g=>g.dependencies))].flatMap(id=>{
+      const row=s.acceptances[id];
+      if(!row?.preparationKey)return [];
+      return [{id,acceptanceSha256:hash(row.acceptance),bindings:row.preparationBindings,
+        review:row.review ? {sha256:hash(row.review),key:row.review.key,runId:row.review.runId,
+          reviewer:row.review.reviewer,observedAt:row.review.observedAt,resultUse:row.review.resultUse,
+          readiness:row.review.rows.find(r=>r.id==="C05.02")} : null,
+        ownerDisposition:row.disposition}];
+    });
     // A command depending on this immutable acceptance is later work, even for
     // the same task. Its unknown outcome is guarded separately by inputFor.
-    return {...scope, coverage: "ACCEPTED_TASK_HOST_REGISTRY_ONLY",
+    return {...scope, coverage: "ACCEPTED_TASK_HOST_REGISTRY_ONLY",...(preparations.length?{preparations}:{}),
       approvedCommands: grants.map(g => ({id: g.id, taskId, bindingSha256: g.bindingSha256,
         recordSha256: hash(g), operation: ["resume", "accept"].includes(g.binding.operation) ? g.binding.operation : null,
         kind: ["dependent", "verification"].includes(g.binding.kind) ? g.binding.kind : null,
@@ -76,7 +95,8 @@ export async function openControlHost(directory, config, {createReturnSync, obse
         (r.nextTask === taskId || grantIds.has(r.grantId)))
         .map(r => ({id: r.reservationId, grantId: r.grantId, taskId: r.nextTask, bindingSha256: r.bindingSha256,
           recordSha256: hash(r), status: r.status, dependencies: [...r.dependencies],
-          resultSha256: optionalDigest(r.resultSha256)})).sort((a, b) => a.id.localeCompare(b.id))};
+          resultSha256: optionalDigest(r.resultSha256),
+          ...(r.commandEnvironment ? {commandEnvironment: r.commandEnvironment} : {})})).sort((a, b) => a.id.localeCompare(b.id))};
   };
   const reviewScope = (s, id) => hash({row: rowFor(s, id), paused: s.paused, execution: executionFor(s, id)});
   const overdue = row => row.findings.some(f => f.status === "OPEN" && Date.parse(f.reviewAt) <= Date.now());
@@ -107,22 +127,25 @@ export async function openControlHost(directory, config, {createReturnSync, obse
     if(scope !== undefined) validateReviewSourceScope(scope,row.acceptance);
     need(row.reviewSourceScopeRevisions === undefined || Array.isArray(row.reviewSourceScopeRevisions),
       "REVIEW_SOURCE_SCOPE_INVALID");
-    let previous = scope;
+    let previous = scope, reviewedExpansion = false;
     for(const revision of row.reviewSourceScopeRevisions ?? []) {
       validateReviewSourceScope(revision.scope,row.acceptance);
       const attempt = row.reviewAttempts?.find(a=>a.lease.runId === revision.stoppedRunId);
-      need(scope && revision.owner === config.owner && filled(revision.evidence) &&
-        Number.isFinite(Date.parse(revision.recordedAt)) && attempt?.observation.state === "STOPPED" &&
+      const initial = revision.phase === "BEFORE_FIRST_REVIEW";
+      const authorized = initial ? !reviewedExpansion && revision.stoppedRunId === undefined :
+        revision.phase === undefined && attempt?.observation.state === "STOPPED" &&
         attempt.observation.runId === revision.stoppedRunId && attempt.decision.action === "RETRY" &&
-        attempt.decision.reviewer === config.reviewer && filled(attempt.decision.evidence) &&
+        attempt.decision.reviewer === config.reviewer && filled(attempt.decision.evidence);
+      need(scope && revision.owner === config.owner && filled(revision.evidence) &&
+        Number.isFinite(Date.parse(revision.recordedAt)) && authorized &&
         revision.currentScopeSha256 === hash(scope) && revision.previous === hash(previous) &&
         revision.scope.sourceIds.length > scope.sourceIds.length &&
         scope.sourceIds.every(id=>revision.scope.sourceIds.includes(id)), "REVIEW_SOURCE_SCOPE_REVISION_INVALID");
-      scope = revision.scope;previous = revision;
+      scope = revision.scope;previous = revision;reviewedExpansion ||= !initial;
     }
     return scope;
   };
-  const inputFor = async (s, id, newReview = false) => {
+  const inputFor = async (s, id, newReview = false, inspectRelated = false) => {
     const row = rowFor(s, id);
     const retentionRevision = row.retentionRevisions?.at(-1);
     const sourceScopeRevision = row.reviewSourceScopeRevisions?.at(-1);
@@ -135,7 +158,27 @@ export async function openControlHost(directory, config, {createReturnSync, obse
       need(sources.workspace===config.workspace,"CONTROL_EVIDENCE_WORKSPACE_MISMATCH");
       sourceEvidence=await sources.snapshot(scope);
     }
+    // Source references locate related work; only the host supplies its actual
+    // control outcome. An owner's prose or a terminal proposal is not that proof.
+    const relatedAcceptances=[];
+    for(const [relatedId,related] of Object.entries(s.acceptances)) {
+      if(!(row.relatedControlEvidence || inspectRelated) || relatedId===id || !sourceEvidence?.rows.some(source=>source.status==="AVAILABLE" &&
+        [related.acceptance.artifact,related.terminalArtifact].filter(Boolean)
+          .some(ref=>ref.path===source.path && ref.sha256===source.sha256)))continue;
+      relatedAcceptances.push({id:relatedId,authority:"HOST_HISTORY_NOT_NEW_EXECUTION_PERMISSION",
+        acceptance:related.acceptance,acceptanceSha256:hash(related.acceptance),enrollment:related.enrollment,
+        recordSha256:hash(related),review:related.review ? {sha256:hash(related.review),key:related.review.key,
+          runId:related.review.runId,reviewer:related.review.reviewer,observedAt:related.review.observedAt,
+          resultUse:related.review.resultUse} : null,ownerDisposition:related.disposition,
+        sourceObservation:await observeAcceptanceSources(config.workspace,related.acceptance),
+        retentionObservation:await observeRetention(config.workspace,{...related.acceptance,
+          retention:related.retentionRevisions?.at(-1)?.retention ?? related.acceptance.retention})});
+    }
     return {acceptance: row.acceptance, policy: config.policy, execution: executionFor(s, id),
+      ...(config.reviewPolicy === undefined ? {} : {reviewPolicy:config.reviewPolicy}),
+      ...(relatedAcceptances.length?{relatedAcceptances}:{}),
+      ...(row.preparationKey ? {preparation:{kind:"PREPARED_PACKAGE_NOT_TASK_OUTPUT",
+        bindings:row.preparationBindings, key:row.preparationKey}} : {}),
       ...(row.terminalArtifact ? {terminalObservation:
         await observeTerminalDisposition(config.workspace, row.acceptance, row.terminalArtifact)} : {}),
       ...(sourceEvidence?{sourceEvidence}:{}),
@@ -176,8 +219,15 @@ export async function openControlHost(directory, config, {createReturnSync, obse
   const authorize = async binding => {
     const s = await state(), key = hash(binding), grant = s.grants[key];
     need(grant && grant.expiresAt > Date.now() && !s.reservations[grant.id], "COMMAND_NOT_APPROVED");
+    assertPreparation(s, binding, grant.dependencies);
     await readiness(s, grant.dependencies, binding.taskId);
     return {...grant, decision: "ALLOW", stateRevision: hash(s)};
+  };
+  const preparationKey = binding => hash(binding);
+  const assertPreparation = (s, binding, dependencies) => {
+    if(!config.requirePreparation)return;
+    need(dependencies.some(id => s.acceptances[id]?.preparationBindings?.some(b=>preparationKey(b)===preparationKey(binding))),
+      "PREPARATION_REVIEW_REQUIRED");
   };
   return {
     health,
@@ -186,6 +236,26 @@ export async function openControlHost(directory, config, {createReturnSync, obse
         acceptances: {}, grants: {}, reservations: {}, ...(health ? {health:initialHealth(config)} : {})});
     },
     async snapshot() {return state();},
+    async relatedAcceptanceEvidence(id) {
+      return (await inputFor(await state(),id,false,true)).relatedAcceptances??[];
+    },
+    async relatedControlPolicy() {
+      return Object.entries((await state()).acceptances).filter(([,row])=>row.relatedControlEvidence===true)
+        .map(([id])=>id).sort();
+    },
+    async eventControlPolicy() {
+      const s=await state(), preparations={};
+      for(const [id,row] of Object.entries(s.acceptances))if(row.preparationKey) {
+        need(Array.isArray(row.preparationBindings) && hash(row.preparationBindings)===row.preparationKey,
+          "PREPARATION_BINDING_INVALID");
+        preparations[id]=row.preparationKey;
+      }
+      return {schema:"control.event-policy.v1",requirePreparation:config.requirePreparation===true,
+        periodicReview:config.health ? config.health.periodicReview!==false : null,preparations};
+    },
+    async reviewSourceScope(id) {
+      return structuredClone(sourceScopeFor(rowFor(await state(), id)));
+    },
     async preparationStatus(acceptanceIds, {expectedDigest} = {}) {
       need(validPreparationAcceptanceIds(acceptanceIds), "PREPARATION_ACCEPTANCE_IDS_INVALID");
       need(expectedDigest === undefined || digest(expectedDigest), "PREPARATION_DIGEST_INVALID");
@@ -247,7 +317,22 @@ export async function openControlHost(directory, config, {createReturnSync, obse
       need(expectedDigest === undefined || expectedDigest === currentDigest, "PREPARATION_STATUS_STALE");
       return {...body, digest: currentDigest, observedAt: new Date().toISOString()};
     },
-    async accept(acceptance, {reviewSourceIds, terminalArtifact} = {}) {
+    async acceptPreparation(acceptance, {binding, reviewSourceIds} = {}) {
+      need(binding !== undefined, "PREPARATION_BINDING_INVALID");
+      return this.accept(acceptance, {preparationBinding:binding, reviewSourceIds});
+    },
+    async accept(acceptance, {reviewSourceIds, terminalArtifact, preparationBinding} = {}) {
+      const preparationBindings = preparationBinding === undefined ? null :
+        structuredClone(Array.isArray(preparationBinding) ? preparationBinding : [preparationBinding]);
+      if(preparationBinding !== undefined) {
+        need(preparationBindings.length > 0 && preparationBindings.length <= 16 &&
+          new Set(preparationBindings.map(hash)).size === preparationBindings.length &&
+          preparationBindings.every(b=>filled(b.taskId) && ["taskSha256","capsuleSha256","sourceDigest","dependencyDigest","commandSha256"]
+            .every(key=>digest(b[key])) && ["resume","accept"].includes(b.operation) && filled(b.cwd) && filled(b.executable)),
+          "PREPARATION_BINDING_INVALID");
+        need(Array.isArray(reviewSourceIds) && reviewSourceIds.length > 0, "PREPARATION_SOURCES_REQUIRED");
+      }
+      const preparedKey = preparationBindings === null ? null : hash(preparationBindings);
       need(validProductAcceptance(acceptance) && acceptance.owner === config.owner &&
         acceptance.executor === config.executor, "PRODUCT_ACCEPTANCE_IDENTITY_INVALID");
       const record = structuredClone(acceptance), id = record.id;
@@ -280,15 +365,21 @@ export async function openControlHost(directory, config, {createReturnSync, obse
           if(s.acceptances[id].reviewSourceScope !== undefined)
             validateReviewSourceScope(s.acceptances[id].reviewSourceScope,s.acceptances[id].acceptance);
           need(hash(s.acceptances[id].acceptance) === hash(record) &&
+            (s.acceptances[id].preparationKey ?? null) === preparedKey &&
             hash(s.acceptances[id].reviewSourceScope ?? null) === hash(reviewSourceScope ?? null) &&
             (terminalArtifact === undefined || hash(s.acceptances[id].terminalArtifact ?? null) === hash(terminalArtifact)),
             "ACCEPTANCE_ID_CONFLICT"); return;
         }
-        s.acceptances[id] = {acceptance: record, ...(reviewSourceScope ? {reviewSourceScope} : {}),
+        s.acceptances[id] = {acceptance: record, relatedControlEvidence:true, ...(reviewSourceScope ? {reviewSourceScope} : {}),
+          ...(preparedKey ? {preparationKey:preparedKey, preparationBindings} : {}),
           ...(terminalArtifact ? {terminalArtifact} : {}),
           returnSync, previousFindings: [], findings: [],
           review: null, disposition: null, repairLeases: [], reviewLease: null, enrollment: "REVIEW_DUE"};
       });
+      if(config.observationEvents) {
+        const {requestScheduledObservation}=await import('./control-schedule.mjs');
+        return {eventPersisted:true,wake:await requestScheduledObservation(config.observationEvents,{directory,config})};
+      }
     },
     async recordTerminalDisposition(id, terminalArtifact) {
       terminalArtifact = structuredClone(terminalArtifact);
@@ -319,6 +410,9 @@ export async function openControlHost(directory, config, {createReturnSync, obse
       if (s.paused) return [];
       const pending = health ? await health.due().catch(() => [{id:healthId,action:"OBSERVATION_UNKNOWN",kind:"HEALTH"}]) : [];
       for (const [id, row] of Object.entries(s.acceptances)) {
+        if(!row.review && !row.reviewLease && !["REVIEW_DUE","REVIEW_EPISODE_DUE","REVIEW_RECONCILIATION_REQUIRED"].includes(row.enrollment)) {
+          pending.push({id,action:"OBSERVATION_UNKNOWN",reason:"REVIEW_REGISTRATION_MISSING"});continue;
+        }
         if (row.reviewLease) {
           pending.push({id, action: ["REVIEW_RECONCILIATION_REQUIRED","REVIEW_EPISODE_DUE"].includes(row.enrollment) ? row.enrollment : "REVIEW_IN_FLIGHT"}); continue;
         }
@@ -558,6 +652,7 @@ export async function openControlHost(directory, config, {createReturnSync, obse
           need(f.lastResult !== "FAILED" || (f.retryDecisions??[]).some(d=>d.fromAttempt===f.attempts &&
             d.toAttempt===f.attempts+1 && d.reviewedBy===config.reviewer), "FAILED_REPAIR_NEEDS_DECISION");
         }
+        row.relatedControlEvidence=true;
         row.repairRequest={owner:config.owner,evidence,findingIds,reviewKey:hash(row.review)};
         row.repairEvidence = evidence; row.enrollment = "REVIEW_DUE";
       });
@@ -579,10 +674,17 @@ export async function openControlHost(directory, config, {createReturnSync, obse
       const s = await state(), row = rowFor(s,id), before = sourceScopeFor(row);
       need(owner === config.owner && filled(evidence), "SOURCE_SCOPE_OWNER_INVALID");
       const attempt = row.reviewAttempts?.at(-1);
+      // Preparation may discover evidence before any review exists. It must not
+      // manufacture a failed review merely to append that evidence to the scope.
+      const initial = !row.review && !row.disposition && !row.reviewEpisode && !row.repairRequest &&
+        !row.reviewAttempts?.length && !row.reviewEpisodeHistory?.length && !row.repairHistory?.length &&
+        !row.findings.length && !row.previousFindings.length;
+      const reconciled = attempt?.observation.state === "STOPPED" &&
+        attempt.observation.runId === attempt.lease.runId && attempt.decision.action === "RETRY" &&
+        attempt.decision.reviewer === config.reviewer &&
+        (!row.review || Date.parse(row.review.observedAt) <= Date.parse(attempt.lease.startedAt));
       need(!s.paused && !row.reviewLease && row.enrollment === "REVIEW_DUE" &&
-        attempt?.observation.state === "STOPPED" && attempt.observation.runId === attempt.lease.runId &&
-        attempt.decision.action === "RETRY" && attempt.decision.reviewer === config.reviewer &&
-        (!row.review || Date.parse(row.review.observedAt) <= Date.parse(attempt.lease.startedAt)) &&
+        (initial || reconciled) &&
         s.reservations && !Object.values(s.reservations).some(r=>r.status === "IN_FLIGHT" && r.dependencies.includes(id)),
         "SOURCE_SCOPE_STOPPED_RECONCILIATION_REQUIRED");
       need(before && digest(currentScopeSha256) && currentScopeSha256 === hash(before), "SOURCE_SCOPE_CAS_MISMATCH");
@@ -601,7 +703,8 @@ export async function openControlHost(directory, config, {createReturnSync, obse
         record.reviewSourceScopeRevisions ??= [];
         record.reviewSourceScopeRevisions.push({owner,evidence,currentScopeSha256,scope,
           previous:hash(record.reviewSourceScopeRevisions.at(-1) ?? record.reviewSourceScope),
-          stoppedRunId:attempt.lease.runId,recordedAt:new Date().toISOString()});
+          ...(initial ? {phase:"BEFORE_FIRST_REVIEW"} : {stoppedRunId:attempt.lease.runId}),
+          recordedAt:new Date().toISOString()});
       });
     },
     async recordRetentionRepair(id, {owner, reviewKey, retention, evidence}) {
@@ -675,15 +778,22 @@ export async function openControlHost(directory, config, {createReturnSync, obse
       return assessPostAccept(await stableInputFor(s, id));
     },
     async approveCommand(binding, {reviewer, reviewReceipt, dependencies, expiresAt, executionRequest}) {
+      // Dormant exact continuations can wait for PRE + owner delivery. They
+      // remain unusable until authorize/reserve recheck the current verdict.
+      const conditional = config.requirePreparation && executionRequest !== undefined;
       need(reviewer === config.reviewer && filled(reviewReceipt) && filled(binding.taskId) &&
         Array.isArray(dependencies) && dependencies.every(filled) && new Set(dependencies).size === dependencies.length &&
-        Number.isFinite(expiresAt) && expiresAt > Date.now() && expiresAt <= Date.now() + 300000, "COMMAND_REVIEW_INVALID");
+        Number.isFinite(expiresAt) && expiresAt > Date.now() && expiresAt <= Date.now() + (conditional ? 3600000 : 300000), "COMMAND_REVIEW_INVALID");
       if(executionRequest!==undefined)need(executionRequest?.schema==="context.request.v1"&&
         executionRequest.operation==="resume"&&binding.operation==="resume"&&executionRequest.workspace===config.workspace&&
         executionRequest.task?.sha256===binding.taskSha256&&executionRequest.capsule?.sha256===binding.capsuleSha256&&
         Buffer.byteLength(canonicalJson(executionRequest))<=256*1024,"CONTINUATION_REQUEST_INVALID");
       const key = hash(binding);
+      const before = await state();
+      assertPreparation(before, binding, dependencies);
+      if(config.requirePreparation && !conditional)await readiness(before, dependencies, binding.taskId);
       await update(s => {
+        if(config.requirePreparation)need(hash(s) === hash(before), "CONTROL_SOURCE_CHANGED");
         need(!s.reservations[key], "COMMAND_ALREADY_RESERVED");
         dependencies.forEach(id => rowFor(s, id));
         s.grants[key] = {id: key, bindingSha256: key, binding: structuredClone(binding),
@@ -753,6 +863,7 @@ export async function openControlHost(directory, config, {createReturnSync, obse
         const s = await state(), stored = s.grants[grant.bindingSha256];
         need(stored && hash(s) === grant.stateRevision && stored.id === grant.id &&
           stored.expiresAt > Date.now() && !s.reservations[grant.id], "STALE_OR_USED_ADMISSION");
+        assertPreparation(s, stored.binding, stored.dependencies);
         await readiness(s, stored.dependencies, stored.binding.taskId);
         const claim = {status: "RESERVED", grantId: grant.id, bindingSha256: grant.bindingSha256,
           stateRevision: grant.stateRevision, reservationId: grant.id};
@@ -783,16 +894,26 @@ export async function openControlHost(directory, config, {createReturnSync, obse
       async observe(claim, observed) {
         need(observed?.outcome === "COMPLETED" && digest(observed.resultSha256), "ACTION_OBSERVATION_INVALID");
         need(!Object.hasOwn(observed,"effects"),"ACTION_EFFECTS_NOT_CALLER_SUPPLIED");
+        need(!Object.hasOwn(observed,"commandEnvironment"),"ACTION_ENVIRONMENT_NOT_CALLER_SUPPLIED");
         const effects=readCommandEffects(observed);
+        const commandEnvironment=readCommandEnvironment(observed);
         await update(s => {
           const row = s.reservations[claim.reservationId];
           need(row && row.bindingSha256 === observed.bindingSha256 && row.grantId === claim.grantId, "RESERVATION_NOT_FOUND");
           if (row.status === "COMPLETED") {need(row.resultSha256 === observed.resultSha256, "OBSERVATION_CONFLICT"); return;}
           need(row.status === "IN_FLIGHT" && !row.failure, "FAILED_COMMAND_NOT_COMPLETED");
           const grant=s.grants[row.grantId];
+          if(commandEnvironment) {
+            const {environment:e,process:p}=commandEnvironment;
+            need(e.commandSha256===grant.binding.commandSha256 && e.cwd===grant.binding.cwd &&
+              e.executable===grant.binding.executable && e.workspace===config.workspace &&
+              e.contextBindings==="RECHECKED_BEFORE_EXECUTION" &&
+              Date.parse(e.checkedAt)<=Date.parse(p.startedAt),"ACTION_ENVIRONMENT_UNBOUND");
+          }
           if(grant.binding.confined)need(effects && effects.grantSha256===hash(grant) &&
             effects.bindingSha256===row.bindingSha256 && effects.resultSha256===observed.resultSha256,"ACTION_EFFECTS_REQUIRED");
           row.status = "COMPLETED"; row.resultSha256 = observed.resultSha256;
+          if(commandEnvironment)row.commandEnvironment=commandEnvironment;
           if(effects)row.effects=effects;
           for (const id of row.dependencies) {
             const acceptance = rowFor(s, id);

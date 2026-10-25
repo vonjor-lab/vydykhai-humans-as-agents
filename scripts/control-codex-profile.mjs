@@ -31,6 +31,12 @@ export function reviewCodexConfig({workspace, endpointFile, nodeExecutable = pro
   if (reviewSubmissionFile !== undefined && !path.isAbsolute(reviewSubmissionFile)) throw Error("CONTROL_PROFILE_SUBMISSION_INVALID");
   const config = controlledCodexConfig({workspace, endpointFile, nodeExecutable});
   config.project_doc_max_bytes = 0;
+  if (reviewSubmissionFile !== undefined) {
+    // This closed reviewer needs direct evidence and submission, not a second
+    // exec output envelope. Cover the existing 256 KiB reply, without enlarging it.
+    config["features.code_mode.direct_only_tool_namespaces"] = ["mcp__vydykhai_review"];
+    config.tool_output_token_limit = 256 * 1024 + 4096;
+  }
   delete config["mcp_servers.vydykhai_control"];
   config["mcp_servers.vydykhai_review"] = {command: nodeExecutable,
     args: [fileURLToPath(new URL("./control-review-mcp.mjs", import.meta.url)), endpointFile,

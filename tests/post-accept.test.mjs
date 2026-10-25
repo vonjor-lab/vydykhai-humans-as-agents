@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {mkdtemp, writeFile, readFile, rm, symlink, access, realpath} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import path from "node:path";
-import {controlCatalog, controlCheckIds, checkControlCoverage} from "../scripts/control-catalog.mjs";
+import {controlCatalog, controlCheckIds, checkControlCoverage, phaseControlIds, controlPhaseOwnership} from "../scripts/control-catalog.mjs";
 import {sha256, canonicalJson} from "../scripts/memory-brief.mjs";
 import {createReturnSync, validateDurableOutbox} from "../scripts/vydykhai.mjs";
 import {validProductAcceptance, recordProductAcceptance, readProductAcceptance,
@@ -48,6 +48,31 @@ function finding(x, checkId = "C16.03", blocking = true) {
 }
 const action = (x, expected) => assert.equal(assessPostAccept(x).action, expected);
 
+test('phase coverage binds the stage, retains all old findings and never supplies omitted PASS rows',()=>{
+  for(const preparation of [undefined,{kind:'PREPARED_PACKAGE_NOT_TASK_OUTPUT'}]) {
+    const x=review({...sample(),reviewPolicy:'PHASED_V1',...(preparation?{preparation}:{})});
+    const ids=phaseControlIds(x);assert.equal(ids.length,preparation?45:59);
+    x.review.rows=x.review.rows.filter(r=>ids.includes(r.id));disposition(x);
+    action(x,'CONTROL_CONFIRMED');
+    assert.equal(checkControlCoverage(x.review.rows).ok,false);
+    assert.equal(checkControlCoverage(x.review.rows,ids).ok,true);
+    for(const id of ['C05.02','C07.03','C19.01','C20.02','C16.03','C14.02','C18.01','C12.03'])assert.ok(ids.includes(id));
+    const partial=structuredClone(x);partial.review.rows.pop();disposition(partial);action(partial,'RECONCILE_REVIEW');
+    const changed=structuredClone(x);delete changed.reviewPolicy;action(changed,'POST_ACCEPT_REVIEW_DUE');
+    const retained=phaseControlIds({...x,previousFindings:[{checkId:'C22.01',status:'OPEN'}]});
+    assert.ok(retained.includes('C22.01'));
+    const negative=structuredClone(x);finding(negative,'C19.01',false);
+    negative.review.resultUse={...negative.review.resultUse,status:'REJECT',findingIds:['finding-1']};
+    disposition(negative);action(negative,'RESULT_USE_REJECTED');
+    const missingScope=structuredClone(x);finding(missingScope,'C24.02',false);
+    disposition(missingScope);action(missingScope,'RECONCILE_REVIEW');
+  }
+  assert.equal(Object.keys(controlPhaseOwnership).length,87);
+  assert.ok(Object.values(controlPhaseOwnership).every(p=>p.includes('HEALTH')));
+  assert.deepEqual(phaseControlIds(),controlCheckIds);
+  assert.throws(()=>phaseControlIds({reviewPolicy:'SHORTCUT'}),/POLICY_INVALID/);
+});
+
 test("result-use decision is pinned, explicit and consistent; advisory debt alone does not reject it", () => {
   const x=review(sample());assert.equal(reviewedResultUse(x.review,x.acceptance),"ALLOW");
   finding(x,"C08.01",false);assert.equal(reviewedResultUse(x.review,x.acceptance),"ALLOW");
@@ -59,6 +84,11 @@ test("result-use decision is pinned, explicit and consistent; advisory debt alon
   }
   const negative=review(sample());finding(negative,"C19.01",false);
   assert.equal(reviewedResultUse(negative.review,negative.acceptance),"INVALID");
+  for(const id of ["C07.03","C19.01"])for(const status of ["FINDING","UNKNOWN","DEFERRED"]) {
+    const contradictory=review(sample());
+    contradictory.review.rows.find(row=>row.id===id).status=status;
+    assert.equal(reviewedResultUse(contradictory.review,contradictory.acceptance),"INVALID");
+  }
   negative.review.resultUse={...negative.review.resultUse,status:"REJECT",findingIds:["finding-1"]};
   disposition(negative);action(negative,"RESULT_USE_REJECTED");
   const legacy=review(sample());delete legacy.review.resultUse;

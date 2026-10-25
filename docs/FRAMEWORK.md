@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 2.1.7 | Status: compatible opt-in operating core on the `release/2.x` channel. [Controlled-mode adoption](workflows/independent-control.md) is not established by copying the kit; unsupported hosts remain LIMITED.
+Version: 2.1.8 | Status: compatible opt-in operating core on the `release/2.x` channel. [Controlled-mode adoption](workflows/independent-control.md) is not established by copying the kit; unsupported hosts remain LIMITED.
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 
@@ -20,7 +20,7 @@ Use Vydykhai when one person works through several AI contexts, or when several 
 - lose decisions inside chats, local worktrees, or uncommitted state;
 - spend heavily before discovering that the direction was wrong.
 
-The framework should reduce coordination work for people. Humans should discuss the product and make judgments; the orchestrator should maintain sequence, shared memory, handoffs, and gates. People should be able to voice useful ideas without either expanding the current task or becoming responsible for remembering them later.
+The framework should reduce coordination work for people. Humans discuss the product; the orchestrator maintains sequence, shared memory, handoffs and gates. Ideas need not expand the current task or become the user's recall burden. On the opt-in event route, independent prepared-package review precedes exact execution and a separate review follows owner acceptance. The existing scheduler reconciles obligations without model calls in unchanged normal state; passive waiting never interrupts work. Initial health and supported-route limits remain explicit in the controlled-mode contract. Local commands retain pre-execution environment proof for POST, not remote permissions or retroactive certification. A missing owner handoff preserves the native exit and expense without authorizing restart. Scoped PRE effort selection never silently changes POST/HEALTH models or weakens original-source acquisition.
 
 ## Diagnosis
 

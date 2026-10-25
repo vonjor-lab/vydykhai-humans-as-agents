@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import path from "node:path";
 import {runControlledContextTransition} from "../scripts/controlled-context-run.mjs";
+import {readCommandEnvironment,bindCommandEnvironment} from "../scripts/context-run.mjs";
 import {createReturnSync, parseDurableOutboxComment} from "../scripts/vydykhai.mjs";
 import {fixture, hash} from "./context-fixture.mjs";
 
@@ -156,6 +157,21 @@ test("successful controlled dispatch reserves before execution and observes afte
   assert.equal(second.code, "CONTROL_ADMISSION_FAILED"); assert.equal(second.stats.commands, 0);
   assert.equal(await readFile(path.join(f.root, "actions.log"), "utf8"), "called\n");
   assert.equal(first.hostIdentity, "NOT_ESTABLISHED");
+});
+
+for(const operation of ["resume","accept"])test(`${operation} preserves an action-bound pre-execution environment observation`,async t=>{
+  const f=await fixture(t);await f.prepare();const c=controller(),observe=c.observe;let proof;
+  c.observe=async(claim,observed)=>{proof=readCommandEnvironment(observed);return observe(claim,observed);};
+  const result=await run(f,c,operation);
+  assert.equal(result.status,operation==="resume"?"ACTION_COMPLETED":"VERIFIED");
+  assert.deepEqual(result.environment,proof.environment);
+  assert.equal(proof.environment.cwd,f.root);
+  assert.equal(proof.environment.commandSha256,operation==="resume"?result.action.commandSha256:result.receipt.commandSha256);
+  assert.equal(proof.environment.contextBindings,"RECHECKED_BEFORE_EXECUTION");
+  assert.ok(Date.parse(proof.environment.checkedAt)<=Date.parse(proof.process.startedAt));
+  assert.equal(proof.environment.remotePermissions,"NOT_OBSERVED");
+  assert.equal(readCommandEnvironment(structuredClone(proof)),null);
+  assert.throws(()=>bindCommandEnvironment({}, {environment:proof.environment}),/COMMAND_ENVIRONMENT_UNBOUND/);
 });
 
 test("lost observation preserves uncertainty and reservation instead of rerunning the effect", async t => {

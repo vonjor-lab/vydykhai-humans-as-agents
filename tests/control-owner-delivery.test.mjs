@@ -14,7 +14,7 @@ import {retentionKinds} from "../scripts/post-accept.mjs";
 import {sha256,canonicalJson} from "../scripts/memory-brief.mjs";
 const hash=v=>sha256(canonicalJson(v));
 const binary=process.env.VYDYKHAI_CODEX_BINARY;
-async function setup(t,provider) {
+async function setup(t,provider,{automatic=false,terminal=false,mutateVerdict=v=>v}={}) {
   const x=await endpointFixture(t),dirs={};
   for(const n of ["delivery","notices","owner-room","owner-home"]) {
     dirs[n]=path.join(x.privateRoot,n);await mkdir(dirs[n],{mode:0o700});
@@ -26,13 +26,18 @@ async function setup(t,provider) {
     executor:x.profile.config.executor,status:"ACCEPTED",acceptedAt:new Date().toISOString(),producerReturn:await ref("return"),
     artifact:await ref("artifact"),technicalProof:await ref("proof"),goal:await ref("goal"),retention:[]};
   for(const id of retentionKinds)acceptance.retention.push({id,required:true,expected:await ref(id)});
-  await x.host.accept(acceptance);
-  await runControlTick(x.host,{review:async offer=>({phase:"POST_ACCEPT",key:offer.key,runId:offer.runId,
+  const terminalArtifact=terminal?await x.f.put("terminal.json",{schema:"control.terminal-disposition.v1",acceptanceSha256:hash(acceptance),
+    owner:acceptance.owner,action:"DONE",evidence:"fixture accepted scope",producerReturn:acceptance.producerReturn,acceptedScope:acceptance.goal,dod:acceptance.technicalProof}):null;
+  await x.host.accept(acceptance,terminal?{terminalArtifact}:{});
+  await runControlTick(x.host,{review:async offer=>mutateVerdict({phase:"POST_ACCEPT",key:offer.key,runId:offer.runId,
     reviewer:x.profile.config.reviewer,observedAt:new Date().toISOString(),findings:[],
+    resultUse:{status:"ALLOW",acceptanceSha256:hash(acceptance),evidence:"fixture independent result",findingIds:[]},
+    ...(terminal?{terminalDisposition:{action:"DONE",recordSha256:terminalArtifact.sha256,evidence:"fixture independent terminal"}}:{}),
     rows:controlCheckIds.map(id=>({id,status:"PASS",evidence:"fixture"}))})});
   const config={directory:dirs.delivery,endpoint:{schema:"control.owner-endpoint.v1",capability:"CONTROL_DISPOSITION_ONLY",directory:x.profile.directory,
     config:x.profile.config,notifications:notificationConfig},maxCalls:1,expiresAt:new Date(Date.now()+60000).toISOString(),
-    delegation:{mode:"NATIVE_CONTROL_DISPOSITION",owner:x.profile.config.owner,authorizedBy:x.profile.config.owner,
+    delegation:{mode:automatic?"EXACT_CONTROL_DISPOSITION":"NATIVE_CONTROL_DISPOSITION",owner:x.profile.config.owner,authorizedBy:x.profile.config.owner,
+      ...(automatic?{automatic:{healthContinue:false,nextActions:{accepted:"TASK-1"},terminalActions:["DONE"]}}:{}),
       evidence:"fixture:explicit-bounded-delegation",nextAction:"TASK-1"},
     native:{binary:binary??"/not-executed",workspace:dirs["owner-room"],home:dirs["owner-home"],
       model:"gpt-6.1-sol",effort:"low",timeoutMs:15000,...(provider?{provider}:{})}};
@@ -75,6 +80,50 @@ for(const consume of [true,false])test(`inactive scoped owner native wake: consu
     assert.equal(await readFile(path.join(x.f.root,"artifact.md"),"utf8"),"artifact");
   }
   else assert.equal((await x.notifications.snapshot()).pendingOwnerApplication,1);
+});
+test("exact delegated continuation applies through existing owner gates without a model and stays idempotent",async t=>{
+  const x=await setup(t,null,{automatic:true});await x.queue();
+  assert.equal((await x.delivery.deliver()).status,"DISPOSITION_OBSERVED");
+  assert.equal((await x.delivery.capacity()).used,0);
+  assert.equal((await x.notifications.snapshot()).pendingOwnerApplication,0);
+  assert.equal((await x.host.snapshot()).acceptances.accepted.disposition.nextAction,"TASK-1");
+  const before=await (await openControlStore(x.config.directory)).read();
+  const reopened=await openOwnerDelivery(x.config,{host:x.host,notifications:x.notifications});
+  assert.equal((await reopened.deliver()).status,"QUIET");
+  assert.deepEqual(await (await openControlStore(x.config.directory)).read(),before);
+  assert.equal(Object.values(before.state.runs)[0].mode,"EXACT_DELEGATED");
+});
+test("exact terminal application requires independently bound DONE and closes through host readback",async t=>{
+  const x=await setup(t,null,{automatic:true,terminal:true});await x.queue();
+  assert.equal((await x.delivery.deliver()).status,"DISPOSITION_OBSERVED");
+  assert.equal((await x.host.snapshot()).acceptances.accepted.enrollment,"CLOSED");
+  assert.equal((await x.host.assess("accepted")).action,"CONTROL_DONE_CONFIRMED");
+  assert.equal((await x.delivery.capacity()).used,0);
+});
+test("exact delegation never invents an unmapped next action or downgrades to a native model",async t=>{
+  const x=await setup(t,null,{automatic:true});
+  const config=structuredClone(x.config);config.delegation.automatic.nextActions={};
+  config.directory=path.join(x.privateRoot,"delivery-unmapped");await mkdir(config.directory,{mode:0o700});
+  const delivery=await openOwnerDelivery(config,{host:x.host,notifications:x.notifications});await delivery.initialize();await x.queue();
+  assert.equal((await delivery.deliver()).status,"OWNER_ATTENTION_REQUIRED");
+  assert.equal((await delivery.capacity()).used,0);
+  assert.equal((await x.host.snapshot()).acceptances.accepted.disposition,null);
+});
+test("exact delegation keeps negative verdicts and pauses for the real owner",async t=>{
+  const x=await setup(t,null,{automatic:true,mutateVerdict:v=>({...v,resultUse:{...v.resultUse,status:"REJECT",findingIds:["bad"]},
+    findings:[{id:"bad",area:"C20",checkId:"C20.02",criterion:"result",evidence:"bad",owner:"owner",work:"earlier",reviewAt:new Date(Date.now()+60000).toISOString(),blocksResume:true}],
+    rows:v.rows.map(r=>r.id==="C20.02"?{...r,status:"FAIL"}:r)})});
+  await x.queue();assert.equal((await x.delivery.deliver()).status,"OWNER_ATTENTION_REQUIRED");
+  await x.host.pause(true);assert.equal((await x.delivery.deliver()).status,"PAUSED");
+  assert.equal((await x.delivery.capacity()).used,0);
+});
+test("source drift during exact application stays unresolved and is never replayed",async t=>{
+  const x=await setup(t,null,{automatic:true});await x.queue();
+  await writeFile(path.join(x.f.root,"artifact.md"),"changed");
+  assert.equal((await x.delivery.deliver()).status,"UNKNOWN_RECONCILIATION_REQUIRED");
+  assert.equal((await x.delivery.deliver()).status,"UNKNOWN_RECONCILIATION_REQUIRED");
+  assert.equal((await x.delivery.capacity()).used,0);
+  assert.equal((await x.host.snapshot()).acceptances.accepted.disposition,null);
 });
 test("pause, unowned actions, missing delegation and changed endpoint never launch",async t=>{
   const x=await setup(t);await x.queue();await x.host.pause(true);

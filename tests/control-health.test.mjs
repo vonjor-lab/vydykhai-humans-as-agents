@@ -43,6 +43,17 @@ function defect() {
     firstSeen:new Date().toISOString(),reviewAt:new Date(Date.now()+3600000).toISOString(),blocksResume:true};
 }
 function add(v,f) {v.findings.push(f);Object.assign(v.rows.find(r=>r.id===f.checkId),{status:"FINDING",findingId:f.id,reason:"Unowned work"});}
+test("event-only periodic sweep is model-free when unchanged, still detects source changes",async t=>{
+  const x=await setup(t,{}, {periodicReview:false});
+  await consume(x,await review(x));
+  await (await openControlStore(x.directory)).transact(s=>{s.health.nextDueAt=0;return s;});
+  const before=await x.host.snapshot();
+  const quiet=await runControlTick(x.host,{review:async()=>{throw Error("UNEXPECTED_MODEL_CALL");}});
+  assert.equal(quiet.calls,0);
+  assert.deepEqual(await x.host.snapshot(),before);
+  await x.f.put("health-policy.md","new obligation");
+  assert.equal((await x.host.due())[0].action,"REVIEW_DUE");
+});
 const leases=f=>[{owner:f.owner,work:f.work,state:"WORKING",evidence:"fixture:owned",checkpoint:"repair",
   reviewAt:f.reviewAt}];
 

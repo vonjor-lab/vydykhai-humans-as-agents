@@ -24,15 +24,15 @@ async function waitFor(file, deadline) {
 for (const mode of ["timeout", "output-limit"]) test(`writable ${mode} settles before escaped pipe holder exits, without closed proof`, {
   skip: process.platform !== "darwin" && "requires existing macOS writable sandbox"
 }, async t => {
-  const body = "import {spawn} from 'node:child_process'; import {writeFileSync} from 'node:fs';\n" +
+  const body = "import {spawn} from 'node:child_process'; import {writeFileSync,renameSync} from 'node:fs';\n" +
     "const holder = spawn(process.execPath, ['holder.mjs'], {detached:true,stdio:['ignore','inherit','inherit']});\n" +
-    "writeFileSync('holder-pid.json',JSON.stringify({pid:holder.pid})); holder.unref();\n" +
+    "writeFileSync('holder-pid.tmp',JSON.stringify({pid:holder.pid})); renameSync('holder-pid.tmp','holder-pid.json'); holder.unref();\n" +
     (mode === "output-limit" ? "process.stdout.write('x'.repeat(70000));\n" : "") +
     "setInterval(()=>{},1000);\n";
   const f = await fixture(t, {actionBody: body});
-  await f.put("holder.mjs", "import {writeFileSync} from 'node:fs';\n" +
-    "writeFileSync('holder-start.json',JSON.stringify({pid:process.pid,at:Date.now()}));\n" +
-    "setTimeout(()=>{writeFileSync('holder-end.json',JSON.stringify({pid:process.pid}));process.exit(0);},1800);\n");
+  await f.put("holder.mjs", "import {writeFileSync,renameSync} from 'node:fs';\n" +
+    "writeFileSync('holder-start.tmp',JSON.stringify({pid:process.pid,at:Date.now()}));renameSync('holder-start.tmp','holder-start.json');\n" +
+    "setTimeout(()=>{writeFileSync('holder-end.tmp',JSON.stringify({pid:process.pid}));renameSync('holder-end.tmp','holder-end.json');process.exit(0);},1800);\n");
   f.task.action.timeoutMs = 500;
   if (mode === "output-limit") f.task.action.maxOutputBytes = 1024;
   await f.refresh(); const prepared = await f.prepare();

@@ -10,10 +10,24 @@ import {openModelReview} from "../scripts/control-model-review.mjs";
 import {openControlHost} from "../scripts/control-host.mjs";
 import {runControlTick} from "../scripts/control-loop.mjs";
 import {ownerControl} from "../scripts/control-owner.mjs";
-import {controlCheckIds} from "../scripts/control-catalog.mjs";
+import {controlCheckIds,phaseControlIds} from "../scripts/control-catalog.mjs";
 import {retentionKinds} from "../scripts/post-accept.mjs";
-import {nativeProvider,codeItem} from "./native-provider-fixture.mjs";
+import {nativeProvider,functionItem,answerItem} from "./native-provider-fixture.mjs";
 import {sha256} from "../scripts/memory-brief.mjs";
+import {reviewCodexConfig,ownerCodexConfig,preparationCodexConfig} from "../scripts/control-codex-profile.mjs";
+
+test("direct evidence presentation is isolated to durable independent reviews",()=>{
+  const options={workspace:"/workspace",endpointFile:"/private/source.json",reviewSubmissionFile:"/private/submission.json"};
+  const direct=reviewCodexConfig(options);
+  assert.deepEqual(direct["features.code_mode.direct_only_tool_namespaces"],["mcp__vydykhai_review"]);
+  assert.ok(direct.tool_output_token_limit>256*1024);
+  assert.equal(direct["features.shell_tool"],false);
+  const ordinary={workspace:options.workspace,endpointFile:options.endpointFile,controlEndpointFile:"/private/owner.json"};
+  for(const config of [reviewCodexConfig(ordinary),ownerCodexConfig(ordinary),preparationCodexConfig(ordinary)]){
+    assert.equal(config["features.code_mode.direct_only_tool_namespaces"],undefined);
+    assert.equal(config.tool_output_token_limit,undefined);
+  }
+});
 
 async function setup(t) {
   const x=await endpointFixture(t);
@@ -99,10 +113,20 @@ for(const e of [{type:'turn.started'},call('r','read_source',{id:'evidence'},val
 });
 
 const binary=process.env.VYDYKHAI_CODEX_BINARY;
-for(const mode of ["valid","windowed","incomplete"])test(`actual CLI durable POST ${mode}: no final text or automatic retry`,{skip:!binary||process.platform!=="darwin",timeout:30000},async t=>{
+for(const mode of ["valid","batch","large","windowed","incomplete","phased","accounted"])test(`actual CLI durable POST ${mode}: no automatic retry`,{skip:!binary||process.platform!=="darwin",timeout:30000},async t=>{
   const x=await setup(t),dirs={};
+  const batch=["batch","large"].includes(mode);
+  if(mode==="large")await x.f.put("evidence.md",Array.from({length:1400},(_,i)=>`${i}: ${sha256(String(i))} \\" original line\n`).join(""));
+  if(batch){
+    await x.f.put("second.md","Independent original correction; protocol only.");
+    const registry=JSON.parse(await readFile(x.sourceFile));
+    registry.sources.push({id:"second",path:"second.md",purpose:"Original correction"});
+    await writeFile(x.sourceFile,JSON.stringify(registry));
+  }
   for(const name of ["journal","room","home","accepted-state"]){dirs[name]=path.join(x.privateRoot,name);await mkdir(dirs[name],{mode:0o700});}
   const config={...x.profile.config,evidenceRegistry:x.sourceFile};
+  if(mode==='phased')Object.assign(config,{reviewPolicy:'PHASED_V1',requirePreparation:true,
+    health:{scope:'Protocol only',intervalMs:3600000,periodicReview:false,maxBranches:2,maxWorktrees:1,triggerSourceIds:['evidence'],repairTasks:[]}});
   let host=await openControlHost(dirs["accepted-state"],config,endpointServices);await host.initialize();
   const ref=async name=>x.f.put(name+".md",name);
   const acceptance={schema:"work.product-acceptance.v1",id:"accepted",project:"synthetic",task:"test-only",
@@ -110,30 +134,37 @@ for(const mode of ["valid","windowed","incomplete"])test(`actual CLI durable POS
     producerReturn:await ref("return"),artifact:await ref("artifact"),technicalProof:await ref("proof"),goal:await ref("goal"),retention:[]};
   for(const id of retentionKinds)acceptance.retention.push({id,required:true,expected:await ref(id)});
   await host.accept(acceptance);
+  const ids=phaseControlIds({acceptance,previousFindings:[],...(mode==='phased'?{reviewPolicy:'PHASED_V1'}:{})});
   x.answer.rowGroups=[{ids:["C20.02"],status:"PASS",sourceIds:["evidence"]},
-    {...x.answer.rowGroups[0],ids:controlCheckIds.filter(id=>id!=="C20.02")}];
+    {...x.answer.rowGroups[0],ids:ids.filter(id=>id!=="C20.02")}];
   x.answer.resultUse={status:"ALLOW",sourceIds:["evidence"],evidence:"Scripted positive result-use decision",findingIds:[]};
+  if(batch)for(const row of x.answer.rowGroups)row.sourceIds.push("second");
   if(mode==="incomplete")x.answer.rowGroups[1].ids.pop();
   const length=Array.from(await readFile(path.join(x.f.root,"evidence.md"),"utf8")).length;
-  const provider=await nativeProvider(t,async n=>{
-    if(n===1)return codeItem("const a=ALL_TOOLS.find(t=>t.name.includes('vydykhai_review')&&t.name.endsWith('read_source'));"+
-      (mode==="windowed"?`for(let offset=0;offset<${length};offset+=16)text(await tools[a.name]({id:'evidence',offset}));`:
-        "text(await tools[a.name]({id:'evidence'}));"),"read");
-    if(n===2)return codeItem("const a=ALL_TOOLS.find(t=>t.name.includes('vydykhai_review')&&t.name.endsWith('submit_review'));"+
-      `text(await tools[a.name]({answer:${JSON.stringify(x.answer)}}));`,"submit");
+  const reads=mode==="windowed"?Math.ceil(length/16):1;
+  const provider=await nativeProvider(t,async (n,body)=>{
+    if(n<=reads)return functionItem("read_source",mode==="windowed"?{id:"evidence",offset:(n-1)*16}:
+      batch?{ids:["evidence","second"]}:{id:"evidence"},"read"+n,"mcp__vydykhai_review");
+    if(n===reads+1)return functionItem("submit_review",{answer:x.answer},"submit","mcp__vydykhai_review");
+    if(mode==='accounted')return answerItem('DONE');
     // Deliberately never supply a final conversational response. No inference.
     return new Promise(()=>{});
   });
   const options={directory:dirs.journal,controlRoot:x.privateRoot,reviewer:"reviewer",sourceFile:x.sourceFile,
     maxCalls:1,expiresAt:new Date(Date.now()+60000).toISOString(),
-    scope:{host:{directory:dirs["accepted-state"],config},requiredSourceIds:["evidence"]},
+    scope:{host:{directory:dirs["accepted-state"],config},requiredSourceIds:batch?["evidence","second"]:["evidence"]},
     native:{binary,workspace:dirs.room,home:dirs.home,model:"gpt-6.1-sol",effort:"low",timeoutMs:15000,
       reviewSubmission:true,provider:provider.provider,
+      ...(mode==='accounted'?{reviewUsageDrainMs:5000}:{}),
       ...(mode==="windowed"?{reviewAcquisition:{maxBytes:1024,maxChars:16}}:{})}};
   let review=await openModelReview(options);await review.initialize();let error;
-  const tick=await runControlTick(host,{timeoutMs:20000,review:async(...args)=>{
+  const evaluate=async(...args)=>{
     try{return await review.review(...args);}catch(e){error=e.message;throw e;}
-  }});
+  };
+  const tick=mode==='phased'?await (async()=>{
+    const offer=await host.claimReview('accepted');await host.review('accepted',offer,await evaluate(offer));
+    return {results:[await host.assess('accepted')]};
+  })():await runControlTick(host,{timeoutMs:20000,review:evaluate});
   if(mode==="incomplete") {
     assert.equal(error,"MODEL_REVIEW_PART_COVERAGE_INVALID");
     const state=await host.snapshot(),stopped=await review.observe(state.acceptances.accepted.reviewLease.runId);
@@ -149,20 +180,43 @@ for(const mode of ["valid","windowed","incomplete"])test(`actual CLI durable POS
     t.diagnostic(JSON.stringify({error,requests:provider.requests.length,errors:trace.errors,
       output:trace.output.slice(-14000)}));
   }
-  assert.equal(tick.results[0].action,"OWNER_DISPOSITION_DUE",error);
+  assert.equal(tick.results[0].action,mode==='phased'?'AWAIT_ORCHESTRATOR_DISPOSITION':'OWNER_DISPOSITION_DUE',error);
   const state=await host.snapshot(),runId=state.acceptances.accepted.review.runId;
   const observed=await review.observe(runId);
   assert.equal(observed.completion,"DURABLE_SUBMISSION");assert.equal(observed.reason,null);
-  assert.equal(observed.usage,null);assert.equal(observed.usageUnknown,true);
+  if(batch)assert.deepEqual(observed.readSources.map(r=>r.id),["evidence","second"]);
+  const exposed=provider.requests[0].input.filter(t=>t.type==="additional_tools").flatMap(t=>t.tools);
+  assert.deepEqual(exposed.find(t=>t.name==="mcp__vydykhai_review").tools.map(t=>t.name),["list_sources","read_source","submit_review"]);
+  if(mode==="large"){
+    // Inspect what the native client sends to the next model step, not just the MCP log.
+    const outputs=provider.requests[1].input.filter(t=>t.type==="function_call_output"),originals=[];
+    function inspect(value){
+      if(typeof value==="string"){try{inspect(JSON.parse(value));}catch{}return;}
+      if(!value || typeof value!=="object")return;
+      if(value.id==="evidence" && value.status==="AVAILABLE")originals.push(value);
+      for(const v of Object.values(value))inspect(v);
+    }
+    inspect(outputs);
+    const original=await x.sources.read({id:"evidence"});
+    assert.ok(Buffer.byteLength(original.text)>100000);
+    assert.equal(originals.length,1);
+    assert.deepEqual(originals[0],original);
+    assert.doesNotMatch(JSON.stringify(outputs),/Warning: truncated output|tokens truncated/);
+    assert.equal(provider.requests.length,2);
+  }
+  if(mode==='accounted'){assert.ok(observed.usage);assert.equal(observed.usageUnknown,false);}
+  else {assert.equal(observed.usage,null);assert.equal(observed.usageUnknown,true);}
   const trace=JSON.parse(await readFile(path.join(dirs.journal,observed.trace.file),"utf8"));
-  assert.ok(trace.timing.elapsedMs<15000);assert.doesNotMatch(trace.output,/"type":"turn.completed"/);
-  assert.equal(observed.verdict.rows.length,87);assert.equal((await review.capacity()).used,1);
+  assert.ok(trace.timing.elapsedMs<15000);
+  if(mode==='accounted')assert.match(trace.output,/"type":"turn.completed"/);
+  else assert.doesNotMatch(trace.output,/"type":"turn.completed"/);
+  assert.equal(observed.verdict.rows.length,ids.length);assert.equal((await review.capacity()).used,1);
   review=await openModelReview(options);host=await openControlHost(dirs["accepted-state"],config,endpointServices);
   assert.deepEqual((await review.observe(runId)).verdict,observed.verdict);
   const owner=ownerControl(host,"owner"),inbox=await owner.inbox();await owner.readVerdict("accepted");
-  await owner.respond("accepted",{owner:"owner",reviewKey:inbox[0].reviewKey,action:"CONTINUE",
+  await owner.respond("accepted",{owner:"owner",reviewKey:inbox.find(row=>row.id==='accepted').reviewKey,action:"CONTINUE",
     nextAction:x.f.task.id,evidence:"Scripted owner application; no product readiness claim"});
-  const quiet=await runControlTick(host,{review:async()=>{throw Error("must not repeat");}});
+  const quiet=await runControlTick(mode==='phased'?{...host,due:async()=>[]} : host,{review:async()=>{throw Error("must not repeat");}});
   assert.equal(quiet.calls,0);assert.deepEqual((await host.snapshot()).grants,{});
   t.diagnostic("Real CLI + MCP + receipt + host admission + owner read/application + restart + quiet tick; scripted model, no inference or project changes.");
 });

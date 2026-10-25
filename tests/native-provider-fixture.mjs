@@ -25,5 +25,6 @@ export async function nativeProvider(t,respond) {
   return {requests,provider:{baseUrl:`http://127.0.0.1:${server.address().port}/v1`,requiresAuth:false}};
 }
 export const codeItem=(input,id="call_tools")=>({type:"custom_tool_call",id,call_id:id,name:"exec",namespace:"functions",input,status:"completed"});
+export const functionItem=(name,args,id="call_tools",namespace)=>({type:"function_call",id,call_id:id,name,...(namespace?{namespace}:{}),arguments:JSON.stringify(args),status:"completed"});
 export const answerItem=value=>({type:"message",id:"answer",role:"assistant",status:"completed",
   content:[{type:"output_text",text:JSON.stringify(value),annotations:[]}]});

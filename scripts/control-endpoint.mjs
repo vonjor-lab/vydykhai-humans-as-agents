@@ -28,7 +28,7 @@ export async function openWorkerEndpoint(configFile, services) {
   const requests = new Map();
   for (const entry of profile.requests) {
     need(typeof entry.id === "string" && /^[A-Za-z0-9_-]{1,100}$/.test(entry.id) && !requests.has(entry.id) &&
-      entry.request?.workspace === workspace && ["resume", "verify"].includes(entry.request.operation),
+      entry.request?.workspace === workspace && ["resume", "accept"].includes(entry.request.operation),
       "CONTROL_ENDPOINT_REQUEST_INVALID");
     requests.set(entry.id, structuredClone(entry.request));
   }

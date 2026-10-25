@@ -63,6 +63,57 @@ export async function registerControlSchedule(options) {
   try {return {...await registerUnderLease(options),initialObservation:"NOT_PERFORMED"};}
   finally {await release();}
 }
+// This read-only wait never owns or aborts the scheduler's process. A later
+// caller can keep waiting on the same receipt boundary without redispatch.
+export async function waitControlObservation({descriptorFile, afterReceiptSha256 = null, waitMs = 1000}) {
+  need(Number.isSafeInteger(waitMs) && waitMs >= 0 && waitMs <= 300000, "CONTROL_WAIT_INVALID");
+  const plan = await controlSchedulePlan({descriptorFile});
+  const until = Date.now() + waitMs;
+  do {
+    let receipt;
+    try {receipt = await readActivationJson(path.join(path.dirname(descriptorFile), "observer-latest.json"));}
+    catch(error) {if(error.code !== "ENOENT")throw error;}
+    if(receipt && receipt.descriptorHash === plan.descriptorHash) {
+      const receiptSha256 = sha256(canonicalJson(receipt));
+      if(receiptSha256 !== afterReceiptSha256 && ["COMPLETED","FAILED"].includes(receipt.stage))
+        return {status:"OBSERVED", receiptSha256, receipt};
+    }
+    const remaining = until - Date.now();
+    if(remaining <= 0)break;
+    await new Promise(resolve=>setTimeout(resolve, Math.min(100, remaining)));
+  } while(true);
+  return {status:"PENDING", reason:"WAIT_TIMEOUT", descriptorHash:plan.descriptorHash,
+    afterReceiptSha256, executionInterrupted:false};
+}
+export async function startScheduledControl(options) {
+  // The first natural interval is the initial wake. No separate kickstart
+  // transaction can be lost or duplicated between registration and dispatch.
+  const schedule = await registerControlSchedule(options);
+  if(options.eventDriven) return {status:'REGISTERED_EVENT_REQUESTED',schedule,
+    initialWake:await requestScheduledObservation(options),executionRestarted:false};
+  return {status:"REGISTERED_AWAITING_TICK", schedule,
+    initialWake:"NATURAL_INTERVAL", executionRestarted:false};
+}
+// The event/acceptance is already durable. This is only a non-terminating wake
+// of the SAME registered service; a lost/coalesced signal is recovered by its timer.
+export async function requestScheduledObservation(options, binding) {
+  try {
+    const plan=await controlSchedulePlan(options);
+    const {profile}=await verifyControlActivation(options.descriptorFile);
+    need(!binding || profile.directory===binding.directory && canonicalJson(profile.config)===canonicalJson(binding.config),
+      'CONTROL_EVENT_HOST_MISMATCH');
+    const state=await (await import('./control-store.mjs')).openControlStore(profile.directory).then(s=>s.read());
+    if(state.state.paused)return {status:'PAUSED',modelCalls:0};
+    await verifyInstalled(plan);
+    const present=await launchctl(['print',plan.target]);
+    need(present.code===0 && matchesControlRegistration(present.output,plan),'CONTROL_EVENT_REGISTRATION_UNKNOWN');
+    const wake=await launchctl(['kickstart',plan.target]); // Never -k: active work must survive.
+    return {status:wake.code===0?'WAKE_REQUESTED':'TIMER_RECOVERY',eventPersisted:true,modelCalls:0,
+      ...(wake.code===0?{}:{reason:'WAKE_NOT_ACKNOWLEDGED'})};
+  } catch(error) {
+    return {status:'TIMER_RECOVERY',eventPersisted:true,modelCalls:0,reason:error.message};
+  }
+}
 // Initial observation is a separately observed operation, not a launchd wakeup.
 // This trusted setup route never retries an unknown observer or replenishes budget.
 export async function startControlSchedule(options) {

@@ -1,12 +1,42 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {readFile} from "node:fs/promises";
+import {readFile, writeFile, realpath} from "node:fs/promises";
+import {hash} from "./context-fixture.mjs";
+import {sha256} from "../scripts/memory-brief.mjs";
 import path from "node:path";
 import {spawnSync} from "node:child_process";
 import {fileURLToPath} from "node:url";
 import {endpointFixture, endpointServices as services} from "./control-endpoint-fixture.mjs";
 import {openWorkerEndpoint} from "../scripts/control-endpoint.mjs";
 import {controlledCodexConfig, codexConfigArgs} from "../scripts/control-codex-profile.mjs";
+
+test("endpoint verification uses accept with its own exact grant, not product acceptance", {skip: process.platform !== "darwin"}, async t => {
+  const x = await endpointFixture(t);
+  x.profile.requests.push({id: "check", request: {...x.f.request, operation: "accept"}});
+  await writeFile(x.file, JSON.stringify(x.profile));
+  const endpoint = await openWorkerEndpoint(x.file, services);
+  await x.approve();
+  assert.equal((await endpoint.execute({requestId: "check"})).status, "BLOCKED");
+  assert.equal((await endpoint.execute({requestId: "next"})).status, "ACTION_COMPLETED");
+  const prepared = x.prepared;
+  const files = await Promise.all([...x.f.task.candidateFiles].sort().map(async p =>
+    ({path: p, sha256: sha256(await readFile(path.join(x.f.root, p)))})));
+  await x.host.approveCommand({operation: "accept", taskId: x.f.task.id,
+    taskSha256: x.f.request.task.sha256, capsuleSha256: x.f.request.capsule.sha256,
+    sourceDigest: prepared.coverageBasis.sourceDigest, dependencyDigest: prepared.coverageBasis.dependencyDigest,
+    candidateSha256: hash({workspace: x.f.root, files}), commandSha256: hash(x.f.module.verificationCommand),
+    cwd: x.f.root, executable: await realpath(process.execPath), kind: "verification"},
+    {reviewer: x.profile.config.reviewer, reviewReceipt: "fixture:verification-reviewed",
+      dependencies: [], expiresAt: Date.now() + 120000});
+  const result = await endpoint.execute({requestId: "check"});
+  assert.equal(result.status, "VERIFIED", JSON.stringify(result));
+  assert.equal(result.receipt.productAcceptance, "NOT_ESTABLISHED");
+  assert.equal((await endpoint.execute({requestId: "check"})).status, "BLOCKED");
+  assert.deepEqual((await x.host.snapshot()).acceptances, {});
+  x.profile.requests[1].request.operation = "verify";
+  await writeFile(x.file, JSON.stringify(x.profile));
+  await assert.rejects(openWorkerEndpoint(x.file, services), /CONTROL_ENDPOINT_REQUEST_INVALID/);
+});
 
 test("worker endpoint exposes no control mutations and always uses actual sandboxed admission", {skip: process.platform !== "darwin"}, async t => {
   const x = await endpointFixture(t), endpoint = await openWorkerEndpoint(x.file, services);

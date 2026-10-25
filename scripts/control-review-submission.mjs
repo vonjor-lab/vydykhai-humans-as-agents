@@ -1,8 +1,8 @@
 // Durable reviewer output is evidence, not authority to execute or close work.
 import {open, readFile, mkdir} from "node:fs/promises";
-import {openControlStore} from "./control-store.mjs";
+import {openReviewAcquisitionStore} from "./control-review-acquisition-store.mjs";
 import path from "node:path";
-import {readPrivateControlJson, validateReviewSourceScope} from "./control-review-sources.mjs";
+import {readPrivateControlJson, validateReviewSourceScope, reviewSourceReadbacks} from "./control-review-sources.mjs";
 import {validateWindowAcquisition, completeWindowSources} from "./control-review-acquisition.mjs";
 import {validateReviewPart} from "./control-review-partitions.mjs";
 import {controlCheckIds} from "./control-catalog.mjs";
@@ -60,17 +60,14 @@ export async function openReviewSubmission(file,sources,reader,policy) {
   if(context.retainAcquisition === true) {
     const directory=file+".acquisition";
     await mkdir(directory,{mode:0o700}).catch(e=>{if(e.code!=="EEXIST")throw e;});
-    acquisitionStore=await openControlStore(directory);
-    if(!await acquisitionStore.read())await acquisitionStore.initialize({context:hash(context),policy:hash(policy??null),calls:[]});
-    const saved=(await acquisitionStore.read()).state;
-    need(saved.context===hash(context) && saved.policy===hash(policy??null),"MODEL_REVIEW_ACQUISITION_BINDING_INVALID");
-    calls.push(...saved.calls);
+    acquisitionStore=await openReviewAcquisitionStore(directory,context,policy);
+    calls.push(...await acquisitionStore.restore());
     if(policy)reader.restoreUsedBytes(Math.max(0,...calls.map(c=>c.value.window?.afterBytes??0)));
   }
   return {
     async read(args) {
       const value=await reader.read(args),call={args:structuredClone(args),value};
-      if(acquisitionStore)await acquisitionStore.transact(s=>{s.calls.push(call);return s;});
+      if(acquisitionStore)await acquisitionStore.append(call);
       calls.push(call);return value;
     },
     async submit(args) {
@@ -78,7 +75,8 @@ export async function openReviewSubmission(file,sources,reader,policy) {
         "MODEL_REVIEW_SUBMISSION_ARGUMENTS_INVALID");
       need(Date.now()<Date.parse(context.expiresAt),"MODEL_REVIEW_SUBMISSION_EXPIRED");
       const answer=structuredClone(args.answer),originals=new Map();
-      const readbacks=calls.map(c=>c.value).filter(r=>r.status!=="NEEDS_DISCOVERY");
+      const readbacks=(policy ? calls.map(c=>c.value) : calls.flatMap(c=>reviewSourceReadbacks(c.args,c.value)))
+        .filter(r=>r.status!=="NEEDS_DISCOVERY");
       if(policy) {
         for(const {args} of calls)if(!originals.has(args.id))originals.set(args.id,await sources.read({id:args.id}));
         readbacks.push(...completeWindowSources(readbacks,originals));

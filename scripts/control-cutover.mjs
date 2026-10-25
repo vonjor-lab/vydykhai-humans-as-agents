@@ -95,6 +95,7 @@ async function journals(profile) {
     need(s.schema === schema && record(s.runs) && Number.isSafeInteger(s.calls) && s.calls >= 0,
       "RUN_JOURNAL_INVALID");
     need(Object.values(s.runs).every(r => record(r) && r.state === "STOPPED"), "MODEL_OR_OWNER_OUTCOME_UNKNOWN");
+    need(!s.ownerSession?.active,"OWNER_SESSION_ACTIVE_OR_UNKNOWN");
   }
   return rows;
 }
@@ -125,9 +126,38 @@ async function compatible(runtime, profile, before, baseline) {
   // is readback only; compatibility must never execute a registered action.
   need(!profile.continuation || typeof service.continueRegistered === "function", "TARGET_CONTINUATION_UNSUPPORTED");
   need(hash(await service.host.snapshot()) === hash(before.host.state), "TARGET_HOST_READBACK_MISMATCH");
+  const related=Object.entries(before.host.state.acceptances).filter(([,row])=>row.relatedControlEvidence===true)
+    .map(([id])=>id).sort();
+  if(related.length) {
+    need(typeof service.host.relatedControlPolicy === "function", "TARGET_RELATED_CONTROL_UNSUPPORTED");
+    need(hash(await service.host.relatedControlPolicy())===hash(related), "TARGET_RELATED_CONTROL_READBACK_MISMATCH");
+  }
+  const preparations=Object.fromEntries(Object.entries(before.host.state.acceptances)
+    .filter(([,row])=>row.preparationKey).map(([id,row])=>[id,row.preparationKey]));
+  if(profile.config.requirePreparation || profile.config.health?.periodicReview===false || Object.keys(preparations).length) {
+    need(typeof service.host.eventControlPolicy === "function", "TARGET_EVENT_POLICY_UNSUPPORTED");
+    need(hash(await service.host.eventControlPolicy())===hash({schema:"control.event-policy.v1",
+      requirePreparation:profile.config.requirePreparation===true,
+      periodicReview:profile.config.health ? profile.config.health.periodicReview!==false : null,preparations}),
+      "TARGET_EVENT_POLICY_READBACK_MISMATCH");
+  }
+  for (const [id, row] of Object.entries(before.host.state.acceptances)) {
+    if (!row.reviewSourceScopeRevisions?.some(r => r.phase === "BEFORE_FIRST_REVIEW")) continue;
+    // A raw snapshot is insufficient: older same-schema readers can retain
+    // these bytes but cannot interpret the new preinitial evidence history.
+    need(typeof service.host.reviewSourceScope === "function", "TARGET_SOURCE_SCOPE_UNSUPPORTED");
+    need(hash(await service.host.reviewSourceScope(id)) === hash(row.reviewSourceScopeRevisions.at(-1).scope),
+      "TARGET_SOURCE_SCOPE_READBACK_MISMATCH");
+  }
   const budget = await capacity(service.review, profile.review, before.review, false, baseline?.review);
   let owner;
   if (profile.ownerDelivery) {
+    if(profile.ownerDelivery.waits){
+      need(service.ownerDelivery?.waiting,"TARGET_OWNER_WAIT_UNSUPPORTED");
+      const actual=await service.ownerDelivery.waiting.snapshot();
+      const expected=before.owner.state.ownerSession??{sessionId:null,turns:[],active:null,waiting:null,done:false};
+      need(hash(actual)===hash(expected),"TARGET_OWNER_WAIT_READBACK_MISMATCH");
+    }
     owner = await capacity(service.ownerDelivery, profile.ownerDelivery, before.owner, true, baseline?.owner);
   }
   if (profile.notifications) {

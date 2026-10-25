@@ -265,6 +265,29 @@ for(const mode of ["zero-review-budget", "paused"]) test(`actual copied observer
   }
   assert.deepEqual(await (await openControlStore(x.profile.review.directory)).read(), reviewBefore);
 });
+test("external in-flight action is reported without a continuation profile or replay", darwin, async t => {
+  const x = await fixture(t), descriptor = await x.activate();
+  const store = await openControlStore(x.profile.directory);
+  await store.transact(s => {s.reservations.external = {status:"IN_FLIGHT"}; return s;});
+  const before = await store.read();
+  const result = await runControlChild({executable:process.execPath,
+    args:[path.join(x.installed.root,"scripts/control-observer-run.mjs"),descriptor.descriptorFile],
+    cwd:x.root,env:{PATH:"/usr/bin:/bin"},input:"",timeoutMs:10000,maxBytes:32768});
+  assert.equal(result.code,0,result.errors);
+  const receipt = JSON.parse(result.output);
+  assert.equal(receipt.status,"UNKNOWN_RECONCILIATION_REQUIRED");
+  assert.equal(receipt.unknownActions,1); assert.equal(receipt.calls,0);
+  assert.equal(receipt.continuation,undefined);
+  assert.deepEqual((await store.read()).state.reservations,before.state.reservations);
+  await assert.rejects(lstat(path.join(x.root,"observer.lease")),{code:"ENOENT"});
+  const next = await runControlObserver(descriptor.descriptorFile);
+  assert.equal(next.unknownActions,1); assert.equal(next.calls,0);
+  assert.deepEqual((await store.read()).state.reservations,before.state.reservations);
+  await store.transact(s => {s.reservations.external.status="COMPLETED"; return s;});
+  const completed = await runControlObserver(descriptor.descriptorFile);
+  assert.equal(completed.unknownActions,0); assert.equal(completed.calls,0);
+  assert.equal(completed.status,"ONE_TICK_OBSERVED");
+});
 test("unknown review readback retains exclusive ownership without replay", darwin, async t => {
   const x = await fixture(t), descriptor = await x.activate();
   await (await openControlStore(x.profile.review.directory)).transact(s => {

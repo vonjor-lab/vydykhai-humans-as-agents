@@ -68,6 +68,24 @@ test("legacy unbound parts without host source evidence retain their original vi
   const offer={phase:"POST_ACCEPT",input:{previousFindings:[]}};
   assert.deepEqual(reviewPromptView(offer,["C01.01"]),offer);
 });
+test("inline discovery retains the full independent index, never acquisition or an assigned-source whitelist",()=>{
+  const offer=fixture(),before=canonicalJson(offer);
+  const index=[{id:"fact",path:"fact.md",purpose:"Current fact"},
+    {id:"outside",path:"rejected.md",purpose:"Rejected option outside preparer selection"}];
+  const prompt=modelReviewPrompt(offer,{requiredSourceIds:["fact"]},["C01.01"],true,index);
+  assert.ok(prompt.includes(`Full host source index (metadata only): ${canonicalJson(index)}`));
+  assert.match(prompt,/Select relevant originals directly with read_source/);
+  assert.match(prompt,/NOT acquired evidence/);
+  assert.match(prompt,/minimum required acquisition, never a source whitelist/);
+  assert.match(prompt,/UNSCOPED acquisition is active/);
+  assert.equal(canonicalJson(offer),before);
+  assert.throws(()=>modelReviewPrompt(offer,{},undefined,false,index),/INDEX_HOST_REQUIRED/);
+  assert.throws(()=>modelReviewPrompt(offer,{},undefined,true,{}),/INDEX_HOST_REQUIRED/);
+  const scoped=structuredClone(offer);scoped.phase="POST_ACCEPT";scoped.input.sourceEvidence.scope={sourceIds:["fact"]};
+  const limited=modelReviewPrompt(scoped,{},["C01.01"],true,index);
+  assert.ok(limited.includes('"id":"outside"'));
+  assert.match(limited,/explicit trusted scope expansion/);
+});
 test("unbound parts with a snapshot preserve original metadata and previously permitted fields",()=>{
   const offer=fixture();offer.input.globalDependencies=[{old:"permitted manager field"}];
   offer.promptContext={old:"permitted manager field"};

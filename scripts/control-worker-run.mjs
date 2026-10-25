@@ -5,7 +5,7 @@
 import {realpath, lstat} from "node:fs/promises";
 import path from "node:path";
 import {controlledCodexConfig, reviewCodexConfig, ownerCodexConfig, dispositionCodexConfig, preparationCodexConfig, codexConfigArgs} from "./control-codex-profile.mjs";
-import {runControlChild} from "./control-child.mjs";
+import {runControlChild, MAX_CONTROL_WORK_MS} from "./control-child.mjs";
 import {readPrivateControlJson, openReviewSources} from "./control-review-sources.mjs";
 import {openControlHost, validPreparationAcceptanceIds} from "./control-host.mjs";
 import {canonicalJson, sha256} from "./memory-brief.mjs";
@@ -19,17 +19,18 @@ export function controlledWorkerPrompt(prompt,endpoint) {
     new Set(endpoint.requests.map(r=>r.id)).size===endpoint.requests.length,"CONTROL_WORKER_CAPABILITY_METADATA_INVALID");
   return `Controlled adapter capability metadata (not execution approval):\n`+
     `API: execute_registered({requestId:string}); registered request IDs: ${JSON.stringify(endpoint.requests.map(r=>r.id))}.\n`+
+    `This action-only interface has no filesystem or source-reading tools. Use the approved context supplied by the launcher; report missing required context before any action.\n`+
     `The MCP server is vydykhai_control. If its tools are deferred, discover execute_registered through ALL_TOOLS/tool discovery; an absent initial tool description does not prove absence.\n`+
     `The host independently admits or blocks each request. This metadata does not approve execution, choose a request, cancel a pause, authorize retries or provide a shell fallback. Follow the caller's scope below; if the capability is unavailable after discovery, report that fact without execution.\n\n`+prompt;
 }
 export async function runControlledWorker({binary, workspace, endpointFile, controlEndpointFile, home, model, effort,
   prompt, timeoutMs = 120000, maxBytes = 4 * 1024 * 1024, provider, signal, role = "worker", authHome = home,
-  enableMemoryRecall = false, reviewAcquisition, reviewSubmissionFile, reviewContinuation}) {
+  enableMemoryRecall = false, reviewAcquisition, reviewSubmissionFile, reviewContinuation, reviewUsageDrainMs = 0}) {
   need(process.platform === "darwin", "CONTROL_WORKER_HOST_UNSUPPORTED");
   need([binary, workspace, endpointFile, home].every(v => typeof v === "string" && path.isAbsolute(v)) &&
     typeof model === "string" && model.trim() && ["low", "medium", "high", "xhigh", "max"].includes(effort) &&
     typeof prompt === "string" && prompt.trim() && Buffer.byteLength(prompt) <= 1024 * 1024 &&
-    Number.isSafeInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= 300000 &&
+    Number.isSafeInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= (role === "review" ? MAX_CONTROL_WORK_MS : 300000) &&
     Number.isSafeInteger(maxBytes) && maxBytes >= 1024 && maxBytes <= 16 * 1024 * 1024,
   "CONTROL_WORKER_CONFIG_INVALID");
   const actualHome = await realpath(home), actualWorkspace = await realpath(workspace), stat = await lstat(home);
@@ -44,6 +45,8 @@ export async function runControlledWorker({binary, workspace, endpointFile, cont
   need(typeof enableMemoryRecall === "boolean" && (!enableMemoryRecall || role === "review"), "CONTROL_WORKER_RECALL_PROFILE_INVALID");
   need(reviewAcquisition === undefined || role === "review", "CONTROL_WORKER_ACQUISITION_ROLE_INVALID");
   need(reviewSubmissionFile === undefined || role === "review", "CONTROL_WORKER_SUBMISSION_ROLE_INVALID");
+  need(Number.isSafeInteger(reviewUsageDrainMs) && reviewUsageDrainMs >= 0 && reviewUsageDrainMs <= 30000 &&
+    (!reviewUsageDrainMs || role === 'review' && reviewSubmissionFile), 'CONTROL_WORKER_USAGE_DRAIN_INVALID');
   need(reviewContinuation === undefined || role === "review" && reviewSubmissionFile &&
     (reviewContinuation === true || typeof reviewContinuation === "string" &&
       /^[a-f0-9-]{36}$/.test(reviewContinuation)), "CONTROL_REVIEW_CONTINUATION_INVALID");
@@ -88,7 +91,7 @@ export async function runControlledWorker({binary, workspace, endpointFile, cont
       ...(typeof reviewContinuation === "string" ? [reviewContinuation] : []), "-"], cwd: workspace,
     env: {HOME: home, CODEX_HOME: authHome, PATH: "/usr/local/bin:/usr/bin:/bin"},
     input: launchPrompt, timeoutMs, maxBytes, signal,
-    ...(reviewSubmissionFile === undefined ? {} : {completedOutput:reviewSubmissionCompletion})});
+    ...(reviewSubmissionFile === undefined ? {} : {completedOutput:reviewSubmissionCompletion,completionDrainMs:reviewUsageDrainMs})});
   // A stopped CLI is not proof that a tool effect finished. Unresolved command
   // reservations remain IN_FLIGHT in the separate host and cannot be replayed.
   const nativeStatus = result.state === "UNKNOWN" ? "OUTCOME_UNKNOWN" :

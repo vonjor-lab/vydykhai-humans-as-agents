@@ -120,7 +120,7 @@ const cases=[
     item:{...x.call("item.started",{id:"other"},null).item,id:"unfinished"}},x.judgment,end],"SOURCE_LIFECYCLE_INCOMPLETE"],
   ["orphan update",x=>[start,x.call("item.updated",{id:"ledger"},null),x.call(),x.judgment,end],"SOURCE_LIFECYCLE_INVALID"],
   ["duplicate completion",x=>[start,x.call(),x.call(),x.judgment,end],"SOURCE_LIFECYCLE_INVALID"],
-  ["argument/result mismatch",x=>[start,x.call("item.completed",{id:"other"}),x.judgment,end],"SOURCE_ARGUMENTS_INVALID"],
+  ["argument/result mismatch",x=>[start,x.call("item.completed",{id:"other"}),x.judgment,end],/REVIEW_SOURCE_BATCH_INVALID/],
   ["failed tool",x=>{const event=x.call();event.item.error={message:"private tool error"};return [start,event,x.judgment,end];},"SOURCE_TOOL_FAILED"],
   ["failed result update",x=>{const event=x.call("item.updated");event.item.result.isError=true;
     return [start,x.call("item.started",{id:"ledger"},null),event,x.call(),x.judgment,end];},"SOURCE_TOOL_FAILED"],

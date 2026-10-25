@@ -17,6 +17,7 @@ import {openPartitionModelReview} from "../scripts/control-partition-model-revie
 import {reviewPartitions,validateReviewPart} from "../scripts/control-review-partitions.mjs";
 import {openControlStore} from "../scripts/control-store.mjs";
 import {nativeProvider,codeItem,answerItem} from "./native-provider-fixture.mjs";
+import {controlCheckIds} from "../scripts/control-catalog.mjs";
 
 const hash = value => sha256(canonicalJson(value));
 async function fixture(t) {
@@ -382,6 +383,70 @@ test("HEALTH prompt allows evidenced affectedTasks without narrowing unknown or 
   assert.match(prompt,/affectedTasks\?/);assert.match(prompt,/Absent means global\/unknown scope/);
   assert.match(prompt,/Never narrow host-wide authority or safety failures/);
   assert.match(prompt,/Do not emit affectedTasks for POST_ACCEPT/);
+});
+
+test("preinitial additive evidence reaches claimed review without replacing acceptance or inventing attempts",async t=>{
+  const x=await fixture(t), services={createReturnSync};
+  const host=await openControlHost(x.directory,x.config,services);await host.initialize();
+  await host.accept(x.acceptance,{reviewSourceIds:["contract"]});
+  const before=await host.reviewInput("accepted"), original=(await host.snapshot()).acceptances.accepted;
+  const request={owner:"owner",currentScopeSha256:hash(x.sourceScope),sourceIds:["contract","other"],
+    evidence:"Owner binds newly available review evidence before any model call"};
+  await host.recordSourceScopeExpansion("accepted",request);
+  const saved=(await host.snapshot()).acceptances.accepted;
+  assert.deepEqual(saved.acceptance,original.acceptance);assert.deepEqual(saved.reviewSourceScope,original.reviewSourceScope);
+  assert.equal(saved.reviewAttempts,undefined);assert.equal(saved.reviewLease,null);assert.equal(saved.review,null);
+  assert.equal(saved.reviewSourceScopeRevisions[0].phase,"BEFORE_FIRST_REVIEW");
+  assert.equal(saved.reviewSourceScopeRevisions[0].stoppedRunId,undefined);
+  await host.accept(x.acceptance,{reviewSourceIds:["contract"]});
+  await assert.rejects(host.recordSourceScopeExpansion("accepted",request),/CAS_MISMATCH/);
+  const reopened=await openControlHost(x.directory,x.config,services), offer=await reopened.claimReview("accepted");
+  assert.notEqual(offer.key,before.key);
+  assert.deepEqual(offer.input.sourceEvidence.scope.sourceIds,["contract","other"]);
+  const adapter=await openModelReview({directory:x.journal,controlRoot:x.root,reviewer:"reviewer",sourceFile:x.sourceFile,
+    requiredSourceIds:["contract","other"],native:{binary:"/never-dispatch",model:"synthetic",effort:"low"},
+    maxCalls:1,expiresAt:"2099-01-01T00:00:00Z",scope:{host:{directory:x.directory,config:x.config}}});
+  await adapter.initialize();assert.equal((await adapter.preflight(offer)).rows.length,2);
+  const sources=await openReviewSources(x.sourceFile), reads=await Promise.all(["contract","other"].map(id=>sources.read({id})));
+  validateModelReviewAcquisition(offer.input.sourceEvidence,reads,[],offer.input.sourceEvidence.scope);
+  assert.throws(()=>validateModelReviewAcquisition(offer.input.sourceEvidence,[reads[0]],[],offer.input.sourceEvidence.scope),/REQUIRED_SOURCE_UNREAD/);
+  const verdict={phase:"POST_ACCEPT",key:offer.key,reviewer:"reviewer",runId:offer.runId,observedAt:new Date().toISOString(),
+    resultUse:{status:"ALLOW",acceptanceSha256:hash(x.acceptance),evidence:"Synthetic protocol test, not semantic proof",findingIds:[]},
+    findings:[],rows:controlCheckIds.map(id=>({id,status:"PASS",evidence:`fixture:${id}`}))};
+  await reopened.review("accepted",offer,verdict);
+  await reopened.disposition("accepted",{owner:"owner",reviewKey:hash(verdict),action:"CONTINUE",
+    nextAction:"next-task",evidence:"Synthetic owner consumed the source-bound review"});
+  assert.equal((await reopened.assess("accepted")).action,"VERIFY_CONTINUATION");
+  assert.equal((await adapter.capacity()).used,0);
+  const final=await openControlHost(x.directory,x.config,services);
+  assert.equal((await final.reviewInput("accepted")).input.sourceScopeRevision.phase,"BEFORE_FIRST_REVIEW");
+  await assert.rejects(final.recordSourceScopeExpansion("accepted",{...request,
+    currentScopeSha256:hash(offer.input.sourceEvidence.scope),sourceIds:["contract","other","later"]}),/STOPPED_RECONCILIATION_REQUIRED/);
+});
+
+test("preinitial expansion retains owner, pause, availability, additive and CAS checks",async t=>{
+  const x=await fixture(t),host=await openControlHost(x.directory,x.config,{createReturnSync});await host.initialize();
+  await host.accept(x.acceptance,{reviewSourceIds:["contract"]});
+  const request={owner:"owner",currentScopeSha256:hash(x.sourceScope),sourceIds:["contract","other"],evidence:"Owned preparation"};
+  await host.pause(true);await assert.rejects(host.recordSourceScopeExpansion("accepted",request),/STOPPED_RECONCILIATION_REQUIRED/);
+  await host.pause(false);
+  for(const [patch,error] of [[{owner:"worker"},/OWNER_INVALID/],[{evidence:""},/OWNER_INVALID/],
+    [{currentScopeSha256:sha256("stale")},/CAS_MISMATCH/],[{sourceIds:["other"]},/ADDITIVE_REQUIRED/],
+    [{sourceIds:["contract"]},/ADDITIVE_REQUIRED/],[{sourceIds:["contract","other","other"]},/SCOPE_INVALID/],
+    [{sourceIds:["contract","undeclared"]},/SCOPE_UNREGISTERED/]])
+    await assert.rejects(host.recordSourceScopeExpansion("accepted",{...request,...patch}),error);
+  x.entries.push({id:"missing",path:"missing.md",purpose:"Not yet materialized"});await x.registry();
+  await assert.rejects(host.recordSourceScopeExpansion("accepted",{...request,sourceIds:["contract","missing"]}),/SCOPE_MISSING/);
+  const store=await openControlStore(x.directory),baseline=(await host.snapshot()).acceptances.accepted;
+  for(const patch of [{reviewEpisode:{id:"existing"}},{reviewEpisodeHistory:[{}]},
+    {reviewAttempts:[{observation:{state:"UNKNOWN"}}]},{repairHistory:[{}]},{repairRequest:{}},
+    {disposition:{action:"REPAIR"}},{review:{observedAt:new Date().toISOString()}},{reviewLease:{runId:"claimed"}}]){
+    await store.transact(s=>{s.acceptances.accepted={...structuredClone(baseline),...patch};return s;});
+    await assert.rejects(host.recordSourceScopeExpansion("accepted",request),/STOPPED_RECONCILIATION_REQUIRED/);
+  }
+  await store.transact(s=>{s.acceptances.accepted=baseline;
+    s.reservations.pending={status:"IN_FLIGHT",dependencies:["accepted"]};return s;});
+  await assert.rejects(host.recordSourceScopeExpansion("accepted",request),/STOPPED_RECONCILIATION_REQUIRED/);
 });
 
 test("stopped reconciled discovery expands the existing scope additively under the same host and transport config",async t=>{

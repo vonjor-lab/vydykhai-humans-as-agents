@@ -14,6 +14,7 @@ import {openControlHost} from "../scripts/control-host.mjs";
 import {canonicalJson, sha256} from "../scripts/memory-brief.mjs";
 import {changeControlProfile, recoverControlProfileChange} from "../scripts/control-profile-change.mjs";
 import {inspectControlRecovery, recoverStoppedControlObserver} from "../scripts/control-recovery.mjs";
+import {retentionKinds} from "../scripts/post-accept.mjs";
 
 const source = fileURLToPath(new URL("..", import.meta.url));
 const darwin = {skip: process.platform !== "darwin", timeout: 30000};
@@ -21,6 +22,71 @@ const hash = value => sha256(canonicalJson(value));
 const missing = plan => ({state: "CLOSED", code: 113, output: "",
   errors: `Could not find service "${plan.label}" in domain for user gui: ${process.getuid()}`});
 const stopped = {readSchedule: async plan => missing(plan)};
+
+test("preinitial source history permits a compatible switch but refuses the actual prior reader",darwin,async t=>{
+  const x=await fixture(t),v=await verifyControlActivation(x.descriptor.descriptorFile);
+  const service=await v.runtime.service.openControlService(v.profile);
+  await x.stores.host.transact(s=>{s.reservations.done.dependencies=[];return s;});
+  const ref={path:"policy.md",sha256:sha256(await readFile(path.join(x.workspace,"policy.md")))};
+  const acceptance={schema:"work.product-acceptance.v1",id:"scope",project:"synthetic",task:"scope-task",
+    owner:"owner",executor:"executor",status:"ACCEPTED",acceptedAt:new Date().toISOString(),
+    producerReturn:ref,artifact:ref,technicalProof:ref,goal:ref,
+    retention:retentionKinds.map(id=>({id,required:true,expected:ref}))};
+  const registry=JSON.parse(await readFile(v.profile.config.evidenceRegistry,"utf8"));
+  registry.sources.push({id:"added",path:"policy.md",purpose:"New preparation evidence"});
+  await writeFile(v.profile.config.evidenceRegistry,JSON.stringify(registry));
+  await service.host.pause(false);await service.host.accept(acceptance,{reviewSourceIds:["policy"]});
+  const original=await service.host.reviewSourceScope("scope");
+  await service.host.recordSourceScopeExpansion("scope",{owner:"owner",currentScopeSha256:hash(original),
+    sourceIds:["policy","added"],evidence:"Owned preparation, no review started"});
+  // Isolate the preinitial-scope compatibility gate from the separately tested
+  // related-control capability added by newer accept operations.
+  await x.stores.host.transact(s=>{delete s.acceptances.scope.relatedControlEvidence;return s;});
+  await service.host.pause(true);const before=await x.snapshot();
+  const oldSource=path.join(x.temp,"old-reader");await cp(x.candidate,oldSource,{recursive:true});
+  const prior=spawnSync("git",["show","v2.1.7:scripts/control-host.mjs"],{cwd:source,encoding:"utf8"});
+  assert.equal(prior.status,0,prior.stderr);
+  await writeFile(path.join(oldSource,"scripts/control-host.mjs"),prior.stdout);
+  const old=await x.stage(oldSource);
+  await assert.rejects(switchControlRuntime({...x.options,packageRoot:old.root,expectedDigest:old.digest},stopped),
+    e=>e.message === "CONTROL_CUTOVER_FAILED_ROLLED_BACK" && e.cause?.message === "CONTROL_CUTOVER_TARGET_SOURCE_SCOPE_UNSUPPORTED");
+  await x.unchanged(before);await noOwnership(x);
+  assert.deepEqual(await readFile(x.descriptor.descriptorFile),x.oldBytes);
+  const result=await switchControlRuntime(x.options,stopped);
+  assert.equal(result.statePreserved,true);await x.unchanged(before);await noOwnership(x);
+  const selected=await verifyControlActivation(x.descriptor.descriptorFile);
+  const reopened=await selected.runtime.service.openControlService(selected.profile);
+  assert.deepEqual((await reopened.host.reviewInput("scope")).input.sourceEvidence.scope.sourceIds,["policy","added"]);
+});
+
+test("event policy refuses a reader that preserves bytes but cannot enforce preparation",darwin,async t=>{
+  const x=await fixture(t,{eventPolicy:true}),before=await x.snapshot();
+  const oldSource=path.join(x.temp,"event-unaware-reader");await cp(x.candidate,oldSource,{recursive:true});
+  const hostFile=path.join(oldSource,"scripts/control-host.mjs");
+  const text=await readFile(hostFile,"utf8");
+  assert.ok(text.includes("async eventControlPolicy()"));
+  await writeFile(hostFile,text.replace("async eventControlPolicy()","async legacyUnusedEventPolicy()"));
+  const old=await x.stage(oldSource);
+  await assert.rejects(switchControlRuntime({...x.options,packageRoot:old.root,expectedDigest:old.digest},stopped),
+    e=>e.message==="CONTROL_CUTOVER_FAILED_ROLLED_BACK" && e.cause?.message==="CONTROL_CUTOVER_TARGET_EVENT_POLICY_UNSUPPORTED");
+  await x.unchanged(before);await noOwnership(x);
+  assert.equal((await switchControlRuntime(x.options,stopped)).statePreserved,true);
+  await x.unchanged(before);await noOwnership(x);
+});
+
+test("related control history refuses a reader that merely preserves the new flag",darwin,async t=>{
+  const x=await fixture(t);
+  await x.stores.host.transact(s=>{s.acceptances.retained.relatedControlEvidence=true;return s;});
+  const before=await x.snapshot(),oldSource=path.join(x.temp,"unaware-related-reader");
+  await cp(x.candidate,oldSource,{recursive:true});
+  const file=path.join(oldSource,"scripts/control-host.mjs"),text=await readFile(file,"utf8");
+  assert.ok(text.includes("async relatedControlPolicy()"));
+  await writeFile(file,text.replace("async relatedControlPolicy()","async unusedRelatedControlPolicy()"));
+  const old=await x.stage(oldSource);
+  await assert.rejects(switchControlRuntime({...x.options,packageRoot:old.root,expectedDigest:old.digest},stopped),
+    e=>e.message==="CONTROL_CUTOVER_FAILED_ROLLED_BACK"&&e.cause?.message==="CONTROL_CUTOVER_TARGET_RELATED_CONTROL_UNSUPPORTED");
+  await x.unchanged(before);await noOwnership(x);
+});
 
 function profileChange(x) {
   const profile = structuredClone(x.profile);
@@ -50,7 +116,24 @@ test("profile transition retains expired spent journals and creates a separate f
   assert.deepEqual((await service.host.snapshot()).acceptances.retained.findings,x.before.host.state.acceptances.retained.findings);
 });
 
+test("owner allocation renewal preserves spent history and exact delegation",darwin,async t=>{
+  const x=await fixture(t),o=profileChange(x);
+  o.profile.ownerDelivery={...o.profile.ownerDelivery,directory:path.join(x.root,"owner-delivery-next"),maxCalls:5,
+    expiresAt:o.profile.review.expiresAt};
+  o.allocations.owner={maxCalls:5,expiresAt:o.profile.ownerDelivery.expiresAt,evidence:"Explicit finite renewal"};
+  const before=await x.snapshot();
+  assert.equal((await changeControlProfile(o,stopped)).status,"PROFILE_CHANGED_PAUSED");
+  await x.unchanged(before);await noOwnership(x);
+  const selected=await verifyControlActivation(x.descriptor.descriptorFile);
+  const service=await selected.runtime.service.openControlService(selected.profile);
+  assert.equal((await service.ownerDelivery.capacity()).used,0);
+  assert.equal((await service.ownerDelivery.capacity()).remaining,5);
+  assert.deepEqual(selected.profile.ownerDelivery.delegation,x.profile.ownerDelivery.delegation);
+});
+
 for(const [name,change,code] of [
+  ["owner authority changed",o=>{o.profile.ownerDelivery.directory+="-new";o.profile.ownerDelivery.delegation.nextAction="different";},"OWNER_IDENTITY_CHANGED"],
+  ["owner renewal without allocation",o=>{o.profile.ownerDelivery.directory+="-new";},"NEW_ALLOCATION_REQUIRED"],
   ["in-place renewal",o=>{o.profile.review.directory=path.join(path.dirname(o.descriptorFile),"review");},"OLD_ALLOCATION_IMMUTABLE"],
   ["unapproved budget",o=>{delete o.allocations.review;},"NEW_ALLOCATION_REQUIRED"],
   ["different owner",o=>{o.profile.config.owner="someone-else";},"HOST_CHANGE_FORBIDDEN"],
@@ -98,7 +181,7 @@ test("interrupted profile selection retains the lease until exact stopped-operat
   assert.deepEqual(await readFile(x.descriptor.descriptorFile),x.oldBytes);
 });
 
-async function fixture(t, {calls = 2, ttlMs = 3600000, continuation, noOwner = false} = {}) {
+async function fixture(t, {calls = 2, ttlMs = 3600000, continuation, noOwner = false, eventPolicy = false} = {}) {
   const temp = await realpath(await mkdtemp(path.join(tmpdir(), "control-cutover-test-")));
   t.after(() => rm(temp, {recursive: true, force: true}));
   const workspace = path.join(temp, "workspace"), root = path.join(temp, "control"),
@@ -127,7 +210,7 @@ async function fixture(t, {calls = 2, ttlMs = 3600000, continuation, noOwner = f
   const expiresAt = new Date(Date.now() + ttlMs).toISOString();
   const profile = {schema: "control.service.v1", directory: path.join(root, "host"),
     config: {workspace, policy: "a".repeat(64), owner: "owner", executor: "executor", reviewer: "reviewer",
-      evidenceRegistry: sourceFile, health: {scope: "Disposable cutover", intervalMs: 60000,
+      ...(eventPolicy?{requirePreparation:true}:{}),evidenceRegistry: sourceFile, health: {scope: "Disposable cutover", intervalMs: 60000,
         maxBranches: 1, maxWorktrees: 1, triggerSourceIds: ["policy"], repairTasks: ["maintenance"]}},
     review: {directory: path.join(root, "review"), controlRoot: root, reviewer: "reviewer", sourceFile,
       native: {workspace: path.join(root, "review-room"), home: path.join(root, "empty-home"), authHome: path.join(root, "empty-home"),

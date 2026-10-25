@@ -12,8 +12,8 @@ const hash = value => sha256(canonicalJson(value));
 const additional = [
   "control-activation", "control-observer-run", "control-recovery", "control-cutover", "control-profile-change", "control-schedule", "control-catalog", "control-child", "control-codex-profile", "control-endpoint", "control-findings", "control-health", "control-health-domain", "control-repo-observation",
   "control-host", "control-continuation", "control-loop", "control-mcp", "control-model-review", "control-cadence", "control-allowance", "control-notification", "control-migration",
-  "control-owner", "control-owner-mcp", "control-owner-delivery", "control-notification-owner", "control-review-mcp", "control-review-process",
-  "control-review-sources", "control-review-acquisition", "control-review-submission", "control-review-context", "control-review-wire", "control-review-partitions", "control-partition-model-review", "control-runtime", "control-service",
+  "control-owner", "control-owner-mcp", "control-owner-delivery", "control-owner-wait", "control-notification-owner", "control-review-mcp", "control-review-process",
+  "control-review-sources", "control-review-acquisition", "control-review-acquisition-store", "control-review-submission", "control-review-context", "control-review-wire", "control-review-partitions", "control-partition-model-review", "control-runtime", "control-service",
   "control-stdio", "control-store", "control-worker-run", "controlled-context-run",
   "debt-progress", "finding-history", "increment-readiness", "local-control-sandbox",
   "post-accept", "project-recovery"

@@ -44,6 +44,10 @@ export function ownerControl(host, owner) {
         reviewKey:state.health.review ? hash(state.health.review) : null});
       for(const [id,row] of Object.entries(state.acceptances)) {
         if(row.acceptance.owner!==owner)continue;
+        if(!row.review && !row.reviewLease && !["REVIEW_DUE","REVIEW_EPISODE_DUE","REVIEW_RECONCILIATION_REQUIRED"].includes(row.enrollment)) {
+          rows.push({id,action:"OBSERVATION_UNKNOWN",reason:"REVIEW_REGISTRATION_MISSING",
+            productAcceptance:row.acceptance.status,reviewKey:null});continue;
+        }
         if(row.reviewEpisode && ["REVIEW_EPISODE_DUE","REVIEW_IN_FLIGHT"].includes(row.enrollment))continue;
         if(row.enrollment==="CLOSED") {
           // Closure is historical. Reuse bounded selected readback, never turn

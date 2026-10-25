@@ -53,19 +53,21 @@ Use the installed `node scripts/vydykhai.mjs control-activate --runtime-source <
 
 The private request has exactly `expectedDigest`, `runtimeDirectory`, `root`, and `profile`. Prepare owned canonical 0700 runtime/state directories outside the product and outside each other, a 0600 request outside the product/source/runtime directory, and the profile's private source registry. Use explicit native/auth references; never provision or copy credentials. The command verifies the source snapshot, stages its immutable inventory, imports activation only from the verified private copy, and reads back its descriptor. It does not update the kit, start an observer, register/restart a scheduler, or certify project readiness. Same-profile repetition preserves existing journals, budgets and pauses; a different selected digest requires explicit cutover rather than activation. Unsupported hosts or failed activation stay visibly blocked; an earlier successful kit update is not rolled back or promoted to adoption.
 
-When the initial observation and periodic control have the required scope and finite
-native-call budget, the same setup owner automatically follows activation with the
-selected private runtime's `startControlSchedule({descriptorFile, mode,
-intervalSeconds, initialTimeoutMs})`. This trusted operator API runs that runtime's
-observer CLI once, verifies its durable result, then registers the timer. Do not
-ask the user to remember a separate first run. A failed/unknown initial result
-stops before registration; preserve journals, budget and any retained lease, do
-not repeat an unknown operation. An existing scheduler requires an owned stopped
-checkpoint before this initial-start route. Ordinary registration/reuse performs
-no initial observation and cannot substitute for this result. Its recurring route
-needs a separately observed interval receipt, not the initial receipt reused as
-timer proof. A paused receipt preserves pause and certifies neither diagnosis nor
-project readiness; missing authorization remains explicit, not assumed.
+For the event-bound route, select host `requirePreparation:true` and ordinary
+mechanical reconciliation with `health.periodicReview:false`; initial HEALTH and
+explicit reset-cadence obligations remain. Preserve legacy history through the
+supported migration boundary, not an in-place config rewrite.
+With scope and finite budget established, the same setup owner uses the selected
+runtime's `startScheduledControl({descriptorFile,mode,intervalSeconds})`. The first
+natural interval starts the observer; registration alone proves no work occurred.
+Use `waitControlObservation` and its receipt hash cursor to observe completion.
+`PENDING/WAIT_TIMEOUT` ends only waiting, never work; do not repeat dispatch or
+message active workers. A terminal receipt includes owner/continuation processing,
+not just the earlier review checkpoint. Preserve failed/unknown outcomes and spend.
+Observe a further quiet interval separately. Legacy synchronous startup remains
+compatible, but does not prove wait/execution separation. A paused initial receipt
+certifies neither diagnosis nor adoption. The setup owner follows through without
+another human reminder; missing authorization stays explicit.
 
 An expired initial profile without delivery is a setup gap, not permission to edit
 its immutable file or refill its journal. After qualified runtime selection, use

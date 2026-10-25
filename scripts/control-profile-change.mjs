@@ -65,8 +65,15 @@ function policy(old, next, allocations) {
     allocation(allocations?.review, next.review);
   } else need(allocations?.review === undefined, "UNUSED_ALLOCATION");
   need(!old.notifications || hash(old.notifications) === hash(next.notifications ?? null), "NOTIFICATION_CHANGE_FORBIDDEN");
-  need(!old.ownerDelivery || hash(old.ownerDelivery) === hash(next.ownerDelivery ?? null), "OLD_OWNER_ALLOCATION_IMMUTABLE");
-  if(next.ownerDelivery && !old.ownerDelivery) allocation(allocations?.owner, next.ownerDelivery);
+  if(old.ownerDelivery && hash(old.ownerDelivery) !== hash(next.ownerDelivery ?? null)) {
+    need(!old.ownerDelivery.waits,"OWNER_SESSION_ALLOCATION_IMMUTABLE");
+    need(next.ownerDelivery && next.ownerDelivery.directory !== old.ownerDelivery.directory,
+      "OLD_OWNER_ALLOCATION_IMMUTABLE");
+    // Renew capacity, never the delegate's authority or execution identity.
+    const identity = ({directory,maxCalls,expiresAt,...rest}) => rest;
+    need(hash(identity(old.ownerDelivery)) === hash(identity(next.ownerDelivery)), "OWNER_IDENTITY_CHANGED");
+    allocation(allocations?.owner,next.ownerDelivery);
+  } else if(next.ownerDelivery && !old.ownerDelivery) allocation(allocations?.owner, next.ownerDelivery);
   else need(allocations?.owner === undefined, "UNUSED_OWNER_ALLOCATION");
 }
 async function unchanged(intent) {

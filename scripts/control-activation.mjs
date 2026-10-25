@@ -81,7 +81,9 @@ async function validatePaths(root, profile, create = false, allowMissing = false
     dirs.push(profile.notifications.directory);
   }
   if(profile.ownerDelivery) {
-    need(profile.notifications && profile.ownerDelivery.directory===path.join(root,"owner-delivery") &&
+    need(profile.notifications && typeof profile.ownerDelivery.directory === "string" &&
+      path.dirname(profile.ownerDelivery.directory) === root &&
+      /^owner-delivery(?:-[a-z0-9-]{1,64})?$/.test(path.basename(profile.ownerDelivery.directory)) &&
       profile.ownerDelivery.native?.workspace===path.join(root,"owner-room") &&
       profile.ownerDelivery.native?.home===path.join(root,"owner-home") &&
       (profile.ownerDelivery.native.authHome??profile.ownerDelivery.native.home)===
