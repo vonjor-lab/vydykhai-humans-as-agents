@@ -137,6 +137,13 @@ test("dormant exact continuation can precede PRE but cannot execute until indepe
   await x.host.review("previous",offer,v);
   assert.equal((await run()).calls,0);
   await x.host.disposition("previous",disposition(x,v),[]);
+  if(process.platform!=="darwin") {
+    const before=await x.host.snapshot();
+    await assert.rejects(run(),/CONTROL_SANDBOX_UNSUPPORTED/);
+    assert.deepEqual(await x.host.snapshot(),before);
+    await assert.rejects(readFile(path.join(x.f.root,"actions.log")),{code:"ENOENT"});
+    return;
+  }
   const result=await run();
   assert.equal(result.calls,1);
   assert.equal(result.results[0].action,"CLOSED_AFTER_OBSERVED_CONTINUATION");
