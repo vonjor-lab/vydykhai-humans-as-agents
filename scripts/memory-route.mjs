@@ -166,7 +166,8 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
     because: n.fields.get("Because"), apply: n.fields.get("Apply"), avoid: n.fields.get("Avoid"),
     verify: n.fields.get("Verify"), scope: n.fields.get("Applies / exceptions"),
     ownerGate: n.fields.get("Owner gate"), returnWhen: n.fields.get("Return / close when"),
-    relations: n.fields.get("Relations"), source: n.fields.get("Source / checked")}));
+    relations: n.fields.get("Relations"), source: n.fields.get("Source / checked"),
+    ...(n.type === "POINTER" ? {protectedPointer: n.fields.get("Protected pointer (POINTER only)") ?? null} : {})}));
   const result = {...base, ...identity, status: gaps.length ? "NEEDS_DISCOVERY" : "RECALL_CANDIDATE",
     roots, anchors: anchors.filter(a => scope.has(a[0])).map(a => ({id:a[0], kind:a[1], name:a[2], scope:a[3], source:a[5]})),
     routes: [...edges].map(r => ({from:r[0], relation:r[1], to:r[2], qualification:r[3], source:r[4]})),

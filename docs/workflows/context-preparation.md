@@ -99,7 +99,7 @@ For this route the owner declares nonempty `module.contractFiles` from the modul
 map/graph independently of the preparer's found-code list. Each must have a
 task-wide cited quote; an omitted contract blocks. Review the complete applicable
 contract for the declared use/change mode, not just a keyword hit or all maintainer internals. Distinguish an unavailable source from an
-available but unread source: neither proves absence of the underlying decision.
+available but unread source: neither proves absence of the underlying decision. Recover existing access decisions before asking again; follow [safe pointer recall](memory-recall.md#operational-recall), separating historical authority from current readiness.
 The builder checks bounds/quotes and computes file hashes. Owner review still
 decides semantic coverage, correct audience and unresolved contradictions;
 structural checks cannot detect a wrongly classified natural-language rule.

@@ -13,6 +13,11 @@ and aliases, follows purpose upward and projects public dependencies and consume
 It retains attached current decisions, commitments and linked prerequisites without
 ranking away low-match obligations. It does not read producer implementations or
 change the graph. Multipart storage uses the same logical graph, not another store.
+Selected `POINTER` items retain `protectedPointer`: the existing six-field safe
+reference, owner, scope, permitted check, historical observation and re-entry rule.
+Recall does not open the referenced resource or prove current access. An old check
+is neither current readiness nor evidence of expiry. Missing records remain gaps;
+the locator cannot recover a decision that was never integrated into the graph.
 An unrelated pending event does not block read-only inspection; an applicable
 pending event, provisional/conflicting meaning or unavailable source remains a gap.
 The normal graph readiness validator still refuses pending integration.
@@ -96,3 +101,19 @@ packing preserves logical bytes but still reassembles the graph locally. A short
 projection from a large graph proves bounded worker context, not constant-time I/O
 or arbitrary project scale. Do not delete history or silently shard authority to
 work around these limits.
+
+## Operational Recall
+
+Before asking the human to repeat an access decision, recover the known route,
+authority source, safe pointer and applicable restrictions through preparation.
+An available but unread source is not a missing decision. If the graph omitted
+it, use existing pending events/Memory Miss repair and return a source-backed
+delta to the owner; do not add another store or copy protected values.
+Check current session/resource readiness only through an already authorized
+non-destructive route. If that cannot resolve the gap, request the specific
+missing human action, not a new account or repetition of settled instructions.
+Keep cleanup authority and scope separate: access does not authorize deletion,
+credential reset, changed roles, or reuse of expired one-time permissions.
+Independent preparation review checks the source-to-packet application, not
+merely the presence of a pointer. Shared integration and subsequent ordinary
+retrieval are required before a missing-memory finding is closed.

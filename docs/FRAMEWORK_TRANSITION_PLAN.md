@@ -1,5 +1,16 @@
 # Framework Efficiency Transition
 
+## Safe Pointer Recall 2026-10-29
+
+The narrow 2.1.9 candidate retains the existing protected-pointer field in recall;
+it does not open that reference or grant access. Preparation separates a retained
+access decision from current session readiness and repairs omitted history through
+the existing memory owner. No new controller, memory format or model call is added.
+Qualify the exact projection through CLI and registered multipart sources, missing
+and oversize cases, scoped independent review, preserving update and rollback.
+Publication is authorized for this bounded correction, not experimental lifecycle
+changes. Project application and complete demo acceptance remain separate evidence.
+
 ## Release Packet 2026-10-26
 
 The remaining authorized gate is scoped release qualification, not another audit

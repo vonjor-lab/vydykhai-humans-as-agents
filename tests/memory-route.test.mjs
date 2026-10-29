@@ -1,12 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {readFile, mkdtemp, writeFile, rm} from "node:fs/promises";
+import {readFile, mkdtemp, mkdir, writeFile, rm, realpath} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import path from "node:path";
 import {spawnSync} from "node:child_process";
 import {deriveMemoryRoute, memoryRecallCommand} from "../scripts/memory-route.mjs";
 import {validateMemoryGraph} from "../scripts/vydykhai.mjs";
 import {packMemoryGraph} from "../scripts/memory-storage.mjs";
+import {openReviewSources} from "../scripts/control-review-sources.mjs";
 
 const manifest = JSON.parse(await readFile(new URL("../vydykhai.json", import.meta.url), "utf8"));
 const services = {manifest, validateGraph: validateMemoryGraph};
@@ -73,6 +74,46 @@ function addRoutes(content, added) {
   return content.replace(/^Declared routes: (\d+)$/m, (_, n) => `Declared routes: ${Number(n) + added.length}`)
     .replace("## Current Memory Nodes", added.map(r=>`| ${r[0]} | ${r[1]} | ${r[2]} | fixture | source |`).join("\n") + "\n## Current Memory Nodes");
 }
+
+test("protected recall retains the safe locator and re-entry conditions without reading or granting access", async t => {
+  const pointer = "operations owner | vault:quotation-reader (reference only) | staging read-only | ordinary login status | historical receipt-2 | recheck after logout or environment change";
+  const content = graph([node("MEM-ACCESS", "POINTER", "ENT-QUOTE", "Use the existing ordinary route, not a new account", {
+    "Protected pointer (POINTER only)": pointer,
+    "Owner gate": "existing scoped authority; this record is not a new grant",
+    "Source / checked": "historical access decision / receipt-2"
+  })]);
+  assert.deepEqual(validateMemoryGraph(content, manifest), []);
+  const root = await realpath(await mkdtemp(path.join(tmpdir(), "memory-safe-pointer-")));
+  t.after(() => rm(root, {recursive:true, force:true}));
+  const workspace = path.join(root, "workspace"); await mkdir(workspace);
+  const graphFile = path.join(workspace, "graph.md"); await writeFile(graphFile, content);
+  const packed = await packMemoryGraph(graphFile, path.join(workspace, "packed"), 4096);
+  const storage = JSON.parse(await readFile(packed.path, "utf8"));
+  const registry = path.join(root, "sources.json");
+  await writeFile(registry, JSON.stringify({schema:"control.review-sources.v1", workspace,
+    sources:[{id:"graph",path:"packed/graph.json",purpose:"Accepted memory"},
+      ...storage.parts.map((p,i) => ({id:`part-${i}`,path:`packed/${p.path}`,purpose:"Graph part"}))]}), {mode:0o600});
+  const registered = await openReviewSources(registry);
+  const results = [deriveMemoryRoute(content, "Use quotation"),
+    await memoryRecallCommand(["--graph", graphFile, "--request", "Use quotation"], services),
+    await registered.recallMemory({id:"graph", request:"Use quotation"})];
+  for (const result of results) {
+    const item = result.items.find(n => n.id === "MEM-ACCESS");
+    assert.equal(item.protectedPointer, pointer);
+    assert.equal(item.source, "historical access decision / receipt-2");
+    assert.equal(result.status, "NEEDS_DISCOVERY");
+    assert.equal(result.admission, "NOT_GRANTED");
+    assert.equal(result.semanticTruth, "NOT_VERIFIED");
+    assert.match(result.gaps.join(" "), /authorized retrieval boundary/);
+    assert.ok(!Object.hasOwn(result.items.find(n => n.id === "MEM-RATE"), "protectedPointer"));
+  }
+  assert.ok(results[2].acquiredSources.every(s => s.id === "graph" || s.id.startsWith("part-")));
+  assert.equal(await readFile(graphFile, "utf8"), content);
+  const tooLarge = content.replace(pointer, pointer + " condition".repeat(9000));
+  assert.equal(deriveMemoryRoute(tooLarge, "Use quotation").reason, "RECALL_PACKET_TOO_LARGE");
+  await writeFile(graphFile, content.replace(`- Protected pointer (POINTER only): ${pointer}\n`, ""));
+  assert.equal((await memoryRecallCommand(["--graph", graphFile, "--request", "Use quotation"], services)).code, "MEMORY_GRAPH_INVALID");
+});
 
 test("association-only anchors retain explicit constraints and dependency applicability", () => {
   for (const relation of ["constrains", "depends-on"]) {
