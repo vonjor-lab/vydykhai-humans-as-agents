@@ -13,6 +13,8 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 
 ## Decisions
 
+- Before material resume or corrective redispatch, apply the existing workflow's Current action and bounded repair rule. Superseded history is evidence, not an executable queue; a repeated unchanged failure requires an approach decision, not another automatic attempt.
+
 - On activation or a material module-boundary decision, use `docs/workflows/module-delivery.md` as the shared operating contract. Locate the promised capability, distinguish closed consumption from development, retain the parent outcome through partial returns and route a concrete next action. No additional read on an unchanged continuation.
 - Before new dispatch or material resume, reconcile human decisions, current State, applicable memory and actual worker readiness. Route consume/change/create from the Module Contract: a consumer uses public contract and fixed release; new or changed boundaries need human agreement. Keep the task brief scoped and complete.
 - Use `docs/workflows/context-route.md` for direct execution, bounded Discovery or Lab. Preparation retrieves context; Discovery chooses a solution. A Lab result needs separately authorized production transfer. Use `docs/workflows/start-work.md` for a new or materially changed task map; approval is a gate for a new shared decision, not for continuing an already approved contract.

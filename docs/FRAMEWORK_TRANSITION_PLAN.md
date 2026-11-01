@@ -1,5 +1,29 @@
 # Framework Efficiency Transition
 
+## Bounded Delivery Lessons 2026-11-01
+
+2.1.10 instruction/adoption patch on 2.1.9: one coherent current projection,
+history separate from executable next actions, unchanged evidence reuse, and an
+owner approach decision after a failed targeted correction. Ordinary delivery is
+not gated by unrequired experimental control development; adopted security and
+independent acceptance remain. No runtime, scheduler or project installation changed.
+Two new structural route tests, framework validator and diff check pass. Initial
+validator failures for instruction line limits were fixed by compacting the added
+wording, not by increasing limits. No historical model run was repeated.
+Scoped independent review accepts wording and existing adoption route with no
+blocking findings. Benefit: prevent contradictory resumption and repair loops.
+Complexity: existing skill/workflow/adoption entry only. Verdict: instruction patch
+accepted; runtime enforcement, missing/stale-proof behavioral coverage and real
+participant adoption are NOT established. Release authorized separately. Preserve
+these limits at the next authorized safe-boundary update; do not interrupt delivery.
+Release validation ran the required repository suite: 1722 tests, 1616 passed,
+104 skipped and two stale release-list expectations failed. Both lists now include
+2.1.10; the affected adoption, lesson and version checks pass 40/40. Validator and
+diff check pass. Existing independent wording review remains applicable; version
+metadata and release-list expectations are the only subsequent semantic delta.
+Publication and project-owned activation require their own actual readbacks;
+neither changes the selected experimental control runtime or historical verdicts.
+
 ## Safe Pointer Recall 2026-10-29
 
 The narrow 2.1.9 candidate retains the existing protected-pointer field in recall;

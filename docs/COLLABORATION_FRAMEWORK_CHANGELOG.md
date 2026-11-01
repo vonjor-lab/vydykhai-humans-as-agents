@@ -1,5 +1,14 @@
 # Collaboration Framework Changelog
 
+## 2.1.10 - 2026-11-01
+
+Clarify the existing orchestrator contract: publish one coherent current action,
+retain superseded instructions as history, reuse unchanged independent evidence,
+and require an approach decision after a failed targeted correction. Separate
+ordinary delivery from unrequired experimental infrastructure without bypassing
+adopted security. Existing adoption owner/readback applies at a safe checkpoint.
+This is an instruction/adoption patch, not new runtime enforcement or a release.
+
 ## 2.1.9 - 2026-10-29
 
 При подготовке задачи сохраняется ранее записанный безопасный маршрут доступа:

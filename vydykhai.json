@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "2.1.9",
+  "version": "2.1.10",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -672,7 +672,7 @@
     {
       "id": "resume-or-checkpoint",
       "since": "1.30.0",
-      "action": "Record accepted target activation with explicit limits or exact access/decision gap in Project State. One bounded repair per unchanged defect; never reset attempts on update, no broad rollback.",
+      "action": "Record accepted target activation with explicit limits or exact access/decision gap in Project State. One bounded repair per unchanged defect; never reset attempts on update, no broad rollback. At the owner's safe checkpoint reconcile phase/outcome/owner/next/return into one current projection; retain superseded instructions as history, applicable negative findings and deferred recall. Reuse unchanged receipts; repair only contradictory current meaning or record evidence-backed NO_CHANGE. Read back the published projection and affected participant's application without repeating accepted work. After a failed targeted correction require an approach decision before redispatch, not an automatic new review. Product work continues independently of unrequired experimental control development; trust-boundary changes remain human-owned.",
       "reuseBy": [
         "defectIdentity",
         "changedServiceBundle"
