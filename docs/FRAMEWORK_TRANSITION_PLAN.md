@@ -1,5 +1,19 @@
 # Framework Efficiency Transition
 
+## Bounded Role Adoption 2026-11-03
+
+2.1.11 candidate consolidates existing routing and explicit human overrides: one
+existing independent review role, optional preparation, retained owner/control
+profiles and evidence-backed local executor mapping. No runtime or new layer.
+Benefit: avoid silent downgrades and compulsory escalation loops. Evidence: bounded
+task-class comparisons only; universal quality and full-cycle savings unproven.
+Complexity: existing routing/control/adoption entries; vendor ids stay product-local.
+Independent scoped review found no actionable issues; framework validation passed.
+Full suite: 1725 tests, 1620 passed, 104 skipped, one core word-budget failure;
+the added router wording was shortened without raising the limit. Targeted rerun:
+50/50 PASS; validator and diff check PASS. Release readback remains separate from real participant application and spend.
+No runtime change or historical model test; live task adoption remains due.
+
 ## Bounded Delivery Lessons 2026-11-01
 
 2.1.10 instruction/adoption patch on 2.1.9: one coherent current projection,

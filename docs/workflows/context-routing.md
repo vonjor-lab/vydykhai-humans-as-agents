@@ -5,18 +5,18 @@ When comparing operating versions, separate model-rate substitution from workflo
 This implements the preparation branch of [Module Delivery](module-delivery.md) through [Context Preparation](context-preparation.md), not another management hierarchy. Context readiness is checked at every start and material information gap. Reuse a sufficient current packet; do not repeat an exhaustive search.
 
 ## Responsibilities
+### Bounded Role Adoption
+Use the accepted project-local model/effort mapping before default role hints. Keep vendor ids outside managed files. Retain the installed orchestrator and independent control profiles during an executor rollout; change either only at its own compatible owner-approved boundary. An update is not permission to downgrade active workers. Record task class, actual model/effort, supporting evidence and fallback in the existing routing record. A bounded benchmark does not prove general architecture, visual quality or independent-review capability. Without comparable evidence, retain the accepted profile. Preparation is optional when current context is sufficient.
+Use one existing independent reviewer role for required PRE and final acceptance, with distinct producer/reviewer contexts and fresh review where the contract requires it. Do not add a reviewer of the preparer. The orchestrator checks packet sufficiency; the independent reviewer checks applicable source evidence and the actual result, not just the producer's summary. Different model names alone do not prove independence.
+Allow one targeted correction against concrete findings. If it does not improve the result, diagnose, rebrief or select a justified specialist instead of repeating a model ladder. Separate environment, evaluator and access failures from model failures. Retain the better verified candidate; the latest output does not supersede it by age. Escalation preserves current sources, negative findings, progress and prior spend.
+At the owner's next natural safe checkpoint, apply through the ordinary updater and read back the installed kit and actual participant mapping. Do not interrupt an in-flight task or create a review solely to demonstrate a model switch. Validate on one suitable real task using existing acceptance, then retain its evidence limits. Account for preparation, execution, correction, review and coordination together; unknown usage stays UNKNOWN_NONZERO, not zero. Stop task follow-ups after actual acceptance and report delivery; do not periodically recheck an unchanged accepted result.
 
 - The orchestrator owns purpose, scope, constraints, required Module Contracts,
   the question assigned to preparation, model/effort selection and packet review.
   It receives a concise evidence/gap/decision summary, not search transcripts.
   It preserves the accepted applicability and proof limits of donor modules in briefs and graph integration; a passed example is not permission to claim a reusable chain.
-- The preparer finds and combines source-backed facts through map/index -> graph
-  and public contracts -> released artifacts for consumption; maintainer design/code only for authorized development or an evidenced diagnostic question. It labels unread, unavailable and contradictory
-  sources separately. It does not choose product direction, design a new solution,
-  broaden authority, or declare history complete from a filename search.
-- The executor implements and verifies the approved increment. It reads current
-  code at the declared boundary and reports a real information gap via `CONSULT`
-  to the orchestrator; it does not assign work or models to preparation itself.
+- The preparer finds and combines source-backed facts through map/index -> graph and public contracts -> released artifacts for consumption; maintainer design/code only for authorized development or an evidenced diagnostic question. It labels unread, unavailable and contradictory sources separately. It does not choose product direction, design a new solution, broaden authority, or declare history complete from a filename search.
+- The executor implements and verifies the approved increment. It reads current code at the declared boundary and reports a real information gap via `CONSULT` to the orchestrator; it does not assign work or models to preparation itself.
 - Preparation may draft index links or documentation from an exact Candidate
   and evidence under a bounded owner request. The executor incorporates and
   verifies required Module Contract changes before accepting that same Candidate.

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "2.1.10",
+  "version": "2.1.11",
   "creator": {
     "name": "Alexander Rozhnov",
     "nameRu": "Александр Рожнов",
@@ -592,7 +592,7 @@
     {
       "id": "context-routing",
       "since": "1.32.0",
-      "action": "Resolve available models by role and proven task capability, not price alone. Use effortPolicy over legacy profiles: flagship/Low orchestration with bounded temporary High recovery after one failed targeted control correction, then Low after verified recovery; flagship/High Discovery. Read back actual effort and host switch/fallback capability at a safe boundary, never manufacture a live failure to prove escalation. Cheap preparation is opt-in: reuse sufficient context, otherwise the orchestrator assigns and reviews a source-backed packet for a fresh executor. Later executor CONSULT goes through that owner to preparation and back to the same worker with retained progress. Read back initial/supplement/retained-tests/Return behavior before claiming this route adopted. Use dated credit-rate coefficients as a whole-chain planning proxy with unknown subscription usage explicit. Preserve ongoing work and human model choices; missing preparation proof does not block the established route. Preserve donor applicability and proof limits; sample success cannot certify reusable readiness.",
+      "action": "Resolve available models by role and proven task capability, not price alone. Use effortPolicy over legacy profiles: flagship/Low orchestration with bounded temporary High recovery after one failed targeted control correction, then Low after verified recovery; flagship/High Discovery. Read back actual effort and host switch/fallback capability at a safe boundary, never manufacture a live failure to prove escalation. Cheap preparation is opt-in: reuse sufficient context, otherwise the orchestrator assigns and reviews a source-backed packet for a fresh executor. Later executor CONSULT goes through that owner to preparation and back to the same worker with retained progress. Read back initial/supplement/retained-tests/Return behavior before claiming this route adopted. Use dated credit-rate coefficients as a whole-chain planning proxy with unknown subscription usage explicit. Preserve ongoing work and human model choices; missing preparation proof does not block the established route. Preserve donor applicability and proof limits; sample success cannot certify reusable readiness. Apply bounded role adoption under context-routing.md: accepted project-local choices precede defaults; retain current orchestrator and control profiles during executor rollout, no reviewer-of-preparer. Read back actual participant model/effort, evidence and fallback at the natural safe checkpoint. Validate one suitable real task through existing independent acceptance with whole-chain spend and unknowns; do not interrupt work, repeat accepted checks or add a review only to prove switching.",
       "reuseBy": ["targetBundle", "worker", "routingProfile", "sourceRange", "verificationBoundary"],
       "workflow": "docs/workflows/context-preparation.md"
     },

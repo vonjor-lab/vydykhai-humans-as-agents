@@ -5,13 +5,9 @@ Read at adoption, new admission, product acceptance, an independent finding or d
 
 ## Select And Prove The Mode
 
-When adopting this operating contract, the setup owner must establish the actual
-supported mode and retain it in the existing activation record. Do not leave its
-selection or first observation for a later user reminder. Use the private runtime
-activation/startup route in the canonical source's `BOOTSTRAP.md` (not an installed
-product file), with trusted source identity, actual
-permissions, a finite model budget and an owned return path. Preserve in-flight
-results, accepted work, explicit pauses and spent allocations at a safe boundary.
+Role selection follows [bounded role adoption](context-routing.md#bounded-role-adoption). Reuse the existing independent reviewer role, not a new preparation-review layer. Independent reversible work may continue while review is pending; dependent result use, irreversible actions and final readiness still require their applicable approval. Asynchronous review does not grant authority or turn pending/UNKNOWN into acceptance. Keep the accepted control profile until its compatible owner-approved boundary and verify actual model/effort and evidence access, not merely a configured role label.
+
+When adopting this operating contract, the setup owner must establish the actual supported mode and retain it in the existing activation record. Do not leave its selection or first observation for a later user reminder. Use the private runtime activation/startup route in the canonical source's `BOOTSTRAP.md` (not an installed product file), with trusted source identity, actual permissions, a finite model budget and an owned return path. Preserve in-flight results, accepted work, explicit pauses and spent allocations at a safe boundary.
 
 Controlled means an actual selected protected host with independent REVIEW and
 registered command admission. A copied kit, process name, different actor strings,

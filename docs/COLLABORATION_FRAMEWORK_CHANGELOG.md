@@ -1,5 +1,15 @@
 # Collaboration Framework Changelog
 
+## 2.1.11 - 2026-11-03
+
+Adopt evidence-backed project-local role mappings through existing context routing:
+retain current owner/control profiles, use optional bounded preparation and one
+independent reviewer role, preserve better verified candidates and escalate by
+cause rather than a compulsory model ladder. Safe-boundary participant readback
+and one real task carry whole-chain accounting in existing adoption evidence.
+No runtime, controller, role hierarchy or automatic profile migration is added.
+Local protocol checks do not establish live adoption, universal quality or savings.
+
 ## 2.1.10 - 2026-11-01
 
 Clarify the existing orchestrator contract: publish one coherent current action,
