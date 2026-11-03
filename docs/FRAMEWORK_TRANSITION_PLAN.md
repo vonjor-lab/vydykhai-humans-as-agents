@@ -1,5 +1,28 @@
 # Framework Efficiency Transition
 
+## Reframe Before Correction 2026-11-03
+
+2.1.12 candidate replaces the late approach decision with a bounded causal
+reframe before the first substantive correction. One changed attempt retains
+acceptance, actual effects, best verified candidate and cumulative spend.
+Capability escalation is cause-qualified; evaluator/access failures do not earn
+a model upgrade. Existing task/consultation/review roles and adoption route only.
+Benefit: avoid paying for an unchanged approach before diagnosing it.
+Evidence and limits: sanitized historical cases motivate the instruction change;
+structural checks and scoped review do not prove live recovery or savings.
+Complexity: one existing routing section replaces duplicated late-repair wording;
+no skill, schema, runtime or controller. Verdict: simplify existing mechanism.
+Independent scoped review found no instruction defects; its stale role-test
+assertion was updated to check cause classification. Three paper scenarios cover
+evaluator error, unnecessary infrastructure and a genuine capability gap; these
+are not live model-recovery proof. Validator and structural route checks pass.
+Full suite: 1729 tests, 1624 pass, 104 skip, one staging refusal because a core
+link was edited during source capture. The refusal is preserved, not bypassed.
+With source edits stopped, the affected comparison/core/role/reframe tests pass:
+20 pass, one native-provider case skipped. No runtime change or old model rerun.
+Publication and real participant adoption require separate readbacks; no live
+installation, recovery or savings is claimed by these local checks.
+
 ## Bounded Role Adoption 2026-11-03
 
 2.1.11 candidate consolidates existing routing and explicit human overrides: one

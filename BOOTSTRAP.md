@@ -86,7 +86,7 @@ then proves actual initial, recurring, delivery and application receipts.
 
 Resolve capability-and-cost profiles from the current agent environment; do not equate price with task capability:
 
-1. `ORCHESTRATOR`: current flagship at `Low`; temporary `High` after a control failure survives one targeted correction, then `Low` after verified recovery. Use `effortPolicy`, not legacy profile fields.
+1. `ORCHESTRATOR`: current flagship at `Low`; temporary `High` after an evidenced control capability failure survives one reframed targeted correction, then `Low` after verified recovery. Use `effortPolicy`, not legacy profile fields.
 2. `DISCOVERY`: current flagship at `High` for unresolved solution work.
 3. `EXECUTION`: efficient bounded reasoning; map to `Low`. Use the lowest model proven for the task class, otherwise retain the accepted profile or explicit flagship fallback.
 4. `PREPARATION`: opt-in bounded retrieval at `Low`, using a proven low-cost model and `docs/workflows/context-preparation.md`. The orchestrator owns initial/supplementary assignments and review under `context-routing.md`; the executor consults it, not the preparer. Resolve current availability, evidence and fallback; never silently downgrade orchestration or unresolved discovery from flagship.

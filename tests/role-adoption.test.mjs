@@ -10,7 +10,8 @@ test("bounded role adoption retains independence, progress and full costs", asyn
   for (const phrase of ["accepted project-local model/effort mapping", "owner-approved boundary",
     "one existing independent reviewer role", "fresh review", "reviewer of the preparer",
     "better verified candidate", "UNKNOWN_NONZERO", "one suitable real task",
-    "Stop task follow-ups after actual", "environment, evaluator and access failures"])
+    "Stop task follow-ups after actual", "input/contract, evaluator, integration/environment",
+    "falsified hypothesis or missing input/access", "named reasoning/implementation capability gap"])
     assert.ok(route.includes(phrase), phrase);
   const control = await read("docs/workflows/independent-control.md");
   assert.match(control, /context-routing.md#bounded-role-adoption/);

@@ -26,3 +26,48 @@ test("safe-boundary adoption reuses existing owner and actual readback", async (
   assert.match(await read("docs/FRAMEWORK.md"), /current-action-and-bounded-repair/);
   assert.match(await read("docs/FRAMEWORK_RU.md"), /current-action-and-bounded-repair/);
 });
+
+// Instruction contracts only: these checks do not prove a model follows them.
+test("substantive failure routes to causal reframe before correction, not every red test", async () => {
+  const routing = await read("docs/workflows/context-routing.md");
+  const section = routing.split("## Reframe After Failure\n")[1].split("## Fit With Existing Work")[0];
+  for (const phrase of ["Before the first substantive correction", "Obvious local typos and expected red tests stay local",
+    "input -> transformation -> output -> consumer -> check", "at most two materially different alternatives",
+    "existing brief/checkpoint", "new causal hypothesis", "discriminating check, owner, budget/checkpoint and stop condition",
+    "not a changed approach", "not another analysis round"])
+    assert.ok(section.includes(phrase), phrase);
+  for (const file of ["docs/workflows/framework-orchestrator.md", "docs/workflows/module-delivery.md",
+    "docs/AGENTS_CORE.md"])
+    assert.match(await read(file), /reframe-after-failure/);
+});
+
+test("changed attempt preserves authority, evaluator integrity and independent acceptance", async () => {
+  const routing = await read("docs/workflows/context-routing.md");
+  for (const phrase of ["UNKNOWN is not replay authority", "does not authorize closed-module internals or new access",
+    "never bypass an adopted protection boundary", "preserving acceptance criteria and unaffected evidence",
+    "independent contract-based evidence and negative cases", "never a weaker criterion just to pass",
+    "cannot independently accept it", "Independent safe work continues", "explicit pauses retain human control"])
+    assert.ok(routing.includes(phrase), phrase);
+});
+
+test("capability escalation is not automatic and cannot reset a failed episode", async () => {
+  const routing = await read("docs/workflows/context-routing.md");
+  for (const phrase of ["one bounded changed attempt", "stop automatic redispatch for that cause",
+    "falsified hypothesis or missing input/access", "named reasoning/implementation capability gap",
+    "without a sacrificial weak attempt", "do not reset attempts or grant more budget",
+    "No permanent re-preparer", "not automatic promotion after any failure"])
+    assert.ok(routing.includes(phrase), phrase);
+  assert.doesNotMatch(routing, /if that fails the same success criterion, use High/);
+});
+
+test("reframe adoption requires natural application and retains missing proof, not manufactured retries", async () => {
+  const manifest = JSON.parse(await read("vydykhai.json"));
+  const requirement = manifest.adoptionRequirements.find(r => r.id === "resume-or-checkpoint");
+  for (const phrase of ["before the first substantive correction", "affected executor's instruction and brief application",
+    "one natural recovery", "do not manufacture a failure or repeat accepted work",
+    "Missing or stale application proof stays pending", "deferred behavioral proof, not demonstrated recovery",
+    "shared publication/memory route and participant readback", "no mandatory refactor"])
+    assert.ok(requirement.action.includes(phrase), phrase);
+  assert.equal(manifest.agentRoutingPolicy.effortPolicy.orchestrator.escalateWhen,
+    "control-failure-after-one-targeted-correction", "legacy policy marker remains compatible; routing qualifies its meaning");
+});

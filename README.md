@@ -10,9 +10,9 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `2.1.11`
+Current version: `2.1.12`
 
-Version `2.1.11` is a compatible opt-in update on `release/2.x`; stable `1.x` remains on `main`. Existing `1.x` projects require an explicitly approved major-version migration and independent adoption evidence; copying this source is not completed adoption. Host-bound fixed review parts use assigned model views while preserving the original host offer and global dependencies. Optional source snapshot capacity preserves history separately from native text acquisition. Original-source windows retain their independent coverage requirements; context limits remain visible discovery gaps, not proof. HEALTH retains validated whole-group checkpoints under a frozen basis and finite allocation. Trusted setup can repair an expired service profile without rewriting old allocations or host history; actual scheduled delivery/application still needs proof. Universal reliability, timeout repair and measured savings are not claimed.
+Version `2.1.12` is a compatible opt-in update on `release/2.x`; stable `1.x` remains on `main`. Existing `1.x` projects require an explicitly approved major-version migration and independent adoption evidence; copying this source is not completed adoption. Host-bound fixed review parts use assigned model views while preserving the original host offer and global dependencies. Optional source snapshot capacity preserves history separately from native text acquisition. Original-source windows retain their independent coverage requirements; context limits remain visible discovery gaps, not proof. HEALTH retains validated whole-group checkpoints under a frozen basis and finite allocation. Trusted setup can repair an expired service profile without rewriting old allocations or host history; actual scheduled delivery/application still needs proof. Universal reliability, timeout repair and measured savings are not claimed.
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 
@@ -131,7 +131,7 @@ Routine coordination is deliberately cheap. Current control facts live once in P
 
 Vydykhai keeps strong reasoning where decisions need it and can use a cheaper proven model for focused work:
 
-- **Orchestrator:** flagship/Low by default. If a control failure persists after one targeted correction, temporarily use High; return to Low after verified recovery.
+- **Orchestrator:** flagship/Low by default. If a control capability failure persists after one reframed targeted correction, temporarily use High; return to Low after verified recovery.
 - **Discovery:** flagship/High for research, product/architecture decisions, and unresolved UX or visual direction.
 - **Execution:** efficient bounded reasoning for a fully briefed task, mapped to `Low`, on a model proven for that kind of work.
 - **Preparation (optional):** a low-cost model finds relevant code and earlier decisions under the orchestrator's direction. A fresh executor receives a checked packet; later information gaps return through the orchestrator without restarting the work. Existing sufficient context is reused; small tasks do not need another research pass.

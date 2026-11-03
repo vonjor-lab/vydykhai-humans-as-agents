@@ -13,7 +13,7 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 
 ## Decisions
 
-- Before material resume or corrective redispatch, apply the existing workflow's Current action and bounded repair rule. Superseded history is evidence, not an executable queue; a repeated unchanged failure requires an approach decision, not another automatic attempt.
+- Before material resume or corrective redispatch, apply the existing workflow's Current action and bounded repair rule. Superseded history is evidence, not an executable queue; before the first substantive correction, route Reframe After Failure in `docs/workflows/context-routing.md`. One changed attempt precedes cause-based escalation, not another automatic attempt.
 
 - On activation or a material module-boundary decision, use `docs/workflows/module-delivery.md` as the shared operating contract. Locate the promised capability, distinguish closed consumption from development, retain the parent outcome through partial returns and route a concrete next action. No additional read on an unchanged continuation.
 - Before new dispatch or material resume, reconcile human decisions, current State, applicable memory and actual worker readiness. Route consume/change/create from the Module Contract: a consumer uses public contract and fixed release; new or changed boundaries need human agreement. Keep the task brief scoped and complete.

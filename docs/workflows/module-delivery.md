@@ -55,7 +55,7 @@ Preparation finds facts and routes under the orchestrator's question; it neither
 
 For new prepared implementation packets use [Module-Bound Context Packages](module-context.md). Retain accepted legacy workers until a safe rebrief; do not claim that their old packet enforces module access. An unsupported harness remains an explicit limitation, not an excuse to restart all tasks.
 
-First inspect already authorized sources and edit/test paths locally. An information gap that these sources cannot resolve returns a precise question and preserved progress to the orchestrator. Missing fact -> narrow preparation supplement; missing solution -> Discovery; environment failure -> scoped repair; authority conflict -> decision owner. Retain the existing outcome owner and Candidate. Repeated failure without new evidence changes the approach, not the size of the same search.
+First inspect already authorized sources and edit/test paths locally. An information gap that these sources cannot resolve returns a precise question and preserved progress to the orchestrator. Missing fact -> narrow preparation supplement; missing solution -> Discovery; environment failure -> scoped repair; authority conflict -> decision owner. Retain the existing outcome owner and Candidate. Before the first substantive correction, use [Reframe After Failure](context-routing.md#reframe-after-failure); a changed causal hypothesis and discriminating check precede one bounded attempt. Repeated failure without new evidence changes the approach, not the size of the same search.
 
 ## Prove The Promised Boundary
 

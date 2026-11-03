@@ -8,7 +8,7 @@ This implements the preparation branch of [Module Delivery](module-delivery.md) 
 ### Bounded Role Adoption
 Use the accepted project-local model/effort mapping before default role hints. Keep vendor ids outside managed files. Retain the installed orchestrator and independent control profiles during an executor rollout; change either only at its own compatible owner-approved boundary. An update is not permission to downgrade active workers. Record task class, actual model/effort, supporting evidence and fallback in the existing routing record. A bounded benchmark does not prove general architecture, visual quality or independent-review capability. Without comparable evidence, retain the accepted profile. Preparation is optional when current context is sufficient.
 Use one existing independent reviewer role for required PRE and final acceptance, with distinct producer/reviewer contexts and fresh review where the contract requires it. Do not add a reviewer of the preparer. The orchestrator checks packet sufficiency; the independent reviewer checks applicable source evidence and the actual result, not just the producer's summary. Different model names alone do not prove independence.
-Allow one targeted correction against concrete findings. If it does not improve the result, diagnose, rebrief or select a justified specialist instead of repeating a model ladder. Separate environment, evaluator and access failures from model failures. Retain the better verified candidate; the latest output does not supersede it by age. Escalation preserves current sources, negative findings, progress and prior spend.
+Before the first substantive correction, use [Reframe After Failure](#reframe-after-failure), not an automatic model ladder. Retain the better verified candidate; the latest output does not supersede it by age. Escalation preserves current sources, negative findings, progress and prior spend.
 At the owner's next natural safe checkpoint, apply through the ordinary updater and read back the installed kit and actual participant mapping. Do not interrupt an in-flight task or create a review solely to demonstrate a model switch. Validate on one suitable real task using existing acceptance, then retain its evidence limits. Account for preparation, execution, correction, review and coordination together; unknown usage stays UNKNOWN_NONZERO, not zero. Stop task follow-ups after actual acceptance and report delivery; do not periodically recheck an unchanged accepted result.
 
 - The orchestrator owns purpose, scope, constraints, required Module Contracts,
@@ -28,6 +28,16 @@ Inspecting already authorized sources and edit/test paths is local execution, no
 User communication remains through the orchestrator: explain the useful result
 and next step, not internal routing. Preparation uses the existing focused-task
 lease, Return Sync and cleanup, never a permanent new manager or Guard loop.
+
+## Reframe After Failure
+Trigger on a substantive failed outcome, unexpected integration failure, repeated cause or preparation growing without outcome progress. Obvious local typos and expected red tests stay local; they need no consultant or new approval. Pause only the failing branch, preserve actual effects and the best verified candidate; UNKNOWN is not replay authority.
+Before the first substantive correction, separate the accepted user outcome and necessary constraints from the chosen implementation. Trace only the relevant input -> transformation -> output -> consumer -> check, including adjacent public boundaries. Inspect authorized sources; broader diagnosis does not authorize closed-module internals or new access. Look wider, change less.
+Classify the cause: input/contract, evaluator, integration/environment, approach, model capability or authority. Challenge the failed assumption with evidence. Consider at most two materially different alternatives, including the existing supported route or removal of an unnecessary dependency; never bypass an adopted protection boundary.
+Keep six short fields in the existing brief/checkpoint, not a new report tree: outcome; observed failure and effects; failed assumption; new causal hypothesis; smallest changed plan and exclusions; discriminating check, owner, budget/checkpoint and stop condition. "Try harder" with the same plan is not a changed approach. Bound diagnosis within existing authority and budget; an unanswered boundary returns an exact gap, not another analysis round.
+The same executor may make one bounded changed attempt under existing authority, preserving acceptance criteria and unaffected evidence. Source-bound findings retain independent disposition; an evaluator repair needs independent contract-based evidence and negative cases, never a weaker criterion just to pass. Verify changed and retained behavior; advice or a written rebrief alone is not recovery.
+After that attempt fails, stop automatic redispatch for that cause. Distinguish a falsified hypothesis or missing input/access from a named reasoning/implementation capability gap. Only the latter justifies a stronger model/effort or specialist for that gap; preserve progress, original failure history and cumulative spend. A clear high-risk/capability gap may justify earlier escalation without a sacrificial weak attempt, within existing authority. Model, task id or wording changes do not reset attempts or grant more budget.
+Local evidence inspection stays with the task. A fresh perspective uses existing owner-routed CONSULT/Discovery or REVIEW, only when needed: give goal, facts, failed hypothesis and relevant originals, not a duty to defend the executor's plan. Preparation supplies facts, not design. The orchestrator routes the decision, not product implementation; a consultant who designs or implements the repair cannot independently accept it. No permanent re-preparer, extra reviewer, scheduler or mandatory model call.
+Use the existing Return/acceptance and memory route: close only on observed outcome, retain unresolved obligations, and end the failing episode with a supported next action or an exact owned wait. Independent safe work continues; material scope/trust changes and explicit pauses retain human control.
 
 ## Fit With Existing Work
 
@@ -104,16 +114,13 @@ nor intercept arbitrary native edits; ordinary owner/lease control still applies
 ## Cost Comparison
 
 Use `agentRoutingPolicy.effortPolicy` over legacy profile fields. Orchestration uses flagship/Low; solution Discovery uses flagship/High. These are harness mappings, not model ids.
-A control failure means evidenced wrong routing, lost obligation or invalid readiness judgment. Diagnose it and make one targeted correction; if that fails the same success criterion, use High for bounded recovery, not another blind Low retry.
+A control failure means evidenced wrong routing, lost obligation or invalid readiness judgment. Reframe before one targeted correction; if that fails the same success criterion because of a named capability gap, use High for bounded recovery, not another blind Low retry. The existing escalation marker denotes this cause-qualified correction, not automatic promotion after any failure.
 Network/access failures, authorized pauses, missing human decisions and a worker's failing test alone do not trigger this escalation. Safety/authority uncertainty stops the affected action immediately; never try an unsafe action to earn a higher effort.
 Record the failure, correction, recovery criterion and effective effort in the existing next-action/State record. A High recovery ends only after observable handoff/return and retained obligations pass the criterion, not a promise or rewritten plan; return to Low at the next safe boundary.
 If High recovery still fails, use the existing blocker/confirmed-rotation path; do not oscillate Low/High, add retries or override human control. A missing switch capability has an explicit supported fallback/checkpoint, never a claimed switch. Independent work remains usable.
 Effort escalation never resets Guard repair limits, leases or burn caps: after a circuit breaker, High may diagnose/rebrief within authority, not replay the stopped action. Existing independent Governor anomaly evaluation is unchanged; routine checks remain model-free.
 
-The orchestrator selects the lowest proven capable route for the task class,
-honoring explicit human choices and fallback. Prefer observed subscription usage
-when it is attributable; credit estimates are a secondary proxy, not allowance
-coefficients. Do not stop other work to measure account limits without permission.
+The orchestrator selects the lowest proven capable route for the task class, honoring explicit human choices and fallback. Prefer observed subscription usage when attributable; credit estimates are a secondary proxy, not allowance coefficients. Do not stop other work to measure account limits without permission.
 Until attributable allowance data exists, use dated credit-rate coefficients as the planning proxy, then calibrate against practical whole-chain usage and time to accepted result. Unknown costs remain unknown; no automatic model oscillation at checkpoints.
 
 Use `node scripts/vydykhai.mjs context-prepare estimate --input cost.json` for an
@@ -133,18 +140,8 @@ optional read-only comparison; it does not dispatch or authorize work. Input:
 }
 ```
 
-Numbers above are illustrative, not actual model rates. Rates are credits per
-million tokens with dated source and speed; record effort per stage. Include
-`preparation`, `execution`, `review`, `recovery`, `coordination`, and all repeated
-turns; an omitted category produces PARTIAL. An inapplicable category may have
-zero tokens with an explicit reason, never a fabricated measurement. Cached
-input is a subset of total input; reasoning output, if separately reported, is
-already included in output and must not be added again.
+Numbers above are illustrative, not actual model rates. Rates are credits per million tokens with dated source and speed; record effort per stage. Include `preparation`, `execution`, `review`, `recovery`, `coordination`, and repeated turns; an omitted category produces PARTIAL. An inapplicable category may have zero tokens with an explicit reason, never a fabricated measurement. Cached input is a subset of total input; separately reported reasoning output is already included in output and must not be added again.
 
-The calculation is `(input-cache)*inputRate + cache*cacheRate + output*outputRate`,
-divided by one million, summed over the chain. Only eligible routes enter the
-comparison; if any eligible route has unknown costs no cheapest route is claimed.
-`subscriptionUsage: UNKNOWN` stays explicit. Capability, rate freshness, estimates
-and the final decision remain the owner's responsibility, not this calculator's.
+The calculation is `(input-cache)*inputRate + cache*cacheRate + output*outputRate`, divided by one million, summed over the chain. Compare only eligible routes; unknown costs prevent a cheapest-route claim. `subscriptionUsage: UNKNOWN` stays explicit. Capability, rate freshness, estimates and the final decision remain the owner's responsibility, not this calculator's.
 
 The existing loop closes through source-backed context -> scoped work -> retained/new behavior and documentation review -> consumed Return -> integrated graph meaning and next action. Required docs/map links belong to the Candidate; required reusable memory stays an explicit owner obligation until integrated, not an implied side effect of delivery. Compare total effort and rework per accepted outcome, not activity counts. Repeated misses or rising coordination cost trigger existing Health Review/maintenance with proof of improvement on the original flow; no new timer, role or global memory rebuild.

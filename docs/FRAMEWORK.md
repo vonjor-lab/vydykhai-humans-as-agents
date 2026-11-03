@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 2.1.11 | Status: compatible opt-in operating core on the `release/2.x` channel. [Controlled-mode adoption](workflows/independent-control.md) is not established by copying the kit; unsupported hosts remain LIMITED.
+Version: 2.1.12 | Status: compatible opt-in operating core on the `release/2.x` channel. [Controlled-mode adoption](workflows/independent-control.md) is not established by copying the kit; unsupported hosts remain LIMITED.
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 
@@ -10,7 +10,7 @@ The framework comes from product meetings and practical work with several humans
 
 ## Purpose
 
-The framework applies when a shared goal can be shaped into durable briefs, bounded tasks, verifiable results, and accepted next steps. Collaborative vibe coding is its primary proven use; broader vibe work follows the same operating cycle. Ordinary delivery does not depend on completing experimental control infrastructure. The existing orchestrator keeps one current action, reuses unchanged independent evidence and revisits the approach after a failed targeted correction instead of automatically repeating it. History and negative findings remain available. See [current action and bounded repair](workflows/framework-orchestrator.md#current-action-and-bounded-repair).
+The framework applies when a shared goal can be shaped into durable briefs, bounded tasks, verifiable results, and accepted next steps. Collaborative vibe coding is its primary proven use; broader vibe work follows the same operating cycle. Ordinary delivery does not depend on completing experimental control infrastructure. The existing orchestrator keeps one current action, reuses unchanged independent evidence and reframes the cause before the first substantive correction, then permits one bounded changed attempt. Stronger-model escalation requires a named capability gap, not simply another failure. History and negative findings remain available. See [current action and bounded repair](workflows/framework-orchestrator.md#current-action-and-bounded-repair).
 
 Use Vydykhai when one person works through several AI contexts, or when several humans and AI agents work asynchronously on one product or shared outcome and can otherwise:
 
@@ -74,7 +74,7 @@ At first launch, unknown-readiness reconnect or a relevant update, the orchestra
 
 ## Role-Routed Agent Profiles
 Choose by proven capability and total cost, not price/version alone. An accepted project-local mapping takes precedence over defaults under [bounded role adoption](workflows/context-routing.md#bounded-role-adoption); retain active owner/control profiles during executor rollout. `selectionPolicy` and `effortPolicy` are authoritative defaults; legacy model/profile fields remain for old updaters, not current dispatch:
-- `ORCHESTRATOR`: current flagship at `Low` for compass, memory, routing, task design, consultation, integration, and next-best-action. An evidenced control failure still present after one targeted correction temporarily uses `High`; return to `Low` at a safe boundary after verified recovery. Follow the bounded recovery rules in `context-routing.md`.
+- `ORCHESTRATOR`: current flagship at `Low` for compass, memory, routing, task design, consultation, integration, and next-best-action. An evidenced control capability failure still present after one reframed targeted correction temporarily uses `High`; return to `Low` at a safe boundary after verified recovery. Follow the bounded recovery rules in `context-routing.md`.
 - `DISCOVERY`: current flagship at `High` for a solution that is not yet defined: bounded research, product or architecture choices, unresolved UX/UI or visual direction, and experiment design. Cheap preparation may supply evidence, not replace this judgment.
 - `EXECUTION`: efficient bounded reasoning for a defined solution and acceptance boundary; map to `Low`, on the lowest model proven for the task class.
 - `PREPARATION`: opt-in bounded retrieval, mapped to `Low`, on a proven low-cost model. The orchestrator assigns and reviews it under `context-routing.md`: reuse sufficient context, otherwise initial source-backed handoff to a fresh executor; later gaps return through the orchestrator for a supplement to the same worker. No inherited search history, new design authority or executor-managed preparation.
