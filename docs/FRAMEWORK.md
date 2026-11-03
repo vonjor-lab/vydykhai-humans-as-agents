@@ -1,6 +1,6 @@
 # Vydykhai: Team Autopilot for People and AI
 
-Version: 2.1.12 | Status: compatible opt-in operating core on the `release/2.x` channel. [Controlled-mode adoption](workflows/independent-control.md) is not established by copying the kit; unsupported hosts remain LIMITED.
+Version: 2.1.13 | Status: compatible opt-in operating core on the `release/2.x` channel. [Controlled-mode adoption](workflows/independent-control.md) is not established by copying the kit; unsupported hosts remain LIMITED.
 
 Vydykhai is a team autopilot for people working on one project with AI. It helps a solo builder across several AI sessions and a distributed team across different computers, models, and agent environments turn an unclear goal into a shared compass, split work without losing coherence, preserve emerging ideas, accept results, and reconverge around the next step. People remain agents of meaning and judgment, while their AI orchestrators maintain the shared picture, sequence, alignment, acceptance, and next-best-action. Operationally, Vydykhai is delivered as a lightweight collaboration framework that the agents execute after setup; people do not need to learn or manually operate its internal workflows.
 
@@ -9,6 +9,8 @@ Vydykhai is a team autopilot for people working on one project with AI. It helps
 The framework comes from product meetings and practical work with several humans, repositories, branches, AI agents, long-running tasks, lab experiments, failed handoffs, and expensive restarts. Those lessons shaped the rules below; project-specific details do not belong in this repository.
 
 ## Purpose
+
+V2 prioritizes sustainable growth through accepted, composable modules: new capabilities reuse fixed public input/output contracts instead of reloading proven implementations. A consumer needs the selected release, semantics, applicable limits and connection evidence; an authorized maintainer additionally reads the relevant implementation. Composites own their wiring and combined proof. A skill can teach use of a module but cannot establish its readiness. The existing independent review protects result, direction and project health, including erosion of these boundaries and resource growth. Task completion stops its retries, not active-project Health obligations. See the shared [Module Delivery Cycle](workflows/module-delivery.md); no extra role or mandatory project rewrite is introduced.
 
 The framework applies when a shared goal can be shaped into durable briefs, bounded tasks, verifiable results, and accepted next steps. Collaborative vibe coding is its primary proven use; broader vibe work follows the same operating cycle. Ordinary delivery does not depend on completing experimental control infrastructure. The existing orchestrator keeps one current action, reuses unchanged independent evidence and reframes the cause before the first substantive correction, then permits one bounded changed attempt. Stronger-model escalation requires a named capability gap, not simply another failure. History and negative findings remain available. See [current action and bounded repair](workflows/framework-orchestrator.md#current-action-and-bounded-repair).
 
@@ -300,8 +302,6 @@ If the previous orchestrator is unavailable, mark recovery as incomplete, preser
 - Prefer next-best-action over status-only reporting.
 - Do not switch active orchestrators without a Rotation Memory Packet, candidate Memory Coverage Check, and explicit human confirmation.
 ## Skills And Human Interface
-
-Canonical repo-scoped skills:
 
 - `$project-launch`: activate a project and create its operating brief.
 - `$framework-orchestrator`: coordinate, dispatch, supervise, integrate, and choose next-best-action through hot or cold path.

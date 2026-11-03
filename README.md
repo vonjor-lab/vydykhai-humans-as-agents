@@ -10,9 +10,15 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `2.1.12`
+Current version: `2.1.13`
 
-Version `2.1.12` is a compatible opt-in update on `release/2.x`; stable `1.x` remains on `main`. Existing `1.x` projects require an explicitly approved major-version migration and independent adoption evidence; copying this source is not completed adoption. Host-bound fixed review parts use assigned model views while preserving the original host offer and global dependencies. Optional source snapshot capacity preserves history separately from native text acquisition. Original-source windows retain their independent coverage requirements; context limits remain visible discovery gaps, not proof. HEALTH retains validated whole-group checkpoints under a frozen basis and finite allocation. Trusted setup can repair an expired service profile without rewriting old allocations or host history; actual scheduled delivery/application still needs proof. Universal reliability, timeout repair and measured savings are not claimed.
+Version `2.1.13` is a compatible opt-in update on `release/2.x`; stable `1.x` remains on `main`. Existing `1.x` projects require an explicitly approved major-version migration and independent adoption evidence; copying this source is not completed adoption.
+
+Цель проекта задает человек. Цель оркестратора - доводить ее до проверенных, сохраненных результатов с разумным общим расходом, не выполняя работу вместо исполнителей. Проект растет через готовые модули и их публичные контракты, а не через бесконечное расширение контекста. Перед содержательным исправлением разбирается причина неуспеха; одна измененная попытка предшествует обоснованной эскалации. Независимый контроль проверяет результат и направление, Health Review сохраняет обязательства по здоровью проекта и организации работы. Завершенная задача не запускается снова, но здоровье активного проекта не отменяется.
+
+The human owns the project goal. The orchestrator organizes verified, retained outcomes at a reasonable whole-chain cost; focused executors do the work. Scale through accepted modules and public contracts, not ever-growing context. Diagnose before substantive repair, allow one changed attempt, then escalate by cause. Independent review checks results and direction; Health Review retains project and orchestration health obligations after task completion. Existing evidence and failures survive changes.
+
+These are operating contracts, not universal guarantees. Isolated evidence does not prove unattended operation, production resource telemetry, every host's enforcement, timeout elimination or measured savings. Actual participant adoption and supported observation/delivery must be demonstrated; unavailable coverage stays explicit. Experimental strict control infrastructure is not a prerequisite for ordinary delivery, and adopted safety is never silently bypassed.
 
 License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licensing](COMMERCIAL-LICENSING.md) is available.
 

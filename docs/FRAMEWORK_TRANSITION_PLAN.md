@@ -1,5 +1,62 @@
 # Framework Efficiency Transition
 
+## Isolated Modular Health Cycle And 2.1.13
+
+User-authorized qualification completed one new synthetic consumer cycle, not a
+repeat of historical model or module experiments. Two fixed public dependencies
+remained opaque to the reviewer and repair executor and byte-identical throughout.
+Independent review found two seeded composite violations: task DONE suppressed
+project Health, and inactive branches overrode the child's preservation policy.
+One separate executor reframe/repair removed those overrides without changing
+the contract or children. Final independent review: ALLOW, 11/11 criteria,
+including previously unreached empty input. The initial failed review and its
+unsupported storage-representation assumption remain retained, not rewritten.
+
+The fixture owner applied the bound result through existing module-access,
+Return Sync/Route and checkpoint APIs, then cold-read retained memory/findings.
+24 simulated unchanged ticks produced no model call or state write; separately
+due project Health remained visible and explicit pause retained its obligation.
+This is manually driven isolated integration, not unattended orchestration,
+authenticated delivery, physical confinement or production resource telemetry.
+The framework instruction architecture is coherent under those stated limits;
+neither this case nor a version number establishes universal reliability/savings.
+
+The new 2.1.12-to-2.1.13 installer check preserved synthetic memory, negative
+findings, pause and known/unknown spend. An incorrect evaluator assumption about
+a fresh baseline's completed release review failed after successful installation;
+only remaining readback was corrected. No reinstall, refund or rewritten history.
+Prior 39 focused checks are reused. Only the two changed release-list assertions
+were rerun; validator/diff pass. Per the no-repeat request, no local full-suite
+replay; normal release CI remains enabled and must pass before public tagging.
+Actual per-role usage and Source overhead are retained in private session-based
+accounting through explicit cutoffs; currency/credits and later tail are unknown.
+
+Evolution gate: benefit is clear modular growth and applied independent feedback;
+complexity is existing instructions/adoption only, with no runtime/schema/role.
+Verdict: ship the authorized compatible instruction patch, not a new generation.
+Publication readback and actual participant adoption remain separate obligations.
+
+## Modular Growth Priority 2026-11-03
+
+Unreleased clarification on 2.1.12: accepted contract-bound modules are V2's
+scaling strategy, not a secondary formatting convention. Existing preparation,
+composite contracts and independent consumer proof already cover this behavior;
+do not create another skill, control layer or mandatory packaging campaign.
+Benefit: growing products reuse accepted capabilities without reopening their
+internals; existing Health Review handles evidenced boundary erosion and retains
+project obligations after task DONE. Existing module-boundaries/checkpoint-review
+adoption routes own scoped repair or NO_CHANGE and participant application.
+Evidence: 39 focused instruction/core/module-access/module-transition/composite
+tests pass, including two new structural assertions; independent static review
+found no actionable issues. Initial validator rejected document line growth;
+redundant wording/wrapping was compacted without raising limits. Final validator
+and diff check pass. No benchmark, paid experiment or product installation.
+Limits: these tests do not prove live autonomous health, resource telemetry,
+economic benefit or cross-host enforcement. Full release suite is not run for
+this uncommitted clarification. Complexity: existing rules only; no schema or
+runtime change. Verdict: simplify; retain source clarification for the next
+authorized release, do not publish a new version merely for restated intent.
+
 ## Reframe Before Correction 2026-11-03
 
 2.1.12 candidate replaces the late approach decision with a bounded causal

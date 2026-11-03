@@ -176,3 +176,26 @@ test("new module route discloses legacy and host limits rather than claiming uni
     "safe rebrief", "not a global project stop"]) assert.ok(doc.includes(phrase), phrase);
   for (const file of ["docs/FRAMEWORK.md", "docs/FRAMEWORK_RU.md"]) assert.match(await source(file), /module-delivery\.md/);
 });
+
+test("V2 purpose prioritizes contract-based scaling and preserves project health after task completion", async () => {
+  const core = await source("docs/AGENTS_CORE.md");
+  assert.match(core, /Scale through reusable contract-bound modules/);
+  assert.match(core, /project-health obligations beyond task completion/);
+  const en = (await source("docs/FRAMEWORK.md")).split("## Purpose")[1].split("## Diagnosis")[0];
+  const ru = (await source("docs/FRAMEWORK_RU.md")).split("## Назначение")[1].split("## Диагноз")[0];
+  assert.match(en, /composable modules/);
+  assert.match(en, /skill can teach use of a module but cannot establish its readiness/);
+  assert.match(ru, /публичные контракты входа-выхода/);
+  assert.match(ru, /Скилл может обучать использованию модуля, но не доказывает его готовность/);
+  for (const text of [en, ru]) assert.match(text, /module-delivery\.md/);
+});
+
+test("boundary health closes on consumer evidence, not a new layer or indiscriminate source scan", async () => {
+  const cycle = (await source("docs/workflows/module-delivery.md")).replace(/\s+/g, " ");
+  for (const phrase of ["boundary-health signals", "authorized maintainer work is not a violation",
+    "context size alone proves neither waste nor safety", "subsequent independent public-only connection",
+    "preserve unchanged child releases and findings", "Do not launch a packaging campaign",
+    "Task DONE ends its retries and temporary follow-up, not active-project Health",
+    "project pause/archive is a separate decision", "no extra timer"])
+    assert.ok(cycle.includes(phrase), phrase);
+});

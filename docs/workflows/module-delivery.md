@@ -1,6 +1,6 @@
 # Module Delivery Cycle
 
-Purpose: accumulate accepted product capability while reducing repeated context, rework and total allowance per accepted outcome. Modularity is a standing acceptance constraint, not a competing product DOD. This is the shared decision contract for shaping, preparation, Discovery, Lab, execution and acceptance; their event workflows own the mechanics. Read it on activation or a material boundary decision, not on every continuation.
+Purpose: accumulate accepted product capability while reducing repeated context, rework and total allowance per accepted outcome. Contract-based modular composition is the scaling strategy; modularity is a standing acceptance constraint, not a competing product DOD. This is the shared decision contract for shaping, preparation, Discovery, Lab, execution and acceptance; their event workflows own the mechanics. Read it on activation or a material boundary decision, not on every continuation.
 
 ## One Outcome, One Cycle
 
@@ -96,6 +96,8 @@ Protect planned delivery capacity even after renewal. Low remaining capacity def
 
 Use maps, public contracts, changed task briefs/Returns and acceptance/access metadata, not closed-module source or a full inventory crawl. Check course, module boundaries, hidden intervention, repeated consumer context, current docs and due exceptions, including unfinished update repairs and participant sync. Reuse accepted unchanged evidence. A clean result stays quiet; an evidenced gap gets one owned proposal with benefit, cost/risk, preserved modules, acceptance and safe checkpoint. Reuse an existing owner.
 
+Treat repeated producer-source retrieval by consumers, private imports, copied algorithms, expanding dependency context and repeated connection repairs as boundary-health signals. Compare with the accepted contract and actual task evidence before judging: authorized maintainer work is not a violation, and context size alone proves neither waste nor safety. Route a proven gap to the existing owner for a contract/adapter repair or an approved boundary change; verify a subsequent independent public-only connection and affected consumers before closing it. Reuse applicable evidence, preserve unchanged child releases and findings, and account for diagnosis, repair and review together. Do not launch a packaging campaign, recursively inspect healthy children or invent a new module per helper.
+
 Already approved work proceeds without another permission. New refactor scope, budget or priority requires the human's choice. Guard remains liveness-only: no extra timer, background model wakeup, replay of missed weeks or messages during unchanged waits. Explicit pauses remain paused. On resume or acceptance, continue the product plan, not maintenance for its own sake.
 
 ## Independent Course Review
@@ -112,8 +114,8 @@ Execution Leases and Detours And Recall. A supported event/checkpoint route expo
 missing Returns and unsettled checkpoints, not omitted semantic obligations.
 Enroll Health Review with its own accepted consideration deadline and retained
 source in the existing control route, independently of the product next action.
-Product completion may constrain risky repair, not indefinitely defer considering
-the obligation and proposing its plan. A changed deadline needs a sourced decision;
+Product completion may constrain risky repair, not indefinitely defer considering the obligation and proposing its plan.
+Task DONE ends its retries and temporary follow-up, not active-project Health; project pause/archive is a separate decision that preserves outstanding obligations. A changed deadline needs a sourced decision;
 explicit pauses and budget limits remain binding. Prove that route at adoption;
 otherwise declare active-session/manual coverage.
 Retain the obligation and explicit pauses; no semantic Guard or extra watcher.
@@ -141,10 +143,8 @@ retained owners and deadlines. Recurrence without new evidence retains history a
 not the retry count or number of judges. Escalate unresolved disagreement to the
 existing decision authority; preserve unrelated authorized work.
 
-End each bounded review episode; keep findings in durable work/memory. A recheck
-uses the original criterion and exact repair delta in a fresh context when needed.
+End each bounded review episode; keep findings in durable work/memory. A recheck uses the original criterion and exact repair delta in a fresh context when needed.
 A future IDEA is optional; promised reconsideration is a COMMITMENT. At its
 condition, retrieve its meaning and record considered/accepted/rejected or explicit
 deferral with owner and next condition, without a human reminder of its id.
-Latest authorized decisions explicitly supersede earlier rules; independent
-review must not enforce obsolete requirements.
+Latest authorized decisions explicitly supersede earlier rules; independent review must not enforce obsolete requirements.
