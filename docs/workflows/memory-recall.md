@@ -117,3 +117,33 @@ credential reset, changed roles, or reuse of expired one-time permissions.
 Independent preparation review checks the source-to-packet application, not
 merely the presence of a pointer. Shared integration and subsequent ordinary
 retrieval are required before a missing-memory finding is closed.
+
+## Working Selection And Context Pivot
+
+Durable memory is retained; only the working selection changes. Use the existing preparation packet/lease, not another graph, role or controller. Record the current
+question, anchors and source watermark; applicable obligations and exact source references; unresolved gaps; and the next action. Keep parked references with a
+reason, not their full bodies. A locator cannot certify that all meaning is known.
+
+Keep two views in this same packet: semantic meaning (goal, rationale, constraints, rejected approaches and commitments), and material selection (contracts, files, tests and evidence). Link meaning to artifacts and checks; retain applicable meaning when replacing material. Neither view is a second memory store.
+
+## Memory Understanding Escalation
+
+The first human hint that "we discussed this" triggers existing Memory Reflection, not a second reminder requirement. Treat it as evidence of a possible miss, not proof of a particular historical decision or new authority. A contradiction, missing prerequisite, unexpected consumer or repeated failed assumption also triggers reflection before the affected correction.
+Record the hint, affected question, anchors and source watermark in the existing checkpoint. Distinguish ABSENT, RETRIEVAL_MISS, APPLICATION_MISS and VERIFICATION_MISS; also label unread, unavailable and conflicting evidence. Pause only decisions depending on the missing meaning; independent work continues.
+First trace the hinted subject through purpose, decisions and their reasons, alternatives, constraints, prerequisites, consumers and supersession to original source ranges. Then expand only adjacent clusters implicated by a discovered gap or contradiction. Check all applicable relations of that causal boundary, not every node in the project. Public contracts remain the boundary for consumers; never retrieve secret values.
+Recover a source-backed Before / Now / Why / scope and the smallest changed action. If an authorized bounded pass cannot establish meaning, return the exact unresolved source or decision and owner; do not loop searches or ask the human to retell accessible history. Ask only for unavailable evidence or a genuinely unresolved decision.
+If the same miss recurs after a claimed repair, reopen that incident and inspect its source -> graph -> retrieval -> application -> verification chain. Use existing owner-routed Discovery/REVIEW for an independent interpretation when needed; the repairer cannot accept their own repair. Higher effort requires a named reasoning gap, not merely more files. Attempts and costs do not reset; no new consultant role or polling loop.
+Repair the failed link, alias, scope, supersession or application rule in a side-by-side delta through the existing integration owner. Do not add duplicate reminders or a new graph node when the graph was already correct. Preserve original evidence, uncertainty, negative findings, authority and pending questions. A hint does not authorize changing an accepted decision.
+Close only after stored readback, independent source-based checking of the affected meaning, and ordinary unhinted retrieval plus correct application of that meaning. Exercise one natural paraphrase or adjacent consumer where applicable; retain unrelated passed evidence instead of rerunning the suite. Written repair alone is not closure; until integration/application is observed, keep the gap owned and open.
+Routine local repair uses existing publication authority; full graph migration and orchestrator rotation retain their human-confirmed cutover. No whole-history inventory is required for a localized miss. Broader reconstruction needs evidenced wider coverage failure. This is event-driven memory health within existing Health Review, not a promise of perfect recall.
+
+Record a retained/added/parked delta in that same packet. Parking does not delete memory, supersede a decision or discharge an obligation. Applicable constraints, negative findings, human questions, authority, unresolved effects and independent review requirements remain active; exclude them only with source-backed resolved applicability. Preserve protected-pointer metadata, never secret values. Repair a missing durable link through the existing owner and shared integration route.
+
+Changing focus cannot remove prior messages from a host's input. At an authorized safe boundary use supported compaction, or an authorized fresh executor with the
+same logical task and saved checkpoint; never replay an uncertain action or leave
+competing executors. Retain effects, pending questions, spend and reviewer identity.
+The recipient retrieves the current required sources and reads back the next action
+before executing. Orchestrator rotation retains its separate migration approval.
+Compare actual input after the pivot using existing context measurement; a smaller packet alone proves no saving. Repair retrieval before escalating capability;
+use only task-proven preparation models and retain independent source selection.
+No background model polling or new automatic dispatch is introduced by this rule.

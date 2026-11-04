@@ -81,7 +81,7 @@ Respect direct human control: a supplement supplies facts, not a new direction.
    full searches or delivery as if complete. Reuse valid findings on fallback.
 2. A new implementation starts in a fresh executor without the preparer's transcript.
    The executor reads/acknowledges and starts authorized work in the same turn.
-   Reuse the same worker for later supplements; do not replay finished work.
+   Reuse the same worker for later supplements unless the authorized safe-boundary context pivot in `memory-recall.md` requires a fresh executor; preserve logical task, effects and spend, never replay finished work.
    Preparation for a manager/Discovery decision returns scoped evidence to that
    existing owner instead; it does not create an implementation task prematurely.
 3. At a real gap, the executor reports the exact missing fact, affected operation
@@ -91,7 +91,7 @@ Respect direct human control: a supplement supplies facts, not a new direction.
 4. The orchestrator approves a narrow supplementary question. The preparer
    returns an evidence delta; the owner incorporates it into a complete revised
    package retaining prior applicable constraints. A delta alone is not the task.
-5. Confirm that package in a fresh output directory, then the same worker reads
+5. Confirm that package in a fresh output directory, then the authorized current worker reads
    and acknowledges it, continues, verifies retained and new behavior, and sends
    the current-task Return Sync. No new human checkpoint for an already authorized
    internal handoff. Changed scope/authority needs the ordinary rebrief instead.

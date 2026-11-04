@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { canonicalJson, sha256, checkPreparedContext } from "./memory-brief.mjs";
 import { parseContextJson, runContextTransition, artifactHash, checkExampleOracle } from "./context-run.mjs";
 import { prepareNavigation, checkPreparationAssignment } from "./context-navigation.mjs";
-import { estimateContextRoutes } from "./context-cost.mjs";
+import { estimateContextRoutes, measureContextUse } from "./context-cost.mjs";
 import { moduleAccessPolicy, moduleExampleIds } from "./module-access.mjs";
 import { prepareAlignment } from "./context-alignment.mjs";
 
@@ -174,12 +174,13 @@ export async function prepareContext(args, services = {}) {
   let unlock;
   try {
     const [mode, ...rest] = args, options = {};
-    need(["plan", "confirm", "read", "ack", "bind", "estimate"].includes(mode) && rest.length % 2 === 0, "PREPARATION_ARGUMENTS_INVALID");
+    need(["plan", "confirm", "read", "ack", "bind", "estimate", "measure"].includes(mode) && rest.length % 2 === 0, "PREPARATION_ARGUMENTS_INVALID");
     for (let i = 0; i < rest.length; i += 2) { need(/^--(input|output|owner|decision|worker|evidence|event)$/.test(rest[i]) && !Object.hasOwn(options, rest[i]), "PREPARATION_ARGUMENTS_INVALID"); options[rest[i]] = rest[i + 1]; }
-    const allowed = { plan: ["--input", "--output"], confirm: ["--output", "--owner", "--decision"], read: ["--output", "--worker"], ack: ["--output", "--worker", "--evidence"], bind: ["--output", "--owner", "--event"], estimate: ["--input"] };
+    const allowed = { plan: ["--input", "--output"], confirm: ["--output", "--owner", "--decision"], read: ["--output", "--worker"], ack: ["--output", "--worker", "--evidence"], bind: ["--output", "--owner", "--event"], estimate: ["--input"], measure: ["--input"] };
     need(keys(options, allowed[mode]), "PREPARATION_ARGUMENTS_INVALID");
     const root = await realpath(process.cwd()), output = options["--output"];
     if (mode === "estimate") return estimateContextRoutes(await read(root, options["--input"]));
+    if (mode === "measure") return measureContextUse(await read(root, options["--input"]));
     need(typeof output === "string" && /^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/.test(output) && !output.split("/").some(x => x === "." || x === ".."), "PACKAGE_OUTPUT_INVALID");
     const dir = path.resolve(root, output);
     need(await realpath(path.dirname(dir)) === path.dirname(dir), "PACKAGE_PATH_INVALID");

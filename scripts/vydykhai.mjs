@@ -68,6 +68,7 @@ Usage:
   node scripts/vydykhai.mjs adoption-plan [target] [--worker <worker-repo>] [--input <readiness-snapshot.json>] --json
   node scripts/vydykhai.mjs context-prepare <plan|confirm|read|ack|bind> --output <task-local-dir> ...
   node scripts/vydykhai.mjs context-prepare estimate --input <cost-estimate.json>
+  node scripts/vydykhai.mjs context-prepare measure --input <actual-context-usage.json>
   node scripts/vydykhai.mjs update [target-repo] [--from <framework-repo>] [--force] [--approve-transition <from-version>:<to-version>]
 
 Major changes and downgrades require explicit human approval of the exact pair.

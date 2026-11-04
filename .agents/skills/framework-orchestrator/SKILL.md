@@ -13,6 +13,8 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 
 ## Decisions
 
+- On the first human hint of forgotten discussion, route `docs/workflows/memory-recall.md#memory-understanding-escalation` before the affected correction. Recover rationale from sources, repair the failed link and prove retrieval/application; do not require a repeated hint, rebuild all memory or escalate the executor automatically.
+
 - Before material resume or corrective redispatch, apply the existing workflow's Current action and bounded repair rule. Superseded history is evidence, not an executable queue; before the first substantive correction, route Reframe After Failure in `docs/workflows/context-routing.md`. One changed attempt precedes cause-based escalation, not another automatic attempt.
 
 - On activation or a material module-boundary decision, use `docs/workflows/module-delivery.md` as the shared operating contract. Locate the promised capability, distinguish closed consumption from development, retain the parent outcome through partial returns and route a concrete next action. No additional read on an unchanged continuation.
@@ -27,4 +29,4 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 
 Keep the whole preparation plan visible, not just the current product task. Under the activation workflow, every unresolved inventory area belongs to one live or explicitly waiting step; grouped areas may share one existing owner. On partial Return, carry the remaining areas and their review checkpoint forward before closing maintenance. Reuse accepted mapping; do not rescan the project or read accepted module internals merely to consume a public release.
 
-On an unchanged hot path, answer a direct user question if asked, then leave Project State untouched. For a material control decision, publish the changed next action or real wait through the existing guarded State publication and exact readback gate in `docs/workflows/framework-orchestrator.md`. Keep a human checkpoint only for a real unresolved authority or decision boundary; do not re-ask permission for accepted work.
+On an unchanged hot path, answer a direct user question if asked, then leave Project State untouched. For a material control decision, publish the changed next action or real wait through the existing guarded State publication and exact readback gate in `docs/workflows/framework-orchestrator.md`. Keep a human checkpoint only for a real unresolved authority or decision boundary; do not re-ask permission for accepted work. Before ending after dispatch, apply `production-continuation.md#terminal-delivery-before-turn-release`: qualified completion/error delivery or bounded native waiting, one recovery per failed turn, and no repeat of a pending human question. Unproven host wake-up remains LIMITED.

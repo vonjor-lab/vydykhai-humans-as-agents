@@ -114,19 +114,17 @@ baseline, not a ban on the authorized edit. After edits use current-code
 The complete original semantic classifications remain mandatory; navigation is
 not a replacement for the Memory Brief, source coverage or owner confirmation.
 
-At the initial approved handoff, launch a fresh executor with task and checked packet, not
-the preparer's history. Switching models in the same conversation does not
-remove that history. Verify actual host read/write readiness on the normal tool
-path, then worker read/ack and first authorized action; no ACK-only pause.
-An unavailable fresh-context capability is an explicit fallback, not a false
-freshness claim. Later gaps go through the orchestrator to preparation and back to the same worker with retained progress. Match the final receipt to the current task/expected artifact
-before routing its next action; an old successful report cannot close new work.
+At the initial approved handoff, use a fresh authorized execution context with the checked packet, not preparer history. Model switching in the same conversation does not remove history. Verify native readiness, packet read/ack and first action; no ACK-only pause. Unsupported fresh-context capability stays LIMITED. A gap returns to preparation and the same logical task; it does not require an immortal conversation. At a safe boundary an authorized successor may continue that task, preserving its identity, candidate and spend, with the old executor inactive. Never create competing workers or rotate an in-flight effect. Orchestrator rotation retains its separate human-confirmed migration rule.
 
-Record native per-role input/cached/output, elapsed time, expanded reads, review,
-rescue and retained/new test results. Include preparation overhead; cached input
-and reasoning output are subsets, not additional totals. Credit prices do not
-prove subscription allowance multipliers; concurrent account activity prevents
-causal attribution. No hidden quota-measurement pause or mandatory control arm.
+Keep durable memory separate from working input. Use the [working-selection and context-pivot protocol](memory-recall.md#working-selection-and-context-pivot) when the current selection is incomplete or wrong, not only oversized. Retrieve graph anchors for the current goal and module, then applicable contracts, negative findings, authority and exact source selectors. Archive access remains available; no whole-history export, recursive child implementation or global graph rebuild by default. Every expansion names a concrete unresolved question and stops when answered. Full logs/pins remain artifacts; return outcome, changed identities, failure evidence and next action, not repeated full manifests. Semantic obligations must not be dropped to meet a token target.
+
+Before dispatch choose a task-class input budget and record its rationale in the existing packet/lease; no universal hard cap. Include host instructions/history/tool overhead, not only capsule bytes. If native telemetry is absent, economy is UNPROVEN, not zero. At the first action and material repair/role boundary compare actual request input with that budget. Overshoot triggers the existing safe-boundary reframe: identify inherited history, oversized outputs, unnecessary retrieval or genuinely required complexity; compact/rebind an authorized context or record a justified exception. Do not interrupt DOD work, truncate required evidence or add a timer/model check for every tool call.
+
+Use `context-prepare measure --input usage.json` for a read-only assessment. Input `context.usage.v1` has `owner`, `taskId`, positive `maxInputTokens`, boolean `complete`, `unknownCosts`, and `samples`. Each sample has a unique request `id`, `role` (preparation/execution/review/recovery/coordination), actual `model`, `effort`, `evidence`, `inputTokens`, `cachedInputTokens`, `outputTokens`. Supply deduplicated per-request telemetry, never cumulative session totals; merge rotations without double counting. Completeness is a caller declaration. The command cannot authenticate telemetry or shrink the host context; an alert is not adoption or authority.
+
+The migration packet retains goal/acceptance, current candidate/effects, unresolved UNKNOWN, applicable negative findings, human questions/pauses, model/fallback authority, independent reviewer, cumulative usage, remaining step and Return route. The recipient proves retrieval/application against these sources before the old context is released; a small summary alone is not coverage. Preparation may use the lowest proven capable factual model; uncertainty returns to the owner, not a cheaper invented decision. Preserve the accepted reviewer profile. A model switch alone earns no context-saving claim.
+
+Record all roles, input/cached/output, elapsed time, retrieval and repair to accepted outcome, including preparation overhead. Cached input and reasoning output are subsets. Separate monetary cost, credit proxy and subscription allowance; concurrent activity prevents causal quota attribution. Compare a suitable retained baseline and the next real task with quality/coverage and retained behavior; without comparability, report measured size only, not percentage savings. No mandatory repeat experiment. Match the final receipt to current task/artifact; accepted installation does not establish this economy.
 
 ## Optional lifecycle adapter
 

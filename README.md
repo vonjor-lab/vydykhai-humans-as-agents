@@ -10,9 +10,9 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `2.1.13`
+Current version: `2.1.14`
 
-Version `2.1.13` is a compatible opt-in update on `release/2.x`; stable `1.x` remains on `main`. Existing `1.x` projects require an explicitly approved major-version migration and independent adoption evidence; copying this source is not completed adoption.
+Version `2.1.14` is a compatible opt-in update on `release/2.x`; stable `1.x` remains on `main`. Existing `1.x` projects require an explicitly approved major-version migration and independent adoption evidence; copying this source is not completed adoption.
 
 Цель проекта задает человек. Цель оркестратора - доводить ее до проверенных, сохраненных результатов с разумным общим расходом, не выполняя работу вместо исполнителей. Проект растет через готовые модули и их публичные контракты, а не через бесконечное расширение контекста. Перед содержательным исправлением разбирается причина неуспеха; одна измененная попытка предшествует обоснованной эскалации. Независимый контроль проверяет результат и направление, Health Review сохраняет обязательства по здоровью проекта и организации работы. Завершенная задача не запускается снова, но здоровье активного проекта не отменяется.
 

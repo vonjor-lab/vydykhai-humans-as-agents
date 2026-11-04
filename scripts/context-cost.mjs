@@ -7,6 +7,42 @@ const nonnegative = v => Number.isFinite(v) && v >= 0;
 const tokens = v => Number.isSafeInteger(v) && v >= 0;
 const need = (v, code = "COST_INPUT_INVALID") => { if (!v) throw new Error(code); };
 
+// Actual request telemetry, not packet size or cumulative session counters.
+export function measureContextUse(input) {
+  need(keys(input, ["schema", "owner", "taskId", "maxInputTokens", "complete", "unknownCosts", "samples"]) &&
+    input.schema === "context.usage.v1" && text(input.owner) && text(input.taskId) &&
+    tokens(input.maxInputTokens) && input.maxInputTokens > 0 && typeof input.complete === "boolean" &&
+    Array.isArray(input.unknownCosts) && input.unknownCosts.every(text) &&
+    Array.isArray(input.samples) && input.samples.length <= 10000, "USAGE_INPUT_INVALID");
+  const ids = new Set(), roles = {};
+  for (const s of input.samples) {
+    need(keys(s, ["id", "role", "model", "effort", "evidence", "inputTokens", "cachedInputTokens", "outputTokens"]) &&
+      [s.id, s.model, s.effort, s.evidence].every(text) && !ids.has(s.id) &&
+      ["preparation", "execution", "review", "recovery", "coordination"].includes(s.role) &&
+      [s.inputTokens, s.cachedInputTokens, s.outputTokens].every(tokens) &&
+      s.cachedInputTokens <= s.inputTokens, "USAGE_SAMPLE_INVALID");
+    ids.add(s.id);
+    const r = roles[s.role] ??= { requests: 0, inputTokens: 0, cachedInputTokens: 0, outputTokens: 0,
+      maxInputTokens: 0, overBudgetRequests: 0 };
+    r.requests++;
+    for (const k of ["inputTokens", "cachedInputTokens", "outputTokens"]) {
+      r[k] += s[k]; need(tokens(r[k]), "USAGE_OVERFLOW");
+    }
+    r.maxInputTokens = Math.max(r.maxInputTokens, s.inputTokens);
+    if (s.inputTokens > input.maxInputTokens) r.overBudgetRequests++;
+  }
+  const totals = { requests: 0, inputTokens: 0, cachedInputTokens: 0, outputTokens: 0, overBudgetRequests: 0 };
+  for (const r of Object.values(roles)) for (const k of Object.keys(totals)) {
+    totals[k] += r[k]; need(tokens(totals[k]), "USAGE_OVERFLOW");
+  }
+  const coverage = input.complete && !input.unknownCosts.length && input.samples.length ? "DECLARED_COMPLETE" : "PARTIAL";
+  return { owner: input.owner, taskId: input.taskId, coverage, roles, totals,
+    status: totals.overBudgetRequests ? "SAFE_BOUNDARY_REFRAME_DUE" : coverage === "PARTIAL" ? "INSUFFICIENT_EVIDENCE" : "WITHIN_DECLARED_BUDGET",
+    unknownCosts: input.unknownCosts, maxInputTokens: input.maxInputTokens,
+    subscriptionUsage: "UNKNOWN", quality: "NOT_ASSESSED", automaticAction: "NONE",
+    note: "Caller supplies deduplicated per-request telemetry and coverage; no source authentication, context truncation, dispatch or efficiency claim. Preserve memory and quality; owner reviews pressure at a safe boundary." };
+}
+
 export function estimateContextRoutes(input) {
   need(keys(input, ["schema", "owner", "taskId", "rates", "routes"]) && input.schema === "context.cost.v1" &&
     text(input.owner) && text(input.taskId) && list(input.rates) && list(input.routes));

@@ -1,5 +1,62 @@
 # Framework Efficiency Transition
 
+## 2.1.14: Accepted Release Candidate
+
+Package the existing unreleased continuation, actual-context measurement,
+working-selection and memory-understanding changes together as one V2 update.
+No new generation, controller or memory store. Existing adoptionRequirements
+prepared-work and resume-or-checkpoint now carry the combined safe migration.
+Manifest is 2.1.14; installed product baseline remains separately observed.
+Independent review found three policy conflicts: unbounded accumulated waiting,
+dispatch bypass of delivery qualification, and local misses inheriting migration.
+All three were repaired; the same independent reviewer rechecked affected rules
+and accepted the scoped candidate with verdict ship. Preserve the initial findings.
+New checks: actual installed 2.1.13 updater to 2.1.14 with retained project evidence
+PASS; two review-repair contract checks PASS; two changed release-list checks PASS.
+Earlier focused tests are reused. Validation/diff PASS. Ordinary publication and
+owner-controlled safe activation/readback remain separate from this acceptance.
+Reuse the recorded focused evidence; no historical model experiments or product
+replays. Live memory application and native delivery gaps remain explicit.
+
+## Memory Understanding: Unreleased Coherence Review
+
+Separate retained semantic meaning from replaceable material context within the
+existing packet. First human recall hints trigger existing Memory Reflection;
+recover source-backed rationale, repair the failed causal link, then independently
+check meaning and prove unhinted retrieval/application. Recurrence reopens that
+same incident. This adds no role, storage format, scheduler or model dispatch.
+
+Cross-workflow inspection covered module delivery, preparation/routing, recall,
+graph integration, orchestrator supervision, independent control, continuation
+and Health. Two policy conflicts were corrected: a localized miss must not demand
+a full-history inventory, and same-worker supplements must allow an authorized
+safe context pivot without replay or competing ownership. EN/RU overview and
+the installed skill now route to the same memory escalation contract.
+
+Three new contract-wiring tests, framework validation and diff checking passed.
+These tests inspect policy text, not model behavior. At this earlier checkpoint
+no independent model audit or live adoption had been performed; the subsequent
+scoped release review is recorded above. Behavioral adoption must demonstrate one real first-hint repair through
+source checking, stored readback and unhinted consumer application under existing
+authority. Preserve old evidence; do not replay product work to manufacture proof.
+Actual host context removal, arbitrary semantic recall, scalable indexed storage
+and whole-chain savings remain unproven. Current file recall is lexical and
+reassembles the graph locally; semantic coverage depends on evidence and review.
+Maintenance usage is nonzero and not exactly metered here; no quota-saving claim.
+Evolution Gate: retain as a bounded policy candidate, no release or rollout claim.
+
+## Actual Context Economy: Unreleased
+
+The observed lesson is long-lived broad contexts and many processing steps, not
+proof of a sudden context-size increase. Prior module/navigation instructions
+were insufficient evidence of actual adoption. Extend the existing cost helper
+and preparation route, not another controller: owner-justified input budget,
+per-request telemetry, scoped graph/contract retrieval and safe task continuation
+in an authorized compact context. Preserve full memory and independent review.
+Structural and mechanical qualification cannot establish subscription savings.
+Keep this work off active product DOD critical paths; no live migration/release
+until accepted local changes and existing-owner safe-boundary application.
+
 ## Isolated Modular Health Cycle And 2.1.13
 
 User-authorized qualification completed one new synthetic consumer cycle, not a

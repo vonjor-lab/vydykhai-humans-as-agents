@@ -1,5 +1,48 @@
 # Collaboration Framework Changelog
 
+## 2.1.14 - 2026-11-04
+
+### Compact Context, Retained Meaning
+
+One V2 maintenance update, not a new orchestrator generation. Keep full durable
+memory, carry only current material, recover forgotten rationale on the first
+human hint, and preserve reliable task continuation without reminder loops.
+The existing prepared-work and resume-or-checkpoint adoption entries carry the
+safe owner checkpoint, shared publication, recipient application and honest gaps.
+Three focused evidence sets already passed: 7 context-usage tests, 3 memory-rule
+contract tests and 2 terminal-delivery contract tests. These are not proof of
+host wake-up, semantic completeness or actual savings. Product installation and
+actual participant application require their separate owned safe-boundary readback;
+publication alone is not activation or demonstrated whole-chain economy.
+
+Memory understanding escalation now starts at the first human recall hint and
+uses existing Reflection/Discovery/review, not an execution-model ladder. Preserve
+semantic meaning while changing material context; scope reconstruction to the
+failed causal links and close only on source checking, retrieval and application.
+Recurrence reopens the failed repair chain; no periodic model audit is added.
+
+Clarify working-selection pivots within existing memory recall and preparation:
+detect missing or wrong context, retrieve causal neighbors, retain/ add/park source
+references without deleting memory or obligations, and preserve checkpoints and
+independent review across authorized safe context changes. This is a behavioral
+contract, not a new retrieval engine or proof of live savings/completeness.
+
+Compact preparation is now checked against actual per-request context, not only
+packet size. Existing context-prepare measure reports role totals, missing cost
+coverage and safe-boundary pressure against an owner-chosen budget, without
+dispatch, model calls or automatic truncation. Working input is separated from
+durable memory; scoped retrieval and an authorized successor retain task identity,
+effects, negative findings, human gates, independent review and cumulative spend.
+Cheaper models require task-class evidence; neither model switching nor a small
+capsule proves economy. Live whole-chain quality and savings remain unproved.
+
+Delegation now requires qualified completion/error delivery before the owner
+releases its turn, or bounded native waiting without reminder messages. Existing
+obligations retain one recovery per failed turn, human gates, UNKNOWN effects,
+independent acceptance and usage. Capacity failure is not capability escalation.
+No scheduler, runtime or schema added. Structural checks do not prove automatic
+host wake-up; owner/application failure coverage remains LIMITED.
+
 ## 2.1.13 - 2026-11-03
 
 Цель V2 сформулирована цельно: проект растет через готовые модули и публичные
