@@ -5,6 +5,10 @@ Read at adoption, new admission, product acceptance, an independent finding or d
 
 ## Select And Prove The Mode
 
+The ordinary task route uses independent acceptance at the whole useful outcome: the executor finishes implementation, local tests, corrections and required documentation before fresh REVIEW judges the exact Candidate against the agreed DOD. Preparation selects source-backed context and the owner confirms sufficiency; it is not independent acceptance. Use the existing task brief/lease to identify this route and its delivery boundary. Internal attempts and substeps do not enroll separate acceptance reviews. A failed final review returns findings to the same executor for bounded repair; review again only when a corrected whole Candidate is ready, retaining the original findings and spent allowance.
+
+This ordinary route uses native task tools or the bounded `context-run` reference caller. It provides no protected-host enforcement. Select it only from established authority and actual route evidence. An unknown active mode is an owned adoption gap, not permission to infer ordinary mode or bypass a protected gate. Existing protected-host profiles keep their admission contract below, including mandatory PRE where configured. Changing to ordinary execution requires an explicit owner-approved safe transition with human scope/budget authority, settled effects, retained journals, pending reviews and findings; this update supplies no automatic protected-to-ordinary migration. Preserve explicit pauses, unknown effects and due project Health obligations.
+
 Role selection follows [bounded role adoption](context-routing.md#bounded-role-adoption). Reuse the existing independent reviewer role, not a new preparation-review layer. Independent reversible work may continue while review is pending; dependent result use, irreversible actions and final readiness still require their applicable approval. Asynchronous review does not grant authority or turn pending/UNKNOWN into acceptance. Keep the accepted control profile until its compatible owner-approved boundary and verify actual model/effort and evidence access, not merely a configured role label.
 
 When adopting this operating contract, the setup owner must establish the actual supported mode and retain it in the existing activation record. Do not leave its selection or first observation for a later user reminder. Use the private runtime activation/startup route in the canonical source's `BOOTSTRAP.md` (not an installed product file), with trusted source identity, actual permissions, a finite model budget and an owned return path. Preserve in-flight results, accepted work, explicit pauses and spent allocations at a safe boundary.
@@ -33,8 +37,9 @@ hypothetical failures that did not occur in a comparable observed sequence.
 
 ## Before A New Action
 
-Use the accepted module, map and graph routes to prepare the actual task. Recover
-applicable decisions, rejected approaches, success conditions and due ideas without
+On the ordinary route, the owner confirms current sources, scope, permissions, success conditions and worker comprehension before starting. The executor then owns authorized local reasoning, tests, fixes and documentation through the whole outcome without repeated “continue” or independent reviews of intermediate attempts. Missing/stale context blocks only dependent work until refreshed. New scope, budget, deployment or unresolved effects still need their existing decision/reconciliation. The following event-bound API is specifically the protected route, not a prerequisite for ordinary execution.
+
+Use the accepted module, map and graph routes to prepare the actual task. Recover applicable decisions, rejected approaches, success conditions and due ideas without
 opening consumed modules. `context-preparation.md` owns the package format; owner
 confirmation is not an independent review or a worker's comprehension receipt.
 
@@ -47,12 +52,11 @@ Current independent verdict and owner application are mandatory at authorization
 The executor reads and acknowledges actual delivery. A free-form receipt, executor identity, missing/rejected/stale review or changed binding cannot grant admission.
 Legacy policy remains historical evidence, not proof of mandatory PRE. Package approval never certifies task output; technical verification, owning acceptance and POST remain separate.
 
-Technical verification still occurs before owning acceptance. It does not replace
-independent post-accept control. A successful command, `VERIFIED` receipt or request
-to run a command is not proof of a completed product outcome or observed effect.
-Do not manufacture a missing readback to keep a workflow within a model-call cap.
+Technical verification still occurs before owning acceptance. It does not replace independent post-accept control. A successful command, `VERIFIED` receipt or request to run a command is not proof of a completed product outcome or observed effect. Do not manufacture a missing readback to keep a workflow within a model-call cap.
 
 ## After Owning Acceptance
+
+On the ordinary route, obtain fresh independent acceptance of the complete useful Candidate before delivery readiness. The reviewer reads applicable originals, exact current artifact, successful and negative technical evidence, unresolved findings and required documentation; owner or executor assertions alone are insufficient. Missing or stale evidence keeps readiness pending. The orchestrator consumes that scoped result and integrates meaning and retention; it does not take over implementation or require a second identical review. Owning acceptance, human acceptance, merge and deployment retain their separate authority. The protected host enrollment below remains mandatory where that route is adopted.
 
 The orchestrator first consumes the exact producer Return, judges the promised
 result and records actual memory, map, tracker and custody changes. Retain failed

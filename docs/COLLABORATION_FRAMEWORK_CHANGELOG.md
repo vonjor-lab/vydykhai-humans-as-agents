@@ -1,5 +1,15 @@
 # Collaboration Framework Changelog
 
+## 2.1.15 - 2026-11-04
+
+### Whole Useful Outcome Acceptance
+
+Clarify the ordinary task route: source-backed preparation with owner confirmation, executor-owned local reasoning/tests/fixes/docs through DOD, then fresh independent acceptance of the complete exact Candidate. Internal attempts no longer imply separate acceptance events. The orchestrator keeps meaning and boundary ownership. Missing/stale evidence, failed findings, unknown effects, full durable memory, whole-chain usage and human scope/budget/deploy authority remain visible.
+
+The existing reference caller supports this route without independent PRE/POST enrollment; its technical VERIFIED receipt is not independent acceptance. No protected-host admission code or PHASED_V1 allocation changes. Existing profiles, journals and pending reviews remain binding; UNKNOWN mode cannot authorize fallback. The context-routing adoption entry carries owner review, repair or source-backed NO_CHANGE, shared publication and participant application proof. Version packaging enables pinned project uptake; publication and live adoption are still separate.
+
+Evidence consists of deterministic ordinary-route continuation/verification and missing/stale-evidence regression scenarios, strict-host regression coverage and repository checks. It does not prove native independent judgment, autonomous wake-up, live mode selection or resource savings. Benefit: local authorized corrections reach a useful delivery without per-attempt review overhead. Complexity: reuse existing roles, reference caller and adoption entry; no new controller, runtime mode or journal migration. Verdict: ship the bounded contract clarification after review, with live application still due.
+
 ## 2.1.14 - 2026-11-04
 
 ### Compact Context, Retained Meaning

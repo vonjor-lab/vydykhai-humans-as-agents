@@ -1,5 +1,19 @@
 # Framework Efficiency Transition
 
+## 2.1.15: Whole-Outcome Candidate
+
+The ordinary task route now states one useful delivery boundary: owner-confirmed
+source preparation, executor-owned local reasoning/tests/fixes/docs through DOD,
+then fresh independent whole-Candidate acceptance. Existing protected-host PRE,
+PHASED_V1 and journals are unchanged; UNKNOWN mode never permits fallback.
+The context-routing adoption entry carries scoped owner review, repair or
+source-backed NO_CHANGE, shared publication and participant application proof.
+Packaging is prepared for pinned uptake, not published or activated. Local
+reference scenarios cover repair-to-VERIFIED and missing/stale evidence refusal;
+strict-host compatibility and complete repository verification are recorded in
+the candidate review. Native enforcement, savings and live adoption remain unproved.
+Preserve all earlier obligations and evidence below; no new controller or role.
+
 ## 2.1.14: Accepted Release Candidate
 
 Package the existing unreleased continuation, actual-context measurement,

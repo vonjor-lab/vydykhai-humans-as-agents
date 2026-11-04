@@ -13,6 +13,8 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 
 ## Decisions
 
+- Define the whole useful outcome and its actual admission route. In ordinary execution, let the executor own local reasoning, tests, fixes and docs through DOD, then consume one fresh independent whole-Candidate review. Preparation is source-backed selection and owner confirmation. Do not become the implementer or impose per-attempt acceptance. Preserve protected-host PRE/POST, pending findings and human scope/budget/deploy authority; UNKNOWN mode needs owned reconciliation, never fallback.
+
 - On the first human hint of forgotten discussion, route `docs/workflows/memory-recall.md#memory-understanding-escalation` before the affected correction. Recover rationale from sources, repair the failed link and prove retrieval/application; do not require a repeated hint, rebuild all memory or escalate the executor automatically.
 
 - Before material resume or corrective redispatch, apply the existing workflow's Current action and bounded repair rule. Superseded history is evidence, not an executable queue; before the first substantive correction, route Reframe After Failure in `docs/workflows/context-routing.md`. One changed attempt precedes cause-based escalation, not another automatic attempt.

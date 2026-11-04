@@ -9,6 +9,8 @@ Shape a new or materially changed goal using `docs/workflows/module-delivery.md`
 
 ## Read route
 
+Define one complete useful outcome and DOD, with executor-owned local reasoning, tests, fixes and documentation. Record the actual ordinary or protected route in the existing brief; UNKNOWN is not ordinary authority. On the ordinary route, preparation is source-backed selection and owner confirmation; independent acceptance waits for the whole Candidate. Preserve protected-host gates and human scope/budget/deploy decisions.
+
 Read `AGENTS.md` once and `docs/workflows/start-work.md` for new shaping or a material rebrief. Use `docs/workflows/context-route.md` for relevant memory, `docs/workflows/module-contract-template.md#use-change-or-create` for module intent, and `docs/workflows/context-routing.md` or `context-preparation.md` only when that route is selected. `docs/FRAMEWORK.md` is a human overview for unresolved meaning, not a routine prerequisite.
 
 ## Boundaries

@@ -82,7 +82,7 @@ The owning task verifies the changed boundary and affected consumers against its
 
 ## Bounded Reference Caller
 
-The supported [preparation command](context-preparation.md) builds request files from ordinary source exports and explicit semantic decisions. The owner confirms the exact plan; the worker separately reads and acknowledges the context. This common path requires no hooks. For a task requiring `retained-progress-v1`, use the one-shot entry:
+On the ordinary whole-outcome route, source/classification, integration and memory-review records below are owner-confirmed context evidence, not independent control verdicts. `prepare`, `resume` and technical `accept` do not enroll PRE/POST or certify independent acceptance. After local implementation, corrections, tests and documentation reach DOD, the existing fresh reviewer accepts the whole exact Candidate through [Accept Work](accept-work.md). Missing/stale pins still refuse dependent commands. These reference operations cannot replace an already adopted protected-host admission path; unknown mode requires reconciliation under [Independent Control](independent-control.md#select-and-prove-the-mode). The supported [preparation command](context-preparation.md) builds request files from ordinary source exports and explicit semantic decisions. The owner confirms the exact plan; the worker separately reads and acknowledges the context. This common path requires no hooks. For a task requiring `retained-progress-v1`, use the one-shot entry:
 
 ```sh
 node scripts/vydykhai.mjs context-run --input <context-request.json>

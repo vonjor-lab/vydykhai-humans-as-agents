@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
-test("2.1.13 installed updater applies 2.1.14 while retaining project evidence", t => {
+test("2.1.13 installed updater applies current candidate while retaining project evidence", t => {
   const root = fileURLToPath(new URL("../", import.meta.url));
   const dir = mkdtempSync(path.join(tmpdir(), "vydykhai-214-upgrade-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
@@ -32,7 +32,7 @@ test("2.1.13 installed updater applies 2.1.14 while retaining project evidence",
   for (const [name, body] of Object.entries(retained)) writeFileSync(path.join(target, name), body);
   const cli = path.join(target, "scripts/vydykhai.mjs");
   run(cli, ["update", target, "--from", root]);
-  assert.equal(lock().installedVersion, "2.1.14");
+  assert.equal(lock().installedVersion, JSON.parse(readFileSync(path.join(root, "vydykhai.json"), "utf8")).version);
   for (const [name, body] of Object.entries(retained)) assert.equal(readFileSync(path.join(target, name), "utf8"), body);
   const plan = JSON.parse(run(cli, ["adoption-plan", target, "--json"]));
   assert.equal(plan.activeUse, "UNPROVEN_BY_INSTALLER");

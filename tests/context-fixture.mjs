@@ -14,7 +14,7 @@ const hash = value => sha256(canonicalJson(value));
 const sorted = values => [...values].sort((a, b) => canonicalJson(a) < canonicalJson(b) ? -1 : canonicalJson(a) > canonicalJson(b) ? 1 : 0);
 
 async function fixture(t, { correction = false, verificationMode = "normal", actionBody = null, atomic = false, omitInputMember = false,
-  sourceRoot = null, preparation = true } = {}) {
+  sourceRoot = null, preparation = true, contextReviewer = "synthetic-reviewer" } = {}) {
   assert.ok(sourceRoot === null || path.isAbsolute(sourceRoot));
   assert.equal(typeof preparation, "boolean");
   const selectedCli = sourceRoot === null ? cli : path.join(sourceRoot, "scripts/vydykhai.mjs");
@@ -53,7 +53,7 @@ async function fixture(t, { correction = false, verificationMode = "normal", act
   const reviewRecord = async c => {
     const { review, integration, ...body } = c;
     c.review = await put(`source-review-${c.eventId}.json`, { schema: "context.source-review.v1",
-      classificationSha256: hash(body), reviewer: "synthetic-reviewer", decision: "approved" });
+      classificationSha256: hash(body), reviewer: contextReviewer, decision: "approved" });
   };
   const addRecord = async (e, integration = initialIntegration, localOwner = null) => {
     let offset = 0;
@@ -78,7 +78,7 @@ async function fixture(t, { correction = false, verificationMode = "normal", act
   const approvePlan = async plan => {
     const { reviewRef, ...body } = plan;
     plan.reviewRef = await put(`integration-review-${hash(body)}.json`, { schema: "context.integration-review.v1",
-      planSha256: hash(body), reviewer: "synthetic-reviewer", decision: "approved" });
+      planSha256: hash(body), reviewer: contextReviewer, decision: "approved" });
   };
   const integrationPlan = { schema: "context.integration-plan.v1", owner: "orchestrator", reviewRef: null,
     sourceBindings: classifications.records.map(binding), artifacts: [sharedRef] };
@@ -153,7 +153,7 @@ observations }));\n`);
     const ranges = [];
     for (const s of registry.sources.filter(s => s.scope.includes("bundle"))) ranges.push({ sourceId: s.id, sha256: sha256(await readFile(path.join(root, s.path))) });
     const meaning = classifications.records.map(({ review, integration, ...c }) => c);
-    task.memoryReview = await put("memory-review.json", { schema: "context.memory-review.v1", reviewer: "synthetic-reviewer", decision: "approved",
+    task.memoryReview = await put("memory-review.json", { schema: "context.memory-review.v1", reviewer: contextReviewer, decision: "approved",
       sourceDigest: hash({ events: sorted(inventory), ranges: sorted(ranges) }), meaningDigest: hash(sorted(meaning)), contentDigest: sha256([atomicRender, advisory].filter(Boolean).join("\n\n")), publicBoundary: "buildBundle" });
     await put("classifications.json", classifications);
     request.task = await put("task.json", task);
