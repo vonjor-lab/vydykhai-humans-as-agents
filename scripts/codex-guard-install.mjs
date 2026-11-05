@@ -36,7 +36,7 @@ export async function nativeSetup(project, fresh){
   const mirror=await lstat(path.join(source,'.vydykhai-lock.json')).then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e;});
   if(!mirror && source!==project && path.relative(project,source).startsWith('..'+path.sep)){
     const manifest=JSON.parse(await readFile(path.join(source,'vydykhai.json'),'utf8'));
-    const content=await files(source,manifest.managedPaths.filter(f=>f.startsWith('scripts/')));
+    const content=await files(source,manifest.managedPaths.filter(f=>f.startsWith('scripts/') || f==='vendor/ws'));
     const revision=digest(JSON.stringify(content.map(([name,bytes])=>[name,digest(bytes)])));
     if(revision!==active){
       const tmp=await mkdtemp(path.join(root,'.candidate-'));

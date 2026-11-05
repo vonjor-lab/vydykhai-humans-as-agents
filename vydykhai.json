@@ -575,7 +575,7 @@
     "scripts/codex-guard-install.mjs",
     "scripts/codex-guard-native.mjs",
     "scripts/codex-guard-rpc.mjs",
-    "scripts/vendor/ws",
+    "vendor/ws",
     "scripts/team-sync.mjs",
     "examples/context-preparation",
     "docs/AGENTS_CORE.md",
