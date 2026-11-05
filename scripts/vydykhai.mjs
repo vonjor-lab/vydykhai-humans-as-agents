@@ -3,7 +3,6 @@
 import {versionParts,compareVersions} from "./framework-version.mjs";
 import {waitForReturn} from "./manager-event-wait.mjs";
 import {portableGuard,installOpenHook} from "./project-guard-open.mjs";
-import { setupProjectGuard,backgroundGrant } from "./guard-setup.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -2177,6 +2176,7 @@ async function activatePrivateControl(argv) {
 async function reportGuardSetup(target,result,flags){
   if(!result.manifest.projectGuardPolicy)return;
   try{
+    const {setupProjectGuard,backgroundGrant}=await import('./guard-setup.mjs');
     // Withdraw external authority even when local state or hook configuration is broken.
     if(flags.guardDecision==='DECLINED')await backgroundGrant(target,'DECLINED');
     const local=await portableGuard(target,{decision:flags.guardDecision});
