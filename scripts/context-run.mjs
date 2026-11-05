@@ -606,7 +606,15 @@ export async function runContextTransition(request, services = {}) {
 }
 
 export async function runContextFile(inputPath, services) {
-  try { return await runContextTransition(parse(await boundedRead(inputPath)), services); }
+  try {
+    const request=parse(await boundedRead(inputPath));
+    const result=await runContextTransition(request,services);
+    if(result.status!=='BLOCKED' && services?.onWorkspaceEvent){
+      try{const guard=await services.onWorkspaceEvent(request.workspace);if(guard && guard.status!=='QUIET')result.projectGuard=guard;}
+      catch(e){result.projectGuard={status:'LIMITED',reason:e.message};}
+    }
+    return result;
+  }
   catch (error) { return { status: "BLOCKED", code: error instanceof ContextError ? error.code : "REQUEST_READ_FAILED", enforcement: "reference", stats: { commands: 0 } }; }
 }
 

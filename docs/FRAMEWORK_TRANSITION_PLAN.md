@@ -1,5 +1,21 @@
 # Framework Efficiency Transition
 
+## Shared mandate candidate: unreleased
+
+Qualify the changed ordinary decision boundary and source-backed rotation in isolation. Retain the existing protected gates and runtime. Publication, installation and live adoption are separate boundaries.
+
+## Terminal Wait Route: Unreleased
+
+Prefer one supported terminal-event wait over short model-returning intervals;
+reuse existing child observation and prepared-context readback. A new local
+integration retains the baseline failure, repairs the useful bundle result,
+reconstructs compact input in fresh processes under the same checkpoint, rejects
+stale/incomplete sources, and retains failure/timeout/unknown effects without
+replay. This is deterministic process proof, not desktop wakeup, model context
+eviction, independent acceptance or token savings. Existing resume-or-checkpoint
+and prepared-work adoption remain owner-scoped; no project activation here.
+Evolution gate: simplify existing route, no runtime/controller/schema; no release.
+
 ## 2.1.15: Whole-Outcome Candidate
 
 The ordinary task route now states one useful delivery boundary: owner-confirmed

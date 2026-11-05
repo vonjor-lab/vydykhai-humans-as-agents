@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+import {versionParts,compareVersions} from "./framework-version.mjs";
+import {waitForReturn} from "./manager-event-wait.mjs";
+import {portableGuard,installOpenHook} from "./project-guard-open.mjs";
+import { setupProjectGuard,backgroundGrant } from "./guard-setup.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -65,6 +69,7 @@ Usage:
   node scripts/vydykhai.mjs memory-storage pack --input <graph> --output <new-directory> --part-bytes <number>
   node scripts/vydykhai.mjs memory-recall --graph <graph-or-storage-manifest> --request <ordinary-request>
   node scripts/vydykhai.mjs context-run --input <context-request.json>
+  node scripts/vydykhai.mjs context-run --wait-for <expected-return-id>
   node scripts/vydykhai.mjs adoption-plan [target] [--worker <worker-repo>] [--input <readiness-snapshot.json>] --json
   node scripts/vydykhai.mjs context-prepare <plan|confirm|read|ack|bind> --output <task-local-dir> ...
   node scripts/vydykhai.mjs context-prepare estimate --input <cost-estimate.json>
@@ -105,7 +110,10 @@ function parseArgs(argv) {
 
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
-    if (value === "--force") flags.force = true;
+    if (value === "--guard-background-approved" || value === "--guard-background-declined") {
+      if(flags.guardDecision)throw Error("Conflicting background decisions");
+      flags.guardDecision=value.endsWith("-approved")?"APPROVED":"DECLINED";
+    } else if (value === "--force") flags.force = true;
     else if (value === "--offline") flags.offline = true;
     else if (value === "--json") flags.json = true;
     else if (value === "--approve-transition") {
@@ -165,21 +173,6 @@ function normalizeManagedPath(value) {
 
 async function readJson(file) {
   return JSON.parse(await readFile(file, "utf8"));
-}
-
-function versionParts(version) {
-  if (typeof version !== "string" || !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version)) {
-    throw new Error("Invalid framework version");
-  }
-  const parts = version.split(".").map(Number);
-  if (!parts.every(Number.isSafeInteger)) throw new Error("Invalid framework version");
-  return parts;
-}
-
-function compareVersions(left, right) {
-  const a = versionParts(left), b = versionParts(right);
-  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] - b[i];
-  return 0;
 }
 
 function updateChannel(version) {
@@ -602,7 +595,7 @@ async function installFrom(sourceRoot, targetRoot, { force = false, approveTrans
   };
   await writeFile(path.join(targetRoot, LOCK_FILE), `${JSON.stringify(lock, null, 2)}\n`, "utf8");
 
-  return { manifest, lock, files, conflicts, staleFiles };
+  return { manifest, lock, files, conflicts, staleFiles, fresh: !installed };
 }
 
 function printAdoption(plan) {
@@ -2181,6 +2174,20 @@ async function activatePrivateControl(argv) {
     projectReadiness: "NOT_CERTIFIED"};
 }
 
+async function reportGuardSetup(target,result,flags){
+  if(!result.manifest.projectGuardPolicy)return;
+  try{
+    // Withdraw external authority even when local state or hook configuration is broken.
+    if(flags.guardDecision==='DECLINED')await backgroundGrant(target,'DECLINED');
+    const local=await portableGuard(target,{decision:flags.guardDecision});
+    const allowed=local.background==='APPROVED' && await backgroundGrant(target,flags.guardDecision);
+    const hook=await installOpenHook(target);
+    const status=local.status==='PAUSED'?'PAUSED':allowed && local.background==='APPROVED'?
+      await setupProjectGuard(target,result.fresh):'FOREGROUND (independent background unverified or not authorized)';
+    console.log('Project Guard: '+status+'; project-local foreground '+(local.status==='PAUSED'?'paused':'available')+'; opening hook: '+hook);
+  }catch(e){console.log('Project Guard: LIMITED (kit installed; '+e.message+')');}
+}
+
 async function main() {
   const [command, ...rest] = process.argv.slice(2);
   if (!command || command === "help" || command === "--help") {
@@ -2215,8 +2222,18 @@ async function main() {
     return;
   }
   if (command === "context-run") {
+    if(rest.length===2 && rest[0]==='--wait-for'){
+      if(!existsSync(path.join(SCRIPT_ROOT,LOCK_FILE)))throw Error('Wait requires an installed project');
+      const owner=process.env.VYDYKHAI_SESSION_ID || process.env.CODEX_THREAD_ID;
+      const reply=await waitForReturn(SCRIPT_ROOT,rest[1],owner,parseDurableOutboxComment)
+        .catch(e=>({status:'LIMITED',owner:owner||null,receipt:rest[1],reason:e.message,durableWait:'unverified'}));
+      console.log(JSON.stringify(reply));if(reply.status==='LIMITED')process.exitCode=2;
+      return;
+    }
     const result = rest.length === 2 && rest[0] === "--input"
-      ? await runContextFile(path.resolve(rest[1]), { createReturnSync, parseDurableOutboxComment })
+      ? await runContextFile(path.resolve(rest[1]), { createReturnSync, parseDurableOutboxComment,
+        onWorkspaceEvent: workspace=>workspace===SCRIPT_ROOT && existsSync(path.join(SCRIPT_ROOT,LOCK_FILE))?
+          portableGuard(SCRIPT_ROOT,{parse:parseDurableOutboxComment,session:process.env.VYDYKHAI_SESSION_ID || process.env.CODEX_THREAD_ID}):null })
       : { status: "BLOCKED", code: "REQUEST_ARGUMENTS_INVALID", stats: { commands: 0 } };
     console.log(JSON.stringify(result, null, 2));
     process.exitCode = result.status === "LIMITED" ? 2 : result.status === "BLOCKED" ? 1 : 0;
@@ -2224,6 +2241,7 @@ async function main() {
   }
 
   const { positionals, flags } = parseArgs(rest);
+  if(flags.guardDecision && !["install","update"].includes(command))throw Error("Guard permission only applies to setup");
   if (flags.approveTransition !== null && command !== "install" && command !== "update") {
     throw new Error("--approve-transition is only supported by install/update");
   }
@@ -2238,6 +2256,7 @@ async function main() {
     console.log(`Installed Vydykhai ${result.manifest.version} into ${target}`);
     console.log(`Managed files: ${result.files.length}; project-specific files were preserved.`);
     printAdoption(result.lock.adoptionPlan);
+    await reportGuardSetup(target, result, flags);
     return;
   }
 
@@ -2365,15 +2384,19 @@ async function main() {
     if (!source) {
       const installed = await installedIdentity(target);
       if (!installed) throw new Error("Automatic update requires an installed framework identity");
+      if(installed.manifest.distributionStatus==='LOCAL_RELEASE_CANDIDATE'){
+        if(await realpath(SCRIPT_ROOT)===await realpath(target))throw Error('Local RC update requires the extracted RC source (--from); no published branch is selected.');
+        source=SCRIPT_ROOT;
+      }
       const channel = updateChannel(installed.manifest.version);
       automaticMajor = channel.major;
-      temporary = await cloneUpstream(CANONICAL_UPSTREAM, channel.branch);
-      source = temporary.checkout;
+      if(!source){temporary = await cloneUpstream(CANONICAL_UPSTREAM, channel.branch);source = temporary.checkout;}
     }
     try {
       const result = await installFrom(source, target, { ...flags, automaticMajor });
       console.log(`Updated Vydykhai to ${result.manifest.version} in ${target}`);
       printAdoption(result.lock.adoptionPlan);
+      await reportGuardSetup(target, result, flags);
     } finally {
       if (temporary) await rm(temporary.parent, { recursive: true, force: true });
     }

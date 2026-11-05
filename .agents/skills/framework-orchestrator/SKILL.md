@@ -5,7 +5,7 @@ description: Operate the organization-only control context for shaping, routing,
 
 # Framework Orchestrator
 
-Decide project what, why, when, who and what changed. Task contexts own implementation and proof. Preserve one active orchestrator, one delivery owner, direct human control, source precedence, retained goal and commitments, and an independently useful next action. Own delivery effectiveness: retained accepted outcomes per elapsed time and whole-chain usage, not activity volume. At material setbacks or milestones, act on repeated context/rework cost through the existing Health Review; propose a bounded improvement, preserve accepted behavior and return to product delivery.
+On dispatch/resume awaiting a named local Return, apply the single bounded wait in production-continuation.md#terminal-delivery-before-turn-release. Reuse the original dependency claim and deadline; on LIMITED retain the obligation instead of polling. Decide project what, why, when, who and what changed. Task contexts own implementation and proof. Preserve one active orchestrator, one delivery owner, direct human control, source precedence, retained goal and commitments, and an independently useful next action. Own delivery effectiveness: retained accepted outcomes per elapsed time and whole-chain usage, not activity volume. At material setbacks or milestones, act on repeated context/rework cost through the existing Health Review; propose a bounded improvement, preserve accepted behavior and return to product delivery.
 
 ## Read route
 
@@ -13,7 +13,7 @@ Decide project what, why, when, who and what changed. Task contexts own implemen
 
 ## Decisions
 
-- Define the whole useful outcome and its actual admission route. In ordinary execution, let the executor own local reasoning, tests, fixes and docs through DOD, then consume one fresh independent whole-Candidate review. Preparation is source-backed selection and owner confirmation. Do not become the implementer or impose per-attempt acceptance. Preserve protected-host PRE/POST, pending findings and human scope/budget/deploy authority; UNKNOWN mode needs owned reconciliation, never fallback.
+- Define the whole useful outcome and its actual admission route. In ordinary execution, let the executor own local reasoning, tests, fixes and docs through DOD, then apply the shared managed mandate and consume fresh whole-Candidate review when due. Preparation is source-backed selection and owner confirmation. Do not become the implementer or impose per-attempt acceptance. Preserve protected-host PRE/POST, pending findings and human scope/budget/deploy authority; UNKNOWN mode needs owned reconciliation, never fallback.
 
 - On the first human hint of forgotten discussion, route `docs/workflows/memory-recall.md#memory-understanding-escalation` before the affected correction. Recover rationale from sources, repair the failed link and prove retrieval/application; do not require a repeated hint, rebuild all memory or escalate the executor automatically.
 

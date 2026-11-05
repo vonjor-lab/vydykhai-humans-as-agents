@@ -1,5 +1,4 @@
 # Project State Template
-
 Use one compact issue or equivalent artifact per project or product stream. It is the current control snapshot, not an event archive. The authoritative current record is only `Control Snapshot`, `Current DOD`, `Execution Leases`, `Pending Return Inbox`, `Detours And Recall`, and `Next-Best-Action`; record each fact once in its owning section. The activation receipt is immutable evidence, while tracker, graph summaries, and any legacy `Active Work`, `Decisions And Blockers`, or `Safe Continuation` sections are disposable views and never another control source. Rebuild the authoritative body atomically after each material transition and put history in linked comments or archived windows. Render and validate a complete Candidate before touching the accepted body; publish it once with an exact-current-body guard when available, then read back the whole body and compare its SHA-256 and `control-check` result. On mismatch, restore and verify the exact last accepted body. A partial or failed write never becomes current truth. Nothing except whitespace may appear before the start marker or after the end marker.
 
 ````md
@@ -14,6 +13,7 @@ Snapshot as of: <latest durable event / revision / date>
 Governor: <HEALTHY | REPAIR | ROTATE> | Receipt: <id/link> | Trigger: <semantic anomaly or active 24h review> | Audited incident: <semantic incident id / none at activation> | Basis event: <snapshot inspected> | Route: <deterministic close / fresh independent context>
 Project Guard: <ACTIVE | LIMITED | MISSING> | Runner: <project-owned external adapter/id and lock liveness> | Independent: <YES | NO> | Event route: <hook/outbox/activity watermark> | Schedule: <interval/native job> | Last proof: <time/result/source> | Wakeup: <active-context route> | Incident: <display-only last/current id or none; runner ledger is authority>
 Human attention: <NONE | PENDING | RESURFACE_DUE> | ID: <stable id> | Request: <one plain-language decision or review> | Source: <task/result/link> | Raised: <event/time> | Resume after: <none or Guard/repair/rotation id>
+Guard foreground owner: <actual opaque session id from the setup host; leave unbound until verified>
 Orchestrator health: <HEALTHY | REVIEW | REPAIR | ROTATE> | Context: <canonical title/link> | Profile: ORCHESTRATOR / maximum / <resolved mapping> | Last compaction/context-loss signal: <numeric count / date or none>
 Work origin: <PASS | REVIEW | UNOWNED_PROJECT_WORK> | Advisory contract: <CONTROL_ONLY / ROUTE_TO_FOCUSED_CONTEXT / none> | Accepted evidence owner: <human decision / durable source / focused-context receipt / gap> | Last checked: <event/time/source>
 Last independent check: <date / exact sources / result> | Same-class failures since repair: <count>
