@@ -1,5 +1,5 @@
 // Connect only to the user's private native Codex app-server. No turn/start.
-import ws from './vendor/ws/index.js';
+import ws from '../vendor/ws/index.js';
 import {lstat, readdir, realpath} from 'node:fs/promises';
 import path from 'node:path';
 import {tmpdir,homedir} from 'node:os';
