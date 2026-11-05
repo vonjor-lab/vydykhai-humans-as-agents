@@ -13,7 +13,7 @@ Read `AGENTS.md` once and `docs/workflows/accept-work.md`. Load `docs/workflows/
 
 ## Boundaries
 
-On the ordinary route, request fresh independent acceptance only when the whole useful Candidate is ready for delivery. Local attempts, tests and repairs remain executor-owned until DOD; they do not each require acceptance. Missing/stale final evidence keeps readiness pending. Retain findings through corrected-Candidate review. Existing protected-host PRE/POST and human authority remain binding; unknown mode is not permission to bypass them.
+Always self-check the complete Candidate. On the ordinary route apply the shared managed mandate to decide whether fresh final REVIEW is due. Record the reason and exact evidence in the Return. Local attempts, tests and repairs remain executor-owned until DOD; they do not each require acceptance. Missing/stale final evidence keeps readiness pending. Retain findings through corrected-Candidate review. Existing protected-host PRE/POST and human authority remain binding; unknown mode is not permission to bypass them.
 
 Compare the Accepted Baseline, current Candidate, module intent, latest human direction, complete applicable obligations and exact current-code evidence. Check affected risks and promised user loop, including independent consumer proof for packaging. Resolve ordinary failures inside scope; consult on new authority or module boundaries. A Lab pass does not grant production transfer.
 

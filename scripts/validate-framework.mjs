@@ -22,7 +22,7 @@ function lineCount(value) {
 
 const manifest = JSON.parse(await text("vydykhai.json"));
 if (manifest.schemaVersion !== 1) fail("vydykhai.json schemaVersion must be 1");
-if (!/^\d+\.\d+\.\d+$/.test(manifest.version || "")) fail("vydykhai.json version must be semantic");
+if (!/^\d+\.\d+\.\d+(?:-rc\.[1-9]\d*)?$/.test(manifest.version || "")) fail("vydykhai.json version must be semantic");
 if (!existsSync(path.join(root, "BOOTSTRAP.md"))) fail("BOOTSTRAP.md is missing");
 if (manifest.defaultAgentProfile?.modelPolicy !== "latest-available-flagship") {
   fail("Default model policy must be latest-available-flagship");
@@ -1061,7 +1061,7 @@ if (
   fail("Acceptance is missing durable return or uncertain-side-effect handling");
 }
 if (!changelog.includes(`## ${manifest.version} -`)) fail("Changelog is missing current version");
-if (changelog.match(/^## (\d+\.\d+\.\d+) -/m)?.[1] !== manifest.version) {
+if (changelog.match(/^## (\d+\.\d+\.\d+(?:-rc\.\d+)?) -/m)?.[1] !== manifest.version) {
   fail("Latest changelog entry differs from manifest");
 }
 if (!readme.includes(`Current version: \`${manifest.version}\``)) fail("README version differs from manifest");
@@ -1147,7 +1147,7 @@ for (const relative of runtimeFiles) {
     for (const reference of migrationVersionReferences.get(relative) || []) {
       versionLine = versionLine.replace(reference, "");
     }
-    for (const match of versionLine.matchAll(/\bv?(\d+\.\d+(?:\.\d+)?)\b/g)) {
+    for (const match of versionLine.matchAll(/\bv?(\d+\.\d+(?:\.\d+)?(?:-rc\.\d+)?)\b/g)) {
       if (match[1] !== manifest.version) {
         fail(`Unexpected historical version ${match[0]} in active file ${relative}:${index + 1}`);
       }

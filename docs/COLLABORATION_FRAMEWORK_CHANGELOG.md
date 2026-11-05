@@ -1,5 +1,37 @@
 # Collaboration Framework Changelog
 
+## 2.1.16 - Portable Guard and bounded manager waiting
+
+Project-local checks are quiet on unchanged Returns. Independent background scheduling requires separate authority and a supported host. The installed dispatch/resume route retains one wait per dependency, its deadline and unresolved effects.
+
+## 2.1.16-rc.2 - Single bounded manager wait
+
+The installed context-run wait path deduplicates an unchanged dependency, retains deadline evidence and reconciles a matching durable Return once through the shared cursor.
+
+## 2.1.16-rc.1 - Local candidate for portable Guard
+
+Local foreground checks at session opening and continuation retain changed Return ids. Background reconciliation requires separate permission and verified host capabilities.
+
+## Unreleased: native user timer and addressed delivery
+
+On supported Linux app-server hosts the trusted installer provisions a private project runner and one user timer. Regular updates reconcile the registration. Native history readback and a later quiet tick qualify delivery. Suspended or uncertain work retains its state.
+
+## Unreleased: install and update reconcile Guard
+
+Successful kit writes now invoke the same bounded installer-side host adapter. It reports ACTIVE only after an addressed event and quiet scheduled repeat, preserves explicit pause and reports LIMITED when host integration is missing.
+
+## Unreleased: shared mandate for ordinary review
+
+The managed core defines one shared mandate for delivery, risk-based independent review and source-backed manager rotation. Ordinary self-check remains required. Protected runtime controls retain their existing admission and health behavior.
+
+## Unreleased: Terminal Wait Selection
+
+Prefer one supported terminal-event wait within the approved bound instead of
+short intervals that repeatedly resume model processing. Reuse `runControlChild`
+and prepared-context readback; preserve bounded host fallback and LIMITED desktop
+coverage. Local integration proves useful correction, source/checkpoint retention
+and no automatic failure replay, not native model savings or live adoption.
+
 ## 2.1.15 - 2026-11-04
 
 ### Whole Useful Outcome Acceptance

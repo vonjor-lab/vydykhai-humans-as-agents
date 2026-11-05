@@ -4,9 +4,7 @@ import { assessTeamSync } from "./team-sync.mjs";
 const stable = value => JSON.stringify(value, (_, v) => v && typeof v === "object" && !Array.isArray(v)
   ? Object.fromEntries(Object.keys(v).sort().map(k => [k, v[k]])) : v);
 const hash = value => createHash("sha256").update(stable(value)).digest("hex");
-const version = v => typeof v === "string" && /^\d+\.\d+\.\d+$/.test(v);
-const compare = (a, b) => { const x = a.split(".").map(Number), y = b.split(".").map(Number);
-  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i]; return 0; };
+import {validVersion as version,compareVersions as compare} from "./framework-version.mjs";
 
 // Compares observed kits only; the project owner still accepts the target and
 // the worker must read back its changed instructions at a safe boundary.
@@ -348,7 +346,7 @@ export function planAdoption({ manifest, managedFiles, agentsBlockHash, sourceRe
   const reviewFromVersion = previous && Object.hasOwn(previous, "reviewFromVersion") ? previous.reviewFromVersion
     : previousLock?.installedVersion === manifest.version ? null : previousLock?.installedVersion ?? null;
   if (reviewFromVersion !== null && !version(reviewFromVersion)) throw new Error("Invalid previous installed version");
-  const releases = [...changelog.matchAll(/^## (\d+\.\d+\.\d+)[^\n]*\n([\s\S]*?)(?=^## |$(?![\s\S]))/gm)]
+  const releases = [...changelog.matchAll(/^## (\d+\.\d+\.\d+(?:-rc\.\d+)?)[^\n]*\n([\s\S]*?)(?=^## |$(?![\s\S]))/gm)]
     .filter(m => compare(m[1], manifest.version) <= 0 && (reviewFromVersion ? compare(m[1], reviewFromVersion) > 0 : true))
     .map(m => ({ version: m[1], path: "docs/COLLABORATION_FRAMEWORK_CHANGELOG.md",
       heading: m[0].split("\n")[0], contentSha256: hash(m[2].trim()) })).sort((a, b) => compare(a.version, b.version));
