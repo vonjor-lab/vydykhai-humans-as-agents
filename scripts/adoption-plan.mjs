@@ -6,6 +6,36 @@ const stable = value => JSON.stringify(value, (_, v) => v && typeof v === "objec
 const hash = value => createHash("sha256").update(stable(value)).digest("hex");
 import {validVersion as version,compareVersions as compare} from "./framework-version.mjs";
 
+// An export of the existing transition, never a second ledger or host attestation.
+export function assessUpdateAcceptance(target, receipt) {
+  const ids = ["installation", "manager", "participants", "work-hygiene", "memory",
+    "continuation", "independence", "productive-resumption"];
+  const filled = v => typeof v === "string" && v.trim().length > 0;
+  if (receipt !== undefined && (!receipt || receipt.schema !== "vydykhai.update-acceptance.v1" ||
+      !Array.isArray(receipt.checks) || receipt.checks.some(r => !r || !ids.includes(r.id)) ||
+      new Set(receipt.checks.map(r => r.id)).size !== receipt.checks.length)) {
+    throw new Error("Invalid update acceptance receipt");
+  }
+  const matching = version(target?.version) && filled(target?.sourceRevision) &&
+    target.sourceRevision !== "unknown" && receipt?.version === target.version && receipt?.sourceRevision === target.sourceRevision;
+  const checks = ids.map(id => {
+    const row = receipt?.checks.find(r => r.id === id);
+    const current = matching && filled(receipt?.stateEvidence) && filled(row?.binding) &&
+      receipt?.currentBindings?.[id] === row.binding;
+    const supported = current && filled(row?.evidence) && filled(row?.owner);
+    let status = supported && ["CONFIRMED", "NOT_DONE", "NOT_CHECKED", "NOT_APPLICABLE"].includes(row.status)
+      ? row.status : "NOT_CHECKED";
+    if (status === "NOT_APPLICABLE" && (id === "installation" || !filled(row.reason))) status = "NOT_CHECKED";
+    if (id === "installation" && target.integrity === false) status = "NOT_DONE";
+    return { id, status, evidence: row?.evidence || null, owner: row?.owner || null,
+      next: row?.next || null, reason: !current ? "MISSING_OR_STALE_BINDING" : row?.reason || null };
+  });
+  return { status: checks.every(r => ["CONFIRMED", "NOT_APPLICABLE"].includes(r.status))
+    ? "DOCUMENTED_COMPLETE" : "INCOMPLETE", checks,
+    unowned: checks.filter(r => ["NOT_DONE", "NOT_CHECKED"].includes(r.status) && (!filled(r.owner) || !filled(r.next))).map(r => r.id),
+    assurance: "DECLARED_EVIDENCE_ONLY_NOT_HOST_OR_SEMANTIC_VERIFICATION" };
+}
+
 // Compares observed kits only; the project owner still accepts the target and
 // the worker must read back its changed instructions at a safe boundary.
 export function assessWorkerAdoption(target, worker) {

@@ -1,5 +1,27 @@
 # Collaboration Framework Changelog
 
+## 2.1.19 - 2026-11-07
+
+The task-resume Action Receipt now has a deterministic CLI
+assessment binding the human event, saved checkpoint, owner, dispatch and
+observed first action. Promises, ACKs and sends alone cannot pass. Unknown
+effects and newer pauses retain existing stop/reconciliation rules. This is
+not a new controller or a guarantee of native final-response interception.
+Resume assessment reuses the existing taskIdentity check after context
+restoration, including current human-event and context-epoch bindings. Historical
+pause replay cannot pass as a current decision; genuine newer pauses remain
+binding. Source authentication remains the host/owner's responsibility.
+
+### Evidence-backed Update Checklist
+
+Doctor now distinguishes installed-file integrity from the eight existing
+update-adoption obligations. Doctor and adoption-plan assess the same exported
+Project State evidence, retaining missing/stale checks and their owners instead
+of treating successful installation as completed application. Supplied incomplete
+acceptance returns exit 2. No scheduler, second ledger or product-health guarantee
+is added; observations still require owner verification. Existing unaffected
+evidence is reused. Installation alone does not prove participant application.
+
 ## 2.1.18 - 2026-11-06
 
 ### External Review Follow-up
