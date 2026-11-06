@@ -1,11 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, cp, readFile, writeFile, rm, readdir } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { mkdtemp, cp, readFile, writeFile, rm, readdir, mkdir } from "node:fs/promises";
+import { tmpdir, hostname } from "node:os";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
+import { spawnSync, spawn } from "node:child_process";
+import { once } from "node:events";
+import { acquirePreparationLock, recoverPreparationLock } from "../scripts/context-prepare.mjs";
+import { mkdirSync, renameSync, writeFileSync } from "node:fs";
+import { createHash, randomUUID } from "node:crypto";
 import { nativeActionCommand, hookEventKey } from "../scripts/context-hook.mjs";
 import { classifyGuard, createReturnRoute, evaluateProductionContinuation, readProductionContinuation,
   validateDurableOutbox } from "../scripts/vydykhai.mjs";
@@ -76,6 +79,81 @@ async function workspace(t, selectors = false, installed = false) {
   const ready = async () => { assert.equal(plan().status, "PLAN_READY"); assert.equal(confirm().status, "PREPARED"); await acknowledge(); };
   return { root, json, put, cli, prepare, run, plan, confirm, acknowledge, ready };
 }
+
+test("preparation recovery refuses live owners and missing reconciliation", async t => {
+  const w = await workspace(t); assert.equal(w.plan().status, "PLAN_READY");
+  const release = await acquirePreparationLock(path.join(w.root, "prepared"));
+  try {
+    assert.equal(w.plan().code, "PREPARATION_LOCK_HELD");
+    assert.equal(w.prepare("recover", "--owner", "module-owner", "--decision", "unknown").code,
+      "PREPARATION_RECOVERY_RECONCILIATION_REQUIRED");
+    assert.equal(w.prepare("recover", "--owner", "module-owner", "--decision", "reconciled").code,
+      "PREPARATION_LOCK_HELD");
+  } finally { await release(); }
+  assert.equal(w.plan().status, "PLAN_READY");
+});
+
+test("preparation recovery archives a killed owner's lock without replay or package mutation", async t => {
+  const w = await workspace(t, false, true); assert.equal(w.plan().status, "PLAN_READY");
+  const plan = await readFile(path.join(w.root, "prepared/plan.json"));
+  const module = new URL("../scripts/context-prepare.mjs", import.meta.url).href;
+  const child = spawn(process.execPath, ["--input-type=module", "-e",
+    `import {acquirePreparationLock} from ${JSON.stringify(module)}; await acquirePreparationLock(${JSON.stringify(path.join(w.root,"prepared"))}); console.log('locked'); setInterval(()=>{},1000);`], {stdio:["ignore","pipe","pipe"]});
+  t.after(() => { if (child.exitCode === null) child.kill("SIGKILL"); });
+  await once(child.stdout, "data"); const exit = once(child, "exit"); child.kill("SIGKILL"); await exit;
+  const result = w.prepare("recover", "--owner", "module-owner", "--decision", "reconciled");
+  assert.equal(result.status, "LOCK_RECOVERED", JSON.stringify(result));
+  assert.equal(result.commands, 0); assert.equal(result.replay, false);
+  assert.equal(JSON.parse(await readFile(path.join(result.archive, "owner.json"))).pid, child.pid);
+  assert.deepEqual(await readFile(path.join(w.root,"prepared/plan.json")), plan);
+  assert.equal(w.plan().status, "PLAN_READY");
+  assert.equal(w.prepare("recover", "--owner", "module-owner", "--decision", "reconciled").code,
+    "PREPARATION_LOCK_UNKNOWN");
+});
+
+test("preparation recovery retains legacy ownerless locks as unknown", async t => {
+  const w = await workspace(t); assert.equal(w.plan().status, "PLAN_READY");
+  await mkdir(path.join(w.root,"prepared/.prepare-lock"));
+  assert.equal(w.prepare("recover", "--owner", "module-owner", "--decision", "reconciled").code,
+    "PREPARATION_LOCK_UNKNOWN");
+  assert.ok((await readdir(path.join(w.root,"prepared"))).includes(".prepare-lock"));
+});
+
+test("preparation recovery refuses foreign or corrupt owner records without altering them", async t => {
+  const w = await workspace(t); assert.equal(w.plan().status, "PLAN_READY");
+  const lock = path.join(w.root,"prepared/.prepare-lock"); await mkdir(lock);
+  for (const value of [JSON.stringify({pid:process.pid, host:hostname()+"-foreign", token:"foreign"}), "not-json"]) {
+    await writeFile(path.join(lock,"owner.json"), value);
+    assert.equal(w.prepare("recover", "--owner", "module-owner", "--decision", "reconciled").code,
+      "PREPARATION_LOCK_UNKNOWN");
+    assert.equal(await readFile(path.join(lock,"owner.json"),"utf8"), value);
+    assert.deepEqual(await readdir(lock), ["owner.json"]);
+  }
+});
+
+test("delayed recovery cannot put a stale reservation in a replacement owner's lock", async t => {
+  const w = await workspace(t); assert.equal(w.plan().status, "PLAN_READY");
+  const dir = path.join(w.root, "prepared"), lock = path.join(dir, ".prepare-lock");
+  await mkdir(lock);
+  const prior = {pid:2147483647, host:hostname(), token:randomUUID()};
+  const replacement = {pid:process.pid, host:hostname(), token:randomUUID()};
+  await writeFile(path.join(lock, "owner.json"), JSON.stringify(prior));
+  let interleaved = false;
+  t.mock.method(process, "kill", (pid, signal) => {
+    assert.equal(pid, prior.pid); assert.equal(signal, 0);
+    if (!interleaved) {
+      interleaved = true;
+      // A completes after B inspected the old owner, then C acquires its own lock.
+      writeFileSync(path.join(w.root, `.prepared.prepare-recovery-${prior.token}.json`), "A reserved");
+      renameSync(lock, path.join(w.root, "archived-by-A"));
+      mkdirSync(lock); writeFileSync(path.join(lock, "owner.json"), JSON.stringify(replacement));
+    }
+    throw Object.assign(new Error("dead"), {code:"ESRCH"});
+  });
+  await assert.rejects(recoverPreparationLock(dir, "owner-B", "reconciled"), /PREPARATION_RECOVERY_HELD/);
+  assert.deepEqual(await readdir(lock), ["owner.json"]);
+  assert.deepEqual(JSON.parse(await readFile(path.join(lock, "owner.json"))), replacement);
+});
 
 test("navigation handoff pins contracts, filters role-local rules and permits Candidate work", async t => {
   const w = await workspace(t), pkg = await w.json("package.json");

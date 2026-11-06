@@ -1,6 +1,19 @@
 # Framework Efficiency Transition
 
-## Current Increment: 2.1.17
+## Current Increment: 2.1.18
+
+Bounded follow-up to the public 2.1.17 review. Preserve the constitution and
+existing independence/authority boundaries. Repair preparation-lock diagnostics
+and explicit reconciled recovery; include literal commitment return conditions
+in the existing memory reader. Clarify foreground readiness and legacy policy
+precedence. Move two long adoption actions to conditional sections without
+changing their ids, scopes or open obligations. Existing own-transition and
+prepared-work requirements carry application at the project owner's safe boundary.
+No automatic product update, new audit cycle or claim of measured economy.
+Public release is separate from actual project adoption. Tests and a release
+archive prove only their bounded local/install contracts, not subscription savings.
+
+## Historical Increment: 2.1.17
 
 The prior published baseline is 2.1.16. This increment separates purpose and
 invariants in `CONSTITUTION.md` from conditional instruments in `TOOLKIT.md`,

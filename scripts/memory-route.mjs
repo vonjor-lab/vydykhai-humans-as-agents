@@ -48,7 +48,18 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
   const identity = {graphSha256: createHash("sha256").update(content).digest("hex"),
     watermark: content.match(/^Watermark:[ \t]*(.*)$/m)?.[1]?.trim() || null};
   const query = normalize(request);
-  const matched = anchors.filter(a => a[2].split(/\s*[/;]\s*/).some(alias => matches(query, normalize(alias))));
+  // Literal return conditions supplement entity aliases; they do not prove semantic applicability.
+  const triggered = nodes.filter(n => current(n) && n.type === "COMMITMENT" &&
+    typeof n.fields.get("Recall when") === "string" &&
+    !/^(?:NOT_REQUIRED|none)$/i.test(n.fields.get("Recall when").trim()) &&
+    matches(query, normalize(n.fields.get("Recall when"))));
+  const triggerAnchors = new Set(triggered.flatMap(n => ids(n.fields.get("About"))));
+  if (triggered.some(n => !ids(n.fields.get("About")).length) ||
+      [...triggerAnchors].some(id => !anchors.some(a => a[0] === id))) {
+    return {...base, ...identity, status: "NEEDS_DISCOVERY", reason: "COMMITMENT_ANCHOR_UNRESOLVED"};
+  }
+  const matched = anchors.filter(a => triggerAnchors.has(a[0]) ||
+    a[2].split(/\s*[/;]\s*/).some(alias => matches(query, normalize(alias))));
   const roots = matched.map(a => a[0]);
   if (!roots.length) {
     const result = {...base, ...identity, status: "NEEDS_DISCOVERY", reason: "NO_ANCHOR_MATCH",

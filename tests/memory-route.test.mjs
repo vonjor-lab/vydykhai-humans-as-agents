@@ -75,6 +75,27 @@ function addRoutes(content, added) {
     .replace("## Current Memory Nodes", added.map(r=>`| ${r[0]} | ${r[1]} | ${r[2]} | fixture | source |`).join("\n") + "\n## Current Memory Nodes");
 }
 
+test("recall condition finds an active commitment without naming its original module", async t => {
+  const content = graph([node("MEM-PAYMENT", "COMMITMENT", "ENT-OTHER",
+    "Obtain owner approval of retained stock reservation before enabling payments", {
+      "Recall when": "enable payments", "Return / close when": "owner accepts stock reservation review"
+    })]);
+  assert.deepEqual(validateMemoryGraph(content, manifest), []);
+  const result = deriveMemoryRoute(content, "Please enable payments for invoice projection");
+  assert.ok(result.items?.some(n => n.id === "MEM-PAYMENT"), JSON.stringify(result));
+  assert.equal(result.admission, "NOT_GRANTED");
+  assert.equal(result.semanticTruth, "NOT_VERIFIED");
+  const root = await mkdtemp(path.join(tmpdir(), "recall-trigger-"));
+  t.after(() => rm(root, {recursive:true, force:true}));
+  const graphFile = path.join(root, "graph.md"); await writeFile(graphFile, content);
+  const cli = await memoryRecallCommand(["--graph", graphFile, "--request", "Please enable payments for invoice projection"], services);
+  assert.deepEqual(cli.items, result.items);
+  const unrelated = deriveMemoryRoute(content, "invoice projection");
+  assert.ok(!unrelated.items.some(n => n.id === "MEM-PAYMENT"));
+  const retired = deriveMemoryRoute(content.replace("### MEM-PAYMENT - MEM-PAYMENT\n- Type / status: COMMITMENT / ACTIVE", "### MEM-PAYMENT - MEM-PAYMENT\n- Type / status: COMMITMENT / SUPERSEDED"), "Please enable payments for invoice projection");
+  assert.ok(!retired.items.some(n => n.id === "MEM-PAYMENT"));
+});
+
 test("protected recall retains the safe locator and re-entry conditions without reading or granting access", async t => {
   const pointer = "operations owner | vault:quotation-reader (reference only) | staging read-only | ordinary login status | historical receipt-2 | recheck after logout or environment change";
   const content = graph([node("MEM-ACCESS", "POINTER", "ENT-QUOTE", "Use the existing ordinary route, not a new account", {
