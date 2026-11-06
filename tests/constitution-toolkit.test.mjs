@@ -130,7 +130,8 @@ test('published prior updater delivers references without losing private work or
   const installedCli = path.join(worker, 'scripts/vydykhai.mjs');
   run(process.execPath, [installedCli,'update',worker,'--from',root], worker);
   const plan = JSON.parse(run(process.execPath, [installedCli,'adoption-plan',worker,'--json'], worker));
-  assert.equal(plan.target.version, '2.1.17');
+  assert.equal(plan.target.version, '2.1.18');
+  assert.ok(plan.releases.some(r => r.version === '2.1.18'));
   assert.ok(plan.releases.some(r => r.version === '2.1.17'));
   assert.equal(plan.activeUse, 'UNPROVEN_BY_INSTALLER');
   assert.match(plan.requirements.find(r=>r.id==='unfinished-workers').action, /next authorized action/);

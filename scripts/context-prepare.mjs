@@ -1,6 +1,7 @@
 // Task-local transport builder. Semantic decisions remain explicit owner inputs.
 import path from "node:path";
-import { readFile, writeFile, lstat, realpath, mkdir, rmdir, rename, readdir } from "node:fs/promises";
+import { readFile, writeFile, lstat, realpath, mkdir, rename, readdir, rm } from "node:fs/promises";
+import { hostname } from "node:os";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { canonicalJson, sha256, checkPreparedContext } from "./memory-brief.mjs";
@@ -170,13 +171,67 @@ async function build(root, input, output) {
   return { plan, artifacts, request, integrationPlan, expectedIntegration, render, navigation, alignment, task: artifacts.get(task.path) };
 }
 
+async function lockOwner(lock) {
+  try {
+    need(await realpath(lock) === lock && (await lstat(lock)).isDirectory(), "PREPARATION_LOCK_UNKNOWN");
+    const file = path.join(lock, "owner.json");
+    const stat = await lstat(file);
+    need(stat.isFile() && !stat.isSymbolicLink() && stat.size <= 4096, "PREPARATION_LOCK_UNKNOWN");
+    const owner = JSON.parse(await readFile(file, "utf8"));
+    need(owner.host === hostname() && Number.isSafeInteger(owner.pid) && owner.pid > 0 &&
+      typeof owner.token === "string" && /^[0-9a-f-]{36}$/.test(owner.token), "PREPARATION_LOCK_UNKNOWN");
+    return owner;
+  } catch { throw Error("PREPARATION_LOCK_UNKNOWN"); }
+}
+
+function requireDeadOwner(owner) {
+  try { process.kill(owner.pid, 0); }
+  catch (error) { if (error.code === "ESRCH") return; throw Error("PREPARATION_LOCK_UNKNOWN"); }
+  throw Error("PREPARATION_LOCK_HELD");
+}
+
+export async function acquirePreparationLock(dir) {
+  dir = await realpath(dir);
+  const lock = path.join(dir, ".prepare-lock");
+  try { await mkdir(lock); }
+  catch (error) { if (error.code === "EEXIST") throw Error("PREPARATION_LOCK_HELD"); throw error; }
+  const owner = {pid: process.pid, host: hostname(), token: randomUUID(), createdAt: new Date().toISOString()};
+  await writeFile(path.join(lock, "owner.json"), encoded(owner), {flag: "wx", mode: 0o600});
+  return async () => {
+    need((await lockOwner(lock)).token === owner.token, "PREPARATION_LOCK_CHANGED");
+    const released = path.join(path.dirname(dir), `.${path.basename(dir)}.released-lock-${owner.token}`);
+    await rename(lock, released); await rm(released, {recursive: true});
+  };
+}
+
+export async function recoverPreparationLock(dir, owner, decision) {
+  dir = await realpath(dir);
+  need(id(owner) && decision === "reconciled", "PREPARATION_RECOVERY_RECONCILIATION_REQUIRED");
+  const lock = path.join(dir, ".prepare-lock");
+  const prior = await lockOwner(lock); requireDeadOwner(prior);
+  // A persistent generation-specific reservation cannot touch a replacement lock.
+  const marker = path.join(path.dirname(dir), `.${path.basename(dir)}.prepare-recovery-${prior.token}.json`);
+  try { await writeFile(marker, encoded({owner, decision, token: prior.token}), {flag: "wx", mode: 0o600}); }
+  catch (error) { if (error.code === "EEXIST") throw Error("PREPARATION_RECOVERY_HELD"); throw error; }
+  const current = await lockOwner(lock);
+  if (current.token !== prior.token) {
+    // Never clean up by a pathname that now belongs to a different owner.
+    throw Error("PREPARATION_LOCK_CHANGED");
+  }
+  requireDeadOwner(current);
+  const archive = path.join(path.dirname(dir), `.${path.basename(dir)}.prepare-lock-${randomUUID()}`);
+  await rename(lock, archive);
+  return {status: "LOCK_RECOVERED", archive, recoveryRecord: marker, commands: 0, replay: false,
+    note: "Lock evidence retained. Reconcile saved package state before the next authorized command; recovery does not resume execution."};
+}
+
 export async function prepareContext(args, services = {}) {
   let unlock;
   try {
     const [mode, ...rest] = args, options = {};
-    need(["plan", "confirm", "read", "ack", "bind", "estimate", "measure"].includes(mode) && rest.length % 2 === 0, "PREPARATION_ARGUMENTS_INVALID");
+    need(["plan", "confirm", "read", "ack", "bind", "estimate", "measure", "recover"].includes(mode) && rest.length % 2 === 0, "PREPARATION_ARGUMENTS_INVALID");
     for (let i = 0; i < rest.length; i += 2) { need(/^--(input|output|owner|decision|worker|evidence|event)$/.test(rest[i]) && !Object.hasOwn(options, rest[i]), "PREPARATION_ARGUMENTS_INVALID"); options[rest[i]] = rest[i + 1]; }
-    const allowed = { plan: ["--input", "--output"], confirm: ["--output", "--owner", "--decision"], read: ["--output", "--worker"], ack: ["--output", "--worker", "--evidence"], bind: ["--output", "--owner", "--event"], estimate: ["--input"], measure: ["--input"] };
+    const allowed = { plan: ["--input", "--output"], confirm: ["--output", "--owner", "--decision"], recover: ["--output", "--owner", "--decision"], read: ["--output", "--worker"], ack: ["--output", "--worker", "--evidence"], bind: ["--output", "--owner", "--event"], estimate: ["--input"], measure: ["--input"] };
     need(keys(options, allowed[mode]), "PREPARATION_ARGUMENTS_INVALID");
     const root = await realpath(process.cwd()), output = options["--output"];
     if (mode === "estimate") return estimateContextRoutes(await read(root, options["--input"]));
@@ -186,7 +241,8 @@ export async function prepareContext(args, services = {}) {
     need(await realpath(path.dirname(dir)) === path.dirname(dir), "PACKAGE_PATH_INVALID");
     if (mode === "plan") { try { await mkdir(dir); } catch (e) { if (e.code !== "EEXIST") throw e; } }
     need(await realpath(dir) === dir && (await lstat(dir)).isDirectory(), "PACKAGE_PATH_INVALID");
-    const lock = path.join(dir, ".prepare-lock"); await mkdir(lock); unlock = () => rmdir(lock);
+    if (mode === "recover") return await recoverPreparationLock(dir, options["--owner"], options["--decision"]);
+    unlock = await acquirePreparationLock(dir);
     const put = async (name, value, replace = false) => {
       const relative = `${output}/${name}`, target = path.join(dir, name), content = encoded(value);
       try { const prior = await file(root, relative); if (prior.toString() === content) return reference(relative, value); need(replace, "PACKAGE_OUTPUT_COLLISION"); }

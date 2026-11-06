@@ -1,5 +1,24 @@
 # Collaboration Framework Changelog
 
+## 2.1.18 - 2026-11-06
+
+### External Review Follow-up
+
+Implementation/adoption repair, not a new architecture or a constitutional change.
+Preparation locks record their local owner. Explicit reconciled recovery archives
+a proven dead owner's lock without executing work; live, foreign, legacy and
+unknown owners remain blocked. Literal commitment return conditions supplement
+entity aliases in the existing memory reader, without granting authority or
+claiming semantic completeness. Launch distinguishes a model-free foreground
+baseline from separately authorized background and incident review evidence.
+V2 installation links and manifest compatibility notes clarify channel/profile
+precedence without changing old updater fields. Two long adoption actions now
+point to conditional sections retaining their obligations, scopes and history.
+No new role, scheduler, independent model call or automatic project update.
+New checks cover a killed isolated process, preserved package, refused recovery,
+and a previously missed commitment through the public reader. These are local
+regressions, not proof of live adoption or subscription savings.
+
 ## 2.1.17 - 2026-11-06
 
 ### Constitution And Instrument Map

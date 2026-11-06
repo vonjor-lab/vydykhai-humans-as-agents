@@ -12,7 +12,7 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `2.1.17`
+Current version: `2.1.18`
 
 Stable release on the release/2.x channel. Verify the release asset digest and use the trusted source installer.
 
@@ -52,11 +52,11 @@ License: [PolyForm Small Business 1.0.0](LICENSE.md); [separate commercial licen
 Open your coding agent in the project you want to build and send either version as one message:
 
 ```text
-Подключи Vydykhai к этому проекту и запусти оркестратор. Сам определи возможности своей агентской среды и выполни BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents
+Подключи Vydykhai к этому проекту и запусти оркестратор. Сам определи возможности своей агентской среды и выполни BOOTSTRAP.md; спрашивай меня только о недостающем доступе или решении: https://github.com/vonjor-lab/vydykhai-humans-as-agents/tree/release/2.x
 ```
 
 ```text
-Connect Vydykhai to this project and start the orchestrator. Determine the capabilities of your agent environment, follow BOOTSTRAP.md end to end, and ask me only for missing access or a decision: https://github.com/vonjor-lab/vydykhai-humans-as-agents
+Connect Vydykhai to this project and start the orchestrator. Determine the capabilities of your agent environment, follow BOOTSTRAP.md end to end, and ask me only for missing access or a decision: https://github.com/vonjor-lab/vydykhai-humans-as-agents/tree/release/2.x
 ```
 
 That is the normal installation path. The agent identifies the target repo, installs and validates the framework, connects the shared operating space, prepares Project State, and starts the dedicated orchestrator. A bare URL is not enough to express intent; either sentence above is.
