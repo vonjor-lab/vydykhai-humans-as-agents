@@ -7,6 +7,50 @@ const text = v => typeof v === "string" && v.trim() === v && v.length > 0 && v.l
   !/[\r\n\0]/.test(v) && !/<[^>]*>/.test(v);
 const identity = ["work", "revision", "checkpoint", "humanEvent", "contextEpoch"];
 
+// A resume receipt proves this transition, not completion of the task or host delivery.
+export function evaluateResumeReceipt(value) {
+  const result = (status, reason) => ({status, reason, replayAuthorized: false});
+  if (!object(value) || value.boundary !== "task-resume" ||
+      !["work", "owner", "humanEvent", "checkpoint", "action"].every(k => text(value[k]))) {
+    return result("UNVERIFIED", "current resume scope missing");
+  }
+  if (value.effects === "UNKNOWN") return result("OUTCOME_UNKNOWN", "reconcile effects before any retry");
+  if (value.pause !== "CLEARED" || value.effects !== "RECONCILED") {
+    return result("UNVERIFIED", "pause authority or effects not reconciled");
+  }
+  const dispatch = value.dispatch, observed = value.observed;
+  if (!object(dispatch) || !text(dispatch.evidence) || !text(dispatch.turnId)) {
+    return result("UNVERIFIED", "promise is not dispatch");
+  }
+  if (!object(observed) || !text(observed.evidence)) {
+    return result("UNVERIFIED", "dispatch is not first action");
+  }
+  for (const row of [dispatch, observed]) {
+    if (!["work", "owner", "humanEvent", "checkpoint", "action"].every(k => row[k] === value[k])) {
+      return result("MISMATCH", "receipt does not match current resume");
+    }
+  }
+  if (observed.turnId !== dispatch.turnId) return result("MISMATCH", "stale or different worker turn");
+  const task = evaluateTaskIdentity(value.taskIdentity, {
+    work: value.work, context: value.owner, turnId: observed.turnId
+  });
+  if (task.coverage !== "COVERED") return result("UNVERIFIED", task.reason);
+  if (task.nextAction || value.taskIdentity.current.humanEvent !== value.humanEvent ||
+      value.taskIdentity.current.checkpoint !== value.checkpoint) {
+    return result("MISMATCH", "restore current authoritative assignment before closing resume");
+  }
+  const readback = value.readback;
+  if (!object(readback) || readback.evidence !== value.taskIdentity.seen.evidence ||
+      readback.contextEpoch !== value.taskIdentity.current.contextEpoch ||
+      observed.contextEpoch !== readback.contextEpoch ||
+      !Number.isSafeInteger(readback.sequence) || readback.sequence < 0 ||
+      !Number.isSafeInteger(observed.sequence) || observed.sequence <= readback.sequence) {
+    return result("UNVERIFIED", "first action must follow current readback in the same observed epoch");
+  }
+  if (observed.kind !== "FIRST_ACTION") return result("UNVERIFIED", "acknowledgement or blocker is not execution");
+  return result("PASS", "scoped first action observed; not DOD or autonomous delivery proof");
+}
+
 export function evaluateTaskIdentity(value, { work, context, turnId } = {}) {
   let observationKey = null;
   const result = (coverage, nextAction, reason) => ({ coverage, nextAction, reason,

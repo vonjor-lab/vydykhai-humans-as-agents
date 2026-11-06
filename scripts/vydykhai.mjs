@@ -24,12 +24,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { compileExecutableBrief, validateApplicationReceipt } from "./memory-brief.mjs";
 import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
-import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, readCapabilityAdoption, kitIdentity } from "./adoption-plan.mjs";
+import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, readCapabilityAdoption, kitIdentity, assessUpdateAcceptance } from "./adoption-plan.mjs";
 import { classifyCheckpointReviews } from "./checkpoint-review.mjs";
-import { evaluateTaskIdentity } from "./task-continuity.mjs";
+import { evaluateTaskIdentity, evaluateResumeReceipt } from "./task-continuity.mjs";
 import { readMemoryGraph, memoryStorageCommand } from "./memory-storage.mjs";
 import { section, tableRows, bulletFields } from "./artifact-markdown.mjs";
-export { evaluateTaskIdentity } from "./task-continuity.mjs";
+export { evaluateTaskIdentity, evaluateResumeReceipt } from "./task-continuity.mjs";
 export { checkpointNoticeStillDue } from "./checkpoint-review.mjs";
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -57,7 +57,8 @@ function usage() {
 
 Usage:
   node scripts/vydykhai.mjs install <target-repo> [--force] [--approve-transition <from-version>:<to-version>]
-  node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--json]
+  node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--receipt <transition-export.json>] [--json]
+  node scripts/vydykhai.mjs action-receipt --input <resume-receipt.json>
   node scripts/vydykhai.mjs control-activate --runtime-source <trusted-source> --input <private-request.json>
   node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--expect-state-sha <sha256>] [--expect-graph-sha <sha256>] [--json]
   node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--woken-incident <semantic-id>] [--repair-incident <semantic-id> --repair-attempts <count>] [--json]
@@ -69,7 +70,7 @@ Usage:
   node scripts/vydykhai.mjs memory-recall --graph <graph-or-storage-manifest> --request <ordinary-request>
   node scripts/vydykhai.mjs context-run --input <context-request.json>
   node scripts/vydykhai.mjs context-run --wait-for <expected-return-id>
-  node scripts/vydykhai.mjs adoption-plan [target] [--worker <worker-repo>] [--input <readiness-snapshot.json>] --json
+  node scripts/vydykhai.mjs adoption-plan [target] [--worker <worker-repo>] [--input <readiness-snapshot.json>] [--receipt <transition-export.json>] --json
   node scripts/vydykhai.mjs context-prepare <plan|confirm|read|ack|bind> --output <task-local-dir> ...
   node scripts/vydykhai.mjs context-prepare estimate --input <cost-estimate.json>
   node scripts/vydykhai.mjs context-prepare measure --input <actual-context-usage.json>
@@ -699,6 +700,8 @@ function printDoctor(result, asJson) {
   }
   console.log(`Vydykhai ${result.installedVersion} (${result.mode})`);
   console.log(`Integrity: ${result.ok ? "OK" : "FAILED"}`);
+  console.log(`Update acceptance: ${result.updateAcceptance.status}; declared evidence, not automatic project-health verification.`);
+  for (const row of result.updateAcceptance.checks) console.log(`  ${row.id}: ${row.status}`);
   const routing = result.agentRoutingPolicy;
   console.log(`Agent routing: ${routing.selectionPolicy || routing.modelPolicy} / ${routing.policy}`);
   console.log(
@@ -1443,6 +1446,18 @@ function evaluateExecutionObservation(view, work) {
   if (taskIdentity.coverage === "LIMITED") return { ...limited(taskIdentity.reason, taskIdentity.nextAction), ...identity };
   if (taskIdentity.nextAction) return { coverage: "COVERED", signal: taskIdentity.reason, nextAction: taskIdentity.nextAction, ...identity };
   if (resultPending) return { coverage: "COVERED", signal: "terminal result awaits reconciliation", nextAction: "RECONCILE_RESULT", ...identity };
+  if (view.resumeRequired === true || Object.hasOwn(view, "resumeReceipt")) {
+    const receipt = view.resumeReceipt;
+    if (!receipt || receipt.work !== work?.split(/\s/)[0] || receipt.owner !== view.context ||
+        receipt.observed?.turnId !== view.turnId ||
+        !["current", "seen"].every(part => ["work", "revision", "checkpoint", "humanEvent", "contextEpoch", "evidence",
+          ...(part === "current" ? ["owner"] : ["turnId"])].every(key =>
+          receipt.taskIdentity?.[part]?.[key] === view.taskIdentity?.[part]?.[key]))) {
+      return { ...limited("current resume receipt unavailable or bound to another observation", "RECONCILE_RESUME"), ...identity };
+    }
+    const resume = evaluateResumeReceipt(receipt);
+    if (resume.status !== "PASS") return { ...limited(resume.reason, "RECONCILE_RESUME"), ...identity };
+  }
   return { coverage: "COVERED", signal: null, nextAction: null, ...identity };
 }
 
@@ -1561,8 +1576,8 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
     if (lease.state !== "WAITING") {
       const execution = evaluateExecutionObservation(view, lease.work);
       taskIdentities.push({ work: lease.work, context: view.context, coverage: execution.identityCoverage || "NOT_EVALUATED" });
-      if (execution.coverage === "LIMITED") return { ...limited(`${lease.work}: ${execution.reason}`), taskIdentities };
       if (execution.nextAction) nextActions.push({ work: lease.work, context: view.context, action: execution.nextAction });
+      if (execution.coverage === "LIMITED") return { ...limited(`${lease.work}: ${execution.reason}`), taskIdentities, nextActions };
       if (execution.signal || view.status === "IDLE") {
         issues.push(`Lease activity: ${lease.work} requires routing (${execution.signal || "idle without a wait"})`);
       }
@@ -2263,8 +2278,19 @@ async function main() {
   if (command === "doctor") {
     const target = path.resolve(positionals[0] || process.cwd());
     const result = await doctor(target, flags);
+    result.updateAcceptance = assessUpdateAcceptance({ version: result.installedVersion, sourceRevision: result.sourceRevision, integrity: result.ok },
+      flags.receipt ? JSON.parse(await readFile(path.resolve(flags.receipt), "utf8")) : undefined);
     printDoctor(result, flags.json);
     if (!result.ok) process.exitCode = 1;
+    else if (flags.receipt && result.updateAcceptance.status !== "DOCUMENTED_COMPLETE") process.exitCode = 2;
+    return;
+  }
+
+  if (command === "action-receipt") {
+    if (!flags.input) throw new Error("action-receipt requires --input");
+    const result = evaluateResumeReceipt(JSON.parse(await readFile(path.resolve(flags.input), "utf8")));
+    console.log(JSON.stringify(result, null, 2));
+    if (result.status !== "PASS") process.exitCode = 2;
     return;
   }
 
@@ -2292,9 +2318,13 @@ async function main() {
     if (flags.input) {
       plan.capabilityReadiness = assessCapabilityReadiness(JSON.parse(await readFile(path.resolve(flags.input), "utf8")), { requireArchitecture: true, requireTeamSync: true });
     }
+    plan.updateAcceptance = assessUpdateAcceptance({version: manifest.version, sourceRevision: lock.sourceRevision},
+      flags.receipt ? JSON.parse(await readFile(path.resolve(flags.receipt), "utf8")) : undefined);
+    if (flags.receipt && plan.updateAcceptance.status !== "DOCUMENTED_COMPLETE" && !process.exitCode) process.exitCode = 2;
     if (flags.json) console.log(JSON.stringify(plan, null, 2));
     else {
       printAdoption(plan);
+      console.log(`Update acceptance: ${plan.updateAcceptance.status}; evidence export only.`);
       if (plan.workerCheck) console.log(`Worker kit: ${plan.workerCheck.status} (${plan.workerCheck.reason}); instruction readback is separate.`);
       if (plan.capabilityReadiness) {
         const readiness = plan.capabilityReadiness;

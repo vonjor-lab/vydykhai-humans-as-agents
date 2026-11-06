@@ -1,6 +1,16 @@
 # Framework Efficiency Transition
 
-## Current Increment: 2.1.18
+## Current Increment: 2.1.19 Candidate
+
+Separate kit integrity from evidence-backed application using the existing
+adoption transition. Resume Action Receipt binds current human authority,
+checkpoint, restored task identity and observed first action. No new controller,
+periodic audit or product replay. Reuse prior evidence; changed bindings remain
+explicit gaps. Independent review must verify actual route integration before
+release, not just isolated classifiers. Product adoption remains owner-managed at
+a safe boundary; do not claim autonomous delivery from manual recovery.
+
+## Historical Increment: 2.1.18
 
 Bounded follow-up to the public 2.1.17 review. Preserve the constitution and
 existing independence/authority boundaries. Repair preparation-lock diagnostics
