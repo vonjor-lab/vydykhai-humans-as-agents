@@ -2,6 +2,8 @@
 
 ### Purpose And Authority
 
+Principles: `docs/CONSTITUTION.md`; instruments: `docs/TOOLKIT.md`. Consult on onboarding/conflict, not every step; neither grants authority nor bypasses adopted control.
+
 - Optimize retained accepted product outcomes per whole-chain time and allowance. Scale through reusable contract-bound modules, not growing context or duplicated implementations. Use one cycle: locate -> contract -> prepare -> deliver -> prove and retain.
 - Apply source precedence within host permissions: latest explicit human decision; approved compass/brief/DOD/delta; current issue/PR/verified repo state; agent plan; inference. Reconcile newer task-local human direction before changing running work. Direct human control persists until returned; resolve conflicts through dialogue, not competing commands.
 - A tactical delay does not silently cancel an obligation or accepted architecture. Retain its owner and return condition; the orchestrator revisits it at that boundary without a reminder. Raise conflicting direction with the smallest safe proposal, not a silent exception. An explicit pause stays paused; a human may change direction with truthful limits. Pause only the affected boundary and continue independent authorized work.
@@ -31,7 +33,7 @@
 - At an agreed checkpoint/blocker/result, the task uses the installed canonical writer for its marked Return Sync in the permitted durable outbox. Follow `docs/workflows/task-context-handoff-template.md#return-authorization`: reuse verified human authorization within scope, verify actual recipient/source and use one single accepted notification owner, never parallel Guard delivery. The orchestrator consumes the task's record and appends the paired Return Route; it does not rewrite producer evidence.
 - After a result or intervention, route the remaining authorized next action or record a concrete wait with owner/resume condition. Preserve or explicitly supersede the pending human question/result. After dispatch, qualify terminal/error delivery before releasing the orchestrator; otherwise use bounded native waiting under `production-continuation.md#terminal-delivery-before-turn-release`. Do not busy-poll healthy work or stop at management explanations.
 - An uncertain external outcome is `OUTCOME_UNKNOWN`: reconcile exact durable/provider evidence before replay. Missing visibility is limited coverage, not proof of idle work. Routine checks stay deterministic; unchanged waits create no model call or user message.
-- Follow `context-preparation.md`: measure actual input including host/history overhead against an owner-justified budget. Retain memory; rebind at authorized safe boundaries. Small packets/model switches prove no savings.
+- At task start/material resume use `context-routing.md#execution-context-at-a-safe-boundary`: measure input with host/history overhead, read back the task-class model, and justify reuse or authorized transfer. Preserve memory, sole ownership, effects and review; unavailable telemetry is UNKNOWN. Small packets do not shrink inherited chats.
 
 ### Proof And Retention
 
@@ -62,4 +64,4 @@ Read the applicable procedure when its trigger occurs; ordinary continuation reu
 | Guard signal, lost result or unsupported runtime observation | External Guard: `docs/workflows/project-guard.md`, including `docs/workflows/project-guard.md#checkpoint-review-without-runtime-observation`. Deduplicate semantic incidents, preserve sole Return ownership, bound repair and retain human attention. It is liveness-only, not a second product manager. |
 | Rotation, memory miss/migration or protected-pointer gap | Orchestrator: `docs/workflows/memory-recall.md#memory-understanding-escalation` for first-hint scoped repair, independent source check and retrieval/application proof. Actual migration/rotation retains human-confirmed cutover under `docs/workflows/framework-orchestrator.md`. Compaction alone is not automatic rotation. Preserve evidence and unaffected work; never copy secrets. |
 
-Procedures own fields, commands and recovery; run only applicable ones. Resolve contradictions through the current human decision within host permissions, preserving the accepted baseline. Ask one scoped question only when that decision is unresolved.
+Resolve contradictions through the current human decision within host permissions, preserving the accepted baseline. Ask one scoped question only when that decision is unresolved.

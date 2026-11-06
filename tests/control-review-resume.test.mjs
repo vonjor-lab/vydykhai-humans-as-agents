@@ -5,7 +5,8 @@ import path from "node:path";
 import {randomUUID} from "node:crypto";
 import {endpointFixture} from "./control-endpoint-fixture.mjs";
 import {openModelReview} from "../scripts/control-model-review.mjs";
-import {controlCheckIds} from "../scripts/control-catalog.mjs";
+import {controlCheckIds,controlConstitution} from "../scripts/control-catalog.mjs";
+import {openControlStore} from "../scripts/control-store.mjs";
 import {sha256} from "../scripts/memory-brief.mjs";
 import {openReviewSources} from "../scripts/control-review-sources.mjs";
 import {openReviewSubmission} from "../scripts/control-review-submission.mjs";
@@ -66,11 +67,13 @@ async function interruptAfterRead(x, resumable = true) {
 }
 test("interrupted independent review resumes acquired evidence, preserves spend and refuses replay",{skip:process.platform!=="darwin"},async t=>{
   const x=await setup(t),first=await interruptAfterRead(x);
+  assert.equal(first.constitutionSha256,sha256(controlConstitution));
   const review=await openModelReview(x.options); // Controller restart, not a new assignment.
   const verdict=await review.review(x.offer,{resume:true});
   assert.equal(verdict.rows.length,87);
   const last=await review.observe(x.offer.runId);
   assert.equal(last.threadId,first.threadId);assert.equal(last.history.length,1);
+  assert.equal(last.constitutionSha256,first.constitutionSha256);
   assert.equal(last.history[0].trace.sha256,first.trace.sha256);
   assert.equal(last.resumable,false);assert.equal(last.usage,null);
   assert.equal((await review.capacity()).used,2);
@@ -85,6 +88,20 @@ test("source or assignment drift blocks continuation before spending",{skip:proc
   await x.f.put("evidence.md","Changed source");
   await assert.rejects(x.review.review(x.offer,{resume:true}),/SOURCE_DRIFT/);
   assert.equal((await x.review.capacity()).used,1);
+});
+for(const prior of [undefined,sha256('previous framework mandate')])test(`absent or changed mandate ${prior?'hash':'legacy record'} refuses resume without writes or spend`,{skip:process.platform!=="darwin"},async t=>{
+  const x=await setup(t);await interruptAfterRead(x);
+  const store=await openControlStore(x.options.directory);
+  await store.transact(s=>{
+    if(prior===undefined)delete s.runs[x.offer.runId].constitutionSha256;
+    else s.runs[x.offer.runId].constitutionSha256=prior;
+    return s;
+  });
+  const before=await store.read();
+  const reopened=await openModelReview(x.options);
+  await assert.rejects(reopened.review(x.offer,{resume:true}),/INSTRUCTION_DRIFT/);
+  assert.deepEqual(await store.read(),before);
+  assert.equal((await reopened.capacity()).used,1);
 });
 for(const interruption of ["pending-tool","truncated-json"])test(`${interruption} refuses impossible continuation without spending`,{skip:process.platform!=="darwin"},async t=>{
   const x=await setup(t,interruption),stopped=await interruptAfterRead(x,false);

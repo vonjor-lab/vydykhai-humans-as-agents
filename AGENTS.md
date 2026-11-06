@@ -6,6 +6,8 @@ This repository is the canonical source for the universal Vydykhai team-autopilo
 
 ## Maintenance Rules
 
+- Preserve the purpose-to-instrument structure in `docs/CONSTITUTION.md` and `docs/TOOLKIT.md`. Classify changes through the existing Framework Evolution Gate; do not promote a workaround into a principle or repeat a known lesson instead of proving adoption. Load only the affected procedure on the execution hot path.
+
 - Continue the approved efficiency transition from `docs/FRAMEWORK_TRANSITION_PLAN.md`. Preserve its rationale, remaining gates and evidence limits across handoffs; update progress after verification. This is a maintainer plan, not another installed runtime workflow.
 - Treat `vydykhai.json` as the machine-readable version and managed-path manifest.
 - Keep `docs/FRAMEWORK.md` and `docs/FRAMEWORK_RU.md` aligned in meaning and version.

@@ -1,7 +1,7 @@
 # Independent Control On The Supported Route
 
 Opt-in controlled operating contract, shipped in managed workflows, not proof of activation or product-change authority.
-Read at adoption, new admission, product acceptance, an independent finding or due Health Review, not every unchanged turn.
+Read at adoption, new admission, product acceptance, an independent finding or due Health Review, not every unchanged turn. The trusted runtime carries the canonical constitution through the existing catalog, separately from untrusted sources; validation requires byte equality with `docs/CONSTITUTION.md`. The full prompt includes those bytes in existing input limits. A continuation must retain its recorded constitution hash; a legacy/mismatched review cannot resume under new instructions. Finish/reconcile it on its original frozen runtime before adopting this change at the next authorized safe review boundary. Keep all journals, acquisition and spend; do not launch a review solely to prove an update.
 
 ## Select And Prove The Mode
 

@@ -10,6 +10,8 @@ Contributors must have the right to submit all material they provide and must di
 
 ## Framework Evolution Gate
 
+Classify each change as **constitution** (purpose, invariant or allowed tradeoff), **instrument** (means), **application rule** (trigger, owner, scope, exit), or **implementation/adoption** (an existing rule fails or is unused). Use [CONSTITUTION](docs/CONSTITUTION.md) and [TOOLKIT](docs/TOOLKIT.md), not a new approval workflow. State the level in the ordinary change discussion. A constitutional change needs explicit human agreement on what is retained, amended or superseded; an authorized ordinary repair does not. Never promote a local workaround into a universal principle. Align the human references, core, affected workflow and existing adoption requirement, identifying replaced duplication and proof limits. These references are not mandatory reading on every execution step.
+
 Apply this gate when shaping every framework update and again before release, including fixes and wording changes. Before adding a universal rule, skill, workflow, artifact, or public term, confirm all of the following:
 
 - it addresses a repeated collaboration failure, not one project's local preference;
