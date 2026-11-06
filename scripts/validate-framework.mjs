@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { controlConstitution } from "./control-catalog.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const errors = [];
@@ -21,6 +22,7 @@ function lineCount(value) {
 }
 
 const manifest = JSON.parse(await text("vydykhai.json"));
+if (controlConstitution !== await text("docs/CONSTITUTION.md")) fail("Trusted REVIEW constitution differs from the canonical document");
 if (manifest.schemaVersion !== 1) fail("vydykhai.json schemaVersion must be 1");
 if (!/^\d+\.\d+\.\d+(?:-rc\.[1-9]\d*)?$/.test(manifest.version || "")) fail("vydykhai.json version must be semantic");
 if (!existsSync(path.join(root, "BOOTSTRAP.md"))) fail("BOOTSTRAP.md is missing");

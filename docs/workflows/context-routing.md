@@ -5,9 +5,23 @@ When comparing operating versions, separate model-rate substitution from workflo
 This implements the preparation branch of [Module Delivery](module-delivery.md) through [Context Preparation](context-preparation.md), not another management hierarchy. Context readiness is checked at every start and material information gap. Reuse a sufficient current packet; do not repeat an exhaustive search.
 
 ## Responsibilities
+### Execution Context At A Safe Boundary
+
+At a new task or material resume, resolve the existing startup contract's physical context and actual model before dispatch. A compact packet sent into a large chat is not compact execution. Reuse sufficient selected meaning and code; do not rerun preparation merely to fill this record. Use available request telemetry through `context-prepare measure`, not packet bytes or an account-wide quota percentage.
+
+When `SAFE_BOUNDARY_REFRAME_DUE` or evidenced repeated broad rereading occurs, record one boundary action in the existing lease/checkpoint. Finish the current atomic operation first; retain source originals, latest human decisions, secrets references, accepted/candidate artifacts, failures, accrued cost, pending receipts and uncertain effects. Use supported compaction or an authorized fresh physical executor with that selected packet, not a fork carrying the entire transcript. Transfer the same logical task and sole execution lease only after the previous owner is quiescent and effects are reconciled. Require current assignment/source readback before its next action. Never run two owners or replay a completed action. Do not rotate the project orchestrator under this executor rule.
+
+Read back actual model/effort against the accepted task-class mapping at this same boundary. A stronger profile inherited from the previous task is not evidence of need. Use the proven economical mapping, or retain a named capability/availability exception and its return condition. Do not silently switch a running operation, change independent-review routing or relax acceptance to save tokens.
+
+The existing startup record includes observed context input (or UNKNOWN), selected scope and budget, actual profile/evidence, and boundary disposition. No arbitrary universal token cap: derive the budget from sufficient task context and host limits. After a transition, measure actual next-request context if exposed; absent host support is LIMITED, never a claimed context reduction. Do not repeat transitions to obtain a metric. A new physical session does not reset task cost or authority.
+
+During execution, combine related source reads and local checks into bounded tool operations when the host supports it. Return selected sections/results to the model and retain originals on disk. Do not batch dependent or unsafe mutations; do not replace reasoning with a blind long script. Request context additions only for a named gap. Intermediate local tests are not management or review checkpoints. Use the existing terminal delivery route for waiting; do not model-poll unchanged status. Unsupported delivery retains its existing bounded LIMITED fallback.
+
+Before the next suitable real task starts, retain its whole DOD, comparison task and scope differences in the existing measurement obligation. Include preparation, all executor sessions, model changes, failed attempts, handoff and management through required final/POST review, resulting corrections, retention and observed disposition, not merely owning acceptance. Until those obligations close, accounting is partial; later independent project Health is separate. Resolve changed/stopped task identity explicitly; never resume obsolete work to satisfy a measurement. Claim savings only from comparable accepted outcomes with attributable complete costs; otherwise report partial evidence. Steps, idle hours, packet size and installation are not task-cost savings. No synthetic replay or repeated acceptance for this measurement.
+
 ### Bounded Role Adoption
 Use the accepted project-local model/effort mapping before default role hints. Keep vendor ids outside managed files. Retain the installed orchestrator and independent control profiles during an executor rollout; change either only at its own compatible owner-approved boundary. An update is not permission to downgrade active workers. Record task class, actual model/effort, supporting evidence and fallback in the existing routing record. A bounded benchmark does not prove general architecture, visual quality or independent-review capability. Without comparable evidence, retain the accepted profile. Preparation is optional when current context is sufficient.
-Use one existing independent reviewer role for the whole useful outcome when its Candidate meets DOD, with fresh review in a context distinct from the producer. Ordinary preparation is source selection and owner confirmation, not independent control; local implementation attempts do not each require review. Protected-host PRE remains required only on its explicitly adopted route; see [mode selection](independent-control.md#select-and-prove-the-mode). Do not add a reviewer of the preparer. The orchestrator checks packet sufficiency; the independent reviewer checks applicable source evidence and the actual result, not just the producer's summary. Different model names alone do not prove independence.
+When the existing risk decision or an explicit requirement calls for final REVIEW, use one existing independent reviewer role for the whole useful outcome when its Candidate meets DOD, with fresh review in a context distinct from the producer. Ordinary preparation is source selection and owner confirmation, not independent control; local implementation attempts do not each require review. Protected-host PRE remains required only on its explicitly adopted route; see [mode selection](independent-control.md#select-and-prove-the-mode). Do not add a reviewer of the preparer. The orchestrator checks packet sufficiency; the independent reviewer checks applicable source evidence and the actual result, not just the producer's summary. Different model names alone do not prove independence.
 Before the first substantive correction, use [Reframe After Failure](#reframe-after-failure), not an automatic model ladder. Retain the better verified candidate; the latest output does not supersede it by age. Escalation preserves current sources, negative findings, progress and prior spend.
 At the owner's next natural safe checkpoint, apply through the ordinary updater and read back the installed kit and actual participant mapping. Do not interrupt an in-flight task or create a review solely to demonstrate a model switch. Validate on one suitable real task using existing acceptance, then retain its evidence limits. Account for preparation, execution, correction, review and coordination together; unknown usage stays UNKNOWN_NONZERO, not zero. Stop task follow-ups after actual acceptance and report delivery; do not periodically recheck an unchanged accepted result.
 
@@ -25,9 +39,7 @@ At the owner's next natural safe checkpoint, apply through the ordinary updater 
 
 Inspecting already authorized sources and edit/test paths is local execution, not a new preparation request. Reuse supplied contracts, citations and checks. Escalate only when these sources cannot answer a necessary question, disagree materially, or require an undeclared source/boundary. Retain progress and use the owner-approved supplement route. This does not expand packet access, authorize a new retrieval agent, or permit producer-source exploration for a consumed module.
 
-User communication remains through the orchestrator: explain the useful result
-and next step, not internal routing. Preparation uses the existing focused-task
-lease, Return Sync and cleanup, never a permanent new manager or Guard loop.
+User communication remains through the orchestrator: explain the useful result and next step, not internal routing. Preparation uses the existing focused-task lease, Return Sync and cleanup, never a permanent new manager or Guard loop.
 
 ## Reframe After Failure
 Trigger on a substantive failed outcome, unexpected integration failure, repeated cause or preparation growing without outcome progress. Obvious local typos and expected red tests stay local; they need no consultant or new approval. Pause only the failing branch, preserve actual effects and the best verified candidate; UNKNOWN is not replay authority.
@@ -41,8 +53,7 @@ Use the existing Return/acceptance and memory route: close only on observed outc
 
 ## Fit With Existing Work
 
-Mode names describe work, not automatic model assignments. Preparation locates
-known evidence; solution Discovery resolves what should be done with it.
+Mode names describe work, not automatic model assignments. Preparation locates known evidence; solution Discovery resolves what should be done with it.
 
 | Situation | Route and completion |
 | --- | --- |
@@ -55,21 +66,9 @@ known evidence; solution Discovery resolves what should be done with it.
 | Documentation and memory | Executor verifies required docs in the Candidate; orchestrator accepts reusable memory candidates. |
 | Guard, update or rotation | Existing liveness/activation rules; no retrieval timer or forced model/worker restart. Carry pending consultations and human control forward. |
 
-Lab is isolation, not a model tier: unresolved solution choices use Discovery;
-execution of an agreed experiment uses its proven execution profile or explicit
-human model choice. Its proof does not silently authorize production transfer.
+Lab is isolation, not a model tier: unresolved solution choices use Discovery; execution of an agreed experiment uses its proven execution profile or explicit human model choice. Its proof does not silently authorize production transfer.
 
-Research starts with the known scope, authoritative sources, explicit gaps and a
-permitted report route; it does not need the complete implementation packet that
-it is supposed to discover. Missing inputs do not authorize dependent mutation.
-Do not recursively require preparation of preparation. Reuse a Discovery packet
-when sufficient for implementation; no automatic extra retrieval stage.
-An unresolved owner decision goes to that owner, not another search round.
-Preparation has its own bounded retrieval result/lease, not ownership of the
-implementation Candidate. While it runs, the affected executor waits on that
-named dependency; the preparer never waits on the same executor. Return consumption
-resumes the existing consumer under current authority, not a competing task.
-Respect direct human control: a supplement supplies facts, not a new direction.
+Research starts with the known scope, authoritative sources, explicit gaps and a permitted report route; it does not need the complete implementation packet that it is supposed to discover. Missing inputs do not authorize dependent mutation. Do not recursively require preparation of preparation. Reuse a Discovery packet when sufficient for implementation; no automatic extra retrieval stage. An unresolved owner decision goes to that owner, not another search round. Preparation has its own bounded retrieval result/lease, not ownership of the implementation Candidate. While it runs, the affected executor waits on that named dependency; the preparer never waits on the same executor. Return consumption resumes the existing consumer under current authority, not a competing task. Respect direct human control: a supplement supplies facts, not a new direction.
 
 ## Initial Handoff and Later Gaps
 
@@ -96,35 +95,17 @@ Respect direct human control: a supplement supplies facts, not a new direction.
    the current-task Return Sync. No new human checkpoint for an already authorized
    internal handoff. Changed scope/authority needs the ordinary rebrief instead.
 
-Every navigation packet has `assignment` with exactly `owner`, `requestId`,
-`question`, `phase`, `previous`. Owner equals package owner; request id and question
-are nonempty. For `phase: "initial"`, `previous` is null. For `"supplement"`, it is
-`{plan:{path,sha256},approval:{path,sha256}}` pointing to the previous approved
-package. The builder checks those bytes, owner approval and exact task identity,
-worker, scope, action and Candidate files. Paths are workspace-relative.
+Every navigation packet has `assignment` with exactly `owner`, `requestId`, `question`, `phase`, `previous`. Owner equals package owner; request id and question are nonempty. For `phase: "initial"`, `previous` is null. For `"supplement"`, it is `{plan:{path,sha256},approval:{path,sha256}}` pointing to the previous approved package. The builder checks those bytes, owner approval and exact task identity, worker, scope, action and Candidate files. Paths are workspace-relative.
 
-Supplement input and output use new names; never overwrite predecessor evidence.
-Confirmation records `<previous-plan-path>.superseded.json` pointing to the exact
-successor. The supported `context-run` path rejects the old package and a competing
-successor; the new worker must acknowledge the new package. A failed confirmation
-is not permission to dispatch. Review its exact state and retry the same output;
-do not create parallel successors. These checks neither authenticate identities
-nor intercept arbitrary native edits; ordinary owner/lease control still applies.
+Supplement input and output use new names; never overwrite predecessor evidence. Confirmation records `<previous-plan-path>.superseded.json` pointing to the exact successor. The supported `context-run` path rejects the old package and a competing successor; the new worker must acknowledge the new package. A failed confirmation is not permission to dispatch. Review its exact state and retry the same output; do not create parallel successors. These checks neither authenticate identities nor intercept arbitrary native edits; ordinary owner/lease control still applies.
 
 ## Cost Comparison
 
-Use `agentRoutingPolicy.effortPolicy` over legacy profile fields. Orchestration uses flagship/Low; solution Discovery uses flagship/High. These are harness mappings, not model ids.
-A control failure means evidenced wrong routing, lost obligation or invalid readiness judgment. Reframe before one targeted correction; if that fails the same success criterion because of a named capability gap, use High for bounded recovery, not another blind Low retry. The existing escalation marker denotes this cause-qualified correction, not automatic promotion after any failure.
-Network/access failures, authorized pauses, missing human decisions and a worker's failing test alone do not trigger this escalation. Safety/authority uncertainty stops the affected action immediately; never try an unsafe action to earn a higher effort.
-Record the failure, correction, recovery criterion and effective effort in the existing next-action/State record. A High recovery ends only after observable handoff/return and retained obligations pass the criterion, not a promise or rewritten plan; return to Low at the next safe boundary.
-If High recovery still fails, use the existing blocker/confirmed-rotation path; do not oscillate Low/High, add retries or override human control. A missing switch capability has an explicit supported fallback/checkpoint, never a claimed switch. Independent work remains usable.
-Effort escalation never resets Guard repair limits, leases or burn caps: after a circuit breaker, High may diagnose/rebrief within authority, not replay the stopped action. Existing independent Governor anomaly evaluation is unchanged; routine checks remain model-free.
+Use `agentRoutingPolicy.effortPolicy` over legacy profile fields. Orchestration uses flagship/Low; solution Discovery uses flagship/High. These are harness mappings, not model ids. A control failure means evidenced wrong routing, lost obligation or invalid readiness judgment. Reframe before one targeted correction; if that fails the same success criterion because of a named capability gap, use High for bounded recovery, not another blind Low retry. The existing escalation marker denotes this cause-qualified correction, not automatic promotion after any failure. Network/access failures, authorized pauses, missing human decisions and a worker's failing test alone do not trigger this escalation. Safety/authority uncertainty stops the affected action immediately; never try an unsafe action to earn a higher effort. Record the failure, correction, recovery criterion and effective effort in the existing next-action/State record. A High recovery ends only after observable handoff/return and retained obligations pass the criterion, not a promise or rewritten plan; return to Low at the next safe boundary. If High recovery still fails, use the existing blocker/confirmed-rotation path; do not oscillate Low/High, add retries or override human control. A missing switch capability has an explicit supported fallback/checkpoint, never a claimed switch. Independent work remains usable. Effort escalation never resets Guard repair limits, leases or burn caps: after a circuit breaker, High may diagnose/rebrief within authority, not replay the stopped action. Existing independent Governor anomaly evaluation is unchanged; routine checks remain model-free.
 
-The orchestrator selects the lowest proven capable route for the task class, honoring explicit human choices and fallback. Prefer observed subscription usage when attributable; credit estimates are a secondary proxy, not allowance coefficients. Do not stop other work to measure account limits without permission.
-Until attributable allowance data exists, use dated credit-rate coefficients as the planning proxy, then calibrate against practical whole-chain usage and time to accepted result. Unknown costs remain unknown; no automatic model oscillation at checkpoints.
+The orchestrator selects the lowest proven capable route for the task class, honoring explicit human choices and fallback. Prefer observed subscription usage when attributable; credit estimates are a secondary proxy, not allowance coefficients. Do not stop other work to measure account limits without permission. Until attributable allowance data exists, use dated credit-rate coefficients as the planning proxy, then calibrate against practical whole-chain usage and time to accepted result. Unknown costs remain unknown; no automatic model oscillation at checkpoints.
 
-Use `node scripts/vydykhai.mjs context-prepare estimate --input cost.json` for an
-optional read-only comparison; it does not dispatch or authorize work. Input:
+Use `node scripts/vydykhai.mjs context-prepare estimate --input cost.json` for an optional read-only comparison; it does not dispatch or authorize work. Input:
 
 ```json
 {

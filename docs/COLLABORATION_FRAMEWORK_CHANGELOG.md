@@ -1,5 +1,48 @@
 # Collaboration Framework Changelog
 
+## 2.1.17 - 2026-11-06
+
+### Constitution And Instrument Map
+
+Separate stable purpose/invariants from the conditional instruments that serve
+them. Add managed CONSTITUTION and TOOLKIT references, connected to existing core,
+human guides and Evolution Gate. Classify changes as constitutional, instrument,
+application-rule or implementation/adoption work; no silent weakening of memory,
+independent judgment or authority for a cheaper metric. Projects retain existing
+compass/decisions/contracts, not a second state document. No new skill, scheduler,
+mandatory per-step reading or claim of live effectiveness. Benefit: keep future
+repairs anchored to outcome quality and whole-chain cost rather than local tools.
+
+### Task Identity And Compact Execution
+
+Separate one logical outcome from a physical chat. Retain task identity, memory,
+effects and costs through corrections and authorized safe-boundary transfers;
+new independent outcomes receive a current contract and focused context selection.
+Require a reason to reuse an old physical chat, actual model/context readback and
+whole-DOD accounting. Preparation, Discovery, Lab, independent acceptance and
+orchestrator rotation keep their existing distinct purposes and authority.
+This clarifies existing workflows, not a new scheduler or automatic session switch.
+Source validation is not live adoption or proof of savings.
+
+The existing unfinished-workers adoption requirement now binds these rules to
+the actual participant's current assignment, context/profile readback and next
+authorized action. Missing/stale proof stays pending; safe transitions retain
+memory, pauses, failed effects, independent acceptance and cumulative cost. The
+whole-DOD economy comparison stays separate from kit and instruction adoption.
+No new role, runtime mode, scheduler or automatic context replacement is added.
+
+### Pre-release Coherence Repairs
+
+Fresh independent review found two gaps: isolated reviewers lacked the shared
+constitution, and owning acceptance could cut off required POST costs. The
+existing trusted catalog now carries an exact validated constitution snapshot,
+passed separately from project evidence without inheriting author instructions.
+Continuation refuses an absent/changed mandate hash before another debit; legacy
+in-flight reviews keep their original runtime until their supported safe boundary.
+Task accounting includes required final/POST review, repairs, retention and actual
+disposition. Later project Health stays separate. No catalog criteria, authority
+or source-acquisition obligations are removed. Initial findings are retained.
+
 ## 2.1.16 - Portable Guard and bounded manager waiting
 
 Project-local checks are quiet on unchanged Returns. Independent background scheduling requires separate authority and a supported host. The installed dispatch/resume route retains one wait per dependency, its deadline and unresolved effects.

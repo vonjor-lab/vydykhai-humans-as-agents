@@ -116,6 +116,16 @@ Also classify the work as product capability, technical enabler, maintenance, re
 
 Keep one owning execution context, Execution Lease, and canonical Candidate per accepted increment. Block duplicate launch while a lease remains unresolved. Before dispatching the next increment, show what closed, what remains before parent acceptance, and why the next slice is a DOD gap rather than polish.
 
+### Task And Physical Context
+
+A logical task is one owned outcome/DOD, not a permanent chat, role or module. Local fixes, clarification, resumed work and acceptance findings retain that task and its accrued cost; a tool call or failed test does not create a new task. A new independently accepted outcome after completion, or a distinct approved outcome/ownership boundary, gets its own task contract even when it touches the same module. A DOD change inside unfinished work is an explicit revision, not automatic task splitting.
+
+For a new task, default to an authorized focused context with selected source-backed meaning, not a full-history fork. Reuse a physical context only after recording in the existing startup/lease why its role, remaining obligations, sources and measured context fit this task. Same person, module, issue or title is insufficient. If creation/transfer needs host or human authority, retain one named pending boundary; never create a competing worker or falsely claim a fresh context.
+
+For the same unfinished task, continue the owner while its context remains suitable; pressure or repeated identity loss follows `context-routing.md#execution-context-at-a-safe-boundary`, preserving its logical identity and sole lease across supported compaction/transfer. Age alone is not a restart trigger. Close or reconcile old Returns before reassignment; completion stops task follow-ups, not project health obligations. Retain history and do not archive/delete running work automatically.
+
+Preparation, Discovery and Lab keep their own existing bounded purposes and exit conditions; a returned packet is reused without keeping its producer in every execution loop. A named bounded Discovery lead is the explicit exception, not an immortal executor. Independent acceptance uses its distinct review context. Orchestrator rotation remains the separate memory-migration and confirmation procedure, not this task-context selection rule. Read back the actual task/role/title/profile/lease together at launch; a renamed chat alone is not a new context or a new task.
+
 ## 6. Approve And Publish
 
 Show the brief, task map, sequence, ownership, checkpoints, Memory Brief, open decisions, and risks. Ask for human approval when this introduces a new goal, boundary, shared-tracker commitment, or material change. A direct human “do it” for the reviewed plan is approval; an ordinary continuation within that approved contract needs no second approval.

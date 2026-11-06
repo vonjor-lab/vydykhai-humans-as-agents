@@ -1,5 +1,34 @@
 # Framework Efficiency Transition
 
+## Current Increment: 2.1.17
+
+The prior published baseline is 2.1.16. This increment separates purpose and
+invariants in `CONSTITUTION.md` from conditional instruments in `TOOLKIT.md`,
+and clarifies logical task continuity versus physical context selection. Use the
+existing Evolution Gate and unfinished-workers adoption route, not another role,
+controller or project ledger. One actual upgrade from the published prior source
+preserves private work, memory, pause and spend; kit match still proves no active
+instruction use. Independent review found missing trusted reviewer principles and
+a cost cutoff before required POST; both are repaired and the bounded re-review
+accepts shipping. Local checks qualify the changed source only. Publication
+requires remote readback; participant application and full-DOD economy are distinct
+boundaries. Do not repeat accepted product work or historic model experiments to
+close them. Existing protected controls and native capability limits remain.
+
+Evolution Gate: benefit is coherent goal-to-tool guidance, safe task/context
+selection and complete cost boundaries; evidence is scoped independent review,
+protocol tests and a preserved-work upgrade. Complexity uses existing documents,
+catalog and adoption requirements, without another controller or role. Verdict:
+ship this bounded increment; live adoption and economic benefit remain unproved.
+
+## Historical Checkpoints
+
+Everything below records its original checkpoint. Earlier words such as
+"unreleased", "candidate" and "manifest is" are historical, not a current plan or
+permission to replay. Current version/publication comes from the manifest and
+verified release; remaining behavioral proof stays owned in the applicable
+adoption requirement. Preserve negative evidence and unresolved limits.
+
 ## Shared mandate candidate: unreleased
 
 Qualify the changed ordinary decision boundary and source-backed rotation in isolation. Retain the existing protected gates and runtime. Publication, installation and live adoption are separate boundaries.
