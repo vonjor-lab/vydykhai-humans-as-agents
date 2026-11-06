@@ -1576,8 +1576,12 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
     if (lease.state !== "WAITING") {
       const execution = evaluateExecutionObservation(view, lease.work);
       taskIdentities.push({ work: lease.work, context: view.context, coverage: execution.identityCoverage || "NOT_EVALUATED" });
+      if (execution.coverage === "LIMITED") {
+        const resumeActions = execution.nextAction === "RECONCILE_RESUME"
+          ? [{work: lease.work, context: view.context, action: execution.nextAction}] : [];
+        return { ...limited(`${lease.work}: ${execution.reason}`), taskIdentities, nextActions: resumeActions };
+      }
       if (execution.nextAction) nextActions.push({ work: lease.work, context: view.context, action: execution.nextAction });
-      if (execution.coverage === "LIMITED") return { ...limited(`${lease.work}: ${execution.reason}`), taskIdentities, nextActions };
       if (execution.signal || view.status === "IDLE") {
         issues.push(`Lease activity: ${lease.work} requires routing (${execution.signal || "idle without a wait"})`);
       }
