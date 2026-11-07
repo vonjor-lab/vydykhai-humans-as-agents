@@ -46,8 +46,11 @@ export async function waitForReturn(project,receipt,owner,parse){
   };
   const terminal=async r=>{
     if(r.status==='QUIET')return null;
-    if(r.status==='LIMITED' || r.status==='PAUSED')return limited(r.reason||r.status);
-    return result(r.status,{...(r.changed?{changed:r.changed}:{}),view:plan.view});
+    if(r.status==='LIMITED')return limited(r.reason);
+    return result(r.status,{...(r.changed?{changed:r.changed}:{}),
+      ...(r.application?{application:r.application}:{}),
+      ...(r.assurance?{assurance:r.assurance}:{}),view:plan.view,
+      replayAuthorized:false});
   };
   const remaining=Date.parse(plan.deadline)-Date.now();
   if(!first || remaining<=0 || remaining+500>plan.outerBudgetMs || remaining>900000){
@@ -55,7 +58,7 @@ export async function waitForReturn(project,receipt,owner,parse){
     const earlier=await smallJson(claim+'.limited').catch(e=>{if(e.code==='ENOENT')return null;throw e;});
     if(earlier)return result('LIMITED',{reason:earlier.reason,view:plan.view,obligation:path.basename(claim)});
     if(remaining<=0 || remaining+500>plan.outerBudgetMs || remaining>900000)return limited('deadline or outer bound; next actual return requires owner entry');
-    return result('WAIT_ALREADY_CLAIMED',{obligation:path.basename(claim),instruction:'Do not re-arm; await actual return or owned deadline.'});
+    return limited('existing wait claim does not prove a live observer; reconcile return coverage without re-arming');
   }
   let wake,dirty=true,error,timer,expired=false;
   const signal=()=>{dirty=true;wake?.();};

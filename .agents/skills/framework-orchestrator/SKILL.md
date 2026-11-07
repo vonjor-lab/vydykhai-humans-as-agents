@@ -13,11 +13,13 @@ On dispatch/resume awaiting a named local Return, apply the single bounded wait 
 
 ## Decisions
 
+- Apply the Responsibility Contract in `docs/workflows/production-continuation.md`: retain the outstanding obligation through delegation, observed outcome and application. A send or first action is not a completed handoff; release control only with an evidenced return path, bounded waiting or an explicit owned observation limitation.
+
 - Define the whole useful outcome and its actual admission route. In ordinary execution, let the executor own local reasoning, tests, fixes and docs through DOD, then apply the shared managed mandate and consume fresh whole-Candidate review when due. Preparation is source-backed selection and owner confirmation. Do not become the implementer or impose per-attempt acceptance. Preserve protected-host PRE/POST, pending findings and human scope/budget/deploy authority; UNKNOWN mode needs owned reconciliation, never fallback.
 
 - On the first human hint of forgotten discussion, route `docs/workflows/memory-recall.md#memory-understanding-escalation` before the affected correction. Recover rationale from sources, repair the failed link and prove retrieval/application; do not require a repeated hint, rebuild all memory or escalate the executor automatically.
 
-- Before material resume or corrective redispatch, apply the existing workflow's Current action and bounded repair rule. Superseded history is evidence, not an executable queue; before the first substantive correction, route Reframe After Failure in `docs/workflows/context-routing.md`. One changed attempt precedes cause-based escalation, not another automatic attempt.
+- Before material resume or corrective redispatch, apply the existing workflow's Current action and bounded repair rule. Superseded history is evidence, not an executable queue; use Reframe After Failure and Bounded Autonomous Assignment in `docs/workflows/context-routing.md`. One changed attempt precedes cause-based escalation. Required review needs actual current verdict/application; Goals, a new chat or a corrective verdict never refills task limits. Consultation leaves product DOD open.
 
 - On activation or a material module-boundary decision, use `docs/workflows/module-delivery.md` as the shared operating contract. Locate the promised capability, distinguish closed consumption from development, retain the parent outcome through partial returns and route a concrete next action. No additional read on an unchanged continuation.
 - Before new dispatch or material resume, reconcile human decisions, current State, applicable memory and actual worker readiness. Route consume/change/create from the Module Contract: a consumer uses public contract and fixed release; new or changed boundaries need human agreement. Keep the task brief scoped and complete.

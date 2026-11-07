@@ -7,6 +7,72 @@ const text = v => typeof v === "string" && v.trim() === v && v.length > 0 && v.l
   !/[\r\n\0]/.test(v) && !/<[^>]*>/.test(v);
 const identity = ["work", "revision", "checkpoint", "humanEvent", "contextEpoch"];
 
+// Validate a projection of the existing task ledger, not a new ledger or authority.
+export function evaluateTaskDisposition(v) {
+  const result = (status, reason) => ({status, reason, replayAuthorized:false,
+    assurance:"DECLARED_EVIDENCE_ONLY", productAccepted:status === "PASS" && v?.action === "accept"});
+  const hold = reason => result("UNVERIFIED", reason);
+  if (!object(v) || v.boundary !== "task-disposition" ||
+      !["work","owner","revision","candidate","plan","authority","ledger"].every(k => text(v[k])) ||
+      !["execute","accept","handoff","halt"].includes(v.action)) return hold("current task disposition missing");
+  if (v.action === "halt") return result("HELD", "stop requires no independent permission; product remains open");
+  if (v.effects !== "RECONCILED") return result("OUTCOME_UNKNOWN", "reconcile effects; no replay or accepted closure");
+  if (v.pause !== "CLEARED") return result("HELD", "human pause or unresolved authority");
+  const b = v.budget;
+  if (!object(b) || !["limit","spent","reserved","next","reviewReserve"].every(k =>
+      Number.isSafeInteger(b[k]) && b[k] >= 0) || b.limit === 0 || !text(b.unit)) return hold("complete task budget unavailable");
+  if (!Array.isArray(v.attempts) || v.attempts.length > 128 ||
+      !v.attempts.every(a => object(a) && ["id","hypothesis","evidence"].every(k => text(a[k])) &&
+        ["failed","succeeded","unknown"].includes(a.outcome) && typeof a.escalated === "boolean") ||
+      new Set(v.attempts.map(a => a.id)).size !== v.attempts.length ||
+      !Number.isSafeInteger(v.maxAttempts) || v.maxAttempts < 1 || v.maxAttempts > 128 ||
+      !Number.isSafeInteger(v.maxEscalations) || v.maxEscalations < 0 || v.maxEscalations > v.maxAttempts) {
+    return hold("bounded cumulative attempt history unavailable");
+  }
+  if (v.attempts.some(a => a.outcome === "unknown")) return result("OUTCOME_UNKNOWN", "unknown attempt requires reconciliation");
+  const r = v.review;
+  if (!object(r) || typeof r.required !== "boolean" || !Array.isArray(r.triggers) ||
+      !r.triggers.every(t => ["acceptance","no-progress","handoff"].includes(t)) || !text(r.basis)) {
+    return hold("review applicability missing");
+  }
+  if ((r.triggers.length || v.action === "handoff") && !r.required) return hold("mandatory review cannot be waived");
+  if (v.action === "execute") {
+    const n = v.next;
+    if (!object(n) || !["hypothesis","check","reason"].every(k => text(n[k])) ||
+        typeof n.escalated !== "boolean") return hold("concrete changed plan and discriminating check required");
+    if (v.attempts.length >= v.maxAttempts ||
+        v.attempts.filter(a => a.escalated).length + Number(n.escalated) > v.maxEscalations ||
+        b.spent + b.reserved + b.next + b.reviewReserve > b.limit || b.spent + b.reserved >= b.limit) {
+      return result("HELD", "task allowance exhausted; verdict cannot grant more attempts or spend");
+    }
+    if (v.attempts.some(a => a.outcome === "failed" && a.hypothesis === n.hypothesis)) {
+      return result("HELD", "failed hypothesis cannot be replayed unchanged");
+    }
+    if (n.escalated && v.cause !== "capability") return hold("model escalation requires a capability gap");
+  }
+  if (r.required) {
+    const q = r.verdict, a = r.application;
+    if (!text(r.dispatch) || !object(q) || !object(a) ||
+        !["id","reviewer","evidence"].every(k => text(q[k])) ||
+        !Array.isArray(v.authors) || !v.authors.length || !v.authors.every(text) ||
+        q.reviewer === v.owner || v.authors.includes(q.reviewer)) return hold("independent verdict not received");
+    if (!["work","revision","candidate","plan","ledger"].every(k => q[k] === v[k]) ||
+        a.verdict !== q.id || a.owner !== v.owner || !text(a.evidence)) return hold("stale verdict or unapplied disposition");
+    const expected = {execute:"CORRECT", accept:"ACCEPT", handoff:"CONSULT"}[v.action];
+    if (q.decision !== expected) return result("HELD", "verdict does not support requested action");
+    if (v.action === "execute" && (!text(q.gap) || !text(q.check) || q.check !== v.next.check)) {
+      return hold("continuation requires an actionable independently identified gap and check");
+    }
+    if (v.action === "handoff" && !text(q.reason)) return hold("handoff grounds missing");
+  }
+  if (v.action === "accept" && !text(v.acceptanceEvidence)) return hold("actual product acceptance evidence missing");
+  if (v.action === "handoff" && (!object(v.handoff) ||
+      !["retained","alternatives","decisionNeeded","resumeWhen","delivered"].every(k => text(v.handoff[k])))) {
+    return hold("human decision package not delivered");
+  }
+  return result("PASS", "declared disposition consistent; host authority and evidence authenticity remain required");
+}
+
 // A resume receipt proves this transition, not completion of the task or host delivery.
 export function evaluateResumeReceipt(value) {
   const result = (status, reason) => ({status, reason, replayAuthorized: false});

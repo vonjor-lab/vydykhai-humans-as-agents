@@ -20,7 +20,7 @@ export async function changedReturns(project,previous,parse){
     const s=await stat(file,{bigint:true});if(!s.isFile() || s.size>2097152n)throw Error('invalid outbox');
     stamp=[s.dev,s.ino,s.size,s.ctimeNs,s.mtimeNs].join(':');
   }catch(e){if(e.code!=='ENOENT')throw e;}
-  if(previous?.stamp===stamp && Array.isArray(previous.routed))return previous;
+  if(previous?.stamp===stamp && Array.isArray(previous.routed) && Array.isArray(previous.reports))return previous;
   const result=parse(await localText(project,relative));
   if(!result.issues.every(x=>/^Durable outbox: return .* requires routing$/.test(x)))throw Error('invalid outbox; existing evidence retained');
   const rows=new Map(result.returns.map(r=>[r.id,r.fields]));
@@ -28,7 +28,8 @@ export async function changedReturns(project,previous,parse){
     if(!/^[a-zA-Z0-9_.:-]{1,180}$/.test(id))throw Error('unsafe receipt id');
     const row=rows.get(id);return [id,row.Status,createHash('sha256').update(JSON.stringify(row)).digest('hex')];
   });
-  return {stamp,pending,routed:result.routedReturnIds};
+  const reports=result.returns.map(r=>[r.id,createHash('sha256').update(JSON.stringify(r.fields)).digest('hex')]);
+  return {stamp,pending,routed:result.routedReturnIds,reports};
 }
 async function writeAtomic(file,data){
   const tmp=file+'.'+randomUUID();try{
@@ -67,6 +68,9 @@ export async function portableGuard(project,{parse,session,decision,receipt}={})
     if(parse && !state.paused && owner && owner===session){
       state.cursor=await changedReturns(project,state.cursor,parse);
       const seen=new Map(state.seen.map(r=>[r[0],r]));
+      for(const [id,hash] of state.cursor.reports){
+        if(seen.has(id) && seen.get(id)[2]!==hash)throw Error('conflicting immutable return; reconcile without replay');
+      }
       for(const item of state.cursor.pending){
         if(receipt && receipt!==item[0])continue;
         const previous=seen.get(item[0]);
@@ -89,8 +93,11 @@ export async function portableGuard(project,{parse,session,decision,receipt}={})
     if(receipt){
       if(state.paused)return {status:'PAUSED'};
       if(!owner || owner!==session)return {status:'LIMITED',reason:'wait owner is not bound'};
-      if(changed.length)return {status:'RETURN',changed};
-      if(state.seen.some(([id])=>id===receipt) || state.cursor?.routed?.includes(receipt))return {status:'ALREADY_RECONCILED'};
+      if(state.cursor?.routed?.includes(receipt))return {status:'ALREADY_RECONCILED',assurance:'DECLARED_ROUTE_NOT_TASK_ACCEPTANCE'};
+      if(changed.length)return {status:'RETURN',changed,application:'PENDING'};
+      // Observation deduplicates notification, not the owner's obligation to apply.
+      if(state.cursor?.pending?.some(([id])=>id===receipt))return {status:'APPLICATION_PENDING',receipt};
+      if(state.seen.some(([id])=>id===receipt))return {status:'LIMITED',reason:'observed return missing from current outbox; reconcile retained evidence'};
     }
     return {status:state.paused?'PAUSED':changed.length?'CHANGED':'QUIET',background:state.background,changed,...(managerView?{managerView}:{})};
   }finally{await rm(lock,{recursive:true});}

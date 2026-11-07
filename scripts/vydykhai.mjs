@@ -26,10 +26,10 @@ import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
 import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, readCapabilityAdoption, kitIdentity, assessUpdateAcceptance } from "./adoption-plan.mjs";
 import { classifyCheckpointReviews } from "./checkpoint-review.mjs";
-import { evaluateTaskIdentity, evaluateResumeReceipt } from "./task-continuity.mjs";
+import { evaluateTaskIdentity, evaluateResumeReceipt, evaluateTaskDisposition } from "./task-continuity.mjs";
 import { readMemoryGraph, memoryStorageCommand } from "./memory-storage.mjs";
 import { section, tableRows, bulletFields } from "./artifact-markdown.mjs";
-export { evaluateTaskIdentity, evaluateResumeReceipt } from "./task-continuity.mjs";
+export { evaluateTaskIdentity, evaluateResumeReceipt, evaluateTaskDisposition } from "./task-continuity.mjs";
 export { checkpointNoticeStillDue } from "./checkpoint-review.mjs";
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -1420,6 +1420,16 @@ export function evaluateExecutionReadiness(checks) {
 
 function evaluateExecutionObservation(view, work) {
   const limited = (reason, nextAction = "RECOVER_OBSERVATION") => ({ coverage: "LIMITED", reason, nextAction });
+  if (view.dispositionRequired === true || Object.hasOwn(view, "disposition")) {
+    const receipt = view.disposition;
+    if (!receipt || receipt.work !== work?.split(/\s/)[0] || receipt.owner !== view.context ||
+        !view.taskIdentity?.current || receipt.revision !== view.taskIdentity.current.revision) {
+      return limited("current task disposition unavailable", "RECONCILE_DISPOSITION");
+    }
+    const decision = evaluateTaskDisposition(receipt);
+    if (decision.status !== "PASS") return limited(decision.reason, "RECONCILE_DISPOSITION");
+    if (receipt.action !== "execute") return limited("terminal disposition requires owner routing, not execution", "RECONCILE_DISPOSITION");
+  }
   let resultPending = false;
   if (Object.hasOwn(view, "terminal")) {
     const terminal = view.terminal;
@@ -2292,7 +2302,8 @@ async function main() {
 
   if (command === "action-receipt") {
     if (!flags.input) throw new Error("action-receipt requires --input");
-    const result = evaluateResumeReceipt(JSON.parse(await readFile(path.resolve(flags.input), "utf8")));
+    const input = JSON.parse(await readFile(path.resolve(flags.input), "utf8"));
+    const result = input?.boundary === "task-disposition" ? evaluateTaskDisposition(input) : evaluateResumeReceipt(input);
     console.log(JSON.stringify(result, null, 2));
     if (result.status !== "PASS") process.exitCode = 2;
     return;

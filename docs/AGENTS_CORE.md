@@ -47,7 +47,7 @@ Principles: `docs/CONSTITUTION.md`; instruments: `docs/TOOLKIT.md`. Consult on o
 
 ### Event Routes
 
-Read the applicable procedure when its trigger occurs; ordinary continuation reuses current evidence.
+Read the applicable procedure when its trigger occurs; ordinary continuation reuses current evidence. Autonomous continuation follows `context-routing.md#bounded-autonomous-assignment`: finite whole-task allowance, required independent disposition, no automatic retry/refill, and explicit separation of human handoff from product success.
 
 | Trigger | Owner and procedure |
 | --- | --- |

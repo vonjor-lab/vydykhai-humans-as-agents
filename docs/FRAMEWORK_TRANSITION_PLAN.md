@@ -1,6 +1,188 @@
 # Framework Efficiency Transition
 
-## Current Increment: 2.1.19 Candidate
+## Release Increment: 2.1.20 - Bounded Autonomous Responsibility
+
+Status: LOCAL IMPLEMENTATION CANDIDATE, not published or adopted. Six new scoped
+checks pass (five initial checks plus one two-finding regression); the reference
+runner refuses missing review before command dispatch and admits the corrected
+bounded action. Independent review found stale-revision and consultation-as-execution
+observation gaps; both were corrected and the targeted regression passed.
+Native Goal continuation/completion and reference allowance refusal are observed;
+authenticated/atomic allowance enforcement remains outside this ordinary route.
+The first framework validation rejected vendor-specific universal wording; that
+wording was generalized and validation passed. Historical failures are retained here.
+The local release metadata is staged at 2.1.20, but the published and installed
+baseline remains 2.1.19 until publication readback. This increment incorporates the
+Responsibility Contract below; its tests do not establish native Goal delivery.
+Do not change running projects or repeat accepted checks for this review.
+Constitution principles 1-11 remain; this changes application
+rules and their implementation, not the purpose or an allowed safety tradeoff.
+
+### One Coherent Cycle
+
+Keep one product outcome and one accountable owner in existing State/lease/Return
+records. An authorized finite autonomous assignment may end in an accepted outcome
+or an evidenced request for a human decision. The latter leaves the product DOD
+open, retains ownership and records the resume condition. Define both deliverables
+before starting; never rewrite a failed goal retrospectively as "we tried".
+
+Use the existing context-routing Reframe After Failure: diagnose a substantive
+failure, then one bounded materially changed attempt. A named capability gap may
+justify escalation; missing memory, access, environment or an invalid evaluator
+does not. Do not introduce a universal four-attempt ladder. Before autonomous
+dispatch retain finite task-specific attempt/escalation limits, total allowance
+and a reserve for required review/reporting in the existing brief. Count all
+roles and failures cumulatively; new chats, causes, models or Goal ids do not
+renew the task allowance. Local debugging is not a new attempt, but remains
+bounded by resource and outcome checkpoints. No hidden renewal for diagnosis.
+
+The existing owner requests the existing independent reviewer at applicable final
+acceptance, a proposed substantive abandonment, or an evidenced no-progress
+boundary. These are review subjects, not new roles or per-attempt reviews.
+Combine coincident subjects in one scoped review. Preserve ordinary risk-based
+acceptance and all adopted protected PRE/POST rules; no silent mode migration.
+
+Review uses the same constitution, original purpose/constraints, current artifacts,
+negative evidence, concise causal attempt history and actual/unknown expenditure.
+The reviewer can retrieve relevant originals; the producer's selected narrative
+is not the whole evidence universe. A consultant who designed the repair cannot
+independently accept it. No new reviewer-of-reviewer or recursive review chain.
+
+Judge progress against DOD or decision-relevant uncertainty, not activity. A
+recommendation to continue names a concrete omitted check or changed hypothesis,
+its expected useful information and a discriminating observation. "Try harder"
+is invalid. Distinguish progress, repeated falsified approach and an actionable
+preparation gap. A supported handoff means no justified next action within current
+conditions, not proof that no alternative exists anywhere. Unread/unavailable
+evidence stays explicit. Retain beneficial partial work and unresolved findings.
+
+Use existing task verdicts and scoped findings: ACCEPT requires actual product
+proof; NEEDS_FIXES requires actionable correction; BLOCKED/WAIT retains a real
+decision, authority, dependency or resource boundary. A review verdict does not
+grant another attempt, reset allowance, change DOD, or authorize result use beyond
+its scope. A rejected path is blocked, not every independent safe action.
+
+### Admission And Termination
+
+Extend the existing action/disposition validation and acceptance checklist, not
+another controller: review applicability -> actual dispatch -> current verdict
+-> observed owner application -> allowed next action or terminal disposition.
+Evidence must bind current task, relevant Candidate/plan revision and scope;
+reuse unaffected valid evidence. A send, cursor, checkbox or old verdict cannot
+substitute for this chain. A new material plan cannot borrow an incompatible
+verdict. Re-review only the changed decision when necessary, not all history.
+
+Human pause, safety/authority limits, unknown effects and hard resource limits
+stop affected activity without waiting for review. Reserve exhaustion or an
+unavailable reviewer yields an unverified held task, never accepted success or
+automatic repeat. Bounded recovery of review itself shares the task allowance.
+Required judgment remains pending; no nested requirement to review the review's
+failure. Disagreement uses concrete contrary evidence, not serial reviewers until
+one permits continuation. No automatic Goal recreation after human handoff.
+
+Codex Goals is a host-specific continuation option, not a new source of authority
+or an event-delivery guarantee. Use only with actual user authorization and
+validated current capability. One continuation owner; do not stack Goal, Stop-hook
+loops and periodic reminders. Respect native blocked/pause/budget/completion tool
+semantics; never mark a product Goal complete because attempts ran out. A bounded
+assignment Goal may complete only after its explicitly agreed handoff deliverable
+is actually satisfied. Native budget exhaustion remains a distinct outcome.
+Cross-chat interruptions, no-tool continuation suppression, app shutdown and
+unavailable native transitions need real capability evidence or scoped LIMITED.
+
+### Change Map And Preserved Guarantees
+
+| Existing surface | Candidate change / preserved boundary |
+| --- | --- |
+| CONSTITUTION / TOOLKIT / core / orchestrator skill | Preserve principles; compact routing to existing procedures, not a full new prompt on every turn. |
+| context-routing / task brief | Existing causal reframe plus finite whole-task limits; no fixed model ladder, reset or mandatory preparation. |
+| independent-control / acceptance | Add continuation/handoff subject and evidence checklist; retain ordinary risk rules and protected gates. |
+| production-continuation / action-disposition code | Bind review application and remaining authority to the next action; retain single owner, pause and UNKNOWN reconciliation. |
+| memory / modules / health | Preserve original decisions, rejected paths, public contracts, deferred ideas and unrelated health obligations; no full-history input or memory rebuild. |
+| existing own-transition / unfinished-workers / recovery adoption | Owner-safe activation and participant readback; existing task and reviewer preserved. Installed kit is not behavior proof. |
+| cost / release notes | Whole-DOD expenditure, unknowns and human recoveries retained; no savings claim from fewer turns, a passed fixture or installation. |
+
+### Native Evidence Update, 2026-11-07
+
+New isolated native experiments established an actual Goal-triggered second turn,
+checkpoint reuse, completed Goal and finite quiet readback. A second native Goal
+automatically invoked this candidate's reference path with exhausted declared
+allowance: TASK_DISPOSITION_HELD, zero commands, retained product OPEN and completed
+verification assignment. These do not establish native token-budget exhaustion.
+Whole-thread totals were 135040 and 274869 tokens, including 122880 and 255872
+cached input respectively; Goal counters 10944/16844 are not full expenditure.
+Reviewer/maintenance costs are additional and no subscription-saving claim follows.
+
+Independent inspection accepts that limited composition proof. The first
+interrupted-reviewer setup was BLOCKED: the isolated nested owner lacked
+native subagent tools. After three turns the native Goal became blocked; no reviewer
+was created, resumed or falsely accepted. No replacement controller was introduced.
+A human-authorized top-level isolated context then completed the semantic route:
+native running reviewer interrupted, saved owner checkpoint, automatic Goal turn,
+observed interrupted status, one followup to the same reviewer, real independent
+CONSULT, applied handoff receipt PASS with productAccepted false, complete Goal
+and subsequent idle readback. The initial exact-name capability mismatch is retained
+as a preparation mistake: this host uses interrupt/followup rather than close/resume.
+Reviewer sleep had not started; this proves turn interruption, not process teardown.
+The test product stays OPEN at a genuine choice boundary, not an accepted delivery.
+This does not prove arbitrary separate-chat transport, model quality on complex
+deadlocks, native token-budget exhaustion or economic improvement. Product pause
+and installed release remain untouched until owner-managed update.
+
+### Release Evidence Required
+
+Reuse prior scoped Responsibility Contract tests without rerunning unchanged work.
+New proof must cover the actual changed integration, not just a classifier:
+missing/stale mandatory review blocks the dependent action; applicable review plus
+remaining authority allows the concrete correction; exhausted allowance prevents
+dispatch despite a positive continuation recommendation; new context/model keeps
+attempts and spend; preserved pause/UNKNOWN prevents replay. Verify pending review
+does not deadlock hard stopping or permit a false accepted result.
+
+One bounded real isolated Codex scenario must cover interrupted delegate/reviewer,
+actual owner observation without human wake-up, saved-effect continuation and
+independent verdict application. Also prove a substantive no-progress handoff and
+accepted completion both cease task continuation without automatic Goal renewal.
+Do not equate native subagents with separate desktop chats. A stop that is not
+observed is a failed capability claim, not something to hide with manual wake-up.
+Account for model calls/context/spend of owner, worker, reviewer and failed runs;
+the independent test reviewer may not be the author of the repair.
+
+Before release, use scoped independent candidate review and the existing update
+adoption entries, then ordinary publication readback. Live rollout is later at the
+owner's safe boundary; never interrupt product work to prove framework behavior.
+If native continuation or the actual admission boundary cannot be enforced on the
+declared route, narrow the claim or defer release, not silently add a daemon.
+
+Evolution Gate: Benefit - preserve result ownership with finite attempts and
+independent disposition. Evidence - scoped checks plus native ordinary-route
+continuation, reference refusal and same-reviewer turn recovery. Limits - declared
+evidence, no atomic spend service, no arbitrary-tool fence, no universal transport
+or measured economic benefit. Complexity - existing owner/reviewer/state and no
+new timer or per-step audit. Final independent scoped verdict is SHIP; remote
+publication readback and participant adoption remain separate completion facts.
+Full observed owner-thread usage across four setups, including failed preflight,
+was 1238889 tokens (1228990 input, including 1149824 cached, plus 9899 output).
+Independent reviewer and maintenance costs are additional; no total subscription
+debit is known. Goal counters are not substituted for these totals. Existing
+accepted checks are reused under the user's no-repeat instruction; only new
+boundary scenarios and changed release metadata validation ran for this increment.
+
+## Existing Unreleased Responsibility Contract
+
+Refine constitutional ownership, not a product-specific recovery instruction.
+Use the existing Return/lease/wait mechanism: delivery and observation cannot
+close application; preserve pauses, effects, history and independent review.
+Isolated tests cover outcome, reopen, application, silence and missing evidence.
+The native-chain fixture additionally interrupts a real local worker after its
+checkpoint and exercises bounded close delivery, remaining-work execution,
+separate-process verification and Return application. Its finite owner policy
+is a test fixture, not a desktop host adapter or independent model judgment.
+No new controller, model polling, product activation or release is authorized
+by these tests. Actual native stop delivery remains an adoption capability.
+Evolution Gate: fewer duplicated instructions; no new state store or role.
+
+## Historical Increment: 2.1.19
 
 Separate kit integrity from evidence-backed application using the existing
 adoption transition. Resume Action Receipt binds current human authority,

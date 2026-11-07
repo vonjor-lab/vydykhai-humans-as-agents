@@ -80,7 +80,7 @@ Check:
 - each brief item's `Apply / Avoid / Verify` evidence and any new, corrected, missed, or contradicted reusable lesson;
 - boundary consultations and whether an undeclared entity, shared mechanism, authority conflict, or ownership overlap was resolved before expansion;
 - required Peer Compass Review and alignment;
-- material burn and stop limits;
+- material burn and stop limits; applicable independent review actually dispatched, current verdict obtained and applied to this exact decision, not just requested; substantive consultation and no-progress use [Bounded Autonomous Assignment](context-routing.md#bounded-autonomous-assignment), without closing product DOD from assignment completion;
 - Expansion Check route and, for maintenance, proof that the representative original flow became materially smaller/faster and recurrence is covered; backup, cleanup, migration, or a cap alone is containment;
 - declared human checkpoint;
 - whether its observable questions match the judgment that person owns rather than delegating technical verification;

@@ -6,6 +6,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { canonicalJson, sha256, compileExecutableBrief, checkPreparedContext } from "./memory-brief.mjs";
 import { moduleAccessPolicy, moduleExampleIds } from "./module-access.mjs";
 import { prepareAlignment } from "./context-alignment.mjs";
+import { evaluateTaskDisposition } from "./task-continuity.mjs";
 
 const CAPABILITY = "retained-progress-v1";
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -206,7 +207,7 @@ async function command(spec, root, readPath, stats, extraEnv = {}, kind = "depen
       });
     });
   };
-  return admission ? admission.dispatch({...admission.binding, commandSha256: hash(spec),
+  return typeof admission?.dispatch === "function" ? admission.dispatch({...admission.binding, commandSha256: hash(spec),
     cwd, executable, kind}, invoke) : invoke();
 }
 
@@ -242,6 +243,16 @@ export async function runContextTransition(request, services = {}) {
     };
     const readArtifactHash = async reference => artifactHash(reference, await bytes(reference.path));
     const task = await pinned(request.task);
+    const checkDisposition = async () => {
+      if (services.dispositionRequired !== true) return;
+      requireThat(typeof services.readTaskDisposition === "function", "TASK_DISPOSITION_UNAVAILABLE");
+      const decision = await services.readTaskDisposition({taskId:task.id, owner:task.owner,
+        taskSha256:request.task.sha256, operation:request.operation});
+      requireThat(decision?.work === task.id && decision.owner === task.owner &&
+        decision.revision === request.task.sha256 && decision.action === "execute",
+      "TASK_DISPOSITION_BINDING_MISMATCH");
+      requireThat(evaluateTaskDisposition(decision).status === "PASS", "TASK_DISPOSITION_HELD");
+    };
     schema(task, "context.task.v1", ["id", "owner", "workspace", "identity", "requiredCapabilities", "enforcement", "scope", "sourceSet",
       "classifications", "dependencies", "module", "memory", "memoryReview", "action", "newExampleIds", "candidateFiles", "allowLocalOverlay",
       ...(Object.hasOwn(task, "packageApproval") ? ["packageApproval"] : [])]);
@@ -503,6 +514,7 @@ export async function runContextTransition(request, services = {}) {
       review.meaningDigest === snapshot.meaningDigest && review.contentDigest === capsule.contentDigest &&
       review.publicBoundary === module.publicBoundary, "MEMORY_REVIEW_MISMATCH");
     const recheck = async (phase = "BEFORE_ACTION", references = []) => {
+      await checkDisposition();
       await checkModuleAccess();
       requireThat(sha256(await bytes(request.task.path)) === request.task.sha256 &&
         sha256(await bytes(task.identity.path)) === task.identity.sha256, `TASK_CHANGED_${phase}`);
@@ -542,7 +554,8 @@ export async function runContextTransition(request, services = {}) {
       const admission = services.dispatch ? {dispatch: services.dispatch, launch: services.sandboxLaunch,
         binding: {operation: request.operation, taskId: task.id, taskSha256: request.task.sha256, capsuleSha256: request.capsule.sha256,
           sourceDigest: snapshot.sourceDigest, dependencyDigest: snapshot.dependencyDigest,...(confined?{confined:structuredClone(confined)}:{})},
-        recheck: () => recheck("BEFORE_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef])} : null;
+        recheck: () => recheck("BEFORE_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef])}
+        : services.dispositionRequired === true ? {binding:{operation:request.operation}, recheck:checkDisposition} : null;
       const result = await command(task.action, root, resolvePath, stats, {}, "dependent", admission);
       await recheck("DURING_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef]);
       return { status: "ACTION_COMPLETED", operation: "resume", enforcement: "reference", coverageBasis: basis,
@@ -566,7 +579,8 @@ export async function runContextTransition(request, services = {}) {
       binding: {operation: request.operation, taskId: task.id, taskSha256: request.task.sha256, capsuleSha256: request.capsule.sha256,
         sourceDigest: snapshot.sourceDigest, dependencyDigest: snapshot.dependencyDigest, candidateSha256: before.sha256},
       recheck: () => recheck("BEFORE_ACTION", [task.module, task.memoryReview, request.capsule, request.readback,
-        readback.evidenceRef, module.oracle, module.verificationScript])} : null;
+        readback.evidenceRef, module.oracle, module.verificationScript])}
+      : services.dispositionRequired === true ? {binding:{operation:request.operation}, recheck:checkDisposition} : null;
     const result = await command(spec, root, resolvePath, stats, { VYDYKHAI_CANDIDATE_SHA256: before.sha256,
       VYDYKHAI_ORACLE_SHA256: module.oracle.sha256, VYDYKHAI_REQUIRED_EXAMPLES: JSON.stringify(requiredExamples) }, "verification", admission);
     requireThat((await candidateIdentity()).sha256 === before.sha256, "CANDIDATE_CHANGED_DURING_VERIFICATION");

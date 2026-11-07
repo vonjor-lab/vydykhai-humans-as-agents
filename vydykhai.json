@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-  "version": "2.1.19",
+  "version": "2.1.20",
   "distributionStatus": "STABLE",
   "creator": {
     "name": "Alexander Rozhnov",
@@ -627,7 +627,7 @@
     {
       "id": "own-transition",
       "since": "1.30.0",
-      "action": "One active orchestrator owns each changed capability at a safe checkpoint: review affected artifacts and participants, record owned repair or evidence-backed NO_CHANGE, propose authorized refactoring at a safe checkpoint, and verify actual application before closure; product boundary changes still require agreement. Use docs/workflows/framework-activation.md#apply-and-prove-the-applicable-requirements and load only the matching cases in #conditional-transition-details (modular areas, protected runtime, result use or interrupted review). Retain baseline, pauses, pending human decisions, findings, effects and cumulative spend. Existing POST results lacking a resultUse decision remain UNKNOWN; code rollback stays paused with journals retained. No automatic restart, budget refill, mode fallback or repeated successful checks. Publish changed shared rules and obtain affected recipients' current retrieval/application; absent proof remains pending. For preparation-lock recovery, reconcile saved package/effects first, verify dead same-host ownership, preserve the archived lock and confirm the next authorized command; installation alone is not adoption.",
+      "action": "One active orchestrator owns each changed capability at a safe checkpoint: review affected artifacts and participants, record owned repair or evidence-backed NO_CHANGE, propose authorized refactoring at a safe checkpoint, and verify actual application before closure; product boundary changes still require agreement. Use docs/workflows/framework-activation.md#apply-and-prove-the-applicable-requirements and load only matching conditional details. For bounded autonomy use context-routing.md#bounded-autonomous-assignment: finite cumulative limits, actual required review/application, independent handoff distinct from product DOD, and qualified host continuation. Read back affected owner/worker instructions and actual supported route; declared receipt consistency is not native enforcement or atomic budget reservation. Reuse scoped isolated proof; preserve paused work and defer any productive demonstration until authorized, never create a Goal solely to force product resumption. Retain baseline, pending human decisions, findings, effects and cumulative spend. Existing POST without resultUse stays UNKNOWN; rollback retains pause/journals. No automatic restart, refill, mode fallback or repeated successful checks. Publish changed shared rules and obtain affected recipients' current retrieval/application; absent proof stays pending. Preparation-lock recovery reconciles saved effects, verifies dead same-host ownership, preserves the archived lock and observes the next authorized command; installation alone is not adoption.",
       "reuseBy": [
         "targetBundle",
         "acceptedBaseline",

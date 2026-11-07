@@ -12,6 +12,8 @@ During `prepared-work` and `team-memory` adoption, read back the actual goal/nec
 
 An ordinary update request, or an already authorized update at its safe window, owns **prepare → apply/prove → resume**, applying the shared [Module Delivery Cycle](module-delivery.md). The person does not need to name a capability or ask for activation separately. Existing merge, access, native trust and memory/rotation cutover confirmations still apply.
 
+For bounded-autonomy adoption, reuse independence/continuation/productive-resumption checks: confirm finite task allowance and current required review/application, real native result/stop delivery, and termination after acceptance or consultation without goal renewal. The declared Action Receipt and opt-in reference callback are not native enforcement. Keep unproven host coverage LIMITED, preserve pauses and worker checkpoints, and do not launch work solely to obtain a receipt. Use one newly authorized isolated lifecycle proof, then a natural safe-boundary readback; reuse unchanged evidence.
+
 ## Prepare one transition
 
 Use the constitution and instrument map once to classify the changed meaning, not to launch another audit or rewrite the project compass. Preserve accepted goals, memory and required independent control; an actual conflict needs an explicit decision. For the task/context update, use the existing `unfinished-workers` requirement and startup/lease: prove current assignment, actual context/profile and the next authorized action at that worker's safe boundary. Missing/stale readback remains pending. Keep full-task economy proof separate; no suitable task means deferred proof, not manufactured work. Reuse unchanged adoption evidence and consult only affected procedures.

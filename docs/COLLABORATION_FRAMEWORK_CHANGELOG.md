@@ -1,5 +1,18 @@
 # Collaboration Framework Changelog
 
+## 2.1.20 - 2026-11-07
+
+Bounded autonomous assignment now shares the existing failure-reframe and independent-review routes. The Action Receipt can assess a task disposition, including review application, cumulative attempt limits, budget reserve and human handoff distinct from product acceptance. An opted-in reference runner rechecks the disposition before commands. New native experiments observed automatic Goal continuation, refusal at exhausted declared allowance, same-reviewer turn-interruption recovery and applied independent CONSULT, with product OPEN and terminal verification Goal. Independent scoped review accepts release. These are declared-evidence and current-host collaboration proofs, not authenticated/atomic spending, process teardown, arbitrary desktop-chat delivery or measured savings. Existing protected gates and product pauses remain binding.
+
+One existing obligation retains its owner through delegation, outcome and
+application. Consolidated interruption rules distinguish delivered, observed
+and applied evidence; first action is not whole-chain completion.
+Local Return waiting now preserves observed-but-unrouted outcomes as
+APPLICATION_PENDING instead of reporting them reconciled. Pause remains pause,
+missing retained evidence remains LIMITED, and existing Return Route records
+settle routing only, not independent acceptance. No controller or host wake-up
+guarantee was added. Product adoption is not part of this isolated change.
+
 ## 2.1.19 - 2026-11-07
 
 The task-resume Action Receipt now has a deterministic CLI
