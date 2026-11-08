@@ -1,5 +1,17 @@
 # Collaboration Framework Changelog
 
+## 2.1.23 - 2026-11-08
+
+Clarify the constitution: preserve agreed meaning, reliability, memory and human
+control while choosing a sufficient route with lower expected whole-task time
+and token cost. Toolkit selection and existing task/context/model rules apply
+that choice, rather than treating more chats or cheaper calls as success.
+Use contracts before code; diagnostic access stays scoped and authorized.
+No new role, controller, mandatory model call or weakened independent acceptance.
+The trusted REVIEW mandate carries the same constitution. Independent static
+review and three affected mandate/reference checks passed; product adoption
+and whole-task savings require their own observed evidence.
+
 ## 2.1.22 - 2026-11-08
 
 After delegation, the owner now keeps its control turn open, waits through the

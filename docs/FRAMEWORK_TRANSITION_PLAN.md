@@ -1,5 +1,20 @@
 # Framework Efficiency Transition
 
+## Outcome And Resource Choice - 2.1.23
+
+Human-approved constitutional clarification, not a new control layer: preserve
+meaning, reliability, memory and authority while selecting sufficient work by
+expected whole-outcome time/token cost. Toolkit and managed core share this
+decision; task boundaries, context reuse, actual model readback and contract-first
+reading implement it. Remove duplicated skill-level optimization wording.
+The trusted REVIEW constitution is synchronized without changing control logic.
+Independent static review found one diagnostic-access ambiguity; the existing
+reviewed maintainer rebrief resolves it without changing consumer access rules.
+Final scoped review PASS; validator/diff checks and three affected constitution,
+reference and trusted-runtime checks PASS. Product work and participants untouched.
+Release scope is the clarified rules and trusted mandate; installation does not
+prove adoption. Full-task savings and runtime compliance remain unproved.
+
 ## Retained Owner Turn - 2.1.22
 
 Implementation guidance, not a new constitutional goal or runtime layer. Native

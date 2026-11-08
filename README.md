@@ -12,7 +12,7 @@ Vydykhai helps a solo builder working across several AI sessions and becomes esp
 
 Created and originally published by [Alexander Rozhnov / Александр Рожнов](https://github.com/vonjor-lab).
 
-Current version: `2.1.22`
+Current version: `2.1.23`
 
 Stable release on the release/2.x channel. Verify the release asset digest and use the trusted source installer.
 
