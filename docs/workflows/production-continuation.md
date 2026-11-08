@@ -3,6 +3,13 @@
 Goal: a service interruption must not make the person say "continue" again when agreed work can safely advance. Apply [Bounded Autonomous Assignment](context-routing.md#bounded-autonomous-assignment) for finite continuation and independent disposition; native Goals does not grant retries or turn a consultation into product success.
 
 ## Responsibility Contract
+The current assignment, not the last visible message, governs dispatch, restoration, Return application, waiting and closure. Keep work, owner, revision, DOD, original human direction, applicable restrictions, remaining obligations and cumulative allowance in existing State/lease. A Return changes evidence, not human authority. Apply ready owner work before ending; a pending State write is not an external wait.
+
+Existing task-disposition and task-resume receipts require `assignment` with `work,owner,revision,contextEpoch,evidence,humanEvent,directions,readback,obligations`. `directions` projects original scoped AUTHORIZE/PAUSE/RESUME decisions with `id,source,orderSource,sequence,work,kind,supersedes`. AUTHORIZE represents initial approval, not a fabricated resume; it has no predecessor. A bounded suffix may retain `predecessor:{id,source,orderSource,sequence,work}` pointing to its original archived predecessor. Without an anchor first supersedes=null; otherwise each entry supersedes its predecessor in verified original-source order. Do not erase links or load all history. Resolve delegated commands against original human sources, never delivery timestamps. Incomparable order is UNVERIFIED. A resume cannot lift unrelated restrictions. `readback` binds humanEvent, revision, contextEpoch and evidence. Each obligation has id, owner, READY/WAITING/DONE, evidence and, for WAITING, resumeWhen. Acceptance leaves no open assignment obligations; consultation cannot replace ready owner work. Review and budget checks still apply.
+
+A safety stop needs no permission or reviewer; calling it a human PAUSE requires the current original source. On conflict, hold affected effects and reconcile only conflicting originals, not the whole history or a new permission request. After compaction refresh State before interpreting retained commands. Replayed history, summaries and worker reports cannot supersede human authority.
+
+Supply current assignment evidence through the existing receipt path before dependent actions. Older receipts without it remain UNVERIFIED, not retroactively invalid historical results; migrate on safe boundaries, never invent evidence. The enrolled reference runner enforces this, but ordinary native chat finals are not intercepted. Outstanding work requires authorized proven native continuation or bounded waiting, not a prompt-only guarantee.
 
 Manage an outstanding obligation, not a message or chat lifetime. Its existing lease retains one accountable owner until accepted completion, explicit cancellation, or a successor's evidenced acceptance of responsibility. Delegating execution does not transfer responsibility for obtaining and applying its outcome. The cycle is assign -> observe execution -> receive outcome -> apply outcome -> continue or close. Delivery, observation and application are distinct evidence; none alone is task acceptance. A first-action receipt proves only that transition. Keep checkpoint, source authority, effects, spend and independent review obligations in existing State/Return records.
 
@@ -13,15 +20,8 @@ For every outcome, reconcile the exact task/turn, retained progress, latest huma
 Use the existing `Next-Best-Action` section in Project State, not a second plan or memory node. Keep one JSON record there. It points to the current productive step and its existing work/lease; other concurrent work remains in `Execution Leases`.
 
 ```json
-{
-  "schemaVersion": 1,
-  "id": "NEXT-1",
-  "work": "WORK-1",
-  "action": "Dispatch the accepted increment",
-  "owner": "active-manager-context",
-  "state": "READY",
-  "evidence": "accepted-brief-reference"
-}
+{"schemaVersion":1,"id":"NEXT-1","work":"WORK-1","action":"Dispatch the accepted increment",
+ "owner":"active-manager-context","state":"READY","evidence":"accepted-brief-reference"}
 ```
 
 - `READY`: the active orchestrator owns a safe management step. Its matching `PREPARED` lease may be published before dispatch; structural validity does not prove execution. Perform the step in the current control turn; a plan or promise is not a dispatch. Reconcile an existing lease before any launch.

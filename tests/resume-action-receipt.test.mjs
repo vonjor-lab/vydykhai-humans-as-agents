@@ -1,9 +1,11 @@
 import test from "node:test";
+import { assignment } from "./assignment-fixture.mjs";
 import assert from "node:assert/strict";
 import { evaluateResumeReceipt } from "../scripts/task-continuity.mjs";
 import { evaluateProductionContinuation, readProductionContinuation, evaluateLeaseActivity, readLeaseActivityScope } from "../scripts/vydykhai.mjs";
 const scope = {work:"task",owner:"worker",humanEvent:"resume-2",checkpoint:"saved",action:"publish-saved"};
 const fixture = () => ({...scope,boundary:"task-resume",pause:"CLEARED",effects:"RECONCILED",
+  assignment:assignment({...scope,revision:"brief-2"},scope.humanEvent,"epoch-2"),
   taskIdentity:{schemaVersion:1, failedRestorations:[],
     current:{work:"task",owner:"worker",revision:"brief-2",checkpoint:"saved",humanEvent:"resume-2",contextEpoch:"epoch-2",evidence:"current-checkpoint"},
     seen:{work:"task",revision:"brief-2",checkpoint:"saved",humanEvent:"resume-2",contextEpoch:"epoch-2",turnId:"turn-2",evidence:"worker-readback"}},
@@ -44,6 +46,7 @@ test("restoration keeps current resume, rejects replayed pause and honors genuin
   r.taskIdentity.seen.humanEvent = "resume-2";
   assert.equal(evaluateResumeReceipt(r).status, "UNVERIFIED");
   r.readback.contextEpoch = r.observed.contextEpoch = "epoch-3";
+  r.assignment.contextEpoch = r.assignment.readback.contextEpoch = "epoch-3";
   r.readback.sequence = 12;
   assert.equal(evaluateResumeReceipt(r).status, "UNVERIFIED");
   r.observed.sequence = 13;

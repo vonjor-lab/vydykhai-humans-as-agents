@@ -1,5 +1,16 @@
 # Collaboration Framework Changelog
 
+## 2.1.21 - 2026-11-08
+
+Continuation and closure now assess the same current assignment: original scoped
+human direction, post-restoration readback and remaining owner obligations. Replayed
+pauses cannot replace a later sourced resume; new pauses still stop affected work.
+Ready owner work cannot be presented as completed acceptance or consultation.
+Existing receipt and activity paths enforce these comparisons; old receipts need a
+current projection at a safe boundary, without rewriting history or rerunning work.
+No controller, scheduled check or extra independent-review stage is introduced.
+Isolated runner proof is not proof that native chat compaction or finals are intercepted.
+
 ## 2.1.20 - 2026-11-07
 
 Bounded autonomous assignment now shares the existing failure-reframe and independent-review routes. The Action Receipt can assess a task disposition, including review application, cumulative attempt limits, budget reserve and human handoff distinct from product acceptance. An opted-in reference runner rechecks the disposition before commands. New native experiments observed automatic Goal continuation, refusal at exhausted declared allowance, same-reviewer turn-interruption recovery and applied independent CONSULT, with product OPEN and terminal verification Goal. Independent scoped review accepts release. These are declared-evidence and current-host collaboration proofs, not authenticated/atomic spending, process teardown, arbitrary desktop-chat delivery or measured savings. Existing protected gates and product pauses remain binding.

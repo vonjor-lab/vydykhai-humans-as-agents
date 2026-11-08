@@ -1,5 +1,19 @@
 # Framework Efficiency Transition
 
+## Current Assignment Follow-up - 2.1.21
+
+Implementation/application change, not a constitutional change. Existing State,
+Return and Action Receipt retain source-ordered scoped authority, current-context
+readback and remaining obligations across restoration and closure. No new controller.
+The scoped deterministic suite covers stale authority, new pause, ready owner work,
+independent acceptance, retained budgets and actual isolated runner commands.
+Native chat restoration and autonomous finalization remain an OPEN adoption gate:
+the deterministic adapter is not a native compaction test. Do not publish an
+autonomy claim or modify a running product to manufacture this proof. Independent
+review repaired two projection blockers and accepted the scoped release; 16 affected
+checks passed. Native Goal continuation/stop was observed separately, not compaction.
+The sections below describe historical candidate states, not current adoption.
+
 ## Release Increment: 2.1.20 - Bounded Autonomous Responsibility
 
 Status: LOCAL IMPLEMENTATION CANDIDATE, not published or adopted. Six new scoped

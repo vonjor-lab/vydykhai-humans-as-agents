@@ -7,6 +7,59 @@ const text = v => typeof v === "string" && v.trim() === v && v.length > 0 && v.l
   !/[\r\n\0]/.test(v) && !/<[^>]*>/.test(v);
 const identity = ["work", "revision", "checkpoint", "humanEvent", "contextEpoch"];
 
+// Projection of the existing assignment, not a second authority journal. Sequence
+// belongs to the original source, never to message delivery or compaction order.
+export function evaluateCurrentAssignment(v) {
+  const result = (status, reason, pause = "UNKNOWN") => ({status, reason, pause,
+    assurance:"DECLARED_EVIDENCE_ONLY", replayAuthorized:false});
+  const a = v?.assignment;
+  if (!object(a) || !["work","owner","revision","contextEpoch","evidence"].every(k => text(a[k])) ||
+      a.work !== v.work || a.owner !== v.owner || a.revision !== v.revision ||
+      !Array.isArray(a.directions) || !a.directions.length || a.directions.length > 64) {
+    return result("UNVERIFIED", "current assignment and original direction chain required");
+  }
+  let previous = a.predecessor ?? null;
+  const ids = new Set();
+  if (previous !== null) {
+    if (!object(previous) || !["id","source","orderSource"].every(k => text(previous[k])) ||
+        previous.work !== v.work || !Number.isSafeInteger(previous.sequence) || previous.sequence < 0) {
+      return result("UNVERIFIED", "original predecessor anchor required for a bounded suffix");
+    }
+    ids.add(previous.id);
+  }
+  for (const e of a.directions) {
+    if (!object(e) || !["id","source","orderSource"].every(k => text(e[k])) || e.work !== v.work ||
+        !["AUTHORIZE","PAUSE","RESUME"].includes(e.kind) || (e.kind === "AUTHORIZE" && previous !== null) ||
+        !Number.isSafeInteger(e.sequence) || e.sequence < 0 ||
+        ids.has(e.id) || (previous ? e.sequence <= previous.sequence || e.orderSource !== previous.orderSource ||
+          e.supersedes !== previous.id : e.supersedes !== null)) {
+      return result("UNVERIFIED", "ambiguous source chronology or scope; delivery is not authority");
+    }
+    ids.add(e.id); previous = e;
+  }
+  const pause = previous.kind === "PAUSE" ? "ACTIVE" : "CLEARED";
+  const seen = a.readback;
+  if (a.humanEvent !== previous.id || v.authority !== previous.id ||
+      !object(seen) || !text(seen.evidence) || seen.humanEvent !== previous.id ||
+      seen.revision !== a.revision || seen.contextEpoch !== a.contextEpoch) {
+    return result("UNVERIFIED", "restore current assignment before transition", pause);
+  }
+  if (v.pause !== pause) return result("UNVERIFIED", "reported pause contradicts original direction", pause);
+  if (!Array.isArray(a.obligations) || a.obligations.length > 128 ||
+      a.obligations.some(o => !object(o) || !["id","owner","evidence"].every(k => text(o[k])) ||
+        !["READY","WAITING","DONE"].includes(o.state) || (o.state === "WAITING" && !text(o.resumeWhen))) ||
+      new Set(a.obligations.map(o => o.id)).size !== a.obligations.length) {
+    return result("UNVERIFIED", "owned remaining obligations required", pause);
+  }
+  if (v.action === "accept" && a.obligations.some(o => o.state !== "DONE")) {
+    return result("UNVERIFIED", "accepted closure cannot leave assignment obligations open", pause);
+  }
+  if (v.action === "handoff" && a.obligations.some(o => o.owner === v.owner && o.state === "READY")) {
+    return result("UNVERIFIED", "apply available outcomes and ready owner work before handoff", pause);
+  }
+  return result("PASS", "current scoped assignment read back; source authenticity remains host-owned", pause);
+}
+
 // Validate a projection of the existing task ledger, not a new ledger or authority.
 export function evaluateTaskDisposition(v) {
   const result = (status, reason) => ({status, reason, replayAuthorized:false,
@@ -17,6 +70,8 @@ export function evaluateTaskDisposition(v) {
       !["execute","accept","handoff","halt"].includes(v.action)) return hold("current task disposition missing");
   if (v.action === "halt") return result("HELD", "stop requires no independent permission; product remains open");
   if (v.effects !== "RECONCILED") return result("OUTCOME_UNKNOWN", "reconcile effects; no replay or accepted closure");
+  const assignment = evaluateCurrentAssignment(v);
+  if (assignment.status !== "PASS") return hold(assignment.reason);
   if (v.pause !== "CLEARED") return result("HELD", "human pause or unresolved authority");
   const b = v.budget;
   if (!object(b) || !["limit","spent","reserved","next","reviewReserve"].every(k =>
@@ -81,6 +136,9 @@ export function evaluateResumeReceipt(value) {
     return result("UNVERIFIED", "current resume scope missing");
   }
   if (value.effects === "UNKNOWN") return result("OUTCOME_UNKNOWN", "reconcile effects before any retry");
+  const assignment = evaluateCurrentAssignment({...value, revision:value.taskIdentity?.current?.revision,
+    authority:value.humanEvent});
+  if (assignment.status !== "PASS") return result("UNVERIFIED", assignment.reason);
   if (value.pause !== "CLEARED" || value.effects !== "RECONCILED") {
     return result("UNVERIFIED", "pause authority or effects not reconciled");
   }
@@ -104,6 +162,9 @@ export function evaluateResumeReceipt(value) {
   if (task.nextAction || value.taskIdentity.current.humanEvent !== value.humanEvent ||
       value.taskIdentity.current.checkpoint !== value.checkpoint) {
     return result("MISMATCH", "restore current authoritative assignment before closing resume");
+  }
+  if (value.assignment.contextEpoch !== value.taskIdentity.current.contextEpoch) {
+    return result("UNVERIFIED", "assignment readback belongs to an earlier context epoch");
   }
   const readback = value.readback;
   if (!object(readback) || readback.evidence !== value.taskIdentity.seen.evidence ||

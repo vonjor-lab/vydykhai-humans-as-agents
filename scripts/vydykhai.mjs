@@ -1423,7 +1423,9 @@ function evaluateExecutionObservation(view, work) {
   if (view.dispositionRequired === true || Object.hasOwn(view, "disposition")) {
     const receipt = view.disposition;
     if (!receipt || receipt.work !== work?.split(/\s/)[0] || receipt.owner !== view.context ||
-        !view.taskIdentity?.current || receipt.revision !== view.taskIdentity.current.revision) {
+        !view.taskIdentity?.current || receipt.revision !== view.taskIdentity.current.revision ||
+        receipt.assignment?.contextEpoch !== view.taskIdentity.current.contextEpoch ||
+        receipt.authority !== view.taskIdentity.current.humanEvent) {
       return limited("current task disposition unavailable", "RECONCILE_DISPOSITION");
     }
     const decision = evaluateTaskDisposition(receipt);

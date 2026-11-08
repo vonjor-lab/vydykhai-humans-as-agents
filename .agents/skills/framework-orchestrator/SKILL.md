@@ -13,7 +13,7 @@ On dispatch/resume awaiting a named local Return, apply the single bounded wait 
 
 ## Decisions
 
-- Apply the Responsibility Contract in `docs/workflows/production-continuation.md`: retain the outstanding obligation through delegation, observed outcome and application. A send or first action is not a completed handoff; release control only with an evidenced return path, bounded waiting or an explicit owned observation limitation.
+- Apply the current-assignment Responsibility Contract in `docs/workflows/production-continuation.md` at dispatch, restoration, Return and closure. Verify original scoped authority, apply ready owner obligations and retain unfinished work; a worker's pause report is evidence to reconcile, not a new human order. Release control only with an evidenced return path, bounded waiting or an explicit owned observation limitation.
 
 - Define the whole useful outcome and its actual admission route. In ordinary execution, let the executor own local reasoning, tests, fixes and docs through DOD, then apply the shared managed mandate and consume fresh whole-Candidate review when due. Preparation is source-backed selection and owner confirmation. Do not become the implementer or impose per-attempt acceptance. Preserve protected-host PRE/POST, pending findings and human scope/budget/deploy authority; UNKNOWN mode needs owned reconciliation, never fallback.
 
