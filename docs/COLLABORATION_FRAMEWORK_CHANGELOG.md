@@ -1,5 +1,15 @@
 # Collaboration Framework Changelog
 
+## 2.1.24 - 2026-11-08
+
+Existing preparation traces the promised outcome through applicable downstream
+contracts, not only computation. Routing selects context/model for the remaining
+work and considers safe transfer before renewing an expensive inherited profile.
+Executors bundle ordinary fixes into a coherent Candidate; required admission,
+independent acceptance, retained findings and whole-task costs remain binding.
+No new role, control loop, packet schema or product change. Runtime adoption and
+comparable full-DOD savings are not established by these rule changes.
+
 ## 2.1.23 - 2026-11-08
 
 Clarify the constitution: preserve agreed meaning, reliability, memory and human
