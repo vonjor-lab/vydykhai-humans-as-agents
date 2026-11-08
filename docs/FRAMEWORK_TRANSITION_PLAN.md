@@ -1,5 +1,15 @@
 # Framework Efficiency Transition
 
+## Retained Owner Turn - 2.1.22
+
+Implementation guidance, not a new constitutional goal or runtime layer. Native
+terminal waiting in the open owner turn replaces speculative message wake-up as
+the default delegation route. Reused isolated evidence observed one dispatch,
+one wait and same-turn application without reminders; no ended-owner recovery,
+native compaction, product acceptance or cost reduction is claimed. Existing
+Return, authority, review and finite observation limits remain binding. Release
+adoption must read back owner and participants at their safe boundaries.
+
 ## Current Assignment Follow-up - 2.1.21
 
 Implementation/application change, not a constitutional change. Existing State,

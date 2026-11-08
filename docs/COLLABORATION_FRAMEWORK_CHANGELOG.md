@@ -1,5 +1,16 @@
 # Collaboration Framework Changelog
 
+## 2.1.22 - 2026-11-08
+
+After delegation, the owner now keeps its control turn open, waits through the
+host's existing bounded terminal wait and applies the durable result before
+finishing. Sending a message is no longer described as proof of waking an idle
+owner. The existing file-wait route remains an alternative, not another watcher.
+Memory, human authority, independent acceptance and spending limits are unchanged.
+The prior isolated native wait/application observation is reused without rerunning
+tests. This is a rules-only correction, not a new controller or a guarantee that
+an ended chat can restart itself. Product adoption and savings require readback.
+
 ## 2.1.21 - 2026-11-08
 
 Continuation and closure now assess the same current assignment: original scoped
