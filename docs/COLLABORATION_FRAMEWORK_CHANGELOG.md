@@ -1,5 +1,15 @@
 # Collaboration Framework Changelog
 
+## 2.1.26 - 2026-11-08
+
+Clarify two startup ambiguities: common launch fields also apply to focused
+Preparation and Discovery, while Lab remains a mode and execution-only duties
+remain scoped. Context/profile choice and actual readback live once in the
+existing assignment or lease; Startup and Task Map reference the same revision
+instead of independently repeating the fields. No new role, record type,
+controller or review stage. Native enforcement and whole-DOD savings remain
+unproved; apply at safe boundaries without restarting ongoing work.
+
 ## 2.1.25 - 2026-11-08
 
 Before launching work, the existing startup route now connects the chosen context

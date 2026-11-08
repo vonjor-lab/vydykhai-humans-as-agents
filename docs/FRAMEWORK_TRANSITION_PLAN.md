@@ -1,5 +1,16 @@
 # Framework Efficiency Transition
 
+## Single Startup Record - 2.1.26
+
+Resolve the two accepted external-review observations without another audit:
+common launch fields cover focused roles, not only execution, and all projections
+reference one existing authoritative assignment/lease record. Lab stays a mode;
+execution-specific duties do not apply to advisory preparation or discovery.
+No runtime logic, control boundary or constitutional goal changes. New structural
+checks cover role applicability and the single-record route; inherited native
+compliance and full-task economy proof remain pending on real authorized work.
+Do not interrupt the current laboratory or replay accepted evidence for rollout.
+
 ## Dispatch Decision Application - 2.1.25
 
 Existing startup now connects selected context and task-class profile to supported

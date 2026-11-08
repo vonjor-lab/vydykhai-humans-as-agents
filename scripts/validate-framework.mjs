@@ -844,8 +844,12 @@ if (
   fail("Project activation is missing live evidence, participant ownership, or first-dispatch enforcement");
 }
 if (
-  !taskHandoffTemplate.includes("Role: EXECUTION") ||
-  !taskHandoffTemplate.includes("Agent profile: EXECUTION") ||
+  !taskHandoffTemplate.includes("Role: <existing focused role;") ||
+  !taskHandoffTemplate.includes("Agent profile / execution context:") ||
+  !taskHandoffTemplate.includes("including Preparation and Discovery") ||
+  !taskHandoffTemplate.includes("Lab is a work mode, not an additional role") ||
+  !taskHandoffTemplate.includes("Execution-specific duties below apply only to an execution assignment") ||
+  !taskHandoffTemplate.includes("do not fill or synchronize independent copies") ||
   !taskHandoffTemplate.includes("Execution Lease:") ||
   !taskHandoffTemplate.includes("DOD Control Line contribution:") ||
   !taskHandoffTemplate.includes("Continue from:") ||

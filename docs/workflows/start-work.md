@@ -85,8 +85,8 @@ For each task, write only the execution contract. Project-wide reasoning stays w
 
 ```md
 Title / outcome owner / backup / recipient:
-Role / profile: <work role; accepted task-class mapping or bounded exception>
-Execution context / dispatch: <selected sources or justified reuse; supported context/model parameters; current worker/turn readback or pending/UNKNOWN, under context-routing.md#execution-context-at-a-safe-boundary>
+Role / profile: <work role; profile reference in the same dispatch decision below>
+Execution context / dispatch: <reference and revision of the single decision/readback in the existing assignment/lease under context-routing.md#execution-context-at-a-safe-boundary; no separate copy>
 Goal and DOD impact:
 DOD Control Line contribution: <accepted proof -> gap closed -> remaining continuation>
 Scope / out of scope:

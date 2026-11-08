@@ -4,13 +4,15 @@ The orchestrator resolves project-wide meaning before dispatch. Give the task on
 
 ## Startup
 
+Use the common startup fields for any focused role, including Preparation and Discovery. Lab is a work mode, not an additional role. Execution-specific duties below apply only to an execution assignment; other roles retain their existing bounded outcome and return contract.
+
+The dispatch decision and readback have one authoritative location in the existing assignment/lease under `context-routing.md#execution-context-at-a-safe-boundary`. Startup and Task Map reference that same record and revision; do not fill or synchronize independent copies. If Startup is already that location, the lease and map point here. Later observations update that record while retaining earlier requested values and mismatch evidence.
+
 ```md
 # Task Context Startup
 
-Role: EXECUTION
-Agent profile: EXECUTION / <resolved efficient mapping and fallback if any>
-Execution context: <selected source scope/budget or justified reuse; host-selectable context/model parameters; physical session and current assignment/turn evidence; first-request input or UNKNOWN, later/max separately; boundary disposition under context-routing.md#execution-context-at-a-safe-boundary>
-Profile readback: <requested and observed model/effort; accepted task-class evidence or scoped exception with return condition; pending/UNKNOWN/mismatch remains explicit>
+Role: <existing focused role; Lab belongs in mode, not role>
+Agent profile / execution context: <reference and revision of the single dispatch decision/readback in the existing assignment/lease; fill here only if this Startup is that authoritative location>
 Title: <work-id> [<track>] [<mode>] — <short outcome; owning Issue/stable task key, never PR; omit mode for normal execution>
 Task / outcome owner / backup / recipient:
 Return to: <exact recipient/project and approved outbox + wakeup; see Return Authorization below>

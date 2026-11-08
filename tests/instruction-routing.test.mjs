@@ -5,6 +5,18 @@ import { readFile } from "node:fs/promises";
 const source = (name) => readFile(new URL(`../${name}`, import.meta.url), "utf8");
 
 // Instruction wiring, not proof of native tool enforcement or model compliance.
+test("startup shares one dispatch record across focused roles without creating a Lab role", async () => {
+  const handoff = await source("docs/workflows/task-context-handoff-template.md");
+  assert.match(handoff, /including Preparation and Discovery/);
+  assert.match(handoff, /Lab is a work mode, not an additional role/);
+  assert.match(handoff, /Execution-specific duties below apply only to an execution assignment/);
+  assert.match(handoff, /do not fill or synchronize independent copies/);
+  assert.match(handoff, /If Startup is already that location/);
+  assert.doesNotMatch(handoff, /^Role: EXECUTION$/m);
+  for (const file of ["docs/workflows/start-work.md", "docs/workflows/context-routing.md"])
+    assert.match(await source(file), /same record and revision|single decision\/readback/);
+});
+
 test("dispatch selection reaches entrypoint, call parameters and current evidence", async () => {
   const entry = await source(".agents/skills/start-work/SKILL.md");
   assert.match(entry, /At every dispatch or material resume/);
