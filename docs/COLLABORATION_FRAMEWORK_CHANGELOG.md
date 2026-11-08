@@ -1,5 +1,20 @@
 # Collaboration Framework Changelog
 
+## 2.1.25 - 2026-11-08
+
+Before launching work, the existing startup route now connects the chosen context
+and task-class model to the actual supported call parameters. Inherited settings
+are not presented as an intentional choice. Readback belongs to the current
+worker and turn; unavailable evidence remains unknown. Exceptions have a return
+condition and do not pass to the next task. Already-spent context stays in the
+cost; workers are not restarted to make a metric look better.
+
+This consolidates existing rules in the launch entrypoint, brief and handoff,
+without a new controller, model call, schema or native-tool interceptor. Memory,
+human authority, sole ownership and independent acceptance are unchanged. Product
+application and lower complete-task cost require subsequent real evidence; this
+release alone proves neither. Ongoing work is not interrupted for adoption.
+
 ## 2.1.24 - 2026-11-08
 
 Existing preparation traces the promised outcome through applicable downstream

@@ -4,6 +4,31 @@ import { readFile } from "node:fs/promises";
 
 const source = (name) => readFile(new URL(`../${name}`, import.meta.url), "utf8");
 
+// Instruction wiring, not proof of native tool enforcement or model compliance.
+test("dispatch selection reaches entrypoint, call parameters and current evidence", async () => {
+  const entry = await source(".agents/skills/start-work/SKILL.md");
+  assert.match(entry, /At every dispatch or material resume/);
+  assert.match(entry, /derive the call parameters from that choice/);
+  assert.match(entry, /focused Discovery and Lab/);
+  for (const path of ["docs/AGENTS_CORE.md", "docs/workflows/start-work.md",
+    "docs/workflows/task-context-handoff-template.md"])
+    assert.match(await source(path), /context-routing.md#execution-context-at-a-safe-boundary/);
+  const route = (await source("docs/workflows/context-routing.md"))
+    .split("### Execution Context At A Safe Boundary")[1].split("### Bounded Role Adoption")[0];
+  for (const phrase of ["before deriving the native call parameters", "LIMITED/inherited before launch",
+    "current assignment revision, worker and launch/resume turn", "requested versus observed",
+    "first-request input", "later/max input is a separate measure", "Missing/stale evidence cannot establish application",
+    "first-input cost is already spent", "Do not relaunch solely to improve a metric",
+    "successors do not inherit it", "not a host fence", "Independent acceptance retains its distinct context"])
+    assert.ok(route.includes(phrase), phrase);
+  const manifest = JSON.parse(await source("vydykhai.json"));
+  const adoption = manifest.adoptionRequirements.filter(x => x.id === "unfinished-workers");
+  assert.equal(adoption.length, 1);
+  assert.match(adoption[0].action, /supported native call parameters/);
+  assert.match(adoption[0].action, /current assignment\/worker\/turn/);
+  assert.match(adoption[0].action, /missing or stale proof remains pending/);
+});
+
 test("controlled policy is reachable through ordinary managed events, not only maintainer design", async () => {
   for (const file of ["docs/AGENTS_CORE.md", "docs/workflows/framework-orchestrator.md",
     "docs/workflows/start-work.md", "docs/workflows/accept-work.md", "docs/workflows/framework-activation.md"])

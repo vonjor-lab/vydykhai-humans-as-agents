@@ -11,7 +11,9 @@ Shape a new or materially changed goal using `docs/workflows/module-delivery.md`
 
 Define one complete useful outcome and DOD, with executor-owned local reasoning, tests, fixes and documentation. Record the actual ordinary or protected route in the existing brief; UNKNOWN is not ordinary authority. On the ordinary route, preparation is source-backed selection and owner confirmation; identify any risk-based PRE or final REVIEW under the shared managed mandate. Preserve protected-host gates and human scope/budget/deploy decisions.
 
-Read `AGENTS.md` once and `docs/workflows/start-work.md` for new shaping or a material rebrief. Use `docs/workflows/context-route.md` for relevant memory, `docs/workflows/module-contract-template.md#use-change-or-create` for module intent, and `docs/workflows/context-routing.md` or `context-preparation.md` only when that route is selected. `docs/FRAMEWORK.md` is a human overview for unresolved meaning, not a routine prerequisite.
+At every dispatch or material resume, apply `context-routing.md#execution-context-at-a-safe-boundary` through the existing startup/lease: choose sufficient context and task-class model for the remaining outcome, resolve what the host can actually set, and derive the call parameters from that choice. Inherited settings are not a selection. Bind observed readback to the actual worker/turn; missing or conflicting proof cannot establish adoption. This also applies to focused Discovery and Lab; it requires no extra preparer, reviewer or model call.
+
+Read `AGENTS.md` once and `docs/workflows/start-work.md` for new shaping or a material rebrief. Use `docs/workflows/context-route.md` for relevant memory, `docs/workflows/module-contract-template.md#use-change-or-create` for module intent, and other `context-routing.md` or `context-preparation.md` sections only when relevant. `docs/FRAMEWORK.md` is a human overview for unresolved meaning, not a routine prerequisite.
 
 ## Boundaries
 

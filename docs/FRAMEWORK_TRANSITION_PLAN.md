@@ -1,5 +1,23 @@
 # Framework Efficiency Transition
 
+## Dispatch Decision Application - 2.1.25
+
+Existing startup now connects selected context and task-class profile to supported
+native call parameters, then to current worker/turn evidence. The short entrypoint
+is unconditional; detailed rules remain in one routing section. Existing handoff
+and unfinished-worker adoption carry the same decision, not a new schema or role.
+Independent scoped patch review PASS; validator, diff check and three targeted
+instruction/adoption/reference checks PASS. Initial validation exceeded the human
+overview line budget; reflow corrected it. The broader 32-check selection initially
+had six failures: one changed wording assertion was aligned and rerun; overview
+size validation was separate. Five existing test failures are retained as debt:
+the updater expects version 2.1.19, core exceeds an old 1800-word budget, and old
+exact-wording expectations no longer match. These are not a green full-suite claim.
+No product/lab work or runtime execution code changed. Proposal review is separate
+from patch acceptance. Native dispatch compliance, participant application and
+comparable full-DOD economy await the next authorized real task at a safe boundary.
+Do not replay prior work, rotate for a metric, or claim publication proves savings.
+
 ## Prepare Through Delivery - 2.1.24
 
 After an existing integration reached its scoped independent acceptance, consolidate

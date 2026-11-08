@@ -9,8 +9,8 @@ The orchestrator resolves project-wide meaning before dispatch. Give the task on
 
 Role: EXECUTION
 Agent profile: EXECUTION / <resolved efficient mapping and fallback if any>
-Execution context: <physical session; observed request input or UNKNOWN; selected source scope/budget; REUSE / COMPACT / TRANSFER_PENDING / LIMITED; boundary evidence>
-Profile readback: <actual model/effort; accepted task-class evidence; stronger-profile exception and return condition if applicable>
+Execution context: <selected source scope/budget or justified reuse; host-selectable context/model parameters; physical session and current assignment/turn evidence; first-request input or UNKNOWN, later/max separately; boundary disposition under context-routing.md#execution-context-at-a-safe-boundary>
+Profile readback: <requested and observed model/effort; accepted task-class evidence or scoped exception with return condition; pending/UNKNOWN/mismatch remains explicit>
 Title: <work-id> [<track>] [<mode>] — <short outcome; owning Issue/stable task key, never PR; omit mode for normal execution>
 Task / outcome owner / backup / recipient:
 Return to: <exact recipient/project and approved outbox + wakeup; see Return Authorization below>

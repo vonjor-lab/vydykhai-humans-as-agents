@@ -54,8 +54,8 @@ test('new reference documents link to existing local procedures, not new runtime
 test('existing worker requirement carries context adoption and refuses absent or stale readback scope', async () => {
   const manifest = JSON.parse(await readFile(path.join(root, 'vydykhai.json'), 'utf8'));
   const rule = manifest.adoptionRequirements.find(r => r.id === 'unfinished-workers');
-  for (const text of ['task-and-physical-context', 'execution-context-at-a-safe-boundary',
-    'actual context input or UNKNOWN', 'task-class model/effort', 'sole owner',
+  for (const text of ['execution-context-at-a-safe-boundary', 'supported native call parameters',
+    'first-request input or UNKNOWN', 'accepted task-class profile', 'sole ownership',
     'source-backed NO_CHANGE', 'missing or stale proof remains pending',
     'next authorized action', 'comparable accepted outcomes']) assert.ok(rule.action.includes(text), text);
   const scope = {targetBundle:'new-kit',worker:'same-owner',workerBundle:'new-kit',instructionReadback:'current-assignment'};
