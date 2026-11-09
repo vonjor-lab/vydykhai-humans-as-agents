@@ -16,8 +16,8 @@ test('small capsule or high cache cannot conceal oversized actual input',()=>{
 });
 test('compact successor remains same logical task; quality and quota not inferred',()=>{
  const v=input();v.samples=[sample({inputTokens:20000,cachedInputTokens:1000})];
- const r=measureContextUse(v);assert.equal(r.status,'WITHIN_DECLARED_BUDGET');assert.equal(r.taskId,'same-task');
- assert.equal(r.coverage,'DECLARED_COMPLETE');assert.equal(r.subscriptionUsage,'UNKNOWN');
+ const r=measureContextUse(v);assert.equal(r.status,'INSUFFICIENT_EVIDENCE');assert.equal(r.taskId,'same-task');
+ assert.equal(r.coverage,'PARTIAL');assert.equal(r.subscriptionUsage,'UNKNOWN');
 });
 test('missing telemetry and unknown overhead cannot pass as efficient',()=>{
  const v=input();v.samples=[];assert.equal(measureContextUse(v).status,'INSUFFICIENT_EVIDENCE');

@@ -1,5 +1,14 @@
 # Supported Context Preparation
 
+## Role contract
+- **Purpose:** supply all applicable task meaning with the smallest sufficient working context, not summarize the whole project.
+- **Inputs:** owner-defined outcome and boundary, relevant memory/code-map anchors, module owner and accepted baseline, source access and known gaps.
+- **Actions and boundaries:** trace applicable decisions, invariants and affected dependencies to originals; distinguish current meaning from superseded history. Use public contracts before implementation. Do not invent missing facts, change authority or certify independent acceptance.
+- **Output and recipient:** one source-backed task packet to the orchestrator for confirmation and executor for use; include applicable constraints, evidence pointers, uncertainties and consultation triggers in the existing assignment.
+- **Evidence:** source/version applicability and coverage of the touched dependency chain; executor readback of material constraints. A hash proves identity, not understanding or semantic completeness.
+- **Failure and exit:** expose a specific missing or contradictory link for bounded discovery or memory repair; do not silently omit it. Once sufficient, stop; reopen only for an identified gap and return a targeted supplement, not repeated whole-packet preparation. Independent PRE remains required where the adopted mode requires it.
+
+
 The agent prepares a task from ordinary reviewed inputs using `context-prepare`; the person states the desired work and makes existing semantic decisions. No manual hash graph, test helper, provider call or hook installation is required.
 
 ## Inputs and ownership

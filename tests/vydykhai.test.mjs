@@ -67,7 +67,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.equal(await readFile(path.join(target, "NOTICE.md"), "utf8"), "product notice\n");
     assert.equal(await readFile(path.join(target, ".agents/skills/project-only/SKILL.md"), "utf8"), "project-only\n");
     assert.match(await readFile(path.join(target, "docs/workflows/README.md"), "utf8"), /environment-neutral workflows/);
-    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Role: EXECUTION/);
+    assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Role: <existing focused role; Lab belongs in mode, not role>/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Consult when:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Applicable Memory Brief:/);
     assert.match(await readFile(path.join(target, "docs/workflows/task-context-handoff-template.md"), "utf8"), /Executable Memory Brief:/);
@@ -527,8 +527,8 @@ test("current manifest preserves updater compatibility fields", async () => {
   assert.match(projectState, /<!-- vydykhai:return-route v1 -->/);
   assert.equal((projectState.match(/^## Next-Best-Action$/gm) || []).length, 1);
   const taskHandoff = await readFile(path.join(root, "docs/workflows/task-context-handoff-template.md"), "utf8");
-  assert.match(taskHandoff, /Role: EXECUTION/);
-  assert.match(taskHandoff, /Agent profile: EXECUTION/);
+  assert.match(taskHandoff, /Role: <existing focused role; Lab belongs in mode, not role>/);
+  assert.match(taskHandoff, /Agent profile \/ execution context: <reference and revision of the single dispatch decision\/readback/);
   assert.match(taskHandoff, /Execution Lease:/);
   assert.match(taskHandoff, /DOD Control Line contribution:/);
   assert.match(taskHandoff, /Continue from:/);
@@ -657,7 +657,7 @@ test("update and return entrypoints retain the focused worker as execution owner
   assert.match(returnStep, /read the owning task's marked Return Sync/);
   assert.match(returnStep, /orchestrator does not create or rewrite the task's producer record/);
   assert.match(returnStep, /append only the paired marked Return Route receipt/);
-  assert.match(core, /the task uses the installed canonical writer/);
+  assert.match(core, /the task uses the canonical writer/);
   assert.match(readme, /one focused maintenance task prepares or reuses the update branch/);
   assert.match(readme, /orchestrator coordinates that task.*does not perform the installation/);
   assert.match(readme, /paused work stays paused/);
@@ -690,7 +690,7 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   assert.match(alignmentWorkflow, /neither publishes shared guidance nor bypasses source access or participant authority/);
 
   const startup = handoff.split("## Startup")[1].split("## Execution Rules")[0];
-  assert.match(startup, /Role: EXECUTION/);
+  assert.match(startup, /Role: <existing focused role; Lab belongs in mode, not role>/);
   assert.match(startup, /Applicable Memory Brief:/);
   assert.doesNotMatch(startup, /Touch Set:/);
   assert.doesNotMatch(startup, /Project State:/);

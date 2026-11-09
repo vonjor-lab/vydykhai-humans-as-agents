@@ -1,21 +1,25 @@
 # Task Context Contract
 
-The orchestrator resolves project-wide meaning before dispatch. Give the task only what it needs to execute and prove one accepted increment. Do not copy Project State, meeting transcripts, the full Project Memory Graph, task map, or orchestration deliberation into the task.
-
+## Role contract
+- **Purpose:** deliver and prove the assigned complete outcome within its boundary, economically and without losing applicable meaning.
+- **Inputs:** confirmed scoped packet, DOD, authority, accepted module baseline/invariants, owned implementation boundary, selected model/context and exact return route. Do not copy Project State, meeting transcripts, the full Project Memory Graph, task map or orchestration deliberation into the task.
+- **Actions and boundaries:** implement, test and repair autonomously within authority; retain evidence and update affected contracts. Consult the orchestrator for a material scope/dependency/meaning gap, not every technical step. Do not redefine DOD, bypass independent control or import unrelated project history.
+- **Output and recipient:** durable result to the designated orchestrator with artifacts, DOD evidence, changed contracts/memory candidates, limitations and full known usage. Distinguish partial progress, blocked work and ready-for-acceptance; no claim that sending woke the recipient.
+- **Evidence:** observable result against each applicable acceptance requirement and preserved module invariants; declared intent or local tests alone do not establish integration or parent completion.
+- **Failure and exit:** preserve effects, diagnose the failed assumption and use existing reframe/model escalation rules without blind replay. Missing authority or exhausted useful routes returns an evidenced decision request, not a technical permission ritual. Finish on the assigned result or an explicit evidenced stop, never silently abandon responsibility.
 ## Startup
 
 Use the common startup fields for any focused role, including Preparation and Discovery. Lab is a work mode, not an additional role. Execution-specific duties below apply only to an execution assignment; other roles retain their existing bounded outcome and return contract.
-
-The dispatch decision and readback have one authoritative location in the existing assignment/lease under `context-routing.md#execution-context-at-a-safe-boundary`. Startup and Task Map reference that same record and revision; do not fill or synchronize independent copies. If Startup is already that location, the lease and map point here. Later observations update that record while retaining earlier requested values and mismatch evidence.
+Use `context-routing.md#execution-context-at-a-safe-boundary`: Startup and Task Map reference the same authoritative assignment/lease revision; later observations preserve earlier requested values and mismatch evidence.
 
 ```md
 # Task Context Startup
 
 Role: <existing focused role; Lab belongs in mode, not role>
-Agent profile / execution context: <reference and revision of the single dispatch decision/readback in the existing assignment/lease; fill here only if this Startup is that authoritative location>
+Agent profile / execution context: <reference and revision of the single dispatch decision/readback in the existing assignment/lease; fill here only if this Startup is that authoritative location; do not fill or synchronize independent copies>
 Title: <work-id> [<track>] [<mode>] — <short outcome; owning Issue/stable task key, never PR; omit mode for normal execution>
 Task / outcome owner / backup / recipient:
-Return to: <exact recipient/project and approved outbox + wakeup; see Return Authorization below>
+Return to: <exact recipient/project, approved outbox and observed native delivery or retained owner wait; sending is not wake-up; see Return Authorization below>
 Execution Lease: <PREPARED id / project / repo / worktree / branch / baseline / review-by / durable outbox + wakeup>
 Framework readiness: <accepted project target/bundle; actual worker checkout/kit check; changed instructions read back, or exact pending boundary>
 Execution readiness: <actual cwd + readable sources + permitted report storage + return route; evidence or exact blocker/resume condition, checked in this worker>
@@ -33,13 +37,13 @@ For an enabler: Unlocks / Still missing / next product slice and owner:
 ## Execution Boundary
 
 Freshness: <UNCHANGED | PATCH_REQUIRED | REBRIEF_REQUIRED> | Checked: <date/evidence>
-Accepted Baseline: <commit, artifact, or proven behavior>
+Accepted Baseline: <module owner, exact accepted commit/artifact and acceptance evidence; distinguish a newer derivative from the accepted baseline>
 Continue from: <accepted mechanism/reference>
 Applicable Memory Brief: <complete applicable items: node id / Because / Apply / Avoid / Verify / Source, or MEMORY_COVERAGE_GAP / none>
 Executable Memory Brief: <none | exact compiler-produced atomicRender from memory-brief-envelope.md; never summarize or edit>
 Prepared context capability: <legacy/workflow limitation | retained-progress-v1: pinned task/capsule, context-run request, worker readback; reference scope only>
 Context route: <goal/brief -> journey -> modules/capabilities -> inputs/entities/contracts/data/artifacts/systems -> current meaning/commitments -> consumers -> accepted artifacts/verification; checked sources and gaps>
-Module contracts / implementation: <current project docs plus exact code/test boundaries>
+Module contracts / implementation: <consume/change/create, applicable preserved invariants and their evidence, current owner or acknowledged transfer, exact code/test boundaries; reuse the existing module contract rather than copy its history>
 Documentation impact: <expected NONE or named contract sections>
 Progress continuity: <UNCHANGED | Preserved / Replaced / Added / Remaining>
 
@@ -71,7 +75,6 @@ For an agreed lease checkpoint, preserve its expected receipt id and return a re
 - Start implementation immediately; approved planning is not repeated in the task context.
 - Before launch, material resume, reopening or restoring a context, or switching its branch/workspace, check its actual kit against the project's accepted target under `framework-activation.md`. Apply changed instructions only at a safe boundary and read them back here; a manager's version/title does not update this worker. Reuse matching readback on ordinary continue, without repeating installation, broad memory retrieval or remote version checks.
 - On launch and every material resume, apply Execution Readiness below, then make the first safe observable action in the same turn. Commentary, future-tense intention, or a plan without action is `PLAN_ONLY`, not `STARTED`. Name a real blocker or request re-brief when no safe action exists; a missing report alone does not prove no action occurred.
-- Own local planning, implementation, debugging, corrective fixes, tests, exact-current-code smoke, and technical evidence.
 - Resolve ordinary implementation failures autonomously inside the contract and burn limit. A failed internal test calls for repair or bounded diagnosis, not a final partial report. Repeated no-progress or an actual cap calls for the specific consultation below, not endless retries. Do not send routine progress or a Return Sync for a locally resolved failure, and do not change reasoning profile mechanically.
 - Do not run `$project-launch`, `$start-work`, `$daily-alignment`, or `$framework-orchestrator` here. Use implementation/domain skills as needed and run `$accept-work` before completion.
 - Detect an undeclared boundary, stale upstream state, unresolved solution choice, or evidence that the acceptance contract is insufficient, but do not redesign project scope, sequence, ownership, shared contracts, or model routing. Send one compact `CONSULT`: `Boundary / Evidence / Proposed move / Safe continuation`, then pause only that boundary.

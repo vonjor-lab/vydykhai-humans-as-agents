@@ -1,5 +1,15 @@
 # Collaboration Framework Changelog
 
+## 2.1.28 - 2026-11-09
+
+Clarify the existing preparation, orchestrator, executor and independent-control
+role contracts and their shared toolkit. Bind module changes to an acknowledged
+owner, accepted baseline and preserved invariants; another assigned executor can
+maintain the module. Cost coverage now remains partial when a role is missing
+unless its non-applicability is explicitly justified. Existing adoption routes
+carry the changes at safe checkpoints. Local tests do not prove live adoption,
+runtime enforcement or savings.
+
 ## 2.1.27 - 2026-11-09
 
 Separate cause-specific recovery from explicit whole-assignment limits. Verified

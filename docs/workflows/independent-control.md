@@ -1,5 +1,14 @@
 # Independent Control On The Supported Route
 
+## Role contract
+- **Purpose:** detect material error, bias and lost obligations using the same constitution as the author, independently of the author's motivation to finish.
+- **Inputs:** the review scope required by the adopted mode/risk, original applicable requirements and decisions, exact candidate artifacts, prior applicable findings and source access. Use a clean review context, not the author's conversational framing as authority.
+- **Actions and boundaries:** inspect evidence and challenge unsupported claims; distinguish real defects from preferences and missing evidence from disproven results. Do not implement the candidate, expand the task or silently change review mode.
+- **Output and recipient:** an evidence-bound verdict and actionable findings to the existing owning acceptance/return route; state scope, artifact identity, unresolved uncertainty and what would resolve each blocking finding.
+- **Evidence:** independent source access and checks tied to actual requirements, preserved negative findings and observed result. Reviewing only the author's summary is insufficient; fresh context alone does not prove independence.
+- **Failure and exit:** retain uncertainty when evidence is insufficient; assess failed attempts by changed hypotheses, effects and remaining useful alternatives, not a counter alone. Stop after the scoped verdict; reopen only for changed evidence/risk or required repair acceptance. Ordinary risk selection and protected mandatory PRE/acceptance below remain authoritative.
+
+
 Opt-in controlled operating contract, shipped in managed workflows, not proof of activation or product-change authority.
 Read at adoption, new admission, product acceptance, an independent finding or due Health Review, not every unchanged turn. The trusted runtime carries the canonical constitution through the existing catalog, separately from untrusted sources; validation requires byte equality with `docs/CONSTITUTION.md`. The full prompt includes those bytes in existing input limits. A continuation must retain its recorded constitution hash; a legacy/mismatched review cannot resume under new instructions. Finish/reconcile it on its original frozen runtime before adopting this change at the next authorized safe review boundary. Keep all journals, acquisition and spend; do not launch a review solely to prove an update.
 
@@ -21,19 +30,9 @@ delivery is LIMITED with an owner and next review; never claim controlled adopti
 or silently switch dependent work to a legacy execution path. Independent work may
 retain its already accepted mode. No activation automatically resumes paused work.
 
-The host is a transport/admission service, not another product manager. The existing
-orchestrator owns outcome, scope, ordering and knowledge integration; the existing
-executor owns implementation and technical proof; existing REVIEW supplies fresh
-independent judgments. Preparation gathers facts under the task owner. No new role
-is needed and no participant certifies another participant's environment.
+The host is a transport/admission service; no participant certifies another participant's environment. Existing roles retain their contracts.
 
-Optimize the total effort to achieve and retain accepted outcomes, not the cost of
-control in isolation. Preparation and review may cost more when they prevent
-observed downstream rework, forgotten decisions, duplicate modules and excess
-context. Measure those losses across subsequent tasks alongside all operating
-costs; neither a cheaper first task nor a green checklist proves improvement.
-Never remove required evidence just to make control cheaper, or claim savings from
-hypothetical failures that did not occur in a comparable observed sequence.
+Use [cost comparison](context-routing.md#cost-comparison) for whole-outcome measurement; never remove required evidence to make control cheaper or claim hypothetical savings.
 
 ## Before A New Action
 

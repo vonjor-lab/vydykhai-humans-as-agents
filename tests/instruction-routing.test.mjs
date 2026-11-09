@@ -11,7 +11,7 @@ test("startup shares one dispatch record across focused roles without creating a
   assert.match(handoff, /Lab is a work mode, not an additional role/);
   assert.match(handoff, /Execution-specific duties below apply only to an execution assignment/);
   assert.match(handoff, /do not fill or synchronize independent copies/);
-  assert.match(handoff, /If Startup is already that location/);
+  assert.match(handoff, /fill here only if this Startup is that authoritative location/);
   assert.doesNotMatch(handoff, /^Role: EXECUTION$/m);
   for (const file of ["docs/workflows/start-work.md", "docs/workflows/context-routing.md"])
     assert.match(await source(file), /same record and revision|single decision\/readback/);
@@ -52,8 +52,8 @@ test("controlled policy is reachable through ordinary managed events, not only m
     "No activation automatically resumes paused work"])
     assert.ok(policy.includes(clause), clause);
   assert.match(policy, /Opt-in controlled operating contract/);
-  assert.match(policy, /Optimize the total effort to achieve and retain accepted outcomes/);
-  assert.match(policy, /Never remove required evidence just to make control cheaper/);
+  assert.match(policy, /cost comparison.*whole-outcome measurement/);
+  assert.match(policy, /never remove required evidence to make control cheaper/);
   assert.match(policy, /Default profiles cover the full catalog/);
   assert.match(policy, /PHASED_V1.*requires HEALTH, registered evidence and mandatory preparation/);
   assert.match(policy, /Rules assigned elsewhere are not synthesized PASS or NOT_APPLICABLE/);
@@ -189,7 +189,7 @@ test("connection instructions distinguish supported data from contract changes a
   const cycle = await source("docs/workflows/module-delivery.md");
   for (const phrase of ["data changes, not module or contract changes", "Keep the capability in consume mode",
     "Unsupported inputs require an explicit applicability decision", "actual installed route",
-    "persistence/reopen", "consumer projection and resource access", "omits a dispatch dependency",
+    "retention, selection and reopen", "projections, released dependencies and actual environment", "omitted dependencies",
     "not READY", "Reuse unaffected evidence", "one combined connection diagnosis",
     "competing business contract"]) assert.ok(cycle.includes(phrase), phrase);
   assert.match(await source("docs/workflows/module-contract-template.md"), /one authoritative input schema owner/);

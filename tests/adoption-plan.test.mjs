@@ -77,7 +77,7 @@ test("module adoption binds public release and consumer scope without claiming a
 
 test("skipped releases are ordered and unknown baseline remains conservative on changed target", () => {
   const p = planAdoption({ ...input, previousLock: { installedVersion: "1.27.0" } });
-  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1", "1.30.2", "1.30.3", "1.30.4", "1.31.0", "1.32.0", "1.32.1", "1.32.2", "1.32.3", "1.32.4", "1.32.5", "1.32.6", "1.32.7", "1.32.8", "1.33.0", "1.33.1", "1.34.0", "1.34.1", "2.0.0", "2.0.1", "2.1.0", "2.1.1", "2.1.2", "2.1.3", "2.1.4", "2.1.5", "2.1.6", "2.1.7", "2.1.8", "2.1.9", "2.1.10", "2.1.11", "2.1.12", "2.1.13", "2.1.14", "2.1.15", "2.1.16", "2.1.17", "2.1.18", "2.1.19"]);
+  assert.deepEqual(p.releases.map(r => r.version), ["1.28.0", "1.29.0", "1.30.0", "1.30.1", "1.30.2", "1.30.3", "1.30.4", "1.31.0", "1.32.0", "1.32.1", "1.32.2", "1.32.3", "1.32.4", "1.32.5", "1.32.6", "1.32.7", "1.32.8", "1.33.0", "1.33.1", "1.34.0", "1.34.1", "2.0.0", "2.0.1", "2.1.0", "2.1.1", "2.1.2", "2.1.3", "2.1.4", "2.1.5", "2.1.6", "2.1.7", "2.1.8", "2.1.9", "2.1.10", "2.1.11", "2.1.12", "2.1.13", "2.1.14", "2.1.15", "2.1.16", "2.1.17", "2.1.18", "2.1.19", "2.1.20", "2.1.21", "2.1.22", "2.1.23", "2.1.24", "2.1.25", "2.1.26", "2.1.27", "2.1.28"]);
   const unknown = planAdoption(input);
   const changed = planAdoption({ ...input, managedFiles: { "core.md": "changed" }, previousLock: { installedVersion: manifest.version, adoptionPlan: unknown } });
   assert.equal(changed.reviewFromVersion, null);
@@ -200,9 +200,9 @@ test("changed-feature adoption includes owned review/repair and bidirectional pr
   assert.match(transition.action, /docs\/workflows\/framework-activation\.md#apply-and-prove-the-applicable-requirements/);
   assert.match(await readFile(path.join(f.target, "docs/workflows/framework-activation.md"), "utf8"),
     /Keep rollback paused: an older reader cannot authorize reuse/);
-  assert.match(transition.action, /resultUse decision remain UNKNOWN/);
-  assert.match(transition.action, /code rollback stays paused with journals retained/);
-  assert.match(transition.action, /No automatic restart, budget refill/);
+  assert.match(transition.action, /Existing POST without resultUse stays UNKNOWN/);
+  assert.match(transition.action, /rollback retains pause\/journals/);
+  assert.match(transition.action, /No automatic restart, refill/);
   assert.match(transition.action, /each changed capability/);
   assert.match(transition.action, /evidence-backed NO_CHANGE/);
   assert.match(transition.action, /refactoring at a safe checkpoint/);

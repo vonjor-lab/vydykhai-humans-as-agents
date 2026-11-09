@@ -43,8 +43,6 @@ At the owner's next natural safe checkpoint, apply through the ordinary updater 
 
 Inspecting already authorized sources and edit/test paths is local execution, not a new preparation request. Reuse supplied contracts, citations and checks. Escalate only when these sources cannot answer a necessary question, disagree materially, or require an undeclared source/boundary. Retain progress and use the owner-approved supplement route. This does not expand packet access, authorize a new retrieval agent, or permit producer-source exploration for a consumed module.
 
-User communication remains through the orchestrator: explain the useful result and next step, not internal routing. Preparation uses the existing focused-task lease, Return Sync and cleanup, never a permanent new manager or Guard loop.
-
 ## Reframe After Failure
 Trigger on a substantive failed outcome, unexpected integration failure, repeated cause or preparation growing without outcome progress. Obvious local typos and expected red tests stay local; they need no consultant or new approval. Pause only the failing branch, preserve actual effects and the best verified candidate; UNKNOWN is not replay authority.
 Before the first substantive correction, separate the accepted user outcome and necessary constraints from the chosen implementation. Trace only the relevant input -> transformation -> output -> consumer -> check, including adjacent public boundaries. Inspect authorized sources; broader diagnosis does not authorize closed-module internals or new access. Look wider, change less.
@@ -144,6 +142,8 @@ Use `node scripts/vydykhai.mjs context-prepare estimate --input cost.json` for a
 ```
 
 Numbers above are illustrative, not actual model rates. Rates are credits per million tokens with dated source and speed; record effort per stage. Include `preparation`, `execution`, `review`, `recovery`, `coordination`, and repeated turns; an omitted category produces PARTIAL. An inapplicable category may have zero tokens with an explicit reason, never a fabricated measurement. Cached input is a subset of total input; separately reported reasoning output is already included in output and must not be added again.
+
+For `context-prepare measure --input usage.json`, actual request samples must cover those same five roles. Optionally declare genuinely inapplicable roles in `nonApplicable`, an array of `{"role":"recovery","reason":"no recovery occurred"}` objects; each role must be unique, have a nonempty reason, and cannot also have samples. Omitted roles appear in `missingRoles` and make coverage `PARTIAL`, even when `complete` is true. A declaration is an owner assertion, not authenticated proof or a zero-token sample; unknown expenses remain in `unknownCosts`. At least one actual sample is still required for declared completeness. The measure does not grant budget or dispatch authority.
 
 The calculation is `(input-cache)*inputRate + cache*cacheRate + output*outputRate`, divided by one million, summed over the chain. Compare only eligible routes; unknown costs prevent a cheapest-route claim. `subscriptionUsage: UNKNOWN` stays explicit. Capability, rate freshness, estimates and the final decision remain the owner's responsibility, not this calculator's.
 

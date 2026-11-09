@@ -28,7 +28,7 @@ test('short adoption entry points retain conditional obligations and scoped evid
     const r = manifest.adoptionRequirements.find(r => r.id === id);
     assert.ok(r.action.length < 2200);
     assert.equal(r.since, '1.30.0'); assert.ok(r.reuseBy.includes('targetBundle'));
-    assert.match(r.action, /pending/); assert.match(r.action, /conditional-/);
+    assert.match(r.action, /pending/); assert.match(r.action, /conditional/);
   }
   const workflow = await read('docs/workflows/framework-activation.md');
   for (const phrase of ['full catalog union','same-projection owner application',

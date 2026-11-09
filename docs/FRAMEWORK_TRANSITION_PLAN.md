@@ -1,5 +1,16 @@
 # Framework Efficiency Transition
 
+## Role Contracts And Cost Coverage - 2.1.28
+
+Local candidate: apply the clarified role contracts and module owner, baseline
+and invariant requirements through existing owner and executor assignments at
+safe checkpoints. Review affected shared meaning, repair evidenced gaps or
+record NO_CHANGE, and retain missing participant readback as an owned gap.
+Whole-task coverage requires each cost role to have evidence or a justified
+non-applicable declaration; unknown costs remain partial. Targeted tests cover
+the accepted changes; live application, runtime enforcement and comparable
+whole-outcome economy remain unproved. Do not interrupt work to manufacture proof.
+
 ## Outcome-directed Recovery - 2.1.27
 
 At a safe boundary the existing owner reconciles the latest outcome authority,

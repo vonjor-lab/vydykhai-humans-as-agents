@@ -41,7 +41,7 @@ test("smaller core retains authority, accepted work, module isolation and honest
     /explicit pause stays paused/,
     /owner and return condition/,
     /Accepted Baseline, Candidate and next action/,
-    /without producer-source context, including cheap preparation/,
+    /Consume fixed accepted releases through public contracts and obligations, including cheap preparation/,
     /Agree new\/changed boundaries with the human/,
     /finite tests do not prove all inputs/,
     /transition cost from repeated use/,

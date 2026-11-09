@@ -27,6 +27,8 @@ A step is a decision, not necessarily a new task, model call or artifact. Reuse 
 
 Link these by stable module/entity identities and authoritative sources. Do not copy whole histories into each packet. Follow applicable meaning and reverse consumer obligations; stop code expansion at accepted public boundaries. A short packet missing an obligation is invalid; a long search transcript is not a useful packet either.
 
+Bind the existing task contract to the module owner, exact accepted baseline and preserved invariants with their acceptance evidence before changing implementation. A newer version or local passing checks do not establish that baseline. Another executor may maintain the module under an acknowledged assignment; the original chat is a source of missing rationale, not permanent exclusive ownership. If its knowledge has not reached the contract/map, recover that specific gap before affected edits and retain it there. Compare the actual changed boundary with this contract at Return; local success cannot discharge untouched parent obligations.
+
 ## Locate Before Editing
 
 Declare consume, change or create for every affected capability, including dependencies of a new composite. A composition owns its wiring and outcome, not its children's implementations. A consumer starts with the relevant public contract, release/dependency identity, operational requirements and applicable memory; the same restriction applies to cheap preparation. Read implementation only within authorized maintainer work. A named diagnostic question unresolved by public evidence uses the existing reviewed task rebrief/owner route before access, outside the unchanged consumer packet; it is not an exception to module-context.md access enforcement. First check inputs, versions and environment; a missing contract detail goes to its owner for scoped clarification. Neither general reassurance nor a cheaper reader justifies loading producer code, and an inadequate contract is not proof of compatibility.
@@ -79,11 +81,9 @@ Adapters, input normalization and restoration are responsibilities too: locate t
 
 Required documentation is part of the Candidate: changed module rationale, public contract, code/map routes and verification references. A preparer may draft factual updates; the executor verifies them. The orchestrator accepts shared decision/insight/commitment candidates, checks the next retrieval can find them, and retains unresolved obligations. No automatic whole-graph rebuild.
 
-Use [Memory Retention And Storage](memory-storage.md) for each semantic integration. Stable-entity refinement and explicit supersession preserve history; physical capacity cannot silently suppress a write. A pending delta with an owned recovery route is retained evidence, not completed integration or permission for another dependent task to ignore it.
+Use [Memory Retention And Storage](memory-storage.md) for each semantic integration. Stable-entity refinement and explicit supersession preserve history; physical capacity cannot silently suppress a write. A pending delta with an owned recovery route is retained evidence, not completed integration or permission for another dependent task to ignore it. Measure retained outcomes, first independent connection success and repeated regressions alongside time and [whole-chain usage](context-routing.md#cost-comparison).
 
 Return delivery is not product acceptance. The owning task sends its exact scoped proof through the existing Return route; the orchestrator consumes it, updates the parent DOD and either dispatches the next authorized action or records a concrete wait. A helper slice cannot close the whole module. A Guard or update message cannot replace the pending outcome, next action or question to the user.
-
-Measure retained accepted outcomes, first independent connection success, repeated regressions, time and whole-chain attributable usage. Include preparation, execution, review, recovery and coordination. Use dated coefficients only as estimates when actual allowance attribution is unavailable; do not announce savings from smaller packets alone.
 
 ## Weekly Architecture Review
 

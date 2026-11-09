@@ -8,7 +8,7 @@ const read = path => readFile(new URL("../" + path, import.meta.url), "utf8");
 test("bounded role adoption retains independence, progress and full costs", async () => {
   const route = await read("docs/workflows/context-routing.md");
   for (const phrase of ["accepted project-local model/effort mapping", "owner-approved boundary",
-    "one existing independent reviewer role", "fresh review", "reviewer of the preparer",
+    "existing independent role in a context distinct from the producer", "final REVIEW", "reviewer-of-preparer",
     "better verified candidate", "UNKNOWN_NONZERO", "one suitable real task",
     "Stop task follow-ups after actual", "input/contract, evaluator, integration/environment",
     "falsified hypothesis or missing input/access", "named reasoning/implementation capability gap"])

@@ -6,19 +6,29 @@ const list = v => Array.isArray(v) && v.length > 0 && v.length <= 64;
 const nonnegative = v => Number.isFinite(v) && v >= 0;
 const tokens = v => Number.isSafeInteger(v) && v >= 0;
 const need = (v, code = "COST_INPUT_INVALID") => { if (!v) throw new Error(code); };
+const expenseRoles = ["preparation", "execution", "review", "recovery", "coordination"];
 
 // Actual request telemetry, not packet size or cumulative session counters.
 export function measureContextUse(input) {
-  need(keys(input, ["schema", "owner", "taskId", "maxInputTokens", "complete", "unknownCosts", "samples"]) &&
+  const fields = ["schema", "owner", "taskId", "maxInputTokens", "complete", "unknownCosts", "samples"];
+  need((keys(input, fields) || keys(input, [...fields, "nonApplicable"])) &&
     input.schema === "context.usage.v1" && text(input.owner) && text(input.taskId) &&
     tokens(input.maxInputTokens) && input.maxInputTokens > 0 && typeof input.complete === "boolean" &&
     Array.isArray(input.unknownCosts) && input.unknownCosts.every(text) &&
     Array.isArray(input.samples) && input.samples.length <= 10000, "USAGE_INPUT_INVALID");
+  const nonApplicable = Object.hasOwn(input, "nonApplicable") ? input.nonApplicable : [];
+  need(Array.isArray(nonApplicable) && nonApplicable.length <= expenseRoles.length, "USAGE_INPUT_INVALID");
+  const excluded = new Set();
+  for (const entry of nonApplicable) {
+    need(keys(entry, ["role", "reason"]) && expenseRoles.includes(entry.role) && text(entry.reason) &&
+      !excluded.has(entry.role), "USAGE_INPUT_INVALID");
+    excluded.add(entry.role);
+  }
   const ids = new Set(), roles = {};
   for (const s of input.samples) {
     need(keys(s, ["id", "role", "model", "effort", "evidence", "inputTokens", "cachedInputTokens", "outputTokens"]) &&
       [s.id, s.model, s.effort, s.evidence].every(text) && !ids.has(s.id) &&
-      ["preparation", "execution", "review", "recovery", "coordination"].includes(s.role) &&
+      expenseRoles.includes(s.role) && !excluded.has(s.role) &&
       [s.inputTokens, s.cachedInputTokens, s.outputTokens].every(tokens) &&
       s.cachedInputTokens <= s.inputTokens, "USAGE_SAMPLE_INVALID");
     ids.add(s.id);
@@ -35,10 +45,11 @@ export function measureContextUse(input) {
   for (const r of Object.values(roles)) for (const k of Object.keys(totals)) {
     totals[k] += r[k]; need(tokens(totals[k]), "USAGE_OVERFLOW");
   }
-  const coverage = input.complete && !input.unknownCosts.length && input.samples.length ? "DECLARED_COMPLETE" : "PARTIAL";
+  const missingRoles = expenseRoles.filter(role => !Object.hasOwn(roles, role) && !excluded.has(role));
+  const coverage = input.complete && !input.unknownCosts.length && input.samples.length && !missingRoles.length ? "DECLARED_COMPLETE" : "PARTIAL";
   return { owner: input.owner, taskId: input.taskId, coverage, roles, totals,
     status: totals.overBudgetRequests ? "SAFE_BOUNDARY_REFRAME_DUE" : coverage === "PARTIAL" ? "INSUFFICIENT_EVIDENCE" : "WITHIN_DECLARED_BUDGET",
-    unknownCosts: input.unknownCosts, maxInputTokens: input.maxInputTokens,
+    unknownCosts: input.unknownCosts, nonApplicable, missingRoles, maxInputTokens: input.maxInputTokens,
     subscriptionUsage: "UNKNOWN", quality: "NOT_ASSESSED", automaticAction: "NONE",
     note: "Caller supplies deduplicated per-request telemetry and coverage; no source authentication, context truncation, dispatch or efficiency claim. Preserve memory and quality; owner reviews pressure at a safe boundary." };
 }
