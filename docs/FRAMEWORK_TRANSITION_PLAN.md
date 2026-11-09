@@ -1,5 +1,15 @@
 # Framework Efficiency Transition
 
+## Outcome-directed Recovery - 2.1.27
+
+At a safe boundary the existing owner reconciles the latest outcome authority,
+cause-specific recovery and actual hard limits in the current assignment.
+Retain source history, UNKNOWN effects, independent findings and cumulative cost.
+Apply the shared rule to the next authorized continuation without replaying
+accepted tests. Participant instruction retrieval plus actual next action proves
+application; full accepted DOD and attributable expense remain separate proof.
+No new controller, automatic allowance renewal or numerical savings claim.
+
 ## Single Startup Record - 2.1.26
 
 Resolve the two accepted external-review observations without another audit:

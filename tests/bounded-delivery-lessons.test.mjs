@@ -7,7 +7,7 @@ const read = path => readFile(new URL("../" + path, import.meta.url), "utf8");
 test("ordinary entry routes bounded repair and preserves independent evidence", async () => {
   const entry = await read(".agents/skills/framework-orchestrator/SKILL.md");
   const route = await read("docs/workflows/framework-orchestrator.md");
-  assert.match(entry, /Current action and bounded repair/);
+  assert.match(entry, /Reframe After Failure and Bounded Autonomous Assignment/);
   for (const phrase of [
     "one consistent current projection", "superseded commands as labelled history",
     "A bounded acceptance closes only its own", "applicable negative findings",
@@ -28,6 +28,19 @@ test("safe-boundary adoption reuses existing owner and actual readback", async (
 });
 
 // Instruction contracts only: these checks do not prove a model follows them.
+test("recovery separates progress, authority and hard limits without a global fix quota", async () => {
+  const routing = await read("docs/workflows/context-routing.md");
+  for (const phrase of ["not all successive defects", "not product acceptance",
+    "explicit hard resource limits", "platform and enrolled runtime limits remain binding",
+    "reassess the whole route", "Isolation or reversibility alone grants no authority",
+    "UNKNOWN blocks replay", "no review merely for another local fix",
+    "does not guarantee a numerical spending ceiling"])
+    assert.ok(routing.includes(phrase), phrase);
+  assert.ok(!routing.includes("Keep finite whole-task attempts, escalations and cost"));
+  const manifest = JSON.parse(await read("vydykhai.json"));
+  assert.match(manifest.adoptionRequirements.find(r => r.id === "context-routing").action,
+    /replace invented global correction quotas without resetting expenditure/);
+});
 test("substantive failure routes to causal reframe before correction, not every red test", async () => {
   const routing = await read("docs/workflows/context-routing.md");
   const section = routing.split("## Reframe After Failure\n")[1].split("## Fit With Existing Work")[0];

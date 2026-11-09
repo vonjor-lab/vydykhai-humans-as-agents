@@ -1,5 +1,16 @@
 # Collaboration Framework Changelog
 
+## 2.1.27 - 2026-11-09
+
+Separate cause-specific recovery from explicit whole-assignment limits. Verified
+progress across successive defects is not exhaustion of a global correction
+quota. Reassess the whole path to DOD when prerequisite repairs expand; retain
+all costs and failures. Technical checkpoints do not create human permission
+gaps, while actual authority, protected contracts and UNKNOWN/no-replay remain
+binding. Use existing independent acceptance and risk-based consultation, not
+per-fix approval. No new counter, role or controller. Publication does not prove
+installed adoption, runtime enforcement or demonstrated cost reduction.
+
 ## 2.1.26 - 2026-11-08
 
 Clarify two startup ambiguities: common launch fields also apply to focused
