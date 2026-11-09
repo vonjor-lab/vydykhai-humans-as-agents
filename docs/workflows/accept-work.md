@@ -19,6 +19,7 @@ Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory 
 - scope freshness and baseline/candidate references;
 - product loop or linked enabler;
 - progress continuity and, for an enabler, `Unlocks / Still missing / next product slice`;
+- after a context reduction, current-assignment readback and preserved decisions, constraints, findings and behavior under `context-routing.md#execution-context-at-a-safe-boundary`; use this same acceptance, include transition/recovery costs, and retain missing proof as pending rather than accepting a smaller input as quality;
 - reported parent DOD impact; the orchestrator decides parent closure and sequence;
 - Execution Lease identity/state and DOD Control Line contribution;
 - human checkpoint;

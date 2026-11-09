@@ -13,6 +13,8 @@ Define one complete useful outcome and DOD, with executor-owned local reasoning,
 
 At every dispatch or material resume, apply `context-routing.md#execution-context-at-a-safe-boundary` through the existing startup/lease: choose sufficient context and task-class model for the remaining outcome, resolve what the host can actually set, and derive the call parameters from that choice. Inherited settings are not a selection. Bind observed readback to the actual worker/turn; missing or conflicting proof cannot establish adoption. This also applies to focused Discovery and Lab; it requires no extra preparer, reviewer or model call.
 
+Reuse that decision at meaningful completed-stage boundaries before the next increment, not only near the context limit. A choice to retain useful history is valid; reduced context needs actual host/readback evidence and preserved meaning under the linked procedure, not merely a short checkpoint.
+
 Read `AGENTS.md` once and `docs/workflows/start-work.md` for new shaping or a material rebrief. Use `docs/workflows/context-route.md` for relevant memory, `docs/workflows/module-contract-template.md#use-change-or-create` for module intent, and other `context-routing.md` or `context-preparation.md` sections only when relevant. `docs/FRAMEWORK.md` is a human overview for unresolved meaning, not a routine prerequisite.
 
 ## Boundaries

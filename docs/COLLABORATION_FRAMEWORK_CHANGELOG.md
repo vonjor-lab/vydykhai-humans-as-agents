@@ -1,5 +1,19 @@
 # Collaboration Framework Changelog
 
+## 2.1.29 - 2026-11-09
+
+Apply the existing context choice at meaningful completed stages before the next
+increment, rather than waiting for token pressure. Keep useful history when it
+is needed; supported reduction preserves decision rationale, dependencies,
+findings, uncertain effects, sole ownership and costs. Bound new retrieval and
+use actual readback and ordinary acceptance, not a packet-size claim or another
+review loop. Keep routine content inspection with executors and independent
+reviewers; the orchestrator receives decision-ready results and limits. Explicit
+human requests and unresolved contradictions retain their diagnostic exception.
+The existing adoption requirement carries this into participants at safe
+boundaries. One real KEEP outcome preserved accepted behavior; early reduction,
+native host enforcement and comparable full-task savings remain unproved.
+
 ## 2.1.28 - 2026-11-09
 
 Clarify the existing preparation, orchestrator, executor and independent-control

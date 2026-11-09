@@ -24,7 +24,7 @@ Execution Lease: <PREPARED id / project / repo / worktree / branch / baseline / 
 Framework readiness: <accepted project target/bundle; actual worker checkout/kit check; changed instructions read back, or exact pending boundary>
 Execution readiness: <actual cwd + readable sources + permitted report storage + return route; evidence or exact blocker/resume condition, checked in this worker>
 Current assignment: <existing durable checkpoint reference + work/revision/checkpoint/latest human event; update on material rebrief, not timer ticks>
-Task/context disposition: <same-task continuation / revised outcome / new task; physical reuse rationale or authorized fresh-context boundary under start-work.md#task-and-physical-context>
+Task/context disposition: <same-task continuation / revised outcome / new task; reference the existing context choice at a meaningful completed stage under context-routing.md#execution-context-at-a-safe-boundary; retained useful history or supported reduction, preserved meaning/effects/sole ownership, actual readback or LIMITED, and next natural boundary>
 Whole-task cost: <existing ledger from task start through required final/POST review, resulting corrections, retention and observed disposition; include prior sessions, preparation, failures, management and handoff; unknowns retained, incomplete closure is partial>
 
 ## Outcome

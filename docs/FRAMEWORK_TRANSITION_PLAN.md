@@ -1,5 +1,28 @@
 # Framework Efficiency Transition
 
+## Safe-Boundary Context Application - 2.1.29
+
+Implementation/adoption of the existing context-routing requirement: evaluate
+retained history versus supported reduction at a completed meaningful stage,
+before the next increment, not only at token pressure. Keep one existing task,
+checkpoint and lease; retain applicable reasons, constraints, dependency gaps,
+artifacts, findings, uncertain effects and cumulative costs. Initial adoption is
+one executor at an actual safe boundary, with profile, independent acceptance
+and Return delivery unchanged. Use the existing `context-routing` adoption entry;
+no new role, schema, counter or native compaction capability is claimed. Actual
+readback plus the same accepted DOD and full costs close application; structural
+checks do not prove host behavior or economy. Release target is 2.1.29;
+publication, installed-kit adoption and demonstrated economy remain distinct.
+
+One authorized executor application subsequently chose KEEP at a quiescent
+candidate/review boundary and reached its independently accepted scoped outcome.
+Useful history, prior accepted behavior and open limitations were retained.
+This is observed selection/readback, not observed boundary compaction or transfer;
+do not attribute earlier host auto-compaction to this rule. Exposed whole-window
+token traffic includes execution, recovery, review and coordination, but exact
+task attribution, earlier shared costs and final maintenance tail remain partial.
+No comparable full-task savings or universal reliability claim is established.
+
 ## Role Contracts And Cost Coverage - 2.1.28
 
 Local candidate: apply the clarified role contracts and module owner, baseline

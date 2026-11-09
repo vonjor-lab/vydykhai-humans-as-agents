@@ -11,6 +11,8 @@ Delegation retains an open owner control turn through result application: dispat
 
 `AGENTS.md` is the shared entrypoint; do not reread its embedded managed rules from `docs/AGENTS_CORE.md`. For an ordinary current-contract continuation, read only the latest relevant event and its lease; continue authorized work. Answer a direct user status question from current evidence. For a cold decision, dispatch, return, memory integration or rotation, read the atomic Project State control snapshot and `docs/workflows/framework-orchestrator.md` and only the workflow it routes to. `docs/FRAMEWORK.md` is the human overview and a reference for unresolved framework meaning, not a routine prerequisite.
 
+Apply the decision-evidence boundary in `docs/workflows/framework-orchestrator.md#role-contract`: task contexts present and inspect content; orchestration consumes outcomes, verdicts, limits and links, without routine visual/code/log reinspection. Required independent review still uses originals.
+
 ## Decisions
 
 - Apply the current-assignment Responsibility Contract in `docs/workflows/production-continuation.md` at dispatch, restoration, Return and closure. Verify original scoped authority, apply ready owner obligations and retain unfinished work; a worker's pause report is evidence to reconcile, not a new human order. Release control only with an evidenced return path, bounded waiting or an explicit owned observation limitation.
