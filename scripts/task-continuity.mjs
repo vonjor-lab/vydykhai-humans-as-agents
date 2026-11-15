@@ -78,7 +78,8 @@ export function evaluateTaskDisposition(v) {
       Number.isSafeInteger(b[k]) && b[k] >= 0) || b.limit === 0 || !text(b.unit)) return hold("complete task budget unavailable");
   if (!Array.isArray(v.attempts) || v.attempts.length > 128 ||
       !v.attempts.every(a => object(a) && ["id","hypothesis","evidence"].every(k => text(a[k])) &&
-        ["failed","succeeded","unknown"].includes(a.outcome) && typeof a.escalated === "boolean") ||
+        ["failed","succeeded","unknown"].includes(a.outcome) && typeof a.escalated === "boolean" &&
+        (a.progressEvidence === undefined || text(a.progressEvidence))) ||
       new Set(v.attempts.map(a => a.id)).size !== v.attempts.length ||
       !Number.isSafeInteger(v.maxAttempts) || v.maxAttempts < 1 || v.maxAttempts > 128 ||
       !Number.isSafeInteger(v.maxEscalations) || v.maxEscalations < 0 || v.maxEscalations > v.maxAttempts) {
@@ -102,6 +103,20 @@ export function evaluateTaskDisposition(v) {
     }
     if (v.attempts.some(a => a.outcome === "failed" && a.hypothesis === n.hypothesis)) {
       return result("HELD", "failed hypothesis cannot be replayed unchanged");
+    }
+    // Different hypotheses can still be the same outcome-level stagnation.
+    const stalled = [];
+    for (const attempt of v.attempts) {
+      if (text(attempt.progressEvidence)) stalled.length = 0;
+      else if (attempt.outcome === "failed") stalled.push(attempt.id);
+    }
+    if (stalled.length >= 2) {
+      const reframe = n.reframe;
+      if (!object(reframe) || !["evidence","outcome","preserved","change"].every(k => text(reframe[k])) ||
+          !Array.isArray(reframe.attemptIds) || reframe.attemptIds.length !== stalled.length ||
+          reframe.attemptIds.some((id, i) => id !== stalled[i]) || reframe.check !== n.check) {
+        return hold("outcome stagnation requires an existing-brief reframe covering all unsuccessful approaches");
+      }
     }
     if (n.escalated && v.cause !== "capability") return hold("model escalation requires a capability gap");
   }

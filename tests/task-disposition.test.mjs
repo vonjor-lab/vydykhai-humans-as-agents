@@ -17,6 +17,49 @@ const receipt = () => { const r = {boundary:"task-disposition",work:"task",owner
       candidate:"candidate",plan:"plan",ledger:"ledger",decision:"CORRECT",gap:"missing dependency",check:"check"},
     application:{verdict:"verdict",owner:"owner",evidence:"applied"}}};
   r.assignment=assignment(r); return r; };
+
+const unsuccessful = id => ({id,hypothesis:"different-"+id,evidence:"original-"+id,outcome:"failed",escalated:false});
+const reframeFor = r => ({evidence:"existing-brief/reframe",outcome:"remaining DOD",preserved:"accepted candidate",
+  change:"repair the consumer boundary, not another producer rewrite",attemptIds:r.attempts.filter(a=>a.outcome==="failed").map(a=>a.id),check:r.next.check});
+
+test("operational repair: different failures without outcome progress need one existing-brief reframe", () => {
+  const r=receipt();r.attempts=[unsuccessful("one"),unsuccessful("two")];
+  const out=evaluateTaskDisposition(r);
+  assert.equal(out.status,"UNVERIFIED");assert.match(out.reason,/outcome stagnation/);
+  r.next.reframe=reframeFor(r);
+  assert.equal(evaluateTaskDisposition(r).status,"PASS");
+  assert.equal(evaluateTaskDisposition(r).productAccepted,false);
+});
+
+test("operational repair: reframe cannot omit a failure or change its discriminating check", () => {
+  const r=receipt();r.attempts=[unsuccessful("one"),unsuccessful("two")];r.next.reframe=reframeFor(r);
+  r.next.reframe.attemptIds=["two"];
+  assert.equal(evaluateTaskDisposition(r).status,"UNVERIFIED");
+  r.next.reframe=reframeFor(r);r.next.reframe.check="another-check";
+  assert.equal(evaluateTaskDisposition(r).status,"UNVERIFIED");
+});
+
+test("operational repair: a verified DOD criterion is progress, not whole-product acceptance", () => {
+  const r=receipt();r.attempts=[unsuccessful("one"),{...unsuccessful("two"),progressEvidence:"accepted-DOD-criterion-saved-and-reopened"}];
+  assert.equal(evaluateTaskDisposition(r).status,"PASS");
+  assert.equal(evaluateTaskDisposition(r).productAccepted,false);
+  r.attempts[1].progressEvidence="";
+  assert.equal(evaluateTaskDisposition(r).status,"UNVERIFIED");
+});
+
+test("operational repair: a success label alone cannot erase unresolved outcome stagnation", () => {
+  const r=receipt();r.maxAttempts=4;
+  r.attempts=[unsuccessful("one"),{...unsuccessful("local"),outcome:"succeeded"},unsuccessful("two")];
+  assert.equal(evaluateTaskDisposition(r).status,"UNVERIFIED");
+});
+
+test("operational repair: reframe neither clears unknown effects nor renews the task allowance", () => {
+  const r=receipt();r.attempts=[unsuccessful("one"),unsuccessful("two")];r.next.reframe=reframeFor(r);
+  r.effects="UNKNOWN";
+  assert.equal(evaluateTaskDisposition(r).status,"OUTCOME_UNKNOWN");
+  r.effects="RECONCILED";r.budget.spent=950;
+  assert.equal(evaluateTaskDisposition(r).status,"HELD");
+});
 test("disposition needs current independent verdict and its application, not dispatch", () => {
   assert.equal(evaluateTaskDisposition(receipt()).status,"PASS");
   for (const mutate of [r=>delete r.review.verdict, r=>delete r.review.application,

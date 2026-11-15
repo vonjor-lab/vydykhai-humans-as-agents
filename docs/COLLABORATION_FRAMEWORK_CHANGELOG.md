@@ -1,5 +1,18 @@
 # Collaboration Framework Changelog
 
+## 2.1.30 - 2026-11-15
+
+Bind local update-acceptance evidence to the actual resolved workspace and let
+an observed worker-kit mismatch override documentary participants success.
+Reuse unchanged shared memory and health bindings. Different unsuccessful
+approaches without outcome progress require the existing brief's reframe;
+verified DOD-criterion evidence distinguishes outcome progress from activity. No new
+retry allowance, reviewer, controller or native interception is introduced.
+Link durable module ownership and substantive results to the existing visible
+user entry, owning issue and board projection, without permanent code-filled
+execution chats. Publication, actual participant adoption and measured whole-DOD
+economy remain separate claims; the release number alone proves none of them.
+
 ## 2.1.29 - 2026-11-09
 
 Apply the existing context choice at meaningful completed stages before the next

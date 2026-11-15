@@ -18,17 +18,26 @@ export function assessUpdateAcceptance(target, receipt) {
   }
   const matching = version(target?.version) && filled(target?.sourceRevision) &&
     target.sourceRevision !== "unknown" && receipt?.version === target.version && receipt?.sourceRevision === target.sourceRevision;
+  const localChecks = new Set(["installation", "manager", "productive-resumption"]);
+  const workspaceMatches = target?.workspace === undefined ||
+    filled(target.workspace) && receipt?.workspace === target.workspace;
   const checks = ids.map(id => {
     const row = receipt?.checks.find(r => r.id === id);
-    const current = matching && filled(receipt?.stateEvidence) && filled(row?.binding) &&
+    const localMatch = !localChecks.has(id) || workspaceMatches;
+    const current = matching && localMatch && filled(receipt?.stateEvidence) && filled(row?.binding) &&
       receipt?.currentBindings?.[id] === row.binding;
     const supported = current && filled(row?.evidence) && filled(row?.owner);
     let status = supported && ["CONFIRMED", "NOT_DONE", "NOT_CHECKED", "NOT_APPLICABLE"].includes(row.status)
       ? row.status : "NOT_CHECKED";
     if (status === "NOT_APPLICABLE" && (id === "installation" || !filled(row.reason))) status = "NOT_CHECKED";
     if (id === "installation" && target.integrity === false) status = "NOT_DONE";
+    const workerMismatch = id === "participants" && target.workerCheck !== undefined &&
+      target.workerCheck?.status !== "KIT_MATCH";
+    if (workerMismatch) status = ["UPDATE_REQUIRED", "REVIEW_REQUIRED", "BLOCKED"].includes(target.workerCheck?.status)
+      ? "NOT_DONE" : "NOT_CHECKED";
     return { id, status, evidence: row?.evidence || null, owner: row?.owner || null,
-      next: row?.next || null, reason: !current ? "MISSING_OR_STALE_BINDING" : row?.reason || null };
+      next: row?.next || null, reason: !localMatch ? "MISSING_OR_STALE_WORKSPACE" : workerMismatch
+        ? target.workerCheck?.reason || "WORKER_KIT_NOT_CONFIRMED" : !current ? "MISSING_OR_STALE_BINDING" : row?.reason || null };
   });
   return { status: checks.every(r => ["CONFIRMED", "NOT_APPLICABLE"].includes(r.status))
     ? "DOCUMENTED_COMPLETE" : "INCOMPLETE", checks,

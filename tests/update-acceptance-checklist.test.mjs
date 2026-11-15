@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync, rmSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -61,7 +61,7 @@ test("installed doctor and adoption share the checklist without changing integri
     const d = JSON.parse(ordinary.stdout);
     assert.equal(d.ok, true);
     assert.equal(d.updateAcceptance.status, "INCOMPLETE");
-    const r = {...receipt(), version: d.installedVersion, sourceRevision: d.sourceRevision};
+    const r = {...receipt(), version: d.installedVersion, sourceRevision: d.sourceRevision, workspace: realpathSync(dir)};
     const file = join(dir, "receipt.json"); writeFileSync(file, JSON.stringify(r));
     assert.equal(run(["doctor", dir, "--offline", "--receipt", file, "--json"]).status, 0);
     const plan = run(["adoption-plan", dir, "--receipt", file, "--json"]);
@@ -72,4 +72,59 @@ test("installed doctor and adoption share the checklist without changing integri
     assert.equal(incomplete.status, 2); assert.equal(JSON.parse(incomplete.stdout).ok, true);
     assert.equal(run(["adoption-plan", dir, "--receipt", file, "--json"]).status, 2);
   } finally { rmSync(dir, {recursive: true, force: true}); }
+});
+
+test("operational repair: checkout scope invalidates only local acceptance evidence", () => {
+  const scoped = {...target, workspace: "/actual/current"}, r = receipt();
+  r.workspace = "/previous/current";
+  const out = assessUpdateAcceptance(scoped, r);
+  assert.equal(out.status, "INCOMPLETE");
+  for (const id of ["installation", "manager", "productive-resumption"]) {
+    const row = out.checks.find(r => r.id === id);
+    assert.equal(row.status, "NOT_CHECKED");
+    assert.equal(row.reason, "MISSING_OR_STALE_WORKSPACE");
+  }
+  assert.equal(out.checks.find(r => r.id === "memory").status, "CONFIRMED");
+  assert.equal(out.checks.find(r => r.id === "work-hygiene").status, "CONFIRMED");
+  r.workspace = scoped.workspace;
+  assert.equal(assessUpdateAcceptance(scoped, r).status, "DOCUMENTED_COMPLETE");
+});
+
+test("operational repair: absent checkout scope is not a current-workspace readback", () => {
+  assert.equal(assessUpdateAcceptance({...target, workspace: "/current"}, receipt()).status, "INCOMPLETE");
+  assert.equal(assessUpdateAcceptance(target, receipt()).status, "DOCUMENTED_COMPLETE");
+});
+
+test("operational repair: observed worker mismatch overrides documentary participants success", () => {
+  for (const status of ["UPDATE_REQUIRED", "REVIEW_REQUIRED", "BLOCKED"]) {
+    const out = assessUpdateAcceptance({...target, workerCheck:{status, reason:"actual mismatch"}}, receipt());
+    assert.equal(out.status, "INCOMPLETE");
+    assert.equal(out.checks.find(r => r.id === "participants").status, "NOT_DONE");
+    assert.equal(out.checks.find(r => r.id === "installation").status, "CONFIRMED");
+  }
+  for (const workerCheck of [null, {}, {status:"LIMITED"}]) {
+    const out = assessUpdateAcceptance({...target, workerCheck}, receipt());
+    assert.equal(out.checks.find(r => r.id === "participants").status, "NOT_CHECKED");
+  }
+  assert.equal(assessUpdateAcceptance({...target, workerCheck:{status:"KIT_MATCH"}}, receipt()).status, "DOCUMENTED_COMPLETE");
+});
+
+test("operational repair: actual CLI rejects another checkout receipt and accepts current scope", () => {
+  const dir = mkdtempSync(join(tmpdir(), "workspace-acceptance-"));
+  const cli = fileURLToPath(new URL("../scripts/vydykhai.mjs", import.meta.url));
+  const run = args => spawnSync(process.execPath, [cli, ...args], {cwd:dir, encoding:"utf8"});
+  try {
+    assert.equal(run(["install", dir]).status, 0);
+    const d = JSON.parse(run(["doctor", dir, "--offline", "--json"]).stdout);
+    const r = {...receipt(), version:d.installedVersion, sourceRevision:d.sourceRevision, workspace:"/another-checkout"};
+    const file = join(dir, "receipt.json"); writeFileSync(file, JSON.stringify(r));
+    const stale = run(["doctor", dir, "--offline", "--receipt", file, "--json"]);
+    assert.equal(stale.status, 2);
+    assert.equal(JSON.parse(stale.stdout).ok, true);
+    assert.equal(JSON.parse(stale.stdout).updateAcceptance.checks.find(r=>r.id==="manager").reason, "MISSING_OR_STALE_WORKSPACE");
+    assert.equal(run(["adoption-plan", dir, "--receipt", file, "--json"]).status, 2);
+    r.workspace = realpathSync(dir); writeFileSync(file, JSON.stringify(r));
+    assert.equal(run(["doctor", dir, "--offline", "--receipt", file, "--json"]).status, 0);
+    assert.equal(run(["adoption-plan", dir, "--receipt", file, "--json"]).status, 0);
+  } finally { rmSync(dir, {recursive:true, force:true}); }
 });

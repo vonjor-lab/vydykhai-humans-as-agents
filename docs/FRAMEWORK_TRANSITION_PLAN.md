@@ -1,5 +1,21 @@
 # Framework Efficiency Transition
 
+## Checkout And Outcome Scope - 2.1.30
+
+Implementation and application-rule repair, not a constitutional change.
+Existing acceptance now binds local proof to the actual checkout; observed
+worker mismatches cannot be hidden by a positive documentary receipt. Existing
+task history requires a scoped reframe after two unsuccessful approaches
+without evidenced DOD-criterion progress, irrespective of cause names.
+No automatic promotion, extra review or renewed task allowance follows.
+Module contracts retain one visible human entry and owning issue/board links;
+fresh execution contexts may serve successive increments with sole ownership.
+Nine new unit/CLI checks and narrow independent code review passed; native
+application, shared publication and whole-DOD economy remain separate pending
+proof. No previous product checks or paid model experiments are replayed.
+Use the exact published release at each participant's safe boundary; do not
+substitute a dirty source copy or infer uniform activation from one installation.
+
 ## Safe-Boundary Context Application - 2.1.29
 
 Implementation/adoption of the existing context-routing requirement: evaluate

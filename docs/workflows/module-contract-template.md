@@ -18,7 +18,7 @@ Serves: <OUTCOME/JOURNEY anchors>
 Implementation / canonical source: <authoritative code paths/packages/services; no environment-specific algorithm forks>
 Accepted revision: <commit/artifact/schema/version>
 Last verified: <date / revision / evidence>
-Owner / release responsibility / decision gate: <accountable owner or unresolved>
+Owner / release responsibility / decision gate: <accountable owner or unresolved; owning issue, visible user entry, current increment and board links; no duplicate ownership ledger>
 Boundary agreement: <human-approved responsibility/interfaces and authorized work scope>
 Behavior readiness: <experimental / candidate / accepted / deprecated; evidence and remaining obligations>
 Packaging readiness: <unproven / accepted for named consumer scope; independent connection evidence; separate from existing behavior acceptance>

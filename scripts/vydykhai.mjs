@@ -2294,7 +2294,8 @@ async function main() {
   if (command === "doctor") {
     const target = path.resolve(positionals[0] || process.cwd());
     const result = await doctor(target, flags);
-    result.updateAcceptance = assessUpdateAcceptance({ version: result.installedVersion, sourceRevision: result.sourceRevision, integrity: result.ok },
+    result.updateAcceptance = assessUpdateAcceptance({ version: result.installedVersion, sourceRevision: result.sourceRevision,
+      integrity: result.ok, workspace: await realpath(target) },
       flags.receipt ? JSON.parse(await readFile(path.resolve(flags.receipt), "utf8")) : undefined);
     printDoctor(result, flags.json);
     if (!result.ok) process.exitCode = 1;
@@ -2335,7 +2336,8 @@ async function main() {
     if (flags.input) {
       plan.capabilityReadiness = assessCapabilityReadiness(JSON.parse(await readFile(path.resolve(flags.input), "utf8")), { requireArchitecture: true, requireTeamSync: true });
     }
-    plan.updateAcceptance = assessUpdateAcceptance({version: manifest.version, sourceRevision: lock.sourceRevision},
+    plan.updateAcceptance = assessUpdateAcceptance({version: manifest.version, sourceRevision: lock.sourceRevision,
+      workspace: await realpath(target), ...(plan.workerCheck ? {workerCheck: plan.workerCheck} : {})},
       flags.receipt ? JSON.parse(await readFile(path.resolve(flags.receipt), "utf8")) : undefined);
     if (flags.receipt && plan.updateAcceptance.status !== "DOCUMENTED_COMPLETE" && !process.exitCode) process.exitCode = 2;
     if (flags.json) console.log(JSON.stringify(plan, null, 2));
