@@ -1,5 +1,13 @@
 # Collaboration Framework Changelog
 
+## 2.1.31 - 2026-11-15
+
+### Truthful State Publication
+- Separate complete snapshot publication from valid declared health dispositions across the existing Governor, Guard and orchestrator fields. Retain operational failure, nonzero control exit, incident identity, independent review and repair/rotation gates; no health relabelling or new publisher.
+- Keep unresolved metadata, State/graph/outbox defects and expected-hash mismatches blocking. Checkpoint routing retains its prior withholding instead of inheriting publication-only tolerance.
+- Reuse 2.1.30 application and unchanged capability evidence. The active publication owner proves the changed rule with the current scoped Candidate and exact remote readback; applicable checkouts update on their existing safe boundaries without replaying product work.
+- New focused CLI cases cover all newly publishable health dispositions, combined limits and structural negatives. This does not certify health, autonomous continuation or cost savings.
+
 ## 2.1.30 - 2026-11-15
 
 Bind local update-acceptance evidence to the actual resolved workspace and let

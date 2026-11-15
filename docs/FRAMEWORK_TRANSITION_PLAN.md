@@ -1,5 +1,9 @@
 # Framework Efficiency Transition
 
+## Truthful Publication - 2.1.31
+
+Carry forward the 2.1.30 checkout, owner and participant evidence. Update affected actual checkouts at existing safe boundaries. The publication owner retains declared health findings and proves the existing guarded publication/readback on the current scoped Candidate; do not repeat product work or invent a fresh health verdict to satisfy the writer. Completion of kit adoption does not establish operational health, packaging readiness or product DOD economy.
+
 ## Checkout And Outcome Scope - 2.1.30
 
 Implementation and application-rule repair, not a constitutional change.

@@ -1131,7 +1131,7 @@ function validateClosedArtifact(content, { label, startMarker, endMarker, requir
   return issues;
 }
 
-function validateProjectState(content, manifest) {
+function validateProjectState(content, manifest, operationalIssues) {
   const label = "Project State";
   const issues = validateClosedArtifact(content, {
     label,
@@ -1166,14 +1166,15 @@ function validateProjectState(content, manifest) {
     if (!content.includes(field)) issues.push(`${label}: missing ${field}`);
   }
 
+  const declaredHealthIssue = (issue) => { issues.push(issue); operationalIssues.push(issue); };
   const governorLine = content.match(/^Governor:.*$/m)?.[0] || "";
-  const governorState = governorLine.match(/^Governor:\s*(HEALTHY|REPAIR|ROTATE)\b/)?.[1];
+  const governorState = governorLine.match(/^Governor:\s*(HEALTHY|REPAIR|ROTATE)(?=\s*(?:\||$))/)?.[1];
   if (!governorState) issues.push(`${label}: Governor state is missing or unresolved`);
-  else if (governorState !== "HEALTHY") issues.push(`${label}: Governor requires ${governorState}`);
+  else if (governorState !== "HEALTHY") declaredHealthIssue(`${label}: Governor requires ${governorState}`);
   const guardLine = content.match(/^Project Guard:.*$/m)?.[0] || "";
-  const guardState = guardLine.match(/^Project Guard:\s*(ACTIVE|LIMITED|MISSING)\b/)?.[1];
+  const guardState = guardLine.match(/^Project Guard:\s*(ACTIVE|LIMITED|MISSING)(?=\s*(?:\||$))/)?.[1];
   if (!guardState) issues.push(`${label}: Project Guard state is missing or unresolved`);
-  else if (guardState !== "ACTIVE") issues.push(`${label}: Project Guard requires ${guardState}`);
+  else if (guardState !== "ACTIVE") declaredHealthIssue(`${label}: Project Guard requires ${guardState}`);
   for (const [field, pattern] of [
     ["runner", /\|\s*Runner:\s*([^|]+)/],
     ["event route", /\|\s*Event route:\s*([^|]+)/],
@@ -1222,9 +1223,9 @@ function validateProjectState(content, manifest) {
   if (!snapshotEvent || /<.*>/.test(snapshotEvent)) issues.push(`${label}: snapshot event is missing or unresolved`);
   if (!auditedEvent || /<.*>/.test(auditedEvent)) issues.push(`${label}: Governor audit reference is missing or unresolved`);
   const orchestratorLine = content.match(/^Orchestrator health:.*$/m)?.[0] || "";
-  const orchestratorState = orchestratorLine.match(/^Orchestrator health:\s*(HEALTHY|REVIEW|REPAIR|ROTATE)\b/)?.[1];
+  const orchestratorState = orchestratorLine.match(/^Orchestrator health:\s*(HEALTHY|REVIEW|REPAIR|ROTATE)(?=\s*(?:\||$))/)?.[1];
   if (!orchestratorState) issues.push(`${label}: orchestrator health is missing or unresolved`);
-  else if (orchestratorState !== "HEALTHY") issues.push(`${label}: orchestrator health requires ${orchestratorState}`);
+  else if (orchestratorState !== "HEALTHY") declaredHealthIssue(`${label}: orchestrator health requires ${orchestratorState}`);
   const orchestratorProfile = orchestratorLine.match(/\|\s*Profile:\s*([^|]+)/)?.[1]?.trim();
   if (!orchestratorProfile || !/\bORCHESTRATOR\b/i.test(orchestratorProfile) || !/\bmaximum\b/i.test(orchestratorProfile)) {
     issues.push(`${label}: orchestrator profile is not explicitly ORCHESTRATOR / maximum`);
@@ -1898,7 +1899,8 @@ async function controlCheck(
   const state = stateContent ?? await readFile(statePath, "utf8");
   const storedGraph = await readMemoryGraph(graphPath);
   const graph = storedGraph.text;
-  const stateIssues = validateProjectState(state, manifest);
+  const operationalIssues = [];
+  const stateIssues = validateProjectState(state, manifest, operationalIssues);
   const controlSnapshot = section(state, "## Control Snapshot", ["## Current DOD"]);
   const capabilityAdoption = readCapabilityAdoption(controlSnapshot,
     tableRows(section(state, "## Execution Leases", ["## Pending Return Inbox"]), /^Work$/i));
@@ -1922,7 +1924,6 @@ async function controlCheck(
       ...validateDurableOutbox(outboxContent),
     };
   }
-  const operationalIssues = stateIssues.filter((issue) => issue === "Project State: Project Guard requires LIMITED");
   const publicationReady = stateIssues.length === operationalIssues.length &&
     graphIssues.length === 0 && (!outbox || outbox.issues.length === 0);
   return {
@@ -2043,7 +2044,8 @@ async function guardCheck(statePath, graphPath, options = {}) {
       noticeTimes: options.wokenIncidentId ? { [options.wokenIncidentId]: options.noticeAt } : {},
       responseWaitSeconds: manifest.projectGuardPolicy.checkpointReview.responseWaitSeconds,
     });
-    const blocking = [...result.stateIssues.filter(issue => !result.operationalIssues.includes(issue)), ...result.graphIssues];
+    // A publishable health declaration does not authorize checkpoint routing.
+    const blocking = [...result.stateIssues.filter(issue => issue !== "Project State: Project Guard requires LIMITED"), ...result.graphIssues];
     if (sha256(outboxContent) !== result.outbox.sha256) blocking.push("Checkpoint review: outbox changed during readback");
     if (blocking.length) {
       review.action = "LIMITED"; review.coverage = "LIMITED"; review.issues.push(...blocking);

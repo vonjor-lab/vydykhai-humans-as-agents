@@ -700,14 +700,7 @@ test("orchestrator and task contexts keep distinct hot and cold paths", async ()
   assert.match(handoff, /An Action Receipt never substitutes for this Return Sync/);
 });
 
-test("control-check closes DOD, lease, return, detour, and memory transitions", async () => {
-  const target = await mkdtemp(path.join(tmpdir(), "vydykhai-control-"));
-  const statePath = path.join(target, "state.md");
-  const graphPath = path.join(target, "graph.md");
-  const outboxPath = path.join(target, "outbox.md");
-  const activityPath = path.join(target, "activity.json");
-  const run = (args) => runCli(args[0] === "guard-check" ? [...args, "--activity", activityPath] : args);
-  const healthyState = `<!-- vydykhai:project-state v2 -->
+const healthyState = `<!-- vydykhai:project-state v2 -->
 # Project State: Example
 Snapshot as of: event-7
 ## Control Snapshot
@@ -751,7 +744,7 @@ Scope freshness: 7 | Last project-level check: now / event-7 / PASS
 \`\`\`
 <!-- vydykhai:project-state:end -->
 `;
-  const healthyGraph = `<!-- vydykhai:project-memory-graph v3 -->
+const healthyGraph = `<!-- vydykhai:project-memory-graph v3 -->
 # Project Memory Graph: Example
 Project State: state
 Watermark: event-6
@@ -792,6 +785,65 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
 <!-- vydykhai:project-memory-graph:end -->
 `;
 
+test("truthful health publication preserves operational gates", async t => {
+  const target = await mkdtemp(path.join(tmpdir(), "vydykhai-health-publication-"));
+  t.after(() => rm(target, { recursive: true, force: true }));
+  const statePath = path.join(target, "state.md"), graphPath = path.join(target, "graph.md"), outboxPath = path.join(target, "outbox.md");
+  await writeFile(graphPath, healthyGraph);
+  await writeFile(outboxPath, "");
+  const args = ["--state", statePath, "--graph", graphPath, "--json"];
+  for (const [field, from, states] of [["Governor", "HEALTHY", ["REPAIR", "ROTATE"]],
+    ["Orchestrator health", "HEALTHY", ["REVIEW", "REPAIR", "ROTATE"]], ["Project Guard", "ACTIVE", ["MISSING"]]]) {
+    for (const status of states) await t.test(`${field} ${status}`, async () => {
+      await writeFile(statePath, healthyState.replace(`${field}: ${from}`, `${field}: ${status}`));
+      const result = runCli(["control-check", ...args]), check = JSON.parse(result.stdout);
+      assert.equal(result.status, 1); assert.equal(check.ok, false); assert.equal(check.publicationReady, true);
+      assert.equal(check.operationalIssues.length, 1);
+      assert.equal(JSON.parse(runCli(["guard-check", ...args]).stdout).action, "AUDIT_REQUIRED");
+      const checkpoint = JSON.parse(runCli(["guard-check", ...args, "--mode", "checkpoints", "--outbox", outboxPath]).stdout);
+      assert.equal(checkpoint.action, "LIMITED", "publication must not relax checkpoint withholding");
+    });
+  }
+  const repair = healthyState.replace("Orchestrator health: HEALTHY", "Orchestrator health: REPAIR")
+    .replace("Project Guard: ACTIVE", "Project Guard: LIMITED");
+  for (const [field, value] of [["Governor", "HEALTHY"], ["Project Guard", "ACTIVE"], ["Orchestrator health", "HEALTHY"]]) {
+    for (const suffix of ["-invalid", " invalid"]) await t.test(`reject full enum ${field}${suffix}`, async () => {
+      await writeFile(statePath, healthyState.replace(`${field}: ${value}`, `${field}: ${value}${suffix}`));
+      const result = JSON.parse(runCli(["control-check", ...args]).stdout);
+      assert.equal(result.ok, false); assert.equal(result.publicationReady, false);
+    });
+  }
+  for (const [field, value] of [["Governor", "REPAIR"], ["Project Guard", "LIMITED"], ["Orchestrator health", "REPAIR"]]) {
+    await writeFile(statePath, repair.replace(new RegExp(`${field}: [A-Z]+`), `${field}: ${value}-invalid`));
+    assert.equal(JSON.parse(runCli(["control-check", ...args]).stdout).publicationReady, false);
+  }
+  await writeFile(statePath, repair);
+  assert.equal(JSON.parse(runCli(["control-check", ...args]).stdout).publicationReady, true);
+  for (const [name, state, extra] of [
+    ["unknown status", repair.replace("Governor: HEALTHY", "Governor: UNKNOWN"), []],
+    ["missing receipt", repair.replace("Receipt: gov-7", "Receipt: <missing>"), []],
+    ["expected hash", repair, ["--expect-state-sha", "0".repeat(64)]],
+    ["independence", repair.replace("Independent: YES", "Independent: NO"), []],
+    ["unresolved DOD", repair.replace("DOD Control Line: accepted visible baseline -> close actor flow -> smoke -> continue", "DOD Control Line: <unresolved>"), []],
+  ]) await t.test(`still blocks ${name}`, async () => {
+    await writeFile(statePath, state);
+    assert.equal(JSON.parse(runCli(["control-check", ...args, ...extra]).stdout).publicationReady, false);
+  });
+  await writeFile(statePath, repair);
+  await writeFile(graphPath, healthyGraph.replace("Declared nodes: 1", "Declared nodes: 2"));
+  assert.equal(JSON.parse(runCli(["control-check", ...args]).stdout).publicationReady, false);
+  await writeFile(graphPath, healthyGraph);
+  await writeFile(outboxPath, "# Return Sync\nStatus: ACCEPT\nReturn receipt id: broken\n");
+  assert.equal(JSON.parse(runCli(["control-check", ...args, "--outbox", outboxPath]).stdout).publicationReady, false);
+});
+
+test("control-check closes DOD, lease, return, detour, and memory transitions", async () => {
+  const target = await mkdtemp(path.join(tmpdir(), "vydykhai-control-"));
+  const statePath = path.join(target, "state.md");
+  const graphPath = path.join(target, "graph.md");
+  const outboxPath = path.join(target, "outbox.md");
+  const activityPath = path.join(target, "activity.json");
+  const run = (args) => runCli(args[0] === "guard-check" ? [...args, "--activity", activityPath] : args);
   try {
     await writeFile(statePath, healthyState);
     await writeFile(graphPath, healthyGraph);
