@@ -80,6 +80,54 @@ async function workspace(t, selectors = false, installed = false) {
   return { root, json, put, cli, prepare, run, plan, confirm, acknowledge, ready };
 }
 
+test("owner plan view retains meaning and provenance without raw acquisition or automatic approval", async t => {
+  const w = await workspace(t);
+  const pkg = await alignedPackage(w);
+  const history = await w.json("sources.json");
+  history.events.push({id:"S5",authorKind:"human",body:"No additional change."},
+    {id:"S0",authorKind:"human",body:"Compare identifiers case-sensitively."});
+  pkg.classifications.push({sourceId:"bundle-history",eventId:"S5",eventDisposition:"no_change",
+    assertions:[],reason:"Acknowledgment only."},
+    {sourceId:"bundle-history",eventId:"S0",eventDisposition:"assertions",
+      assertions:[{...pkg.classifications[3].assertions[0],id:"S0:1",
+        quote:"Compare identifiers case-sensitively.",disposition:"superseded",supersededBy:"S4:1",
+        reason:"The later explicit correction replaces comparison only."}],
+      reason:"Retain supersession history."});
+  await w.put("sources.json",history);
+  await w.put("package.json", pkg);
+  const result = w.plan();
+  assert.equal(result.status, "PLAN_READY");
+  const view = result.ownerView;
+  assert.equal(view.task.id, pkg.task.id);
+  assert.equal(view.publicBoundary, pkg.module.publicBoundary);
+  assert.match(view.meaning, /CSV/);
+  assert.match(view.meaning, /case-insensitively/);
+  assert.deepEqual(view.alignment, pkg.alignment);
+  assert.deepEqual(view.moduleAccess, pkg.moduleAccess);
+  assert.ok(view.navigation.references.some(r => r.id === "invariant"));
+  assert.equal(view.coverage, "DECLARED_SOURCES_ONLY_NOT_SEMANTIC_ACCEPTANCE");
+  assert.equal(Object.hasOwn(view, "classifications"), false);
+  assert.equal(Object.hasOwn(view, "semanticPackage"), false);
+  assert.equal(Object.hasOwn(view.task, "action"), false);
+  assert.deepEqual(view.sources, (await w.json("prepared/plan.json")).inputFiles);
+  assert.match(view.planSha256, /^[a-f0-9]{64}$/);
+  assert.equal(view.planSha256, createHash("sha256").update(await readFile(path.join(w.root,"prepared/plan.json"))).digest("hex"));
+  assert.equal(view.dispositions.find(d=>d.eventId==="S5").eventDisposition,"no_change");
+  const prior=view.dispositions.find(d=>d.eventId==="S0");
+  assert.equal(prior.path,"sources.json");
+  assert.equal(prior.assertions[0].disposition,"superseded");
+  assert.equal(prior.assertions[0].supersededBy,"S4:1");
+  assert.equal(prior.assertions[0].sourceRange.start,0);
+  assert.equal(prior.assertions[0].sourceRange.end,Buffer.byteLength(history.events.at(-1).body));
+  assert.match(prior.assertions[0].sourceRange.sha256,/^[a-f0-9]{64}$/);
+  assert.equal((await readdir(path.join(w.root, "prepared"))).includes("approval.json"), false);
+  const confirmed=w.confirm();
+  assert.equal(confirmed.status,"PREPARED",JSON.stringify(confirmed));
+  assert.equal((await w.json("prepared/approval.json")).planSha256,view.planSha256);
+  await w.put("architecture.md", "changed accepted rules");
+  assert.equal(w.confirm().status, "BLOCKED");
+});
+
 test("preparation recovery refuses live owners and missing reconciliation", async t => {
   const w = await workspace(t); assert.equal(w.plan().status, "PLAN_READY");
   const release = await acquirePreparationLock(path.join(w.root, "prepared"));

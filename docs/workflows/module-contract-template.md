@@ -53,7 +53,7 @@ Public entry: <export/API/command and supported protocol/schema versions>
 ## Connection And Failure Behavior
 
 - Minimal use: <documented request/result example, configuration and public compatibility check>
-- Semantics: <units, coordinate frames, identity/lifecycle and invariants consumers must preserve>
+- Semantics: <canonical project/area invariant references; units, coordinate origin/axes, scale, rounding, boundary conversions and identity/lifecycle as applicable; no implicit conversion or copied competing rule>
 - Dependencies and state: <declared modules/services, owned storage, migrations, runtime resources and safe permission pointers; no secret values>
 - Failures and side effects: <typed errors/unsupported cases, timeouts, retry/idempotency/cancellation where relevant; no silent partial success>
 - Models and tuning: <declared internal model dependency, nondeterminism and supported settings, or none; no consumer-supplied hidden repair step>
@@ -62,7 +62,7 @@ Public entry: <export/API/command and supported protocol/schema versions>
 
 ## Accepted Decisions And Lessons
 
-Link consumer-applicable `REQUIREMENT`, `DECISION`, `INVARIANT`, and `LESSON` nodes here; internal algorithm choices and rejected approaches belong in Maintainer Design. Do not hide a public limitation or recall commitment among internal notes.
+Link consumer-applicable `REQUIREMENT`, `DECISION`, `INVARIANT`, and `LESSON` nodes here; internal algorithm choices and rejected approaches belong in Maintainer Design. Keep one canonical rule and its source/version, scope and explicit exceptions; graph routes link to it. Changed contracts update the owner's map/test evidence in the same Candidate. A known module id without its cross-module constraint is a memory gap, not sufficient coverage. Do not hide a public limitation or recall commitment among internal notes.
 
 ## Verification
 

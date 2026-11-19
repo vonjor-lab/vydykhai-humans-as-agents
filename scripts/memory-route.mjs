@@ -6,6 +6,9 @@ import {section, tableRows, bulletFields} from "./artifact-markdown.mjs";
 const ids = value => value?.match(/(?:ENT|MEM)-[A-Za-z0-9_-]+/g) || [];
 const normalize = value => value.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 const matches = (request, alias) => alias && ` ${request} `.includes(` ${alias} `);
+const validExplicitScope = scope => Array.isArray(scope) && scope.length > 0 &&
+  new Set(scope).size === scope.length &&
+  [...scope].every(id => typeof id === "string" && /^ENT-[A-Za-z0-9_-]+$/.test(id));
 const current = node => !["SUPERSEDED", "RETIRED", "DORMANT"].includes(node.status);
 const relations = node => (node.fields.get("Relations") || "").split(/\s*;\s*/).map(value =>
   ({kind:value.match(/^([a-z-]+)\s*(?:->|\u2192)/)?.[1], targets:ids(value)}));
@@ -25,9 +28,10 @@ function parseNodes(content) {
     });
 }
 
-export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
+export function deriveMemoryRoute(content, request, {maxBytes = 65536, scope: explicitScope} = {}) {
   if (typeof content !== "string" || typeof request !== "string" || !request.trim() ||
-      !Number.isSafeInteger(maxBytes) || maxBytes <= 0) {
+      !Number.isSafeInteger(maxBytes) || maxBytes <= 0 ||
+      (explicitScope !== undefined && !validExplicitScope(explicitScope))) {
     return {...base, status: "BLOCKED", code: "MEMORY_RECALL_INPUT_INVALID"};
   }
   if (!content.includes("<!-- vydykhai:project-memory-graph v4 -->")) {
@@ -45,6 +49,11 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
     nodes.some(n => !n.id || n.duplicates.length || !n.type || !n.status)) {
     return {...base, status: "BLOCKED", code: "MEMORY_GRAPH_INVALID"};
   }
+  const declaredAnchors = new Set(anchors.map(a => a[0]));
+  const explicitRoots = explicitScope && new Set(explicitScope);
+  if (explicitScope?.some(id => !declaredAnchors.has(id))) {
+    return {...base, status: "BLOCKED", code: "MEMORY_RECALL_SCOPE_UNKNOWN"};
+  }
   const identity = {graphSha256: createHash("sha256").update(content).digest("hex"),
     watermark: content.match(/^Watermark:[ \t]*(.*)$/m)?.[1]?.trim() || null};
   const query = normalize(request);
@@ -55,11 +64,13 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
     matches(query, normalize(n.fields.get("Recall when"))));
   const triggerAnchors = new Set(triggered.flatMap(n => ids(n.fields.get("About"))));
   if (triggered.some(n => !ids(n.fields.get("About")).length) ||
-      [...triggerAnchors].some(id => !anchors.some(a => a[0] === id))) {
+      [...triggerAnchors].some(id => !declaredAnchors.has(id))) {
     return {...base, ...identity, status: "NEEDS_DISCOVERY", reason: "COMMITMENT_ANCHOR_UNRESOLVED"};
   }
-  const matched = anchors.filter(a => triggerAnchors.has(a[0]) ||
-    a[2].split(/\s*[/;]\s*/).some(alias => matches(query, normalize(alias))));
+  // Known scope replaces alias guesses, not declared commitment triggers.
+  const matched = anchors.filter(a => triggerAnchors.has(a[0]) || (explicitRoots
+    ? explicitRoots.has(a[0])
+    : a[2].split(/\s*[/;]\s*/).some(alias => matches(query, normalize(alias)))));
   const roots = matched.map(a => a[0]);
   if (!roots.length) {
     const result = {...base, ...identity, status: "NEEDS_DISCOVERY", reason: "NO_ANCHOR_MATCH",
@@ -90,7 +101,7 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
     .map(n => [n.id, n]));
   const gaps = [];
   const aliasMatches = [];
-  for (const a of matched) for (const alias of a[2].split(/\s*[/;]\s*/).map(normalize)) {
+  for (const a of explicitRoots ? [] : matched) for (const alias of a[2].split(/\s*[/;]\s*/).map(normalize)) {
     if (!matches(query, alias)) continue;
     let offset = 0, index;
     while ((index = ` ${query} `.indexOf(` ${alias} `, offset)) !== -1) {
@@ -101,7 +112,9 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
     gaps.push("Ambiguous matching alias: resolve the intended public boundary.");
   }
   if (!matched.some(a => ["MODULE", "CAPABILITY", "ENTITY", "ARTIFACT", "SYSTEM", "CONTRACT"].includes(a[1].toUpperCase()))) {
-    gaps.push("The request names a broad outcome or actor, not an execution boundary; resolve it through Discovery.");
+    gaps.push(explicitRoots
+      ? "The explicit scope lacks an execution boundary; resolve it through Discovery."
+      : "The request names a broad outcome or actor, not an execution boundary; resolve it through Discovery.");
   }
   // Close declared obligations, not composite children or successive consumer trees.
   let changed = true;
@@ -192,18 +205,24 @@ export function deriveMemoryRoute(content, request, {maxBytes = 65536} = {}) {
 
 export async function memoryRecallCommand(args, {validateGraph, manifest}) {
   const opts = new Map();
-  if (args.length !== 4) return {...base, status: "BLOCKED", code: "MEMORY_RECALL_ARGUMENTS_INVALID"};
+  if (![4, 6].includes(args.length)) return {...base, status: "BLOCKED", code: "MEMORY_RECALL_ARGUMENTS_INVALID"};
   for (let i = 0; i < args.length; i += 2) {
-    if (!["--graph", "--request"].includes(args[i]) || opts.has(args[i]) || !args[i + 1]?.trim()) {
+    const flag = args[i], value = args[i + 1];
+    if (!["--graph", "--request", "--scope"].includes(flag) || opts.has(flag) ||
+        typeof value !== "string" || !value.trim()) {
       return {...base, status: "BLOCKED", code: "MEMORY_RECALL_ARGUMENTS_INVALID"};
     }
-    opts.set(args[i], args[i + 1]);
+    opts.set(flag, value);
+  }
+  const scope = opts.get("--scope")?.split(",");
+  if (!opts.has("--graph") || !opts.has("--request") || (scope !== undefined && !validExplicitScope(scope))) {
+    return {...base, status: "BLOCKED", code: "MEMORY_RECALL_ARGUMENTS_INVALID"};
   }
   try {
     const graph = await readMemoryGraph(opts.get("--graph"));
     const issues = validateGraph(graph.text, manifest, {inspectionOnly:true});
     if (issues.length) return {...base, status: "BLOCKED", code: "MEMORY_GRAPH_INVALID", issues};
-    return deriveMemoryRoute(graph.text, opts.get("--request"));
+    return deriveMemoryRoute(graph.text, opts.get("--request"), {scope});
   } catch {
     return {...base, status: "BLOCKED", code: "MEMORY_RECALL_READ_FAILED"};
   }

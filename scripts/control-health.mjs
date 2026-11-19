@@ -66,7 +66,10 @@ export function healthControl({state,update,config,observeReviewRun}) {
     need(plan.triggerSourceIds.every(id => sourceEvidence.rows.some(r => r.id === id)),"HEALTH_TRIGGER_SOURCE_MISSING");
     const {observedAt,...repository} = repo;
     const trigger = hash({sources:sourceEvidence.rows.filter(r => plan.triggerSourceIds.includes(r.id)),
-      repository:repo.status !== "OBSERVED" ? "LIMITED" : {
+      repository:{
+        ...(repo.status === "LIMITED" ? {reason:repo.reason, worktreeInventoryDigest:repo.worktreeInventoryDigest ?? null,
+          branchCount:repo.branchCount > plan.maxBranches ? repo.branchCount : null,
+          worktreeCount:repo.worktreeCount > plan.maxWorktrees ? repo.worktreeCount : null} : {}),
         branches:repo.branchCount > plan.maxBranches ? repo.branches.map(({name})=>name) : null,
         worktrees:repo.worktreeCount > plan.maxWorktrees ? repo.worktrees.map(({path,branch,detached})=>({path,branch,detached})) : null}});
     return {sourceEvidence,repository,trigger,execution:execution(s)};
@@ -135,12 +138,13 @@ export function healthControl({state,update,config,observeReviewRun}) {
     !(h.reviewedCheckpoints??[]).some(p=>sameCheckpoint(p,f)));
   // Explicit reset reviews remain obligations. An event-only profile still
   // observes sources, leases and overdue findings on every mechanical tick.
-  const periodicDue = s => plan.cadence ? cadence(s).due &&
+  const periodicDue = (s,fresh) => plan.cadence ? cadence(s).due &&
     cadence(s).periodic.resetEpoch !== s.health.reviewedResetEpoch :
-    plan.periodicReview !== false && Date.now() >= s.health.nextDueAt;
+    plan.periodicReview !== false && Date.now() >= s.health.nextDueAt &&
+    s.health.reviewSourceKey !== sourceKey(fresh);
   const isDue = (s,fresh) => s.health.enrollment === "REVIEW_DUE" ||
     ["SETTLED","REPAIR_DUE"].includes(s.health.enrollment) &&
-    (periodicDue(s) || fresh.trigger !== s.health.trigger ||
+    (periodicDue(s,fresh) || fresh.trigger !== s.health.trigger ||
       overdue(s.health,Date.now()).length>0) ||
     s.health.enrollment === "OWNER_DISPOSITION_DUE" && s.health.reviewSourceKey !== sourceKey(fresh);
   const api = {

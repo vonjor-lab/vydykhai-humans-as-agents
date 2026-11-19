@@ -54,6 +54,18 @@ test("event-only periodic sweep is model-free when unchanged, still detects sour
   await x.f.put("health-policy.md","new obligation");
   assert.equal((await x.host.due())[0].action,"REVIEW_DUE");
 });
+test("ordinary elapsed health timer is model-free on unchanged accepted evidence",async t=>{
+  const x=await setup(t);
+  await consume(x,await review(x));
+  const store=await openControlStore(x.directory);
+  await store.transact(s=>{s.health.nextDueAt=0;return s;});
+  const before=await x.host.snapshot();
+  const quiet=await runControlTick(x.host,{review:async()=>{throw Error("UNEXPECTED_MODEL_CALL");}});
+  assert.equal(quiet.calls,0);
+  assert.deepEqual(await x.host.snapshot(),before);
+  await store.transact(s=>{delete s.health.reviewSourceKey;return s;});
+  assert.equal((await x.host.due())[0].action,"REVIEW_DUE");
+});
 const leases=f=>[{owner:f.owner,work:f.work,state:"WORKING",evidence:"fixture:owned",checkpoint:"repair",
   reviewAt:f.reviewAt}];
 
@@ -269,7 +281,7 @@ test("one already reviewed overdue checkpoint cannot endlessly redispatch unchan
   await store.transact(s=>{s.health.findings[0].reviewAt=f.reviewAt;return s;});
   assert.deepEqual(await x.host.due(),[]);
   await store.transact(s=>{s.health.nextDueAt=Date.now()-1;return s;});
-  assert.equal((await x.host.due())[0].action,"REVIEW_DUE");
+  assert.deepEqual(await x.host.due(),[]);
 });
 test("a deadline crossing during inference is not consumed by the earlier claim",async t=>{
   const realNow=Date.now;let clock=realNow();Date.now=()=>clock;t.after(()=>{Date.now=realNow;});
@@ -301,9 +313,9 @@ test("activation enrolls health with no accepted task; owner readback and next d
   assert.deepEqual(await again.due(),[]);await again.health.assertReady("product");
   const store=await openControlStore(x.directory);
   await store.transact(s=>{s.health.nextDueAt=Date.now()-1;return s;});
-  assert.equal((await again.due())[0].action,"REVIEW_DUE");
+  assert.deepEqual(await again.due(),[]);
   await again.health.assertReady("product");
-  assert.equal((await again.due())[0].action,"REVIEW_DUE");
+  assert.deepEqual(await again.due(),[]);
   const {health,...legacyConfig}=x.config;
   const without=await openControlHost(x.directory,legacyConfig,endpointServices);
   await assert.rejects(without.snapshot(),/CONFIG_MISMATCH/);
@@ -350,8 +362,10 @@ test("an applied repair lease admits its exact repair task without static alias 
   await store.transact(s=>{s.health.repairLeases=[];return s;});
   await assert.rejects(x.host.health.assertReady(f.work),/HEALTH_CONTROL_PENDING/);
 });
-test("periodic health stays due through fresh review without blocking known healthy work",async t=>{
+test("periodic health on changed repository evidence stays due without blocking known healthy work",async t=>{
   const x=await setup(t);await consume(x,await review(x));
+  git(x.f.root,["-c","user.name=Fixture","-c","user.email=fixture@example.invalid","commit","--quiet","--allow-empty","-m","ordinary progress"]);
+  assert.deepEqual(await x.host.due(),[]);
   const store=await openControlStore(x.directory);
   await store.transact(s=>{s.health.nextDueAt=Date.now()-1;return s;});
   assert.equal((await x.host.due())[0].action,"REVIEW_DUE");
@@ -487,6 +501,38 @@ test("repository or source observation loss cannot masquerade as all-green healt
   const x=await setup(t);await rm(path.join(x.f.root,".git"),{recursive:true,force:true});
   const offer=await x.host.claimReview("@health");assert.equal(offer.input.repository.status,"LIMITED");
   await assert.rejects(x.host.review("@health",offer,verdict(x,offer)),/REPOSITORY_UNKNOWN/);
+});
+
+test("limited repository triggers distinguish excess inventory and coverage reasons",async t=>{
+  const x=await setup(t,{}, {periodicReview:false,maxWorktrees:1});
+  const linked=[1,2].map(i=>path.join(x.privateRoot,`linked-${i}`));
+  const register = async dir=>{
+    git(x.f.root,["worktree","add","--detach","-q",dir]);
+    await rm(dir,{recursive:true,force:true});
+  };
+  await register(linked[0]);
+  const f={...defect(),checkId:"C12.01",criterion:controlCatalog.find(g=>g.id==="C12").checks[0].criterion,
+    blocksResume:false};
+  await consume(x,await review(x,v=>add(v,f)),"CONTINUE",leases(f));
+  assert.deepEqual(await x.host.due(),[]);
+  git(x.f.root,["-c","user.name=Fixture","-c","user.email=fixture@example.invalid",
+    "commit","--quiet","--allow-empty","-m","ordinary progress under limited observation"]);
+  assert.deepEqual(await x.host.due(),[]);
+  git(x.f.root,["worktree","prune","--expire","now"]);
+  await register(path.join(x.privateRoot,"replacement"));
+  assert.equal((await x.host.due())[0].action,"REVIEW_DUE");
+  const replacement=await x.host.health.reviewInput();
+  assert.equal(replacement.input.repository.worktreeCount,2);
+  await consume(x,await review(x,v=>add(v,f)),"CONTINUE",leases(f));
+  assert.deepEqual(await x.host.due(),[]);
+  await register(linked[1]);
+  assert.equal((await x.host.due())[0].action,"REVIEW_DUE");
+  await consume(x,await review(x,v=>add(v,f)),"CONTINUE",leases(f));
+  await writeFile(path.join(x.f.root,"large.bin"),Buffer.alloc(2*1024*1024+1));
+  assert.equal((await x.host.due())[0].action,"REVIEW_DUE");
+  const offer=await x.host.claimReview("@health");
+  assert.equal(offer.input.repository.worktreeCount,3);
+  assert.equal(offer.input.repository.reason,"DIRTY_BYTE_LIMIT");
 });
 
 test("a second repair request cannot overwrite the first pending attempt",async t=>{

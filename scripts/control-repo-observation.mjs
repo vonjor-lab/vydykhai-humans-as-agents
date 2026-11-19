@@ -38,7 +38,7 @@ function worktreeFacts(output) {
     else if (key === "bare") entry.bare = true;
   }
   if (entry) throw failure("INVALID_GIT_OUTPUT");
-  if (!result.length || result.length > MAX_WORKTREES) throw failure("WORKTREE_LIMIT_OR_INVALID_OUTPUT");
+  if (!result.length) throw failure("INVALID_GIT_OUTPUT");
   return result;
 }
 function dirtyEntries(output) {
@@ -114,7 +114,7 @@ export async function observeRepositoryHealth(workspace) {
     const sha = resolved.code === 0 ? resolved.output.trim() : null;
     if ((branch && !branch.startsWith("refs/heads/")) || (sha && !shaPattern.test(sha)) || (!sha && !branch))
       throw failure("INVALID_HEAD");
-    const head = {sha, branch, detached: branch === null, unborn: sha === null};
+    facts.head = {sha, branch, detached: branch === null, unborn: sha === null};
     const refs = (await git(cwd, ["for-each-ref", "--format=%(refname)%00%(objectname)%00",
       "refs/heads/", "refs/remotes/"])).output;
     const branches = refs ? refs.trimEnd().split("\n").map(line => {
@@ -123,7 +123,14 @@ export async function observeRepositoryHealth(workspace) {
         throw failure("INVALID_GIT_OUTPUT");
       return {name, sha};
     }).sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0) : [];
+    Object.assign(facts, {branches, branchCount: branches.length});
     const listed = worktreeFacts((await git(cwd, ["worktree", "list", "--porcelain", "-z"])).output);
+    facts.worktreeCount = listed.length;
+    // Retain inventory identity even when bounded detail inspection is incomplete.
+    facts.worktreeInventoryDigest = createHash("sha256").update(JSON.stringify(
+      listed.map(({path, branch, detached, bare}) => ({path, branch, detached, bare}))
+        .sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0))).digest("hex");
+    if (listed.length > MAX_WORKTREES) throw failure("WORKTREE_LIMIT");
     const worktrees = [], seen = new Set(), budget = {bytes:0};
     for (const item of listed) {
       if (item.bare) throw failure("BARE_WORKTREE");
@@ -142,11 +149,17 @@ export async function observeRepositoryHealth(workspace) {
         dirtyCount:rows.length,dirtyPaths,dirtyDigest,indexDigest});
     }
     worktrees.sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
-    const observed = {...facts, status: "OBSERVED", head, branchCount: branches.length, worktreeCount: worktrees.length,
-      dirtyCount: worktrees.reduce((sum, item) => sum + item.dirtyCount, 0), branches, worktrees};
+    const observed = {...facts, status: "OBSERVED",
+      dirtyCount: worktrees.reduce((sum, item) => sum + item.dirtyCount, 0), worktrees};
     if(Buffer.byteLength(JSON.stringify(observed))>LIMIT)throw failure("OBSERVATION_LIMIT");
     facts=observed;
-  } catch (error) {facts.reason = error.reason ?? "OBSERVATION_FAILED";}
+  } catch (error) {
+    facts.reason = error.reason ?? "OBSERVATION_FAILED";
+    if(Buffer.byteLength(JSON.stringify(facts))>LIMIT) {
+      facts.branches = [];
+      facts.reason = "OBSERVATION_LIMIT";
+    }
+  }
   return {...facts, digest: createHash("sha256").update(JSON.stringify(facts)).digest("hex"),
     observedAt: new Date().toISOString()};
 }

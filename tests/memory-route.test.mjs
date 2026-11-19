@@ -75,6 +75,118 @@ function addRoutes(content, added) {
     .replace("## Current Memory Nodes", added.map(r=>`| ${r[0]} | ${r[1]} | ${r[2]} | fixture | source |`).join("\n") + "\n## Current Memory Nodes");
 }
 
+test("explicit scope works without aliases and does not guess sibling roots", () => {
+  const content = graph([
+    node("MEM-SIBLING", "DECISION", "ENT-OTHER", "Retain independent history"),
+    node("MEM-TRIGGER", "COMMITMENT", "ENT-OTHER", "Confirm the independent hold", {"Recall when": "lift the hold"})
+  ]).replace("inventory |", "inventory / supplier offer |");
+  const options = {scope: ["ENT-QUOTE"]};
+  const result = deriveMemoryRoute(content, "Wire up the next stage", options);
+  assert.equal(result.status, "RECALL_CANDIDATE");
+  assert.deepEqual(result.roots, ["ENT-QUOTE"]);
+  assert.deepEqual(result.items.map(n => n.id).sort(), ["MEM-DOWNSTREAM", "MEM-GOAL", "MEM-RATE", "MEM-RETURN"]);
+  assert.equal(result.semanticTruth, "NOT_VERIFIED");
+  assert.equal(result.admission, "NOT_GRANTED");
+  assert.equal(result.coverageBasis, "DECLARED_GRAPH_ONLY");
+  assert.doesNotMatch(JSON.stringify(result), /ENT-OTHER|MEM-SIBLING/);
+  assert.deepEqual(deriveMemoryRoute(content, "Use supplier offer", options), result);
+  assert.equal(deriveMemoryRoute(content, "Use supplier offer").status, "NEEDS_DISCOVERY");
+  assert.equal(deriveMemoryRoute(content, "Wire up the next stage").reason, "NO_ANCHOR_MATCH");
+  assert.equal(deriveMemoryRoute(content, "Wire up the next stage", {scope: ["ENT-GOAL"]}).status, "NEEDS_DISCOVERY");
+  const triggered = deriveMemoryRoute(content, "Lift the hold", options);
+  assert.deepEqual(triggered.roots, ["ENT-QUOTE", "ENT-OTHER"]);
+  assert.ok(triggered.items.some(n => n.id === "MEM-TRIGGER"));
+});
+
+test("explicit scope closes declared shared dependencies, requirements and constraints", () => {
+  const content = addRoutes(graph([
+    node("MEM-SHARED", "INVARIANT", "ENT-SHARED", "Keep the shared approval boundary", {
+      Relations: "about -> ENT-SHARED; requires -> MEM-PREREQ"}),
+    node("MEM-PREREQ", "REQUIREMENT", "ENT-OTHER", "Preserve prerequisite evidence"),
+    node("MEM-LIMIT", "REQUIREMENT", "ENT-OTHER", "Reject changes without approval", {
+      Relations: "about -> ENT-OTHER; constrains -> MEM-SHARED"}),
+    node("MEM-SIBLING", "DECISION", "ENT-OTHER", "Retain independent history")
+  ]).replace("Declared anchors: 5", "Declared anchors: 6")
+    .replace("## Entity Routes", "| ENT-SHARED | CAPABILITY | approval boundary | shared | contract: public/approval.md; implementation: private/approval/ | source |\n## Entity Routes"),
+  [["ENT-QUOTE", "depends-on", "ENT-SHARED"]]);
+  assert.deepEqual(validateMemoryGraph(content, manifest), []);
+  const result = deriveMemoryRoute(content, "Wire up the next stage", {scope: ["ENT-QUOTE"]});
+  assert.deepEqual(result.roots, ["ENT-QUOTE"]);
+  assert.ok(result.routes.some(r => r.relation === "depends-on" && r.to === "ENT-SHARED"));
+  assert.ok(result.contracts.some(c => c.path === "public/approval.md"));
+  for (const id of ["MEM-SHARED", "MEM-PREREQ", "MEM-LIMIT", "MEM-GOAL"]) {
+    assert.ok(result.items.some(n => n.id === id), id);
+  }
+  assert.ok(!result.items.some(n => n.id === "MEM-SIBLING"));
+  assert.ok(result.navigationCandidates.some(n => n.id === "MEM-SIBLING"));
+});
+
+test("explicit scope preserves negative evidence and unresolved obligations", () => {
+  const content = graph([
+    node("MEM-OLD", "DECISION", "ENT-QUOTE", "Use floating amounts", {"Type / status": "DECISION / SUPERSEDED"}),
+    node("MEM-CURRENT", "DECISION", "ENT-QUOTE", "Use exact amounts", {
+      Avoid: "floating amounts", Relations: "about -> ENT-QUOTE; supersedes -> MEM-OLD; requires -> MEM-OLD"}),
+    node("MEM-CONFLICT", "DECISION", "ENT-QUOTE", "Two contradictory approvals", {
+      "Type / status": "DECISION / CONFLICT", Relations: "about -> ENT-QUOTE; conflicts -> MEM-CURRENT"})
+  ]).replace("## Live Retrieval Probes",
+    "| event-goal | correction | pending policy | ENT-GOAL | NONE | REFINE | decision | NEEDS_HUMAN |\n" +
+    "| event-other | correction | independent policy | ENT-OTHER | NONE | REFINE | decision | PENDING |\n## Live Retrieval Probes");
+  assert.deepEqual(validateMemoryGraph(content, manifest, {inspectionOnly:true}), []);
+  const result = deriveMemoryRoute(content, "Wire up the next stage", {scope: ["ENT-QUOTE"]});
+  assert.equal(result.status, "NEEDS_DISCOVERY");
+  assert.equal(result.semanticTruth, "NOT_VERIFIED");
+  assert.equal(result.admission, "NOT_GRANTED");
+  assert.ok(!result.items.some(n => n.id === "MEM-OLD"));
+  const decision = result.items.find(n => n.id === "MEM-CURRENT");
+  assert.equal(decision.avoid, "floating amounts");
+  assert.match(decision.relations, /supersedes -> MEM-OLD/);
+  assert.match(result.gaps.join("\n"), /required current memory MEM-OLD is unresolved/);
+  assert.match(result.gaps.join("\n"), /MEM-CONFLICT: conflicts MEM-CURRENT/);
+  assert.ok(result.gaps.includes("Pending event event-goal: NEEDS_HUMAN"));
+  assert.doesNotMatch(result.gaps.join("\n"), /event-other/);
+});
+
+test("explicit scope rejects unknown, malformed and duplicate IDs without alias fallback", () => {
+  const content = graph();
+  for (const scope of [null, "ENT-QUOTE", [], Array(1), [1], ["supplier offer"], ["MEM-RATE"],
+    ["ent-quote"], ["ENT-QUOTE "], ["ENT-QUOTE", "ENT-QUOTE"]]) {
+    const result = deriveMemoryRoute(content, "Use quotation", {scope});
+    assert.equal(result.status, "BLOCKED");
+    assert.equal(result.code, "MEMORY_RECALL_INPUT_INVALID");
+  }
+  const result = deriveMemoryRoute(content, "Use quotation", {scope: ["ENT-QUOTE", "ENT-UNKNOWN"]});
+  assert.equal(result.status, "BLOCKED");
+  assert.equal(result.code, "MEMORY_RECALL_SCOPE_UNKNOWN");
+  assert.equal(result.items, undefined);
+});
+
+test("explicit scope CLI supports a single comma-separated option and rejects invalid arguments", async t => {
+  const root = await mkdtemp(path.join(tmpdir(), "memory-route-scope-"));
+  t.after(() => rm(root, {recursive:true, force:true}));
+  const file = path.join(root, "graph.md");
+  const content = graph();
+  await writeFile(file, content);
+  const request = "Wire up the next stage";
+  const args = ["--graph", file, "--request", request];
+  const run = scope => spawnSync(process.execPath, [new URL("../scripts/vydykhai.mjs", import.meta.url).pathname,
+    "memory-recall", ...args, "--scope", scope], {encoding:"utf8", timeout:5000});
+  const ok = run("ENT-QUOTE,ENT-DOWNSTREAM");
+  assert.equal(ok.status, 0, ok.stderr);
+  const result = JSON.parse(ok.stdout);
+  assert.deepEqual(result.roots, ["ENT-QUOTE", "ENT-DOWNSTREAM"]);
+  assert.deepEqual(result, deriveMemoryRoute(content, request, {scope: ["ENT-QUOTE", "ENT-DOWNSTREAM"]}));
+  const unknown = run("ENT-UNKNOWN");
+  assert.equal(unknown.status, 1, unknown.stderr);
+  assert.equal(JSON.parse(unknown.stdout).code, "MEMORY_RECALL_SCOPE_UNKNOWN");
+  for (const malformed of [
+    [...args, "--scope"], [...args, "--scope", ""], [...args, "--scope", "ENT-QUOTE,"],
+    [...args, "--scope", "ENT-QUOTE, ENT-DOWNSTREAM"], [...args, "--scope", "ENT-QUOTE,ENT-QUOTE"],
+    [...args, "--scope", "ENT-QUOTE", "--scope", "ENT-DOWNSTREAM"], ["--graph", file, "--scope", "ENT-QUOTE"]
+  ]) {
+    assert.equal((await memoryRecallCommand(malformed, services)).code, "MEMORY_RECALL_ARGUMENTS_INVALID");
+  }
+});
+
 test("recall condition finds an active commitment without naming its original module", async t => {
   const content = graph([node("MEM-PAYMENT", "COMMITMENT", "ENT-OTHER",
     "Obtain owner approval of retained stock reservation before enabling payments", {

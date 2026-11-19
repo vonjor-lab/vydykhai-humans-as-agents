@@ -97,7 +97,7 @@ Every deliberate departure from the current DOD and every human “remember/revi
 | <id> | <line or none> | <bounded work or remembered meaning> | <event/checkpoint/date> | <human-owned question / what continues> | <OPEN / RETURN_DUE / RESOLVED / RETIRED> |
 
 ## Next-Best-Action
-
+Reference the existing plan/task contract and the latest applicable [Course Review](framework-orchestrator.md#course-review) in `evidence`: accepted progress, remaining parent work, relevant debt/risk and reason for the chosen step. Keep its checked date and plan revision there; do not duplicate the task queue or store code. This is the existing owner's decision, not independent acceptance or a new model call. Ordinary continuation reuses it until a material change or due condition.
 ```json
 {"schemaVersion":1,"id":"<stable action id>","work":"<existing work key>","action":"<one productive step>","owner":"<exact current context>","state":"READY","evidence":"<accepted brief or action/gate reference>"}
 ```

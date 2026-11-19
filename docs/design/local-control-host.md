@@ -465,7 +465,12 @@ account-metadata RPC adapter is wired but requires a private configuration-free
 authenticated home; real authenticated automatic observation remains unqualified.
 Missing cadence metadata remains an owned follow-up and does not
 block unrelated healthy work or suppress failure triggers. Fixed interval mode
-remains explicitly different from observed-reset mode. These limits cannot justify
+remains explicitly different from observed-reset mode: ordinary intervals only
+make REVIEW due when the accepted source/repository/execution evidence changed
+or the prior evidence is missing. Initial, changed-trigger, overdue-finding and
+explicit observed-reset obligations remain due; owner reflection cannot close them.
+Partial repository observations retain known counts while staying LIMITED.
+These limits cannot justify
 recreating budgets, deleting unknown leases or claiming whole-project health.
 
 ## Current Preparation Status

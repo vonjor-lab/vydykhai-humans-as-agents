@@ -115,7 +115,7 @@ At each declared readiness result, human checkpoint, irreducible blocker, or ter
 
 Apply [Return Authorization](task-context-handoff-template.md#return-authorization) before storage or delivery. A real host denial blocks that transfer, not the completed result or independent authorized work. Preserve current permission evidence and the local result; never treat a denied disclosure as a lost notification to route around.
 
-- report DOD impact, human checkpoint, burn, verification, merge, risks, and recommended orchestrator action; the orchestrator decides parent state and next-best-action.
+- report DOD impact, human checkpoint, burn, verification, merge, risks, and recommended orchestrator action; the orchestrator applies [Course Review](framework-orchestrator.md#course-review) to decide parent state and next-best-action, without another preparer or repeated task review.
 - for an enabler, report `Unlocks`, `Still missing`, and the next product slice/owner; do not close the parent from technical completion alone.
 - classify each follow-up as a required DOD gap or optional `IDEA` candidate; optional ideas do not keep the accepted task or parent open by themselves.
 - report graph nodes applied, confirmed, refined, superseded, or contradicted; keep local-only lineage in the task.

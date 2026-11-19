@@ -82,7 +82,7 @@ for(const replacement of ["args","executable","cwd"])test(`genuine confined laun
   await x.owner.proposeHealthDomain({grantId:hash(x.binding),sourceIds:["task","module","plan","approval","contract"]});
   const bootstrap=await x.host.claimReview("@health"),v=await x.answer(bootstrap,true);
   await x.host.review("@health",bootstrap,v);await x.consume(v);
-  await x.store.transact(s=>{s.health.nextDueAt=0;return s;});
+  await x.store.transact(s=>{s.health.enrollment="REVIEW_DUE";return s;});
   const offer=await x.host.claimReview("@health"),before=await readFile(path.join(x.root,"candidate.mjs"));
   const genuine=await localControlSandbox({workspace:x.root,controlRoot:x.privateRoot,writeFiles:x.confined.writeFiles});
   const changes={args:["-e","require('node:fs').appendFileSync('candidate.mjs','unapproved alternate')"],
@@ -100,7 +100,7 @@ test("actual confined completed B write admits immutable HEALTH and current owne
   await x.owner.proposeHealthDomain({grantId:hash(x.binding),sourceIds:["task","module","plan","approval","contract"]});
   const approvalOffer=await x.host.claimReview("@health"),approval=await x.answer(approvalOffer,true);
   await x.host.review("@health",approvalOffer,approval);await x.consume(approval);
-  await x.store.transact(s=>{s.health.nextDueAt=0;return s;});
+  await x.store.transact(s=>{s.health.enrollment="REVIEW_DUE";return s;});
   const offer=await x.host.claimReview("@health"),historical=structuredClone(offer);
   const before=await lstat(path.join(x.root,"candidate.mjs"));
   const sandboxLaunch=await localControlSandbox({workspace:x.root,controlRoot:x.privateRoot,writeFiles:x.confined.writeFiles});
@@ -148,7 +148,7 @@ test("actual confined completed B write admits immutable HEALTH and current owne
   assert.deepEqual((await x.host.snapshot()).health.review.rows,v.rows);
   assert.equal((await x.host.snapshot()).health.domain,undefined);
   assert.ok((await x.host.snapshot()).health.history.some(r=>r.completedDomain));
-  await x.store.transact(s=>{s.health.nextDueAt=0;return s;});
+  await x.store.transact(s=>{s.health.enrollment="REVIEW_DUE";return s;});
   const next=await x.host.claimReview("@health");
   assert.equal((await x.host.snapshot()).health.reviewLease.captured,undefined);
   assert.equal(next.input.execution.reservations[0].recordSha256,hash((await x.host.snapshot()).reservations[hash(x.binding)]));
@@ -172,7 +172,8 @@ test("domain approval cannot be supplied without acquired current source handles
 async function settleLegacy(x) {
   const offer=await x.host.claimReview("@health"),v=await x.answer(offer);
   await x.host.review("@health",offer,v);await x.consume(v);
-  await x.store.transact(s=>{s.health.nextDueAt=0;return s;});
+  // This fixture requests domain admission, not an unchanged periodic review.
+  await x.store.transact(s=>{s.health.enrollment="REVIEW_DUE";return s;});
 }
 test("legacy HEALTH refuses the same actual completed confined write without domain approval",{skip:process.platform!=="darwin"},async t=>{
   const x=await setup(t);await settleLegacy(x);
@@ -243,7 +244,7 @@ for(const finalDrift of [false,true])test(`scripted multipart HEALTH uses actual
     await x.owner.proposeHealthDomain({grantId:hash(x.binding),sourceIds:["task","module","plan","approval","contract"]});
     const bootstrap=await x.host.claimReview("@health"),approval=await x.answer(bootstrap,true);
     await x.host.review("@health",bootstrap,approval);await x.consume(approval);
-    await x.store.transact(s=>{s.health.nextDueAt=0;return s;});
+    await x.store.transact(s=>{s.health.enrollment="REVIEW_DUE";return s;});
     const offer=await x.host.claimReview("@health"),directory=path.join(x.privateRoot,"multipart");
     await mkdir(directory,{mode:0o700});
     let index=0,processes=0;

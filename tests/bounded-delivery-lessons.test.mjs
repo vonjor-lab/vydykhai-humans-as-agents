@@ -30,10 +30,10 @@ test("safe-boundary adoption reuses existing owner and actual readback", async (
 // Instruction contracts only: these checks do not prove a model follows them.
 test("recovery separates progress, authority and hard limits without a global fix quota", async () => {
   const routing = await read("docs/workflows/context-routing.md");
-  for (const phrase of ["not all successive defects", "not product acceptance",
+  for (const phrase of ["outcome-level stagnation also spans different unresolved causes", "not product acceptance",
     "explicit hard resource limits", "platform and enrolled runtime limits remain binding",
     "reassess the whole route", "Isolation or reversibility alone grants no authority",
-    "UNKNOWN blocks replay", "no review merely for another local fix",
+    "UNKNOWN blocks replay", "Do not invent a whole-task correction quota",
     "does not guarantee a numerical spending ceiling"])
     assert.ok(routing.includes(phrase), phrase);
   assert.ok(!routing.includes("Keep finite whole-task attempts, escalations and cost"));
@@ -67,7 +67,7 @@ test("capability escalation is not automatic and cannot reset a failed episode",
   const routing = await read("docs/workflows/context-routing.md");
   for (const phrase of ["one bounded changed attempt", "stop automatic redispatch for that cause",
     "falsified hypothesis or missing input/access", "named reasoning/implementation capability gap",
-    "without a sacrificial weak attempt", "do not reset attempts or grant more budget",
+    "no sacrificial weak attempt", "do not reset attempts or grant more budget",
     "No permanent re-preparer", "not automatic promotion after any failure"])
     assert.ok(routing.includes(phrase), phrase);
   assert.doesNotMatch(routing, /if that fails the same success criterion, use High/);

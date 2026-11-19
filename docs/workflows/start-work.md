@@ -81,6 +81,8 @@ When a local outcome is likely to pull unrelated layers, name the expected surfa
 
 ## 5. Build The Task Map
 
+The approved Epic Brief/Task Map and current tracker task contracts are the plan of record. Update their existing dependencies and sequence; the board and Project State are projections, not additional plans. Before adding active work, apply [Course Review](framework-orchestrator.md#course-review) to the existing queue, capacity and due obligations. Do not turn every idea into an active task or every technical operation into an issue.
+
 For each task, write only the execution contract. Project-wide reasoning stays with the orchestrator:
 
 ```md

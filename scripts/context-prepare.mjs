@@ -254,9 +254,26 @@ export async function prepareContext(args, services = {}) {
       const built = await build(root, options["--input"], output);
       const names = (await readdir(dir)).filter(n => n !== ".prepare-lock");
       if (names.length) need(names.includes("plan.json") && hash(await read(root, `${output}/plan.json`)) === hash(built.plan), "PACKAGE_OUTPUT_COLLISION");
-      await put("plan.json", built.plan);
+      const planRef = await put("plan.json", built.plan);
+      // One plan, two audiences: keep raw acquisition and code outside the owner view.
+      const pkg = built.plan.semanticPackage;
+      const ownerView = {
+        planSha256: planRef.sha256, task: {id: pkg.task.id, worker: pkg.task.worker, scope: pkg.task.scope},
+        publicBoundary: pkg.module.publicBoundary, meaning: built.render,
+        dispositions: built.artifacts.get(`${output}/classifications.json`).records.map(
+          ({sourceId, eventId, sourceSha256, eventDisposition, assertions, reason}) => ({
+            sourceId, path: pkg.sources.find(s => s.id === sourceId).path, eventId, sourceSha256,
+            eventDisposition, assertions, reason
+          })),
+        navigation: built.navigation, alignment: pkg.alignment ?? null,
+        moduleAccess: pkg.moduleAccess ?? null, sources: built.plan.inputFiles,
+        verification: {retained: pkg.module.retainedExampleIds, added: pkg.module.newExampleIds,
+          oracle: pkg.module.oracle, verifier: pkg.module.verificationScript},
+        coverage: "DECLARED_SOURCES_ONLY_NOT_SEMANTIC_ACCEPTANCE"
+      };
       return { status: "PLAN_READY", plan: `${output}/plan.json`, owner: built.plan.owner, approval: "REQUIRED",
-        note: "Review semanticPackage and pinned source/shared inputs. Derived approved reviews are inactive until this exact plan is explicitly confirmed." };
+        ownerView,
+        note: "Review this plan-bound meaning, constraints and gaps; open exact source selectors when needed. The full semanticPackage remains in the plan. Derived reviews stay inactive until explicit owner confirmation; this view is not independent acceptance." };
     }
     const plan = await read(root, `${output}/plan.json`);
     need(plan.schema === "context.preparation-plan.v1" && list(plan.inputFiles) && plan.inputFiles.length, "PACKAGE_PLAN_INVALID");

@@ -1,5 +1,36 @@
 # Framework Efficiency Transition
 
+## Course And Scoped Memory - 2.1.32
+
+Implement the existing constitutional priorities through scoped memory retrieval,
+a derived preparation owner view, course review in existing next-action evidence,
+and quiet unchanged ordinary health intervals. Retain explicit reset/deadline
+obligations, independent review and known facts from limited repository observation.
+No new role, scheduler, graph or plan. The accepted project profile remains local;
+durable human choices differ from temporary escalation exceptions.
+
+Apply the existing context-routing and own-transition adoption entries at natural
+safe boundaries without interrupting running work. Use known project/module anchors
+and source-backed contract constraints, preserve originals, pending memory and
+sole ownership. Reuse unchanged evidence, repair only demonstrated gaps. Observe
+the owner actually choose/apply the next action after a real accepted result, not
+merely acknowledge installation. Unsupported wake-up remains LIMITED. Separately
+scope any repository cleanup; no removal or product reorganization is granted here.
+
+Release verification: one full local run covered 1,852 tests (1,732 passed,
+104 skipped, 16 failed). All failures were resolved through scoped reruns:
+51 passed in adoption/wording checks; 132 passed and one skipped in affected
+mechanisms/docs, with one new fixture corrected and individually passed.
+The final LIMITED-inventory regression also passed individually. No full rerun.
+Framework validation and diff checks passed. Fresh independent code review
+initially held three defects: same-count partial inventory changes, hidden
+memory dispositions and mismatched approval hashes. Targeted re-review passed
+after repair; ordinary commits no longer change the LIMITED inventory trigger.
+These are isolated code/contract checks, not a real project's independent verdict.
+Whole-DOD savings, live participant application and project health remain unproved
+until their respective actual receipts exist; this transition is not a new runtime
+procedure and does not add the historical maintainer log to task context.
+
 ## Truthful Publication - 2.1.31
 
 Carry forward the 2.1.30 checkout, owner and participant evidence. Update affected actual checkouts at existing safe boundaries. The publication owner retains declared health findings and proves the existing guarded publication/readback on the current scoped Candidate; do not repeat product work or invent a fresh health verdict to satisfy the writer. Completion of kit adoption does not establish operational health, packaging readiness or product DOD economy.

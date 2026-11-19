@@ -98,7 +98,36 @@ test("unavailable registered worktrees produce LIMITED instead of a clean total"
   await rm(linked, {recursive: true, force: true});
   const result = await observeRepositoryHealth(root);
   assert.equal(result.status, "LIMITED"); assert.equal(result.reason, "WORKTREE_UNAVAILABLE");
-  assert.equal(result.dirtyCount, null);
+  assert.equal(result.head.sha, git(root, "rev-parse", "HEAD"));
+  assert.equal(result.branchCount, 2);
+  assert.equal(result.worktreeCount, 2);
+  assert.equal(result.dirtyCount, null); assert.deepEqual(result.worktrees, []);
+});
+
+test("over-limit worktree inventory retains verified counts without scanning dirt", async t => {
+  const root = await fixture(t), sha = git(root, "rev-parse", "HEAD");
+  const paths = await mkdtemp(path.join(tmpdir(), "repo-observation-linked-"));
+  t.after(() => rm(paths, {recursive:true,force:true}));
+  for (let i = 0; i < 32; i++)
+    git(root, "worktree", "add", "-q", "--detach", path.join(paths, String(i)));
+  await writeFile(path.join(root, "large.bin"), Buffer.alloc(2*1024*1024+1));
+  const result = await observeRepositoryHealth(root);
+  assert.equal(result.status, "LIMITED"); assert.equal(result.reason, "WORKTREE_LIMIT");
+  assert.equal(result.head.sha, sha); assert.equal(result.branchCount, 1);
+  assert.deepEqual(result.branches, [{name:"refs/heads/main",sha}]);
+  assert.equal(result.worktreeCount, 33);
+  assert.equal(result.dirtyCount, null); assert.deepEqual(result.worktrees, []);
+});
+
+test("oversized branch details retain counts within the observation limit", async t => {
+  const root = await fixture(t), sha = git(root, "rev-parse", "HEAD");
+  const refs = Array.from({length: 5000}, (_, i) => `${sha} refs/heads/branch-${i}-${"x".repeat(29)}\n`);
+  await writeFile(path.join(root, ".git", "packed-refs"), refs.join(""));
+  const result = await observeRepositoryHealth(root);
+  assert.equal(result.status, "LIMITED"); assert.equal(result.reason, "OBSERVATION_LIMIT");
+  assert.equal(result.head.sha, sha); assert.equal(result.branchCount, 5001);
+  assert.equal(result.worktreeCount, 1); assert.equal(result.dirtyCount, null);
+  assert.deepEqual(result.branches, []);
 });
 
 test("type changes are dirty and oversized actual ref output is LIMITED", async t => {
