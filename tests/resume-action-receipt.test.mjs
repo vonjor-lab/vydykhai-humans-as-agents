@@ -22,6 +22,20 @@ test("resume needs actual first action, not promise, send or ACK", () => {
   const ack = fixture(); ack.observed.kind="ACK";
   assert.equal(evaluateResumeReceipt(ack).status,"UNVERIFIED");
 });
+test("enrolled resume requires the matching route but still needs observed first action", () => {
+  const r=fixture();r.routingRequired=true;
+  assert.equal(evaluateResumeReceipt(r).status,"UNVERIFIED");
+  r.routing={boundary:"work-routing",work:r.work,revision:"brief-2",orchestrator:"manager",actor:r.owner,
+    purpose:"Inspect missing evidence",source:"saved",expectedOutput:"Evidence and limits",
+    operation:"investigate",evidenceNeed:"investigation"};
+  assert.equal(evaluateResumeReceipt(r).status,"PASS");
+  r.routing.actor="manager";
+  assert.equal(evaluateResumeReceipt(r).status,"MISMATCH");
+  r.routing.actor=r.owner;delete r.observed;
+  assert.equal(evaluateResumeReceipt(r).status,"UNVERIFIED");
+  r.effects="UNKNOWN";
+  assert.equal(evaluateResumeReceipt(r).status,"OUTCOME_UNKNOWN");
+});
 test("old turn or other scope cannot pass current resume", () => {
   for (const key of [...Object.keys(scope),"turnId"]) {
     const r=fixture(); r.observed[key]="old";
@@ -75,6 +89,17 @@ test("normal continuation observation consumes required resume instead of trusti
   assert.equal(evaluateProductionContinuation(state,activity,{now}).nextAction,"RECONCILE_RESUME");
   activity.owner.resumeReceipt=receipt;
   assert.equal(evaluateProductionContinuation(state,activity,{now}).coverage,"COVERED");
+  receipt.routing={boundary:"work-routing",work:"task",revision:"brief-2",actor:"worker",orchestrator:"manager",
+    purpose:"Inspect",source:"saved",expectedOutput:"facts",operation:"investigate",evidenceNeed:"investigation"};
+  activity.owner.routing={...receipt.routing,expectedOutput:"different work"};
+  assert.equal(evaluateProductionContinuation(state,activity,{now}).nextAction,"RECONCILE_ROUTING");
+  delete activity.owner.routing;delete receipt.routing;
+  receipt.effects="UNKNOWN";activity.owner.routingRequired=true;
+  assert.equal(evaluateProductionContinuation(state,activity,{now}).nextAction,"RECONCILE_RESUME");
+  activity.leaseKey=readLeaseActivityScope(state).key;
+  activity.leases=[{work:"task",...activity.owner}];
+  assert.equal(evaluateLeaseActivity(state,activity,{now}).nextActions[0].action,"RECONCILE_RESUME");
+  receipt.effects="RECONCILED";delete activity.owner.routingRequired;delete activity.leases;
   receipt.observed.sequence=9;
   assert.equal(evaluateProductionContinuation(state,activity,{now}).nextAction,"RECONCILE_RESUME");
   delete activity.owner;

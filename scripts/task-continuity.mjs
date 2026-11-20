@@ -7,6 +7,45 @@ const text = v => typeof v === "string" && v.trim() === v && v.length > 0 && v.l
   !/[\r\n\0]/.test(v) && !/<[^>]*>/.test(v);
 const identity = ["work", "revision", "checkpoint", "humanEvent", "contextEpoch"];
 
+// Route a coherent increment, not each tool call. This validates declarations;
+// the host must supply actual identities and evidence, not infer them from prose.
+export function evaluateWorkRouting(v, binding = {}) {
+  const result = (status, reason, route = null) => ({status, reason, route,
+    assurance:"DECLARED_EVIDENCE_ONLY", executionProven:false, replayAuthorized:false});
+  if (!object(v) || v.boundary !== "work-routing" ||
+      !["work","revision","orchestrator","actor","purpose","source","expectedOutput"].every(k => text(v[k])) ||
+      !["decide","coordinate","publish-state","lookup","investigate","implement","verify"].includes(v.operation) ||
+      !["ready","named-fact","investigation"].includes(v.evidenceNeed)) {
+    return result("UNVERIFIED", "current work, evidence need and acting context required");
+  }
+  for (const field of ["work","revision","actor","orchestrator"]) {
+    if (Object.hasOwn(binding, field) && (!text(binding[field]) || binding[field] !== v[field])) {
+      return result("MISMATCH", `routing belongs to another ${field}`);
+    }
+  }
+  const focused = v.evidenceNeed === "investigation" ||
+    ["investigate","implement","verify"].includes(v.operation);
+  if ((v.operation === "lookup" || v.evidenceNeed === "named-fact") &&
+      (v.operation !== "lookup" || v.evidenceNeed !== "named-fact" ||
+       !text(v.question) || !text(v.stopWhen))) {
+    return result("UNVERIFIED", "bounded lookup needs a named question and expansion stop condition");
+  }
+  if (focused && v.actor === v.orchestrator) {
+    return result("MISMATCH", "missing project evidence belongs to a focused execution context", "FOCUSED_CONTEXT");
+  }
+  return result("PASS", "declared route consistent; not dispatch, execution or native interception proof",
+    focused || v.actor !== v.orchestrator ? "FOCUSED_CONTEXT" : "CONTROL_CONTEXT");
+}
+
+function evaluateEnrolledRouting(v, revision = v.revision) {
+  if (v.routingRequired === undefined && !Object.hasOwn(v, "routing")) return null;
+  if (v.routingRequired !== undefined && typeof v.routingRequired !== "boolean") {
+    return {status:"UNVERIFIED", reason:"invalid routing enrollment"};
+  }
+  if (v.routingRequired === false && !Object.hasOwn(v, "routing")) return null;
+  return evaluateWorkRouting(v.routing, {work:v.work, revision, actor:v.owner});
+}
+
 // Projection of the existing assignment, not a second authority journal. Sequence
 // belongs to the original source, never to message delivery or compaction order.
 export function evaluateCurrentAssignment(v) {
@@ -86,6 +125,8 @@ export function evaluateTaskDisposition(v) {
     return hold("bounded cumulative attempt history unavailable");
   }
   if (v.attempts.some(a => a.outcome === "unknown")) return result("OUTCOME_UNKNOWN", "unknown attempt requires reconciliation");
+  const routing = evaluateEnrolledRouting(v);
+  if (routing && routing.status !== "PASS") return hold(routing.reason);
   const r = v.review;
   if (!object(r) || typeof r.required !== "boolean" || !Array.isArray(r.triggers) ||
       !r.triggers.every(t => ["acceptance","no-progress","handoff"].includes(t)) || !text(r.basis)) {
@@ -157,6 +198,8 @@ export function evaluateResumeReceipt(value) {
   if (value.pause !== "CLEARED" || value.effects !== "RECONCILED") {
     return result("UNVERIFIED", "pause authority or effects not reconciled");
   }
+  const routing = evaluateEnrolledRouting(value, value.taskIdentity?.current?.revision);
+  if (routing && routing.status !== "PASS") return result(routing.status, routing.reason);
   const dispatch = value.dispatch, observed = value.observed;
   if (!object(dispatch) || !text(dispatch.evidence) || !text(dispatch.turnId)) {
     return result("UNVERIFIED", "promise is not dispatch");

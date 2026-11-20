@@ -33,10 +33,11 @@ test('safe-boundary context choice preserves meaning without forced restart or e
 test('control evidence stays separate from content inspection without weakening review', () => {
   const contract = read('docs/workflows/framework-orchestrator.md');
   assert.match(contract, /decision-ready evidence: DOD coverage, artifact identity\/link, independent verdict/);
-  assert.match(contract, /Executors inspect and present images, code, detailed logs and calculations/);
-  assert.match(contract, /required independent reviewers inspect original artifacts separately/);
-  assert.match(contract, /explicit human request or a named contradiction unresolved by evidence/);
-  assert.match(contract, /never substitute an author's summary for required review/);
+  assert.match(contract, /focused tasks obtain missing evidence through broader document\/code review, technical inventory, research, visual work, implementation or verification, even when read-only/);
+  assert.match(contract, /required independent reviewers still use originals at existing gates/);
+  assert.match(contract, /narrow explicit human request to inspect a named artifact/);
+  assert.match(contract, /named contradiction unresolved by ready evidence/);
+  assert.match(contract, /not broader investigation, implementation or sign-off/);
   assert.match(read('.agents/skills/framework-orchestrator/SKILL.md'), /role-contract/);
 });
 

@@ -7,7 +7,7 @@ import { canonicalJson, sha256, compileExecutableBrief, checkPreparedContext } f
 import { moduleAccessPolicy, moduleExampleIds } from "./module-access.mjs";
 import { prepareAlignment } from "./context-alignment.mjs";
 import { checkProductNavigation, productReferenceIds } from "./context-navigation.mjs";
-import { evaluateTaskDisposition } from "./task-continuity.mjs";
+import { evaluateTaskDisposition, evaluateWorkRouting } from "./task-continuity.mjs";
 
 const CAPABILITY = "retained-progress-v1";
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -245,7 +245,9 @@ export async function runContextTransition(request, services = {}) {
     const readArtifactHash = async reference => artifactHash(reference, await bytes(reference.path));
     const task = await pinned(request.task);
     const checkDisposition = async () => {
-      if (services.dispositionRequired !== true) return;
+      requireThat(services.routingRequired === undefined || typeof services.routingRequired === "boolean", "WORK_ROUTING_UNAVAILABLE");
+      if (services.dispositionRequired !== true && services.routingRequired !== true &&
+          !Object.hasOwn(services, "readWorkRouting")) return;
       requireThat(typeof services.readTaskDisposition === "function", "TASK_DISPOSITION_UNAVAILABLE");
       const decision = await services.readTaskDisposition({taskId:task.id, owner:task.owner,
         taskSha256:request.task.sha256, operation:request.operation});
@@ -253,6 +255,17 @@ export async function runContextTransition(request, services = {}) {
         decision.revision === request.task.sha256 && decision.action === "execute",
       "TASK_DISPOSITION_BINDING_MISMATCH");
       requireThat(evaluateTaskDisposition(decision).status === "PASS", "TASK_DISPOSITION_HELD");
+      if (services.routingRequired === true || Object.hasOwn(services, "readWorkRouting") ||
+          decision.routingRequired === true || Object.hasOwn(decision, "routing")) {
+        requireThat(text(services.orchestrator) && typeof services.readWorkRouting === "function", "WORK_ROUTING_UNAVAILABLE");
+        const accepted = await services.readWorkRouting({taskId:task.id, owner:task.owner,
+          taskSha256:request.task.sha256, operation:request.operation});
+        requireThat(evaluateWorkRouting(accepted, {work:task.id, revision:request.task.sha256,
+          actor:task.owner, orchestrator:services.orchestrator}).status === "PASS", "WORK_ROUTING_HELD");
+        requireThat(decision.routing && hash(accepted) === hash(decision.routing), "WORK_ROUTING_BINDING_MISMATCH");
+        // Acceptance runs a verifier; a control label cannot turn it into a lookup.
+        if (request.operation === "accept") requireThat(task.owner !== services.orchestrator, "WORK_ROUTING_HELD");
+      }
     };
     schema(task, "context.task.v1", ["id", "owner", "workspace", "identity", "requiredCapabilities", "enforcement", "scope", "sourceSet",
       "classifications", "dependencies", "module", "memory", "memoryReview", "action", "newExampleIds", "candidateFiles", "allowLocalOverlay",

@@ -462,12 +462,13 @@ for (const route of ["execution", "discovery", "correction-and-acceptance"]) {
 if (manifest.actionReceiptPolicy?.policy !== "critical-transition-readback") {
   fail("Action Receipt policy must use critical-transition-readback");
 }
-for (const boundary of ["task-launch", "task-resume", "return-sync", "memory-reflection-and-detour", "protected-access", "acceptance-and-live-action", "side-effect-reconciliation"]) {
+for (const boundary of ["work-routing", "task-launch", "task-resume", "return-sync", "memory-reflection-and-detour", "protected-access", "acceptance-and-live-action", "side-effect-reconciliation"]) {
   if (!manifest.actionReceiptPolicy?.boundaries?.includes(boundary)) {
     fail(`Action Receipt policy is missing boundary: ${boundary}`);
   }
 }
 for (const [boundary, owner] of Object.entries({
+  "work-routing": "orchestrator",
   "task-launch": "orchestrator",
   "task-resume": "orchestrator",
   "return-sync": "orchestrator",

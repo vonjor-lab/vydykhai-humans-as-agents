@@ -88,6 +88,11 @@ test("pause and unknown effects hold; hard halt needs no reviewer", () => {
   assert.equal(evaluateTaskDisposition(r).status,"HELD");
   assert.equal(evaluateTaskDisposition(r).productAccepted,false);
 });
+test("unknown attempt retains reconciliation precedence over missing route", () => {
+  const r=receipt();r.routingRequired=true;
+  r.attempts=[{id:"unknown",hypothesis:"hypothesis",evidence:"partial",outcome:"unknown",escalated:false}];
+  assert.equal(evaluateTaskDisposition(r).status,"OUTCOME_UNKNOWN");
+});
 test("delivered consultation is not product acceptance; success needs product proof", () => {
   const r=receipt(); r.action="handoff"; r.review.verdict.decision="CONSULT"; r.review.verdict.reason="scope decision";
   assert.equal(evaluateTaskDisposition(r).status,"UNVERIFIED");
@@ -139,4 +144,67 @@ test("activity cannot treat stale revision or delivered consultation as executio
   r.handoff={retained:"artifact",alternatives:"options",decisionNeeded:"scope",resumeWhen:"decision",delivered:"receipt"};
   assert.equal(evaluateTaskDisposition(r).status,"PASS");
   assert.equal(evaluateProductionContinuation(state,activity,{now}).nextAction,"RECONCILE_DISPOSITION");
+});
+test("terminal result and blocker survive missing route without bypassing old disposition checks", () => {
+  const r=receipt();r.routingRequired=true;
+  const next={schemaVersion:1,id:"next",work:r.work,owner:r.owner,state:"WORKING",action:"inspect",evidence:"brief"};
+  const state='Orchestrator health: HEALTHY | Context: manager | Profile: low\n## Execution Leases\n| Work | State | Owner / context |\n| --- | --- | --- |\n| task | WORKING | owner |\n## Pending Return Inbox\n## Next-Best-Action\n```json\n'+JSON.stringify(next)+'\n```\n<!-- vydykhai:project-state:end -->';
+  const common={work:r.work,revision:r.revision,checkpoint:"saved",humanEvent:r.authority,contextEpoch:r.assignment.contextEpoch};
+  const now=Date.now();
+  const activity={schemaVersion:1,continuationKey:readProductionContinuation(state).key,observedAt:new Date(now).toISOString(),
+    orchestrator:{context:"manager",status:"IDLE",evidence:"native"},
+    owner:{context:r.owner,status:"IDLE",turnId:"turn",evidence:"native",dispositionRequired:true,disposition:r,
+      terminal:{turnId:"turn",status:"RESULT",evidence:"outbox-result"},
+      taskIdentity:{schemaVersion:1,current:{...common,owner:r.owner,evidence:"current"},
+        seen:{...common,turnId:"turn",evidence:"readback"},failedRestorations:[]}}};
+  const assess=()=>evaluateProductionContinuation(state,activity,{now});
+  assert.equal(assess().nextAction,"RECONCILE_RESULT");
+  activity.owner.terminal={turnId:"turn",status:"BLOCKED",evidence:"outbox-blocker",resumeWhen:"access restored"};
+  assert.equal(assess().nextAction,"RESOLVE_BLOCKER");
+  r.effects="UNKNOWN";
+  assert.equal(assess().nextAction,"RECONCILE_DISPOSITION");
+  assert.equal(evaluateTaskDisposition(r).replayAuthorized,false);
+});
+test("existing runner applies enrolled routing before commands, without another controller", async t => {
+  const f=await fixture(t);await f.prepare();
+  const r=receipt();Object.assign(r,{work:f.task.id,owner:f.task.owner,revision:f.request.task.sha256,routingRequired:true});
+  r.assignment=assignment(r);Object.assign(r.review.verdict,{work:r.work,revision:r.revision});r.review.application.owner=r.owner;
+  const services={dispositionRequired:true,readTaskDisposition:async()=>r};
+  const request={...f.request,operation:"resume"};
+  let result=await runContextTransition(request,services);
+  assert.equal(result.code,"TASK_DISPOSITION_HELD");assert.equal(result.stats.commands,0);
+  r.routing={boundary:"work-routing",work:r.work,revision:r.revision,orchestrator:r.owner,actor:r.owner,
+    purpose:"Obtain missing facts",source:"saved sources",expectedOutput:"Evidence and limits",
+    operation:"investigate",evidenceNeed:"investigation"};
+  result=await runContextTransition(request,services);
+  assert.equal(result.code,"TASK_DISPOSITION_HELD");assert.equal(result.stats.commands,0);
+  await assert.rejects(readFile(path.join(f.root,"actions.log")),{code:"ENOENT"});
+  r.routing.orchestrator="separate-manager";
+  result=await runContextTransition(request,services);
+  assert.equal(result.code,"WORK_ROUTING_UNAVAILABLE");assert.equal(result.stats.commands,0);
+  services.routingRequired=true;services.orchestrator="separate-manager";
+  const accepted=structuredClone(r.routing);services.readWorkRouting=async()=>accepted;
+  r.routing.expectedOutput="different work";
+  result=await runContextTransition(request,services);
+  assert.equal(result.code,"WORK_ROUTING_BINDING_MISMATCH");assert.equal(result.stats.commands,0);
+  r.routing.expectedOutput=accepted.expectedOutput;
+  result=await runContextTransition(request,services);
+  assert.equal(result.status,"ACTION_COMPLETED",JSON.stringify(result));
+  assert.equal(result.stats.dependentCommands,1);
+});
+test("runner verification cannot execute in manager under a control label or spoofed root", async t => {
+  const f=await fixture(t);await f.prepare();
+  const r=receipt();Object.assign(r,{work:f.task.id,owner:f.task.owner,revision:f.request.task.sha256});
+  r.assignment=assignment(r);Object.assign(r.review.verdict,{work:r.work,revision:r.revision});r.review.application.owner=r.owner;
+  const accepted={boundary:"work-routing",work:r.work,revision:r.revision,actor:r.owner,orchestrator:r.owner,
+    purpose:"Accept",source:"saved",expectedOutput:"acceptance",operation:"decide",evidenceNeed:"ready"};
+  r.routing=structuredClone(accepted);
+  const services={routingRequired:true,orchestrator:r.owner,readTaskDisposition:async()=>r,readWorkRouting:async()=>accepted};
+  const request={...f.request,operation:"accept"};
+  let result=await runContextTransition(request,services);
+  assert.equal(result.code,"WORK_ROUTING_HELD");assert.equal(result.stats.commands,0);
+  accepted.orchestrator=r.routing.orchestrator="fake-manager";
+  result=await runContextTransition(request,services);
+  assert.equal(result.code,"WORK_ROUTING_HELD");assert.equal(result.stats.commands,0);
+  await assert.rejects(readFile(path.join(f.root,"verifications.log")),{code:"ENOENT"});
 });

@@ -26,10 +26,10 @@ import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
 import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, readCapabilityAdoption, kitIdentity, assessUpdateAcceptance } from "./adoption-plan.mjs";
 import { classifyCheckpointReviews } from "./checkpoint-review.mjs";
-import { evaluateTaskIdentity, evaluateResumeReceipt, evaluateTaskDisposition } from "./task-continuity.mjs";
+import { evaluateTaskIdentity, evaluateResumeReceipt, evaluateTaskDisposition, evaluateWorkRouting } from "./task-continuity.mjs";
 import { readMemoryGraph, memoryStorageCommand } from "./memory-storage.mjs";
 import { section, tableRows, bulletFields } from "./artifact-markdown.mjs";
-export { evaluateTaskIdentity, evaluateResumeReceipt, evaluateTaskDisposition } from "./task-continuity.mjs";
+export { evaluateTaskIdentity, evaluateResumeReceipt, evaluateTaskDisposition, evaluateWorkRouting } from "./task-continuity.mjs";
 export { checkpointNoticeStillDue } from "./checkpoint-review.mjs";
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -1419,8 +1419,11 @@ export function evaluateExecutionReadiness(checks) {
   return { status, nextAction, blocked, unresolved };
 }
 
-function evaluateExecutionObservation(view, work) {
+function evaluateExecutionObservation(view, work, orchestrator) {
   const limited = (reason, nextAction = "RECOVER_OBSERVATION") => ({ coverage: "LIMITED", reason, nextAction });
+  const terminalObserved = view.status === "IDLE" && concreteLine(view.turnId) &&
+    view.terminal?.turnId === view.turnId && concreteLine(view.terminal?.evidence) &&
+    (view.terminal.status === "RESULT" || (view.terminal.status === "BLOCKED" && concreteLine(view.terminal.resumeWhen)));
   if (view.dispositionRequired === true || Object.hasOwn(view, "disposition")) {
     const receipt = view.disposition;
     if (!receipt || receipt.work !== work?.split(/\s/)[0] || receipt.owner !== view.context ||
@@ -1429,7 +1432,10 @@ function evaluateExecutionObservation(view, work) {
         receipt.authority !== view.taskIdentity.current.humanEvent) {
       return limited("current task disposition unavailable", "RECONCILE_DISPOSITION");
     }
-    const decision = evaluateTaskDisposition(receipt);
+    // Receiving a completed turn is not another dispatch. Preserve all existing
+    // authority checks, but do not lose its Return because route enrollment is missing.
+    const {routingRequired, routing, ...withoutRouting} = receipt;
+    const decision = evaluateTaskDisposition(terminalObserved ? withoutRouting : receipt);
     if (decision.status !== "PASS") return limited(decision.reason, "RECONCILE_DISPOSITION");
     if (receipt.action !== "execute") return limited("terminal disposition requires owner routing, not execution", "RECONCILE_DISPOSITION");
   }
@@ -1471,7 +1477,22 @@ function evaluateExecutionObservation(view, work) {
     const resume = evaluateResumeReceipt(receipt);
     if (resume.status !== "PASS") return { ...limited(resume.reason, "RECONCILE_RESUME"), ...identity };
   }
-  return { coverage: "COVERED", signal: null, nextAction: null, ...identity };
+  const sources = [view, view.resumeReceipt, view.disposition].filter(Boolean);
+  if (sources.some(source => Object.hasOwn(source, "routingRequired") && typeof source.routingRequired !== "boolean")) {
+    return { ...limited("invalid routing enrollment", "RECONCILE_ROUTING"), ...identity };
+  }
+  const routingSources = sources.filter(source =>
+    (source.routingRequired === true || Object.hasOwn(source, "routing")));
+  for (const source of routingSources) {
+    const routing = evaluateWorkRouting(source.routing, {work:work?.split(/\s/)[0],
+      revision:view.taskIdentity?.current?.revision, actor:view.context, orchestrator});
+    if (routing.status !== "PASS") return { ...limited(routing.reason, "RECONCILE_ROUTING"), ...identity };
+  }
+  const distinctRoutes = [...new Set(routingSources.map(source =>
+    JSON.stringify(Object.fromEntries(Object.entries(source.routing).sort(([a], [b]) => a.localeCompare(b))))))];
+  if (distinctRoutes.length > 1) return { ...limited("conflicting current routes", "RECONCILE_ROUTING"), ...identity };
+  const routingKey = distinctRoutes.length ? sha256(distinctRoutes[0]) : null;
+  return { coverage: "COVERED", signal: null, nextAction: null, ...identity, routingKey };
 }
 
 export function evaluateProductionContinuation(content, activity, { now = Date.now(), maxAgeSeconds = 300 } = {}) {
@@ -1492,7 +1513,7 @@ export function evaluateProductionContinuation(content, activity, { now = Date.n
   if (record.value.state === "READY" && !orchestratorActive) signal = "ready step has no active coordinator";
   if (record.value.state === "WORKING") {
     if (!known(activity.owner, record.value.owner)) return limited("task activity unavailable");
-    const execution = evaluateExecutionObservation(activity.owner, record.value.work);
+    const execution = evaluateExecutionObservation(activity.owner, record.value.work, record.orchestrator);
     identityCoverage = execution.identityCoverage || "NOT_EVALUATED";
     if (execution.coverage === "LIMITED") return { ...limited(execution.reason), nextAction: execution.nextAction, identityCoverage };
     signal = execution.signal;
@@ -1511,7 +1532,7 @@ export function evaluateProductionContinuation(content, activity, { now = Date.n
 export function readLeaseActivityScope(content) {
   const orchestrator = content.match(/^Orchestrator health:.*\|\s*Context:\s*([^|\n]+)/m)?.[1]?.trim();
   const rows = tableRows(section(content, "## Execution Leases", ["## Pending Return Inbox"]), /^Work$/i);
-  return { key: sha256(JSON.stringify({ orchestrator, rows })),
+  return { key: sha256(JSON.stringify({ orchestrator, rows })), orchestrator,
     leases: rows.map(([work, state, owner]) => ({ work, state, owner })) };
 }
 
@@ -1559,9 +1580,9 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
       return limited(`conflicting activity for ${lease.work}`);
     }
     if (lease.state !== "WAITING" && activity.owner?.context === view.context) {
-      const primary = evaluateExecutionObservation(activity.owner, lease.work);
-      const current = evaluateExecutionObservation(view, lease.work);
-      if (["coverage", "identityCoverage", "identityKey", "signal", "nextAction", "reason"].some((field) => primary[field] !== current[field])) {
+      const primary = evaluateExecutionObservation(activity.owner, lease.work, scope.orchestrator);
+      const current = evaluateExecutionObservation(view, lease.work, scope.orchestrator);
+      if (["coverage", "identityCoverage", "identityKey", "routingKey", "signal", "nextAction", "reason"].some((field) => primary[field] !== current[field])) {
         return limited(`conflicting execution evidence for ${lease.work}`);
       }
     }
@@ -1587,7 +1608,7 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
   const taskIdentities = [];
   for (const { lease, view, dependencies } of entries.values()) {
     if (lease.state !== "WAITING") {
-      const execution = evaluateExecutionObservation(view, lease.work);
+      const execution = evaluateExecutionObservation(view, lease.work, scope.orchestrator);
       taskIdentities.push({ work: lease.work, context: view.context, coverage: execution.identityCoverage || "NOT_EVALUATED" });
       if (execution.coverage === "LIMITED") {
         const resumeActions = execution.nextAction === "RECONCILE_RESUME"
@@ -2308,7 +2329,8 @@ async function main() {
   if (command === "action-receipt") {
     if (!flags.input) throw new Error("action-receipt requires --input");
     const input = JSON.parse(await readFile(path.resolve(flags.input), "utf8"));
-    const result = input?.boundary === "task-disposition" ? evaluateTaskDisposition(input) : evaluateResumeReceipt(input);
+    const result = input?.boundary === "work-routing" ? evaluateWorkRouting(input)
+      : input?.boundary === "task-disposition" ? evaluateTaskDisposition(input) : evaluateResumeReceipt(input);
     console.log(JSON.stringify(result, null, 2));
     if (result.status !== "PASS") process.exitCode = 2;
     return;

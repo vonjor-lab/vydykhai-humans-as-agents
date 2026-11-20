@@ -1,5 +1,34 @@
 # Framework Efficiency Transition
 
+## Work Routing Boundary - 2.1.34
+
+Evolution Gate: application rule and implementation/adoption of the existing
+orchestrator/task boundary, not a constitutional change. Benefit: retain fast
+control decisions and narrow lookups without pulling technical investigation
+into the root context. Preserve partial findings, use a suitable existing owner
+for the remaining coherent outcome, and keep existing independent proof.
+Complexity: one Action Receipt boundary and the existing context-routing adoption
+requirement; no new role, controller, ledger, model policy or per-call review.
+Verdict: scoped independent review cleared after repairing host binding,
+terminal-result preservation, conflicting routes and unknown-outcome precedence.
+The single full local run had 1,890 tests: 1,781 passed, 104 skipped, five failed
+on the changing source tree (three frozen-source checks, one old wording check,
+one temporary line-budget failure). All five passed in the 13-test frozen
+compatibility rerun after repairs. Final scoped coverage passed 96 tests,
+including routing, resume, disposition, retained identity and adoption.
+Validation and whitespace checks passed. CI still checks the committed tree;
+these local checks do not prove live project behavior or savings.
+
+Existing activation owns safe-checkpoint review, repair or source-backed
+NO_CHANGE, and affected participant application. Activation and enrollment
+proof remain pending. The preflight checks declarations, not actual dispatch,
+execution, identity, native interception or whole-DOD savings. An enrolled
+runner must separately bind the nested receipt to the live host's accepted
+assignment route before a command: missing binding refuses execution,
+acceptance checks verification, and resume follows the accepted route. This
+only covers the enrolled runner. No product work is needed in framework
+maintenance to close the Candidate review.
+
 ## Product Meaning And Module Ownership - 2.1.33
 
 Connect existing product/plan/module records through navigation in the
