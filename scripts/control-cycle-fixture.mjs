@@ -133,7 +133,7 @@ console.log(JSON.stringify({ schema: 'context.observations.v1', candidateSha256:
     need(!result.stderr.trim(), "CYCLE_FIXTURE_CLI_STDERR"); return JSON.parse(result.stdout);
   };
   for (const [args, expected] of [
-    [["plan", "--input", packageRef.path, "--output", output], "PLAN_READY"],
+    [["plan", "--input", packageRef.path, "--output", output, "--compatibility", "legacy"], "PLAN_READY"],
     [["confirm", "--output", output, "--owner", pkg.owner, "--decision", "approved"], "PREPARED"],
     [["read", "--output", output, "--worker", pkg.task.worker], "DELIVERED"],
     ...(!deferAck ? [[["ack", "--output", output, "--worker", pkg.task.worker, "--evidence", evidence.path], "ACKNOWLEDGED"]] : [])

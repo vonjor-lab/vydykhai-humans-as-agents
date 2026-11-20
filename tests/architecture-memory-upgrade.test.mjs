@@ -52,7 +52,7 @@ test(`published ${version} updater retains unfinished work and exposes storage/a
   pkg.schema = "context.package.v3";
   pkg.alignment = null;
   await writeFile(path.join(target, "new-package.json"), JSON.stringify(pkg));
-  assert.equal(json(["context-prepare", "plan", "--input", "new-package.json", "--output", "new-prepared"], 1).code, "ALIGNMENT_REQUIRED");
+  assert.equal(json(["context-prepare", "plan", "--compatibility", "legacy", "--input", "new-package.json", "--output", "new-prepared"], 1).code, "ALIGNMENT_REQUIRED");
   const facts = { goal: "Deliver reusable bundles.", invariant: "Retain public output and owner decisions.",
     gap: "Independent case N1 exposes case-sensitive duplicate comparison.", acceptance: "Pass retained B1/B2 and new N1." };
   await writeFile(path.join(target, "architecture.md"), Object.values(facts).join("\n"));
@@ -61,7 +61,7 @@ test(`published ${version} updater retains unfinished work and exposes storage/a
     decisions: [{ moduleId: "buildBundle", boundaryChange: false, gapRef: "gap", existingRef: "public-contract",
       rationale: "Fix the declared comparison within the retained public module." }] };
   await writeFile(path.join(target, "new-package.json"), JSON.stringify(pkg));
-  assert.equal(json(["context-prepare", "plan", "--input", "new-package.json", "--output", "new-prepared"]).status, "PLAN_READY");
+  assert.equal(json(["context-prepare", "plan", "--compatibility", "legacy", "--input", "new-package.json", "--output", "new-prepared"]).status, "PLAN_READY");
   assert.equal(json(["context-prepare", "confirm", "--output", "new-prepared", "--owner", "module-owner", "--decision", "approved"]).status, "PREPARED");
   const alignment = JSON.parse(await readFile(path.join(target, "new-prepared/alignment.json"), "utf8"));
   assert.equal(alignment.coverage, "UNCHANGED_BOUNDARIES_DECLARED");

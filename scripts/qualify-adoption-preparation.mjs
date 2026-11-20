@@ -76,7 +76,8 @@ export async function prepareAdoptionContext(workspace, name, action) {
       '--output', output, ...args], {cwd: workspace, encoding: 'utf8', timeout: 30000}));
     need(result.status === expected, `ADOPTION_PREPARATION_${mode.toUpperCase()}:${result.code ?? result.status}`); return result;
   };
-  invoke('plan', ['--input', `${prefix}/package.json`], 'PLAN_READY');
+  // This historical fixture qualifies its legacy boundary, not product navigation.
+  invoke('plan', ['--input', `${prefix}/package.json`, '--compatibility', 'legacy'], 'PLAN_READY');
   const integrated = invoke('confirm', ['--owner', 'owner', '--decision', 'approved'], 'PREPARED');
   const delivery = invoke('read', ['--worker', 'worker'], 'DELIVERED');
   need(['1250', '1000', 'Tax', 'PAUSED'].every(term => delivery.context.includes(term)), 'PREPARATION_RECALL_INCOMPLETE');

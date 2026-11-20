@@ -157,7 +157,7 @@ test("published-kit update retains unfinished work through preparation, verifica
     question: "Retain the same implemented correction and add its declared module boundary", phase: "supplement",
     previous: { plan: await pin("prior/plan.json"), approval: await pin("prior/approval.json") } };
   await put("modular.json", next);
-  assert.equal(prepare("current", "plan", "--input", "modular.json").status, "PLAN_READY");
+  assert.equal(prepare("current", "plan", "--input", "modular.json", "--compatibility", "legacy").status, "PLAN_READY");
   assert.equal(prepare("current", "confirm", "--owner", next.owner, "--decision", "approved").status, "PREPARED");
   assert.equal(run("prior", "resume").code, "PACKAGE_SUPERSEDED");
   assert.equal(run("current", "awaiting-worker").status, "BLOCKED");

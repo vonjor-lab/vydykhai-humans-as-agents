@@ -47,7 +47,7 @@ async function ackFixture(t, corrected = false) {
   await put("package.json", pkg); await put("action.mjs", actionBody);
   const prepare = (mode, expected, ...args) => {
     const result = spawnSync(process.execPath, [path.join(source, "scripts/vydykhai.mjs"), "context-prepare", mode,
-      "--output", "prepared", ...args], { cwd: root, encoding: "utf8", timeout: 10000 });
+      ...(mode === "plan" ? ["--compatibility","legacy"] : []), "--output", "prepared", ...args], { cwd: root, encoding: "utf8", timeout: 10000 });
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.equal(JSON.parse(result.stdout).status, expected, result.stdout);
   };
@@ -558,7 +558,7 @@ async function nextWorkerRequest(x) {
   await x.f.put("next-package.json", pkg);
   const cli = path.join(x.runtime.packageRoot, "scripts/vydykhai.mjs");
   const prepare = (mode, status, ...args) => {
-    const result = spawnSync(process.execPath, [cli, "context-prepare", mode, "--output", "next-prepared", ...args],
+    const result = spawnSync(process.execPath, [cli, "context-prepare", mode, ...(mode === "plan" ? ["--compatibility","legacy"] : []), "--output", "next-prepared", ...args],
       { cwd: x.f.root, encoding: "utf8", timeout: 10000 });
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.equal(JSON.parse(result.stdout).status, status, result.stdout);

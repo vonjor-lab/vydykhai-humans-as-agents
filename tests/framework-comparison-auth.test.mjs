@@ -48,7 +48,7 @@ async function pendingFixture(t) {
     assert.equal(result.status, 0, result.stderr || result.stdout);
     return JSON.parse(result.stdout);
   };
-  const prepare = (mode, ...args) => cli("context-prepare", mode, "--output", "prepared", ...args);
+  const prepare = (mode, ...args) => cli("context-prepare", mode, ...(mode === "plan" ? ["--compatibility","legacy"] : []), "--output", "prepared", ...args);
   assert.equal(prepare("plan", "--input", "package.json").status, "PLAN_READY");
   assert.equal(prepare("confirm", "--owner", pkg.owner, "--decision", "approved").status, "PREPARED");
   assert.equal(prepare("read", "--worker", pkg.task.worker).status, "DELIVERED");

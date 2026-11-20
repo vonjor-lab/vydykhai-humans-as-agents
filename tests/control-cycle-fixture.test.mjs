@@ -95,12 +95,12 @@ test("registered public packet resolves original/current revisions and denies pr
   const pkg = await json(f.root, repaired.package);
   pkg.navigation.references.push({ id: "producer-leak", path: "candidate.mjs", quote: "export function", purpose: "Inspection", appliesTo: "preparation" });
   await f.put("attack.json", pkg);
-  const denied = cli(f.root, "context-prepare", "plan", "--input", "attack.json", "--output", "attack");
+  const denied = cli(f.root, "context-prepare", "plan", "--compatibility", "legacy", "--input", "attack.json", "--output", "attack");
   assert.equal(denied.code, "CONSUMED_MODULE_CONTEXT_FORBIDDEN");
   pkg.navigation.references.pop();
   pkg.task.candidateFiles.push("candidate.mjs");
   await f.put("attack-mutation.json", pkg);
-  assert.equal(cli(f.root, "context-prepare", "plan", "--input", "attack-mutation.json", "--output", "attack-mutation").code,
+  assert.equal(cli(f.root, "context-prepare", "plan", "--compatibility", "legacy", "--input", "attack-mutation.json", "--output", "attack-mutation").code,
     "CONSUMED_MODULE_MUTATION_FORBIDDEN");
   await assert.rejects(readFile(path.join(f.root, "consumer-output.json")), { code: "ENOENT" });
 });

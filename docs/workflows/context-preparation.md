@@ -8,25 +8,70 @@
 - **Evidence:** source/version applicability and coverage of the touched dependency chain; executor readback of material constraints. A hash proves identity, not understanding or semantic completeness.
 - **Failure and exit:** expose a specific missing or contradictory link for bounded discovery or memory repair; do not silently omit it. Once sufficient, stop; reopen only for an identified gap and return a targeted supplement, not repeated whole-packet preparation. Independent PRE remains required where the adopted mode requires it.
 
-
 The agent prepares a task from ordinary reviewed inputs using `context-prepare`; the person states the desired work and makes existing semantic decisions. No manual hash graph, test helper, provider call or hook installation is required.
 
 ## Inputs and ownership
+Use `examples/context-preparation/package-product.json` as the current input shape (`package.json` and `package-modular.json` are legacy fixtures). Paths are workspace-relative. Run the installed entry from that workspace. Copy the example into a separate scratch workspace; its Candidate deliberately lacks the new case-insensitive fix.
 
-Use `examples/context-preparation/package-modular.json` as the current input shape (`package.json` is the legacy v1 fixture). All paths are relative to the current workspace. Run from that workspace with the installed `scripts/vydykhai.mjs` entry. Copy the example into a separate scratch workspace to exercise it; its Candidate deliberately lacks the new case-insensitive fix.
-
-New prepared implementation tasks use [module-bound packages](module-context.md) (`context.package.v3`, including goal/necessity alignment); compatible `context.package.v1` declares owner, task/worker/scope/action/Candidate files, module boundary/oracle/verifier, original complete event exports, explicit event and assertion dispositions, relevant dependencies and existing shared artifacts. Every assertion names a unique literal source quote, scope, reason, target, supersession and any deferred trigger/owner gate. The builder computes byte ranges and hashes; it cannot decide meaning or certify unseen history. An event without assertions needs an explicit `no_change` or `evidence_only` decision. Missing classifications and unresolved required meaning block.
+New prepared implementation tasks use [module-bound packages](module-context.md) (`context.package.v3`, including goal/necessity alignment and the product navigation below); compatible `context.package.v1` declares owner, task/worker/scope/action/Candidate files, module boundary/oracle/verifier, original complete event exports, explicit event and assertion dispositions, relevant dependencies and existing shared artifacts. Every assertion names a unique literal source quote, scope, reason, target, supersession and any deferred trigger/owner gate. The builder computes byte ranges and hashes; it cannot decide meaning or certify unseen history. An event without assertions needs an explicit `no_change` or `evidence_only` decision. Missing classifications and unresolved required meaning block.
 
 Shared artifacts are paths or `{path,startMarker,endMarker}` selectors. Selected sections are pinned individually, including multiple sections in one file. Unrelated section changes do not invalidate that binding. Sources, oracle, verifier and declared dependencies retain their exact identities. Candidate implementation may change after preparation: acceptance verifies its current behavior against retained and new examples. Do not list mutable implementation as an immutable dependency unless that restriction is intended. In consume tasks, Candidate files are consumer wiring; the accepted producer release/contract is an immutable dependency, not mutable implementation. Pin bounded release identity/observed remote revision rather than scanning its source tree; hashing bytes is not model-context loading.
 
 Include agreed entry/mechanism, upstream and downstream public boundaries, actual runtime/test conditions and human-control decisions in the existing scoped sources/dependencies. Trace the promised result through every applicable delivery boundary, not only the next command: input, operation, retention, consumer selection and reopen when DOD requires them. Reuse contract/release/acceptance evidence; name unread, missing or incompatible links and their owner before dependent costly work. A declared link is not observed compatibility. Do not require irrelevant stages, inspect every implementation or repeat accepted checks; a gap holds only dependent action and may be the authorized work itself. Refresh changed evidence, not the whole packet. Never include secret values. Unexported human corrections and undeclared environment changes remain observation limits.
 
-## One ordinary path
+## Product Navigation In The Same Packet
 
+`navigation.product` selects existing records, not another graph or owner registry.
+Add `goalRef`, `outcomeRef`, `planRef`, nonempty `capabilityRefs`, and `modules`.
+References are ids in task-scoped `navigation.references`; quotes, coordinates and source identities are checked.
+Reuse one concise source section for related facts where appropriate. Do not copy
+the whole plan or create a new record per claim. Align `goalRef` with the accepted
+goal/necessity review; the owner checks meaning, not just matching identifiers.
+
+Each module-access entry has exactly one product row:
+```json
+{"id":"module-id","owner":"producer","ownerContext":"visible-producer-entry",
+ "ownerRef":"ownership","contractRef":"public-contract","route":"assist",
+ "authorityRef":"scoped-assignment","reason":"Bounded help; producer retains responsibility.",
+ "state":{"needed":{"status":"YES","referenceId":"goal"},
+          "implemented":{"status":"YES","referenceId":"accepted-source"},
+          "verified":{"status":"UNKNOWN","referenceId":null},
+          "available":{"status":"NO","referenceId":"consumer-gap"}}}
+```
+
+`state` keeps four independent facts; YES/NO needs an applicable reference;
+UNKNOWN may cite the limit or use null. Verification names revision/conditions;
+availability names the user scenario. Implementation proves neither. The row
+projects selected records, not inferred missing states.
+`contractRef` selects a declared accepted contract revision. To change the contract, retain that immutable baseline artifact in `contractFiles` and separately declare/cite the editable contract as an owned Candidate; acceptance reviews the new contract. Do not bind authority to editable text. `ownerContext` retains
+its durable human entry, even outside this project; it is not a workspace path
+or a command to create a chat. The host must prove the actual dispatch separately.
+`owner` routes to the current producer; the task worker must match. `assist`
+retains a different producer and needs an explicit scoped assignment reference.
+`transfer` is held as `PRODUCT_TRANSFER_PENDING`: finish the existing sole-lease
+handover, retire the former execution route and acknowledge the successor before
+preparing a current-owner package. Neither author identity nor an available subagent
+implicitly transfers responsibility. `integrate` is only for consumed modules;
+their private implementation remains inaccessible under module access policy.
+The consumer's own module has its own producer/assistant/transfer row.
+Plan confirmation, worker delivery/readback, supported command execution and
+acceptance bind the same navigation. An ownership/product change needs a new
+initial reviewed package, not a supplement that silently changes the assignment.
+Affected independent alignment reviews bind the product meaning too; no new
+review is required merely because the field is present. Legacy packets remain
+readable with `productCoverage`/`coverageBasis.product = LEGACY_UNCHECKED`, never
+certified adoption. New coverage is `SOURCE_BOUND_NOT_SEMANTIC_ACCEPTANCE`:
+checks establish structure and pinned declared evidence, not source authenticity,
+human permission, host interception, completeness or product acceptance. Product
+claims use immutable sources, never mutable Candidate excerpts. Fresh `plan`
+requires aligned product navigation; explicit `--compatibility legacy` is only
+for legacy preparation, not adoption. Already approved legacy packets stay readable.
+
+## One ordinary path
 Agent-side command sequence (replace paths/identities with the actual task):
 
 ```sh
-node scripts/vydykhai.mjs context-prepare plan --input package-modular.json --output prepared
+node scripts/vydykhai.mjs context-prepare plan --input package-product.json --output prepared
 node scripts/vydykhai.mjs context-prepare confirm --output prepared --owner module-owner --decision approved
 node scripts/vydykhai.mjs context-prepare read --output prepared --worker bundle-worker
 node scripts/vydykhai.mjs context-prepare ack --output prepared --worker bundle-worker --evidence worker-evidence.txt

@@ -1,5 +1,6 @@
 // Bind a necessity review to the existing brief, not to a second architecture registry.
 import { canonicalJson, sha256 } from "./memory-brief.mjs";
+import { productReferenceIds } from "./context-navigation.mjs";
 
 const keys = (v, names) => v && typeof v === "object" && !Array.isArray(v) &&
   Object.keys(v).sort().join("\0") === [...names].sort().join("\0");
@@ -35,8 +36,14 @@ export function alignmentBasis(pkg, navigation) {
     reviewRequired ||= d.boundaryChange;
   }
   const { review, ...meaning } = a;
+  if (navigation.product) {
+    productReferenceIds(navigation.product).forEach(use);
+    navigation.constraints.forEach(c => c.referenceIds.forEach(use));
+  }
   const basis = { schema: "context.alignment-basis.v1", owner: pkg.owner, task: pkg.task,
     module: pkg.module, moduleAccess: pkg.moduleAccess, outcome: navigation.outcome, alignment: meaning,
+    ...(navigation.product ? {product: navigation.product, preparedBy: pkg.navigation.preparedBy,
+      constraints: navigation.constraints, gaps: navigation.gaps} : {}),
     sources: [...selected.values()].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0) };
   return { basis, basisSha256: sha256(canonicalJson(basis)), reviewRequired };
 }

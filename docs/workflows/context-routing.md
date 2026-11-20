@@ -7,7 +7,8 @@ This implements the preparation branch of [Module Delivery](module-delivery.md) 
 ### Execution Context At A Safe Boundary
 At every dispatch or material resume, including focused Discovery and Lab, the owner uses the existing startup/lease to choose sufficient context and model for the remaining accepted outcome. Keep one authoritative decision/readback in the existing assignment or lease; Startup and Task Map reference that same record and revision, not independent copies. Reuse sufficient preparation and its delivery-boundary trace; do not create another packet or approval to make this decision. Record the choice before deriving the native call parameters, not retrospectively from what the host happened to inherit:
 
-- **Context:** selected source-backed meaning, public contracts, artifacts and exact gaps by default; retain originals outside the active input. Reuse a suitable unfinished owner when it avoids more transfer/rework than it creates. Full-history inheritance needs a scoped reason; same topic or familiarity alone is insufficient. Completion of computation may leave storage/presentation repair: carry its relevant evidence, not the whole implementation history.
+- **Context:** select source-backed meaning, public contracts, artifacts and exact gaps; keep originals addressable. Reuse a suitable unfinished executor when it helps. Full-history inheritance needs a scoped reason; same topic or familiarity alone is insufficient. For remaining storage/presentation work, carry the relevant evidence, not the whole implementation history.
+- **Module ownership:** prefer the suitable owner's visible chat for module decisions and authorized changes, even in another project, when access, scope and delivery allow. The owner remains accountable for the module; the executor owns the increment and may use bounded subagent help without transferring ownership. The owner can route fresh execution where needed. If unsuitable or unavailable, use the existing handoff for explicit accepted transfer at a safe boundary or an owned wait. Preserve scope, decisions, sources, effects, pauses and the sole execution lease; no silent reassignment or original-author veto. Cross-project routing grants no access, disclosure or mutation permission.
 - **Profile:** accepted project-local task-class model/effort and its evidence, or a named capability, availability or human-choice exception. A durable human-selected project profile overrides the generic default until explicitly changed; it is not a temporary recovery exception. A temporary exception has a return condition, is reconsidered on material resume and expires at task completion; successors do not inherit it. The owner decides within accepted authority; exceeding that authority needs a human decision, not repeated technical permission. Repeated exceptions trigger the existing Health Review rather than perpetual renewal.
 - **Host path:** whether the permitted route can set context inheritance and model/effort. Supply supported parameters explicitly from this decision. Unsupported selection is LIMITED/inherited before launch, never a claimed switch; use a sufficient authorized fallback or retain the exact gap. An omitted model setting is not evidence of economical selection. No host limitation relaxes safety, scope, budget or required review.
 
@@ -81,16 +82,16 @@ Mode names describe work, not automatic model assignments. Preparation locates k
 | --- | --- |
 | Current sufficient context | Direct execution; no preparer or additional approval. |
 | Known evidence is scattered | Owner-scoped Preparation, checked packet, then its intended consumer. |
-| Meaning or solution is unresolved | Bounded deep Discovery; preparation may supply facts, not the decision. |
+| Meaning or solution is unresolved | Bounded Discovery; preparation supplies facts, not the decision. Use a focused user-visible chat when useful for a multi-turn user discussion, not for every question or handoff. |
 | Experimental proof is needed | Lab keeps baseline, variable, conditions and cap; preparation finds prior evidence, never substitutes a fixture for real-flow proof. |
-| Integration or repair | Map consume/change/create under the Module Contract: consume a fixed release through its public interface without producer-source reading; internal repair requires explicit change scope. Unknown design returns to Discovery, not guessed adapters. |
+| Integration or repair | Use the [Module Contract](module-contract-template.md#use-change-or-create): connect a fixed release; route producer change to its owner under explicit change scope, not into the integration. Unknown design returns to Discovery, not guessed adapters. |
 | Maintenance | Same routing by question; prove the original flow improved and return to it, not maintenance for its own sake. |
 | Documentation and memory | Executor verifies required docs in the Candidate; orchestrator accepts reusable memory candidates. |
 | Guard, update or rotation | Existing liveness/activation rules; no retrieval timer or forced model/worker restart. Carry pending consultations and human control forward. |
 
 Lab is isolation, not a model tier: unresolved solution choices use Discovery; execution of an agreed experiment uses its proven execution profile or explicit human model choice. Its proof does not silently authorize production transfer.
 
-Research starts with the known scope, authoritative sources, explicit gaps and a permitted report route; it does not need the complete implementation packet that it is supposed to discover. Missing inputs do not authorize dependent mutation. Do not recursively require preparation of preparation. Reuse a Discovery packet when sufficient for implementation; no automatic extra retrieval stage. An unresolved owner decision goes to that owner, not another search round. Preparation has its own bounded retrieval result/lease, not ownership of the implementation Candidate. While it runs, the affected executor waits on that named dependency; the preparer never waits on the same executor. Return consumption resumes the existing consumer under current authority, not a competing task. Respect direct human control: a supplement supplies facts, not a new direction.
+Research starts with known scope, authoritative sources, exact gaps and a permitted return route, not a complete implementation packet. Missing inputs do not authorize dependent mutation. Discovery returns a concise Decision Packet: approved decisions and why, rejected alternatives or hypotheses, affected boundaries and evidence limits, open questions/owners and source references. Return an unapproved choice as a proposal, not a decision; no full transcript. The packet navigates to authority, never supplies it. Reuse it when sufficient; do not prepare a preparation task or search again for a decision its owner must make. Preparation owns its retrieval result, not the implementation Candidate; the affected executor waits only on that dependency, never in a circular wait. A supplement provides facts, not new direction or authority; consumption resumes the existing authorized work.
 
 ## Initial Handoff and Later Gaps
 1. The orchestrator sets a bounded question, source routes, required contracts,
@@ -99,11 +100,10 @@ Research starts with the known scope, authoritative sources, explicit gaps and a
    reviews coverage, source meaning, citations and audience before confirmation.
    Invalid packets use the existing bounded repair/fallback path, not repeated
    full searches or delivery as if complete. Reuse valid findings on fallback.
-2. A new implementation starts in a fresh executor without the preparer's transcript.
+2. A new prepared implementation starts in a fresh execution context without the preparer's transcript; this does not replace the durable module owner.
    The executor reads/acknowledges and starts authorized work in the same turn.
    Reuse the same worker for later supplements unless the authorized safe-boundary context pivot in `memory-recall.md` requires a fresh executor; preserve logical task, effects and spend, never replay finished work.
-   Preparation for a manager/Discovery decision returns scoped evidence to that
-   existing owner instead; it does not create an implementation task prematurely.
+   Preparation for a manager/Discovery decision returns scoped evidence to that existing owner instead; it does not create an implementation task prematurely.
 3. At a real gap, the executor reports the exact missing fact, affected operation
    and retained progress to the orchestrator. Continue independent safe work.
    The orchestrator distinguishes missing evidence, new solution design and

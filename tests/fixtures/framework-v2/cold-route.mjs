@@ -138,7 +138,7 @@ export async function coldFixture(t, {missingTarget = false} = {}) {
   const reader = await openReviewSources(registryFile);
   const plan = async (pkg, name) => {
     await put(`${name}.json`, pkg);
-    const executed = cli(path.join(root,"scripts/vydykhai.mjs"), "context-prepare", "plan", "--input", `${name}.json`, "--output", name);
+    const executed = cli(path.join(root,"scripts/vydykhai.mjs"), "context-prepare", "plan", "--compatibility", "legacy", "--input", `${name}.json`, "--output", name);
     const result = {exit:executed.exit, ...JSON.parse(executed.output)};
     return {...result, ...(result.status === "PLAN_READY" ? {saved:JSON.parse(await readFile(path.join(root,result.plan),"utf8"))} : {})};
   };

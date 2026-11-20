@@ -115,7 +115,7 @@ test("structural route: composite acceptance preserves child obligations without
   assert.match(contract, /child constraints, failures, side effects and operational requirements/);
   assert.match(contract, /child public contracts, not their private algorithms/);
   assert.match(contract, /children passing alone does not establish the composite's acceptance/);
-  assert.match(contract, /Record parent\/child composition in this map/);
+  assert.match(contract, /record parent\/child composition where it exists/);
 });
 
 test("structural route: completeness and cheap preparation cannot override accepted module context boundaries", async () => {
@@ -131,9 +131,9 @@ test("structural route: completeness and cheap preparation cannot override accep
 
 test("structural route: all roles navigate one map with explicit selected releases", async () => {
   const contract = await source("docs/workflows/module-contract-template.md");
-  for (const phrase of ["goal/brief -> capability -> stable module/composite id",
+  for (const phrase of ["Link actor outcomes and capabilities to stable module IDs",
     "latest available release from actually selected environment bindings",
-    "A diagram is a view of these same entries", "not a separately maintained truth"])
+    "A diagram projects the same entries", "not a separately maintained truth"])
     assert.ok(contract.includes(phrase), phrase);
   const route = await source("docs/workflows/module-context.md");
   for (const phrase of ["Orchestration binds", "preparation retrieves", "Discovery resolves",

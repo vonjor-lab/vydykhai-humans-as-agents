@@ -6,6 +6,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { canonicalJson, sha256, compileExecutableBrief, checkPreparedContext } from "./memory-brief.mjs";
 import { moduleAccessPolicy, moduleExampleIds } from "./module-access.mjs";
 import { prepareAlignment } from "./context-alignment.mjs";
+import { checkProductNavigation, productReferenceIds } from "./context-navigation.mjs";
 import { evaluateTaskDisposition } from "./task-continuity.mjs";
 
 const CAPABILITY = "retained-progress-v1";
@@ -262,6 +263,7 @@ export async function runContextTransition(request, services = {}) {
       list(task.newExampleIds, id, false) && unique(task.newExampleIds) && list(task.candidateFiles, text) && unique(task.candidateFiles) &&
       typeof task.allowLocalOverlay === "boolean");
     let alignmentCoverage = "LEGACY_UNCHECKED";
+    let productCoverage = "LEGACY_UNCHECKED";
     let packetBinding = null;
     const checkPackageApproval = async () => {
       if (!Object.hasOwn(task, "packageApproval")) return;
@@ -291,6 +293,22 @@ export async function runContextTransition(request, services = {}) {
       // This one explicit decision is provenance for all exact derived reviews.
       // No derived review is an additional independently made approval.
       for (const r of [...plan.inputFiles, ...plan.artifacts]) requireThat(await readArtifactHash(r) === r.sha256, "PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
+      if (Object.hasOwn(plan.semanticPackage?.navigation ?? {}, "product")) {
+        const pkg = plan.semanticPackage;
+        requireThat(pkg.schema === "context.package.v3", "PRODUCT_ALIGNMENT_REQUIRED");
+        const r = plan.artifacts.find(r => r.path === `${path.posix.dirname(request.task.path)}/navigation.json`);
+        requireThat(r, "PRODUCT_NAVIGATION_INVALID");
+        const navigation = await pinned(r);
+        requireThat(hash(navigation.product) === hash(pkg.navigation.product), "PRODUCT_NAVIGATION_CHANGED");
+        try { checkProductNavigation(navigation.product, pkg.task, navigation.references, pkg.moduleAccess?.modules); }
+        catch (e) { throw new ContextError(/^PRODUCT_[A-Z_]+$/.test(e.message) ? e.message : "PRODUCT_NAVIGATION_INVALID"); }
+        for (const id of productReferenceIds(navigation.product)) {
+          const r = navigation.references.find(r => r.id === id);
+          requireThat(![...pkg.task.candidateFiles,...pkg.module.implementationFiles].includes(r.path), "PRODUCT_SOURCE_MUTABLE");
+          requireThat(sha256(await bytes(r.path)) === r.sha256, "PRODUCT_SOURCE_CHANGED");
+        }
+        productCoverage = "SOURCE_BOUND_NOT_SEMANTIC_ACCEPTANCE";
+      }
       if (plan.semanticPackage?.schema === "context.package.v3") {
         const artifact = name => {
           const r = plan.artifacts.find(r => r.path === `${path.posix.dirname(request.task.path)}/${name}.json`);
@@ -523,13 +541,14 @@ export async function runContextTransition(request, services = {}) {
         latest.dependencyDigest === snapshot.dependencyDigest, `CONTEXT_CHANGED_${phase}`);
       gate("bind", { ...prepared, envelope, atomicRender }, latest);
       for (const reference of references) requireThat(sha256(await bytes(reference.path)) === reference.sha256, "ARTIFACT_HASH_MISMATCH");
-      if (phase !== "BEFORE_ACTION") await checkPackageApproval();
+      await checkPackageApproval();
     };
     await recheck();
     const basis = { sourceDigest: snapshot.sourceDigest, dependencyDigest: snapshot.dependencyDigest,
       unknownHistory: "outside declared exports", requiredAssertionIds: bound.requiredAssertionIds,
       moduleAccess: Object.hasOwn(module, "access") ? "DECLARED_BOUNDARIES" : "LEGACY_UNCHECKED",
       alignment: alignmentCoverage,
+      product: productCoverage,
       processIsolation: "NOT_ENFORCED", replayProtection: "CALLER_OWNED" };
     if (request.operation === "prepare") return { status: "PREPARED", operation: "prepare", enforcement: "reference", coverageBasis: basis, capsule, sourceReceipt, stats };
     requireThat(request.readback !== null, "WORKER_READBACK_REQUIRED");
@@ -555,7 +574,7 @@ export async function runContextTransition(request, services = {}) {
         binding: {operation: request.operation, taskId: task.id, taskSha256: request.task.sha256, capsuleSha256: request.capsule.sha256,
           sourceDigest: snapshot.sourceDigest, dependencyDigest: snapshot.dependencyDigest,...(confined?{confined:structuredClone(confined)}:{})},
         recheck: () => recheck("BEFORE_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef])}
-        : services.dispositionRequired === true ? {binding:{operation:request.operation}, recheck:checkDisposition} : null;
+        : {binding:{operation:request.operation}, recheck:() => recheck("BEFORE_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef])};
       const result = await command(task.action, root, resolvePath, stats, {}, "dependent", admission);
       await recheck("DURING_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef]);
       return { status: "ACTION_COMPLETED", operation: "resume", enforcement: "reference", coverageBasis: basis,
@@ -580,7 +599,7 @@ export async function runContextTransition(request, services = {}) {
         sourceDigest: snapshot.sourceDigest, dependencyDigest: snapshot.dependencyDigest, candidateSha256: before.sha256},
       recheck: () => recheck("BEFORE_ACTION", [task.module, task.memoryReview, request.capsule, request.readback,
         readback.evidenceRef, module.oracle, module.verificationScript])}
-      : services.dispositionRequired === true ? {binding:{operation:request.operation}, recheck:checkDisposition} : null;
+      : {binding:{operation:request.operation}, recheck:() => recheck("BEFORE_ACTION", [task.module, task.memoryReview, request.capsule, request.readback, readback.evidenceRef, module.oracle, module.verificationScript])};
     const result = await command(spec, root, resolvePath, stats, { VYDYKHAI_CANDIDATE_SHA256: before.sha256,
       VYDYKHAI_ORACLE_SHA256: module.oracle.sha256, VYDYKHAI_REQUIRED_EXAMPLES: JSON.stringify(requiredExamples) }, "verification", admission);
     requireThat((await candidateIdentity()).sha256 === before.sha256, "CANDIDATE_CHANGED_DURING_VERIFICATION");

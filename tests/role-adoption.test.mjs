@@ -22,8 +22,9 @@ test("existing adoption carries actual routing proof without a new role", async 
   const manifest = JSON.parse(await read("vydykhai.json"));
   const route = manifest.adoptionRequirements.filter(r => r.id === "context-routing");
   assert.equal(route.length, 1);
-  assert.match(route[0].action, /actual participant model\/effort/);
-  assert.match(route[0].action, /whole-chain spend and unknowns/);
+  assert.match(route[0].action, /actual native model\/effort/);
+  assert.match(route[0].action, /preparation, execution, review, recovery and coordination/);
+  assert.match(route[0].action, /unknown costs stay owned and pending/);
   assert.deepEqual(Object.keys(manifest.agentRoutingPolicy.profiles).sort(),
     ["discovery", "execution", "orchestrator", "preparation"]);
 });

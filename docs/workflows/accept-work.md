@@ -14,7 +14,7 @@ Use source precedence:
 
 Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory Brief and [Context Route](context-route.md), touched [Module Contracts](module-contract-template.md), any [Executable Memory Brief](memory-brief-envelope.md) plus its application receipt, material task-local pivots, targeted orchestrator patches, and any `Rejected Candidate` used as evidence. Compare actual scope with the inherited constraints and affected consumers; local green tests do not prove an unexercised cross-boundary outcome. Do not reconstruct unrelated Project State, raw meeting history, or the full Project Memory Graph. Summarize:
 
-- goal and DOD impact;
+- actor outcome, needed capability, touched module/contract and evidenced DOD impact;
 - scope/out of scope;
 - scope freshness and baseline/candidate references;
 - product loop or linked enabler;
@@ -34,10 +34,10 @@ Identify the `Accepted Baseline`, current `Candidate`, contract-supplied Memory 
 
 ## 2. Inspect Delivery
 
-For ordinary execution, self-check the whole useful outcome against DOD. Apply the shared managed mandate and record the risk decision in the Return. The owner can accept a bounded reversible change with direct evidence. When final REVIEW is due, supply the exact Candidate, original scope/sources, successful and negative proof, required docs and retained findings to a fresh reviewer. The reviewer judges the entire promised boundary; missing/stale evidence cannot pass. After a failed final review, retain findings and return to the same executor; re-review the corrected whole Candidate with current evidence. Combine applicable consumer/course proof in this review when its contract covers it. Preserve human authority and the protected-host exception in [mode selection](independent-control.md#select-and-prove-the-mode); no new reviewer-of-preparer or per-attempt gate.
+For ordinary execution, self-check the whole useful outcome against DOD. Apply the shared managed mandate and record the risk decision in the Return. The owner can accept a bounded reversible change with direct evidence. When final REVIEW is due, supply the exact Candidate, original scope/sources, successful and negative proof, required docs and retained findings to a fresh reviewer. The reviewer judges the entire promised boundary; missing/stale evidence cannot pass. After a failed final review, retain findings and return to the owning task, keeping the executor unless a safe transfer is needed. Re-review the corrected whole Candidate with current evidence. Combine applicable consumer/course proof in this review when its contract covers it. Preserve human authority and the protected-host exception in [mode selection](independent-control.md#select-and-prove-the-mode); no new reviewer-of-preparer or per-attempt gate.
 
 Review changed behavior, files/artifacts, Module Contracts and other docs, tests, smoke, unresolved comments, and participant impact. Compare documentation with current code and accepted behavior; disagreement is evidence, not a reason to choose one silently. Ignore unrelated local changes unless they affect acceptance.
-For `consume`, prove the public connection and unchanged producer release, not a producer code review. For `change/create`, also require the human-agreed boundary, owned implementation/contract updates and versioned Candidate. Packaged readiness requires an independent consumer using only public documentation, the released artifact/endpoint and declared dependencies; private imports, hidden tuning, hand-carried intermediates or internal edits fail that claim. Readiness remains scoped pending rather than silently widening an integration task. See `module-contract-template.md#use-change-or-create`.
+For `consume`, prove the public connection using the unchanged producer release; route any producer change to its owner under separate change scope. For `change/create`, require the human-agreed boundary, owned implementation/contract updates and versioned Candidate. Packaged readiness requires independent connection using only public documentation, the released artifact/endpoint and declared dependencies; private imports, hidden tuning, hand-carried intermediates or internal edits fail that claim. Leave unproven readiness pending rather than widening integration. See [Use, Change Or Create](module-contract-template.md#use-change-or-create).
 For claimed autonomous multi-stage behavior, check the brief's control coverage: detection, operation selection, feedback, alternatives and termination are owned inside the module, not supplied by a supervising task or human between stages. A saved intermediate proves only the downstream boundary it actually exercises. Retain useful assisted demonstrations as evidence, but never promote them to autonomous acceptance. Newly added rejection gates or internal helper tests do not establish the full successful input-to-output path. Uncovered required transitions stay `NEEDS_FIXES` or pending evidence within the agreed scope; ask the orchestrator to resolve only genuinely new scope/authority, not to approve each ordinary correction. Independent consumer proof still uses public contracts, not internal control inspection.
 
 ## 3. Verify Exact Current Code
@@ -72,7 +72,7 @@ Check:
 - promised DOD movement;
 - parent closure versus accepted sub-slice;
 - preserved/replaced/added/remaining progress after any patch, split, or re-brief;
-- visible product/operator loop or explicitly linked enabler;
+- visible product/operator loop or linked enabler: distinguish what is needed, implemented, verified for a specific revision under stated conditions, and actually available to the intended actor. When availability is claimed, require evidence of the selected revision, environment, access and representative user path; a release or lab pass is not that evidence;
 - backing data/backend/permissions/recovery for UI work;
 - Lab proof followed by production transfer and real-flow verification;
 - Candidate ancestry and experiment decision; a Rejected Candidate is evidence, not the implicit correction base;
@@ -117,7 +117,7 @@ Apply [Return Authorization](task-context-handoff-template.md#return-authorizati
 
 - report DOD impact, human checkpoint, burn, verification, merge, risks, and recommended orchestrator action; the orchestrator applies [Course Review](framework-orchestrator.md#course-review) to decide parent state and next-best-action, without another preparer or repeated task review.
 - for an enabler, report `Unlocks`, `Still missing`, and the next product slice/owner; do not close the parent from technical completion alone.
-- classify each follow-up as a required DOD gap or optional `IDEA` candidate; optional ideas do not keep the accepted task or parent open by themselves.
+- distinguish required DOD gaps, retained commitments and optional `IDEA` candidates. A deferred keep retains its reason, owner and review trigger in the existing record. Accept only the proved scope; neither close a retained obligation automatically nor repeat unchanged reminders. Optional ideas alone do not keep an accepted task or parent open.
 - report graph nodes applied, confirmed, refined, superseded, or contradicted; keep local-only lineage in the task.
 - report `Documentation impact: NONE` only after checking purpose/boundary, inputs, outputs/consumers, algorithm/invariants, accepted behavior, operational dependencies, and verification; otherwise require the exact Module Contract update in the same Candidate and return its files/sections plus affected graph anchors. Missing required documentation is `NEEDS_FIXES`; the orchestrator integrates graph meaning/routes, not product documentation.
 - report `Memory Brief result` item by item as `applied / missed / contradicted / not exercised`; a miss is evidence for orchestrator-owned Memory Reflection and a representative regression scenario.

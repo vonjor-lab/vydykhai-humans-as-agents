@@ -38,7 +38,7 @@ test('terminal wait and fresh compact read preserve one task and source authorit
   };
   const prepare = (mode,...args) => invoke('context-prepare',mode,'--output','prepared',...args);
   const run = mode => invoke('context-run','--input',`prepared/${mode}.json`);
-  assert.equal((await prepare('plan','--input','package.json')).status,'PLAN_READY');
+  assert.equal((await prepare('plan','--input','package.json','--compatibility','legacy')).status,'PLAN_READY');
   assert.equal((await prepare('confirm','--owner','module-owner','--decision','approved')).status,'PREPARED');
   const checkpoint = await get('prepared/awaiting-worker.json');
   await put('checkpoint-before.json',JSON.parse(checkpoint));

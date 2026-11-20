@@ -318,7 +318,7 @@ for (const arm of ["baseline", "candidate"]) test(`zero-inference v3 preparation
   // Authored fixture only. No model, worker acknowledgment, action or acceptance.
   await writeFile(path.join(workspace, "format-package.json"), originalPackage);
   for (const [mode, extra, status] of [
-    ["plan", ["--input", "format-package.json"], "PLAN_READY"],
+    ["plan", ["--input", "format-package.json", ...(arm === "candidate" ? ["--compatibility", "legacy"] : [])], "PLAN_READY"],
     ["confirm", ["--owner", "owner", "--decision", "approved"], "PREPARED"],
     ["read", ["--worker", "worker"], "DELIVERED"]
   ]) {

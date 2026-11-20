@@ -7,6 +7,7 @@ import path from "node:path";
 import { spawnSync, spawn } from "node:child_process";
 import { once } from "node:events";
 import { acquirePreparationLock, recoverPreparationLock } from "../scripts/context-prepare.mjs";
+import { runContextTransition } from "../scripts/context-run.mjs";
 import { mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { createHash, randomUUID } from "node:crypto";
 import { nativeActionCommand, hookEventKey } from "../scripts/context-hook.mjs";
@@ -41,6 +42,154 @@ async function reviewPackage(w, pkg, decision = "fit", reviewer = "independent-r
   pkg.alignment.review = { path: "alignment-review.json", sha256: createHash("sha256").update(await readFile(path.join(w.root, "alignment-review.json"))).digest("hex") };
   await w.put("package.json", pkg); return pkg;
 }
+async function productPackage(w, boundaryChange = false) {
+  const pkg = await alignedPackage(w,boundaryChange);
+  pkg.navigation.product = {goalRef:"goal",outcomeRef:"acceptance",planRef:"gap",capabilityRefs:["public-contract"],
+    modules:[{id:"buildBundle",owner:"module-owner",ownerContext:"external-module-chat",ownerRef:"public-contract",
+      contractRef:"public-contract",route:"assist",authorityRef:"invariant",reason:"Scoped help under retained producer ownership.",
+      state:{needed:{status:"YES",referenceId:"goal"},implemented:{status:"YES",referenceId:"public-contract"},
+        verified:{status:"UNKNOWN",referenceId:null},available:{status:"NO",referenceId:"gap"}}}]};
+  return pkg;
+}
+
+test("product route binds owner view, worker readback and actual command acceptance", async t => {
+  const w=await workspace(t),pkg=await productPackage(w);
+  await w.put("package.json",pkg);
+  const plan=w.plan(); assert.equal(plan.status,"PLAN_READY",JSON.stringify(plan));
+  assert.deepEqual(plan.ownerView.navigation.product,pkg.navigation.product);
+  assert.equal(plan.ownerView.productCoverage,"SOURCE_BOUND_NOT_SEMANTIC_ACCEPTANCE");
+  assert.equal(w.confirm().status,"PREPARED");await w.acknowledge();
+  const delivered=w.prepare("read","--worker",pkg.task.worker);
+  assert.deepEqual(delivered.navigation.product,pkg.navigation.product);
+  assert.equal(delivered.productCoverage,plan.ownerView.productCoverage);
+  await w.put("candidate.mjs",(await readFile(path.join(w.root,"candidate.mjs"),"utf8")).replace("const key = entry.id;","const key = entry.id.toLowerCase();"));
+  const action=w.run("resume");assert.equal(action.status,"ACTION_COMPLETED",JSON.stringify(action));
+  assert.equal(action.coverageBasis.product,plan.ownerView.productCoverage);
+  assert.equal(w.run("accept").status,"VERIFIED");
+});
+
+test("product baseline contract stays pinned while its owned Candidate contract changes",async t=>{
+  const w=await workspace(t),pkg=await productPackage(w),contract=await readFile(path.join(w.root,"module-contract.md"),"utf8");
+  await w.put("accepted-contract.md",contract);
+  pkg.navigation.references.find(r=>r.id==="public-contract").path="accepted-contract.md";
+  pkg.navigation.references.push({id:"candidate-contract",path:"module-contract.md",quote:"Public entry: buildBundle(input).",purpose:"Editable owned contract",appliesTo:"task"});
+  pkg.module.contractFiles.push("accepted-contract.md");pkg.moduleAccess.modules[0].contractFiles.push("accepted-contract.md");
+  pkg.task.candidateFiles.push("module-contract.md");
+  await w.put("package.json",pkg);await w.ready();
+  await w.put("module-contract.md",contract+"\nDuplicate comparison now ignores case; output spelling remains unchanged.\n");
+  await w.put("candidate.mjs",(await readFile(path.join(w.root,"candidate.mjs"),"utf8")).replace("const key = entry.id;","const key = entry.id.toLowerCase();"));
+  assert.equal(w.run("resume").status,"ACTION_COMPLETED");
+  assert.equal(w.run("accept").status,"VERIFIED");
+  await w.put("accepted-contract.md",contract+"\nChanged accepted baseline.\n");
+  assert.equal(w.run("preflight").code,"PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
+});
+
+test("published 2.1.32 approved supplement survives current confirm read and ack",async t=>{
+  const w=await workspace(t),old=path.join(w.root,"published");await mkdir(old);
+  const archive=spawnSync("git",["archive","69ad43f52f1a5746fddcf1a425e261abe514e507"],{cwd:repository,maxBuffer:32*1024*1024});
+  if(archive.status!==0)return t.skip("Published 2.1.32 Git object unavailable; no fetch performed");
+  assert.equal(spawnSync("tar",["-x","-C",old],{input:archive.stdout}).status,0);
+  const oldPrepare=(mode,output,...args)=>{
+    const r=spawnSync(process.execPath,[path.join(old,"scripts/vydykhai.mjs"),"context-prepare",mode,"--output",output,...args],{cwd:w.root,encoding:"utf8"});
+    assert.equal(r.status,0,r.stdout+r.stderr);return JSON.parse(r.stdout);
+  };
+  assert.equal(oldPrepare("plan","prepared","--input","package-modular.json").status,"PLAN_READY");
+  assert.equal(oldPrepare("confirm","prepared","--owner","module-owner","--decision","approved").status,"PREPARED");
+  const pin=async name=>({path:name,sha256:createHash("sha256").update(await readFile(path.join(w.root,name))).digest("hex")});
+  const pkg=await w.json("package-modular.json");
+  pkg.navigation.assignment={...pkg.navigation.assignment,requestId:"continued",phase:"supplement",previous:{plan:await pin("prepared/plan.json"),approval:await pin("prepared/approval.json")}};
+  await w.put("supplement.json",pkg);
+  assert.equal(oldPrepare("plan","next","--input","supplement.json").status,"PLAN_READY");
+  assert.equal(oldPrepare("confirm","next","--owner","module-owner","--decision","approved").status,"PREPARED");
+  const current=(mode,...args)=>w.cli("context-prepare",mode,"--output","next",...args);
+  assert.equal(current("confirm","--owner","module-owner","--decision","approved").status,"PREPARED");
+  assert.equal(current("read","--worker","bundle-worker").status,"DELIVERED");
+  await w.put("continued-readback.txt","Retain accepted behavior and the deferred CSV decision; correct duplicate comparison only.");
+  assert.equal(current("ack","--worker","bundle-worker","--evidence","continued-readback.txt").status,"ACKNOWLEDGED");
+  assert.equal(w.cli("context-run","--input","next/preflight.json").status,"READY");
+});
+
+test("product route refuses lost ownership before any action and makes legacy coverage explicit", async t => {
+  const w=await workspace(t),pkg=await productPackage(w);
+  pkg.navigation.product.modules[0].route="owner";
+  await w.put("package.json",pkg);
+  assert.equal(w.plan().code,"PRODUCT_OWNER_MISMATCH");
+  await assert.rejects(readFile(path.join(w.root,"actions.log")),{code:"ENOENT"});
+  delete pkg.navigation.product;await w.put("package.json",pkg);
+  assert.equal(w.plan().ownerView.productCoverage,"LEGACY_UNCHECKED");
+});
+
+test("product decisions cannot reuse an independent review bound to earlier routing", async t => {
+  const w=await workspace(t),pkg=await productPackage(w,true);
+  await reviewPackage(w,pkg);
+  pkg.navigation.product.modules[0].reason="A changed ownership proposal.";
+  await w.put("package.json",pkg);
+  assert.equal(w.plan().code,"ALIGNMENT_REVIEW_INVALID");
+  await assert.rejects(readFile(path.join(w.root,"actions.log")),{code:"ENOENT"});
+});
+
+test("product ownership evidence changing after delivery blocks execution without replay", async t => {
+  const w=await workspace(t),pkg=await productPackage(w);
+  await w.put("package.json",pkg);await w.ready();
+  await w.put("architecture.md","The assignment and plan have changed.\n");
+  assert.equal(w.run("resume").code,"PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
+  await assert.rejects(readFile(path.join(w.root,"actions.log")),{code:"ENOENT"});
+});
+
+test("fresh plans require product alignment; only explicit legacy preparation stays unchecked", async t => {
+  const w=await workspace(t);
+  assert.equal(w.cli("context-prepare","plan","--input","package.json","--output","modern").code,"PRODUCT_NAVIGATION_REQUIRED");
+  const pkg=await productPackage(w);await w.put("package.json",pkg);
+  assert.equal(w.cli("context-prepare","plan","--input","package.json","--output","modern").status,"PLAN_READY");
+  pkg.schema="context.package.v2";delete pkg.alignment;await w.put("package.json",pkg);
+  assert.equal(w.plan().code,"PRODUCT_ALIGNMENT_REQUIRED");
+});
+
+test("product ownership cannot be sourced from mutable implementation", async t => {
+  const w=await workspace(t),pkg=await productPackage(w);
+  pkg.navigation.product.modules[0].ownerRef="owned-code";await w.put("package.json",pkg);
+  assert.equal(w.plan().code,"PRODUCT_SOURCE_MUTABLE");
+});
+
+for (const [label,mutate] of [
+  ["preparer",p=>p.navigation.preparedBy="replacement-preparer"],
+  ["constraint",p=>p.navigation.constraints[0].text="Changed task restriction."],
+  ["gap",p=>p.navigation.gaps.push({text:"New unresolved qualification",critical:false})],
+]) test(`product review invalidates changed ${label}`,async t=>{
+  const w=await workspace(t),pkg=await productPackage(w,true);await reviewPackage(w,pkg);
+  mutate(pkg);await w.put("package.json",pkg);
+  assert.equal(w.plan().code,"ALIGNMENT_REVIEW_INVALID");
+});
+
+test("product review excludes an unrelated task citation",async t=>{
+  const w=await workspace(t),pkg=await productPackage(w,true);await reviewPackage(w,pkg);
+  await w.put("unrelated.md","Optional historical observation.\n");
+  pkg.navigation.references.push({id:"unrelated",path:"unrelated.md",quote:"Optional historical observation.",purpose:"background",appliesTo:"task"});
+  await w.put("package.json",pkg);assert.equal(w.plan().status,"PLAN_READY");
+});
+
+test("product command admission rechecks sources after dispatch authorization",async t=>{
+  const w=await workspace(t),pkg=await productPackage(w);await w.put("package.json",pkg);await w.ready();
+  const request=await w.json("prepared/resume.json");
+  const result=await runContextTransition(request,{dispatch:async (_binding,invoke)=>{
+    await w.put("architecture.md","Changed after initial package check.\n");
+    return invoke();
+  }});
+  assert.equal(result.status,"BLOCKED",JSON.stringify(result));
+  assert.equal(result.code,"PACKAGE_INPUT_OR_ARTIFACT_CHANGED");
+  assert.equal(result.stats.commands,0);
+  await assert.rejects(readFile(path.join(w.root,"actions.log")),{code:"ENOENT"});
+});
+
+test("documented product example follows the default route without compatibility bypass",async t=>{
+  const w=await workspace(t);
+  await w.put("package.json",await w.json("package-product.json"));
+  const plan=w.cli("context-prepare","plan","--input","package.json","--output","prepared");
+  assert.equal(plan.status,"PLAN_READY",JSON.stringify(plan));
+  assert.equal(plan.ownerView.productCoverage,"SOURCE_BOUND_NOT_SEMANTIC_ACCEPTANCE");
+  assert.equal(w.confirm().status,"PREPARED");await w.acknowledge();
+  assert.equal(w.run("preflight").status,"READY");
+});
 async function workspace(t, selectors = false, installed = false) {
   const root = await mkdtemp(path.join(tmpdir(), "context-preparation-"));
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -62,7 +211,7 @@ async function workspace(t, selectors = false, installed = false) {
     assert.ok(result.stdout.trim(), result.stderr);
     return JSON.parse(result.stdout);
   };
-  const prepare = (mode, ...args) => cli("context-prepare", mode, "--output", "prepared", ...args);
+  const prepare = (mode, ...args) => cli("context-prepare", mode, ...(mode === "plan" ? ["--compatibility","legacy"] : []), "--output", "prepared", ...args);
   const run = name => cli("context-run", "--input", `prepared/${name}.json`);
   const plan = () => prepare("plan", "--input", "package.json");
   const confirm = () => prepare("confirm", "--owner", "module-owner", "--decision", "approved");
@@ -322,7 +471,7 @@ export function buildBundle(input) {
     const attack = structuredClone(pkg);
     attack.navigation.references.push({ id: "leak", path: forbidden, quote: "PRIVATE", purpose: "Cheap search", appliesTo: "preparation" });
     await w.put("attack.json", attack);
-    const blocked = w.cli("context-prepare", "plan", "--input", "attack.json", "--output", "rejected");
+    const blocked = w.cli("context-prepare", "plan", "--compatibility", "legacy", "--input", "attack.json", "--output", "rejected");
     assert.equal(blocked.code, "CONSUMED_MODULE_CONTEXT_FORBIDDEN");
     await assert.rejects(readFile(path.join(w.root, "actions.log")), { code: "ENOENT" });
   }
@@ -351,7 +500,7 @@ export function buildBundle(input) {
   supplement.navigation.assignment = { owner: pkg.owner, requestId: "downgrade", question: "Additional fact", phase: "supplement",
     previous: { plan: await pin("prepared/plan.json"), approval: await pin("prepared/approval.json") } };
   await w.put("downgrade.json", supplement);
-  assert.equal(w.cli("context-prepare", "plan", "--input", "downgrade.json", "--output", "downgrade").code, "MODULE_ACCESS_REBRIEF_REQUIRED");
+  assert.equal(w.cli("context-prepare", "plan", "--compatibility", "legacy", "--input", "downgrade.json", "--output", "downgrade").code, "MODULE_ACCESS_REBRIEF_REQUIRED");
   assert.equal(w.run("preflight").status, "READY", "a rejected supplement leaves the approved task usable");
   // Arbitrary native actions are not sandboxed; detect a changed release after
   // the action and freeze replay instead of reporting a completed transition.
@@ -476,7 +625,7 @@ test("owner supplement retains progress and worker while retiring the old suppor
       quote: "Retain the current fix", purpose: "Owner-confirmed boundary", appliesTo: "task" }], constraints: [], gaps: [] };
   await w.put("supplement.json", pkg);
   const next = (mode, ...args) => w.cli("context-prepare", mode, "--output", "next", ...args);
-  assert.equal(next("plan", "--input", "supplement.json").status, "PLAN_READY");
+  assert.equal(next("plan", "--input", "supplement.json", "--compatibility", "legacy").status, "PLAN_READY");
   assert.equal(next("confirm", "--owner", "foreign", "--decision", "approved").status, "BLOCKED");
   assert.equal(w.run("preflight").status, "READY", "an unapproved supplement cannot retire the accepted route");
   assert.equal(next("confirm", "--owner", pkg.owner, "--decision", "approved").status, "PREPARED");
@@ -490,7 +639,7 @@ test("owner supplement retains progress and worker while retiring the old suppor
   assert.equal(await readFile(path.join(w.root, "candidate.mjs"), "utf8"), candidate);
   assert.equal(await readFile(path.join(w.root, "actions.log"), "utf8"), "called\n");
   assert.equal((await w.json("next/plan.json")).semanticPackage.task.worker, pkg.task.worker);
-  assert.equal(w.cli("context-prepare", "plan", "--input", "supplement.json", "--output", "sibling").code, "PREPARATION_PARENT_SUPERSEDED");
+  assert.equal(w.cli("context-prepare", "plan", "--compatibility", "legacy", "--input", "supplement.json", "--output", "sibling").code, "PREPARATION_PARENT_SUPERSEDED");
   const marker = await w.json("prepared/plan.json.superseded.json");
   marker.successorPlan.sha256 = "0".repeat(64); await w.put("prepared/plan.json.superseded.json", marker);
   assert.equal(w.cli("context-run", "--input", "next/resume.json").code, "PREPARATION_PARENT_SUPERSEDED");
@@ -610,7 +759,7 @@ test("coverage, explicit approval and distinct worker delivery remain mandatory"
 
 test("valid packets for the same worker cannot cross pending requests", async t => {
   const w = await workspace(t); await w.ready();
-  assert.equal(w.cli("context-prepare", "plan", "--input", "package.json", "--output", "second").status, "PLAN_READY");
+  assert.equal(w.cli("context-prepare", "plan", "--compatibility", "legacy", "--input", "package.json", "--output", "second").status, "PLAN_READY");
   assert.equal(w.cli("context-prepare", "confirm", "--output", "second", "--owner", "module-owner", "--decision", "approved").status, "PREPARED");
   await w.put("prepared/awaiting-worker.json", await w.json("second/awaiting-worker.json"));
   assert.equal(w.prepare("read", "--worker", "bundle-worker").code, "PACKAGE_REQUEST_MISMATCH");
@@ -741,7 +890,7 @@ ${JSON.stringify({ schemaVersion: 1, id: "BUNDLE-NEXT", work: "bundle-change", a
     assertions: [{ id: `${eventId}:1`, quote, disposition, scope: ["bundle"], targetRef: "module:buildBundle",
       reason: "Preserve direct human control and the separate integration decision.", supersededBy, ownerGate: null, trigger: null }] });
   await w.put("package.json", pkg);
-  const prepare = (mode, ...args) => w.cli("context-prepare", mode, "--output", "reviewed", ...args);
+  const prepare = (mode, ...args) => w.cli("context-prepare", mode, ...(mode === "plan" ? ["--compatibility","legacy"] : []), "--output", "reviewed", ...args);
   assert.equal(prepare("plan", "--input", "package.json").status, "PLAN_READY");
   assert.equal(prepare("confirm", "--owner", "module-owner", "--decision", "approved").status, "PREPARED");
   const delivery = prepare("read", "--worker", "bundle-worker");

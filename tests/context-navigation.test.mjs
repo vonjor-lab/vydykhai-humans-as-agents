@@ -16,6 +16,76 @@ const packet = () => ({ taskId: task.id, worker: task.worker, preparedBy: "prepa
     { text: "Do not implement.", appliesTo: "preparation", referenceIds: ["local"] },
   ], gaps: [] });
 
+const moduleDeclarations = [{id:"module",intent:"change",contractFiles:["contract.md"]}];
+const productPacket = () => {
+  const p = packet();
+  p.product = {goalRef:"contract",outcomeRef:"contract",planRef:"contract",capabilityRefs:["contract"],
+    modules:[{id:"module",owner:task.worker,ownerContext:"external-visible-context",ownerRef:"contract",
+      contractRef:"contract",route:"owner",authorityRef:null,reason:"Continue at the existing producer.",
+      state:{needed:{status:"YES",referenceId:"contract"},implemented:{status:"YES",referenceId:"contract"},
+        verified:{status:"UNKNOWN",referenceId:null},available:{status:"NO",referenceId:"contract"}}}]};
+  return p;
+};
+const productCheck = (p, modules = moduleDeclarations) => validateNavigation(p,task,read,["contract.md"],modules);
+
+test("product navigation keeps independent readiness facts and external owner context", async () => {
+  const p = productPacket(), result = await productCheck(p);
+  assert.deepEqual(result.product,p.product);
+  assert.equal(result.product.modules[0].state.verified.status,"UNKNOWN");
+  assert.equal(result.product.modules[0].state.available.status,"NO");
+  assert.equal((await prepareNavigation(packet(),task,read)).product,undefined);
+});
+
+for (const [name, mutate, code] of [
+  ["missing plan",p=>p.product.planRef="missing","PRODUCT_SOURCE_MISSING"],
+  ["preparer-only authority",p=>p.product.modules[0].ownerRef="local","PRODUCT_SOURCE_MISSING"],
+  ["owner changed silently",p=>p.product.modules[0].owner="other","PRODUCT_OWNER_MISMATCH"],
+  ["helper without delegation",p=>{p.product.modules[0].owner="other";p.product.modules[0].route="assist";},"PRODUCT_DELEGATION_REQUIRED"],
+  ["lost module",p=>p.product.modules=[],"PRODUCT_MODULE_COVERAGE"],
+  ["missing availability",p=>delete p.product.modules[0].state.available,"PRODUCT_STATE_INVALID"],
+  ["readiness without evidence",p=>p.product.modules[0].state.verified.status="YES","PRODUCT_SOURCE_MISSING"],
+  ["integration used to rewrite producer",p=>p.product.modules[0].route="integrate","PRODUCT_PRODUCER_ROUTE"],
+]) test(`product navigation rejects ${name}`, async () => {
+  const p=productPacket(); mutate(p);
+  await assert.rejects(productCheck(p),{message:code});
+});
+
+test("assistance needs its source and transfer stays pending while consumption retains producer ownership", async () => {
+  const p=productPacket(), m=p.product.modules[0];
+  m.owner="original-owner";m.authorityRef="contract";
+  m.route="assist";await productCheck(p);
+  m.route="transfer";await assert.rejects(productCheck(p),/PRODUCT_TRANSFER_PENDING/);
+  m.route="integrate";m.authorityRef=null;
+  await productCheck(p,[{...moduleDeclarations[0],intent:"consume"}]);
+  m.route="owner";m.owner=task.worker;
+  await assert.rejects(productCheck(p,[{...moduleDeclarations[0],intent:"consume"}]),/PRODUCT_CONSUMER_ROUTE/);
+});
+
+test("product supplements cannot drop or change the approved routing", async () => {
+  const product=productPacket().product;
+  const sha=v=>createHash("sha256").update(v).digest("hex");
+  const navigation=await productCheck(productPacket());
+  const parent=Buffer.from(JSON.stringify(navigation));
+  const bytes=Buffer.from(JSON.stringify({schema:"context.preparation-plan.v1",owner:"owner",semanticPackage:{task,navigation:{product}},artifacts:[{path:"navigation.json",sha256:sha(parent)}]}));
+  const approval=Buffer.from(JSON.stringify({schema:"context.package-approval.v1",owner:"owner",decision:"approved",planSha256:sha(bytes)}));
+  const a={...packet().assignment,phase:"supplement",previous:{plan:{path:"plan",sha256:sha(bytes)},approval:{path:"approval",sha256:sha(approval)}}};
+  const files={plan:bytes,approval,"navigation.json":parent},readParent=async p=>files[p];
+  // Match the production plan filename used to locate its pinned navigation.
+  a.previous.plan.path="plan.json";files["plan.json"]=bytes;
+  await checkPreparationAssignment(a,"owner",task,readParent,null,null,navigation);
+  await assert.rejects(checkPreparationAssignment(a,"owner",task,readParent),/PRODUCT_REBRIEF_REQUIRED/);
+  const changed=structuredClone(navigation);changed.product.modules[0].ownerContext="other-context";
+  await assert.rejects(checkPreparationAssignment(a,"owner",task,readParent,null,null,changed),/PRODUCT_REBRIEF_REQUIRED/);
+  const redirected=structuredClone(navigation);redirected.references[0].path="replacement.md";
+  await assert.rejects(checkPreparationAssignment(a,"owner",task,readParent,null,null,redirected),/PRODUCT_REBRIEF_REQUIRED/);
+  for (const mutate of [n=>n.outcome="Unrelated direction",n=>n.constraints=[]]) {
+    const replacement=structuredClone(navigation);mutate(replacement);
+    await assert.rejects(checkPreparationAssignment(a,"owner",task,readParent,null,null,replacement),/PRODUCT_REBRIEF_REQUIRED/);
+  }
+  const additive=structuredClone(navigation);additive.constraints.push({...additive.constraints[0],text:"Additional bounded fact"});
+  await checkPreparationAssignment(a,"owner",task,readParent,null,null,additive);
+});
+
 test("preparation authority is reviewed but not forwarded as executor authority", async () => {
   const p = packet(); p.assignment.question = "Preparation is read-only. Do not implement.";
   const result = await prepareNavigation(p, task, read);

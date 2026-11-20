@@ -397,7 +397,7 @@ export async function runSyntheticComparisonTransport({ output, expectedDigest, 
   const prepare = async (name, packageValue) => {
     await put(`${name}-package.json`, packageValue);
     const invoke = (mode, extra) => call(`${name}-${mode}`, "prepare", { args: [mode, "--output", name, ...extra] });
-    needStatus(await invoke("plan", ["--input", `${name}-package.json`]), "PLAN_READY");
+    needStatus(await invoke("plan", ["--input", `${name}-package.json`, ...(arm !== "baseline" ? ["--compatibility", "legacy"] : [])]), "PLAN_READY");
     needStatus(await invoke("confirm", ["--owner", "owner", "--decision", "approved"]), "PREPARED");
     needStatus(await invoke("read", ["--worker", "worker"]), "DELIVERED");
     await put(`${name}-worker.txt`, "SYNTHETIC_PROTOCOL_ONLY: explicit test-authored worker bytes, not model readback/comprehension.\n");

@@ -33,7 +33,7 @@ async function setup(t) {
   // No semantic claims are made by this zero-model fixture approval.
   await put("action.mjs","import {appendFileSync} from 'node:fs'; appendFileSync('candidate.mjs', '\\n// confined B bytes\\n');\n");
   await put("package.json",pkg);
-  assert.equal(cli("context-prepare","plan","--input","package.json","--output","prepared").status,"PLAN_READY");
+  assert.equal(cli("context-prepare", "plan", "--compatibility", "legacy","--input","package.json","--output","prepared").status,"PLAN_READY");
   assert.equal(cli("context-prepare","confirm","--output","prepared","--owner",pkg.owner,"--decision","approved").status,"PREPARED");
   cli("context-prepare","read","--output","prepared","--worker",pkg.task.worker);
   await put("worker-evidence.txt","Fixture worker acquired the scoped module packet; no semantic model trial.");

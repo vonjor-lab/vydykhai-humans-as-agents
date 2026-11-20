@@ -71,7 +71,7 @@ async function protocolFixture(staged, arm) {
       rationale: "Protocol fixture only: use the existing scoped duplicate-comparison example." }], review: null };
   await put(root, "package.json", pkg);
   const call = (operation, options = {}) => invokeComparisonAdapter({ ...staged, arm, operation, ...options });
-  const prepare = (...args) => call("prepare", { args: [args[0], "--output", "prepared", ...args.slice(1)] });
+  const prepare = (...args) => call("prepare", { args: [args[0], ...(args[0] === "plan" && arm !== "baseline" ? ["--compatibility","legacy"] : []), "--output", "prepared", ...args.slice(1)] });
   return { root, pkg, call, prepare };
 }
 

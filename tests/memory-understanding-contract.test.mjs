@@ -24,10 +24,12 @@ test("repair closure requires evidence and application, not a rewritten reminder
 });
 
 test("material context can change without losing semantic obligations or task history", () => {
-  for (const text of ["semantic meaning", "material selection", "retain applicable meaning",
-    "Parking does not delete memory", "never replay an uncertain action"])
+  for (const text of ["refines current reusable meaning", "material selection", "does not drop applicable meaning",
+    "Parking does not discharge an obligation", "original evidence, superseded history",
+    "existing context choice and readback"])
     assert.ok(recall.includes(text), text);
   const routing = read("docs/workflows/context-routing.md");
+  assert.ok(routing.includes("unknown effects prohibit replay"));
   assert.ok(routing.includes("unless the authorized safe-boundary context pivot"));
   assert.ok(routing.includes("preserve logical task, effects and spend"));
   for (const path of ["docs/FRAMEWORK.md", "docs/workflows/framework-orchestrator.md"])

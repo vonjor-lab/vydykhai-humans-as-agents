@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { canonicalJson, sha256, checkPreparedContext } from "./memory-brief.mjs";
 import { parseContextJson, runContextTransition, artifactHash, checkExampleOracle } from "./context-run.mjs";
-import { prepareNavigation, checkPreparationAssignment } from "./context-navigation.mjs";
+import { prepareNavigation, checkPreparationAssignment, productReferenceIds } from "./context-navigation.mjs";
 import { estimateContextRoutes, measureContextUse } from "./context-cost.mjs";
 import { moduleAccessPolicy, moduleExampleIds } from "./module-access.mjs";
 import { prepareAlignment } from "./context-alignment.mjs";
@@ -39,7 +39,7 @@ async function file(root, relative) {
 const read = async (root, name) => parseContextJson(await file(root, name));
 const reference = (name, value) => ({ path: name, sha256: sha256(encoded(value)) });
 
-async function build(root, input, output) {
+async function build(root, input, output, requireProduct = false) {
   const inputs = new Map();
   let access = null;
   const source = async (name, purpose = "context") => {
@@ -50,6 +50,7 @@ async function build(root, input, output) {
   const pkg = parseContextJson(await source(input));
   const aligned = pkg.schema === "context.package.v3";
   const modular = aligned || pkg.schema === "context.package.v2";
+  if (Object.hasOwn(pkg.navigation ?? {}, "product")) need(aligned, "PRODUCT_ALIGNMENT_REQUIRED");
   need(keys(pkg, ["schema", "owner", "task", "module", "sources", "classifications", "dependencies", "sharedArtifacts",
     ...(aligned ? ["alignment"] : []),
     ...(modular ? ["moduleAccess", "navigation"] : Object.hasOwn(pkg, "navigation") ? ["navigation"] : [])]) &&
@@ -72,8 +73,8 @@ async function build(root, input, output) {
   const artifacts = new Map(), at = name => `${output}/${name}`;
   const add = (name, value) => { const p = at(name); artifacts.set(p, value); return reference(p, value); };
   const mutable = new Set([...pkg.task.candidateFiles, ...pkg.module.implementationFiles]);
-  if (pkg.navigation) {
-    await checkPreparationAssignment(pkg.navigation.assignment, pkg.owner, pkg.task, source, pkg.moduleAccess ?? null, pkg.alignment ?? null);
+  const checkAssignment = async navigation => { if (pkg.navigation) {
+    await checkPreparationAssignment(pkg.navigation.assignment, pkg.owner, pkg.task, source, pkg.moduleAccess ?? null, pkg.alignment ?? null, navigation);
     const previous = pkg.navigation.assignment.previous;
     if (previous) {
       try {
@@ -81,9 +82,17 @@ async function build(root, input, output) {
         need(marker.successorPlan?.path === `${output}/plan.json`, "PREPARATION_PARENT_SUPERSEDED");
       } catch (e) { if (e.code !== "ENOENT") throw e; }
     }
-  }
+  } };
+  // Rebuilding an accepted legacy packet must preserve its original pin order.
+  if (!pkg.navigation?.product) await checkAssignment(null);
   const navigation = pkg.navigation === undefined ? null : await prepareNavigation(pkg.navigation, pkg.task,
-    name => { access?.assertRead(name); return mutable.has(name) ? file(root, name) : source(name); }, pkg.module.contractFiles);
+    name => { access?.assertRead(name); return mutable.has(name) ? file(root, name) : source(name); }, pkg.module.contractFiles, pkg.moduleAccess?.modules ?? null);
+  if (navigation?.product) {
+    for (const id of productReferenceIds(navigation.product)) {
+      need(!mutable.has(navigation.references.find(r => r.id === id).path), "PRODUCT_SOURCE_MUTABLE");
+    }
+    await checkAssignment(navigation);
+  }
   if (navigation) add("navigation.json", navigation);
   const alignment = aligned ? await prepareAlignment(pkg, navigation, source, parseContextJson) : null;
   if (alignment) add("alignment.json", alignment);
@@ -168,6 +177,7 @@ async function build(root, input, output) {
   const request = { schema: "context.request.v1", workspace: root, task, operation: "prepare", capsule: null, readback: null, integrationPlan: null };
   const plan = { schema: "context.preparation-plan.v1", owner: pkg.owner, workspace: root, semanticPackage: pkg,
     inputFiles: [...inputs.values()], artifacts: [...artifacts].map(([name, value]) => reference(name, value)) };
+  if (requireProduct) need(aligned && pkg.navigation?.product, "PRODUCT_NAVIGATION_REQUIRED");
   return { plan, artifacts, request, integrationPlan, expectedIntegration, render, navigation, alignment, task: artifacts.get(task.path) };
 }
 
@@ -230,8 +240,10 @@ export async function prepareContext(args, services = {}) {
   try {
     const [mode, ...rest] = args, options = {};
     need(["plan", "confirm", "read", "ack", "bind", "estimate", "measure", "recover"].includes(mode) && rest.length % 2 === 0, "PREPARATION_ARGUMENTS_INVALID");
-    for (let i = 0; i < rest.length; i += 2) { need(/^--(input|output|owner|decision|worker|evidence|event)$/.test(rest[i]) && !Object.hasOwn(options, rest[i]), "PREPARATION_ARGUMENTS_INVALID"); options[rest[i]] = rest[i + 1]; }
-    const allowed = { plan: ["--input", "--output"], confirm: ["--output", "--owner", "--decision"], recover: ["--output", "--owner", "--decision"], read: ["--output", "--worker"], ack: ["--output", "--worker", "--evidence"], bind: ["--output", "--owner", "--event"], estimate: ["--input"], measure: ["--input"] };
+    for (let i = 0; i < rest.length; i += 2) { need(/^--(input|output|owner|decision|worker|evidence|event|compatibility)$/.test(rest[i]) && !Object.hasOwn(options, rest[i]), "PREPARATION_ARGUMENTS_INVALID"); options[rest[i]] = rest[i + 1]; }
+    const legacy = Object.hasOwn(options,"--compatibility");
+    if (legacy) need(mode === "plan" && options["--compatibility"] === "legacy", "PREPARATION_ARGUMENTS_INVALID");
+    const allowed = { plan: ["--input", "--output", ...(legacy ? ["--compatibility"] : [])], confirm: ["--output", "--owner", "--decision"], recover: ["--output", "--owner", "--decision"], read: ["--output", "--worker"], ack: ["--output", "--worker", "--evidence"], bind: ["--output", "--owner", "--event"], estimate: ["--input"], measure: ["--input"] };
     need(keys(options, allowed[mode]), "PREPARATION_ARGUMENTS_INVALID");
     const root = await realpath(process.cwd()), output = options["--output"];
     if (mode === "estimate") return estimateContextRoutes(await read(root, options["--input"]));
@@ -251,7 +263,7 @@ export async function prepareContext(args, services = {}) {
       return reference(relative, value);
     };
     if (mode === "plan") {
-      const built = await build(root, options["--input"], output);
+      const built = await build(root, options["--input"], output, !legacy);
       const names = (await readdir(dir)).filter(n => n !== ".prepare-lock");
       if (names.length) need(names.includes("plan.json") && hash(await read(root, `${output}/plan.json`)) === hash(built.plan), "PACKAGE_OUTPUT_COLLISION");
       const planRef = await put("plan.json", built.plan);
@@ -266,6 +278,7 @@ export async function prepareContext(args, services = {}) {
             eventDisposition, assertions, reason
           })),
         navigation: built.navigation, alignment: pkg.alignment ?? null,
+        productCoverage: built.navigation?.product ? "SOURCE_BOUND_NOT_SEMANTIC_ACCEPTANCE" : "LEGACY_UNCHECKED",
         moduleAccess: pkg.moduleAccess ?? null, sources: built.plan.inputFiles,
         verification: {retained: pkg.module.retainedExampleIds, added: pkg.module.newExampleIds,
           oracle: pkg.module.oracle, verifier: pkg.module.verificationScript},
@@ -325,7 +338,8 @@ export async function prepareContext(args, services = {}) {
       const delivery = { schema: "context.worker-delivery.v1", worker, capsuleSha256: pending.capsule.sha256, renderSha256: sha256(capsule.render),
         ...(built.alignment ? { alignmentSha256: hash(built.alignment) } : {}),
         ...(access ? { moduleAccessSha256: hash(access) } : {}), ...(built.navigation ? { navigationSha256: hash(built.navigation) } : {}) };
-      if (mode === "read") { await put("worker-delivery.json", delivery); return { status: "DELIVERED", worker, context: capsule.render, ...navigation, ...boundary, ...alignment, acknowledgment: "REQUIRED" }; }
+      if (mode === "read") { await put("worker-delivery.json", delivery); return { status: "DELIVERED", worker, context: capsule.render, ...navigation, ...boundary, ...alignment,
+        productCoverage: built.navigation?.product ? "SOURCE_BOUND_NOT_SEMANTIC_ACCEPTANCE" : "LEGACY_UNCHECKED", acknowledgment: "REQUIRED" }; }
       need(hash(await read(root, `${output}/worker-delivery.json`)) === hash(delivery), "PACKAGE_WORKER_DELIVERY_MISSING");
       const evidence = options["--evidence"], data = await file(root, evidence); need(data.toString().trim().length, "PACKAGE_WORKER_EVIDENCE_EMPTY");
       const readback = await put("readback.json", { schema: "context.readback.v1", worker, taskSha256: pending.task.sha256,

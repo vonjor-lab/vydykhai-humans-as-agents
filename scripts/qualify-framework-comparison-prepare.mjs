@@ -560,7 +560,7 @@ async function applyPreparation({ directory, expectedDigest, arm, number, stageS
   await save(path.join(workspace, paths.recipe), proposed.recipe);
   const steps = [];
   for (const [mode, args, expected] of [
-    ["plan", ["--input", paths.package], "PLAN_READY"],
+    ["plan", ["--input", paths.package, ...(arm !== "baseline" ? ["--compatibility", "legacy"] : [])], "PLAN_READY"],
     ["confirm", ["--owner", "owner", "--decision", proposed.decision], "PREPARED"],
     ["read", ["--worker", "worker"], "DELIVERED"]
   ]) {

@@ -43,7 +43,7 @@ Applicable Memory Brief: <complete applicable items: node id / Because / Apply /
 Executable Memory Brief: <none | exact compiler-produced atomicRender from memory-brief-envelope.md; never summarize or edit>
 Prepared context capability: <legacy/workflow limitation | retained-progress-v1: pinned task/capsule, context-run request, worker readback; reference scope only>
 Context route: <goal/brief -> journey -> modules/capabilities -> inputs/entities/contracts/data/artifacts/systems -> current meaning/commitments -> consumers -> accepted artifacts/verification; checked sources and gaps>
-Module contracts / implementation: <consume/change/create, applicable preserved invariants and their evidence, current owner or acknowledged transfer, exact code/test boundaries; reuse the existing module contract rather than copy its history>
+Module contracts / implementation: <consume/change/create, applicable preserved invariants and evidence, module owner/visible entry, owner/assist/integrate/transfer route and authority, exact code/test boundaries; reuse the existing contract and product navigation rather than copy history>
 Documentation impact: <expected NONE or named contract sections>
 Progress continuity: <UNCHANGED | Preserved / Replaced / Added / Remaining>
 

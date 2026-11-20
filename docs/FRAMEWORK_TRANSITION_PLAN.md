@@ -1,5 +1,36 @@
 # Framework Efficiency Transition
 
+## Product Meaning And Module Ownership - 2.1.33
+
+Connect existing product/plan/module records through navigation in the
+supported preparation route. Keep needed, implemented, verified and available
+facts distinct; bind the current module owner and owner/assist/integrate/transfer
+choice to source evidence. Preserve exact worker delivery, independent alignment
+review where already required, and current-command acceptance. No new role,
+graph, queue, watcher or automatic chat creation. Semantic distillation updates
+existing meaning rather than accumulating paraphrases; original reasons, rejected
+alternatives, authority and pending obligations remain addressable.
+
+Activate before the newly authorized cleanup work, at existing safe boundaries;
+do not disturb ongoing work. Reuse the existing product map and inventory. First
+scope the accepted base, near-term resources, retirement candidates and owned
+unknowns without deletion or refactoring. Missing live navigation/owner/readback
+proof remains pending; optional legacy compatibility is not adoption. Native
+dispatch interception and compaction are not established by the reference runner.
+Use existing independent acceptance and whole-task accounting; no old product
+tests or invented recovery cycle. Publication, activation and economy are separate.
+
+Release evidence: the single full local compatibility run had 1,875 tests:
+1,739 passed, 104 skipped and 32 failed. The affected legacy fixtures, version
+expectations and wording checks were repaired; scoped reruns passed 16 and 18
+tests, covering all failures without a second full run. Three additional targeted
+checks passed for unchanged 2.1.32 supplement replay, additive-only product
+supplements and editable contracts against immutable accepted snapshots.
+Framework validation and whitespace checks passed. Independent review held the
+initial candidate; all reported blockers were repaired and the scoped follow-up
+was nonblocking. This is code/contract evidence, not proof of live product
+adoption, authenticated ownership, native handover or whole-DOD savings.
+
 ## Course And Scoped Memory - 2.1.32
 
 Implement the existing constitutional priorities through scoped memory retrieval,
