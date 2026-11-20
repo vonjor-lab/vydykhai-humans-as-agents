@@ -132,7 +132,7 @@ test("install, doctor, conflict protection, and forced repair", async () => {
     assert.match(doctor.stdout, /Memory: project-memory-graph v4; entity-routed goal-to-evidence context; Module Contracts before code; no fixed node cap/);
     assert.match(doctor.stdout, /Memory acceptance: ordinary-unhinted-real-task-probes -> targeted-regression -> atomic-shadow-integration -> human-confirmed-cutover/);
     assert.match(doctor.stdout, /Executable memory brief: memory\.executable-brief\.v1; atomic obligations only/);
-    assert.match(doctor.stdout, /Action receipts: critical-transition-readback; 7 critical boundaries/);
+    assert.match(doctor.stdout, /Action receipts: critical-transition-readback; 8 critical boundaries/);
     assert.match(doctor.stdout, /Tracker: task-contract-with-event-driven-projection/);
     assert.match(doctor.stdout, /Creator: Alexander Rozhnov \(@vonjor-lab\)/);
     assert.match(doctor.stdout, /License: PolyForm-Small-Business-1\.0\.0/);
@@ -442,6 +442,7 @@ test("current manifest preserves updater compatibility fields", async () => {
   });
   assert.equal(manifest.actionReceiptPolicy.policy, "critical-transition-readback");
   assert.deepEqual(manifest.actionReceiptPolicy.boundaries, [
+    "work-routing",
     "task-launch",
     "task-resume",
     "return-sync",
@@ -451,6 +452,7 @@ test("current manifest preserves updater compatibility fields", async () => {
     "side-effect-reconciliation",
   ]);
   assert.deepEqual(manifest.actionReceiptPolicy.boundaryOwners, {
+    "work-routing": "orchestrator",
     "task-launch": "orchestrator",
     "task-resume": "orchestrator",
     "return-sync": "orchestrator",
