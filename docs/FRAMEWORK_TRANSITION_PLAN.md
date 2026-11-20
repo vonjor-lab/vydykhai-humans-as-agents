@@ -1,5 +1,28 @@
 # Framework Efficiency Transition
 
+## Role Continuity - 2.1.35
+
+Evolution Gate: application rule and adoption evidence, not a new principle.
+Benefit: preserve one execution owner even when a correctly routed task is
+underway, while keeping direct control decisions and bounded fact lookup fast.
+Evidence: a sanitized recurrence included both missing routing and duplicate
+orchestrator inspection after valid preflight and actual worker dispatch. The
+2.1.34 receipt checked the declared route, not subsequent native actions.
+Complexity: put the existing boundary before hot/cold selection and reuse the
+existing update-acceptance manager check for source-bound role observation.
+No new role, workflow, timer, universal tool gate or per-command receipt.
+
+Verdict: independent scoped review accepted after correcting identity validation
+and separating current adoption scope from submitted observation bindings. Local
+full compatibility passed (1,897 tests; 1,793 passed, 104 skipped); the two review
+corrections passed affected tests. Published-tree CI and active adoption remain
+release/activation gates, not implied by this maintenance evidence.
+At a safe checkpoint, reconcile retained results and stop only the duplicate
+work. Prove one natural authorized worker outcome through manager application,
+or retain the evidence gap and owner in the current update transition. Preserve
+active work, pauses and independent acceptance; do not manufacture a work item
+or repeat a completed result. No claim of native enforcement or measured savings.
+
 ## Work Routing Boundary - 2.1.34
 
 Evolution Gate: application rule and implementation/adoption of the existing

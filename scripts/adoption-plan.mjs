@@ -6,6 +6,16 @@ const stable = value => JSON.stringify(value, (_, v) => v && typeof v === "objec
 const hash = value => createHash("sha256").update(stable(value)).digest("hex");
 import {validVersion as version,compareVersions as compare} from "./framework-version.mjs";
 
+const roleReference = v => typeof v === "string" && v.length > 0 && v === v.trim() &&
+  !/^(unknown|pending|tbd|n\/a|null|undefined)$/i.test(v);
+
+export function managerRoleBinding(observation) {
+  if (!observation || !["manager","work","revision","turn"].every(k => roleReference(observation[k])) ||
+      ["worker","workerTurn"].some(k => observation[k] !== undefined && !roleReference(observation[k]))) return null;
+  return hash(Object.fromEntries(["manager","work","revision","turn","worker","workerTurn"]
+    .map(k => [k, observation[k] ?? null])));
+}
+
 // An export of the existing transition, never a second ledger or host attestation.
 export function assessUpdateAcceptance(target, receipt) {
   const ids = ["installation", "manager", "participants", "work-hygiene", "memory",
@@ -35,9 +45,36 @@ export function assessUpdateAcceptance(target, receipt) {
       target.workerCheck?.status !== "KIT_MATCH";
     if (workerMismatch) status = ["UPDATE_REQUIRED", "REVIEW_REQUIRED", "BLOCKED"].includes(target.workerCheck?.status)
       ? "NOT_DONE" : "NOT_CHECKED";
+    let roleCoverage = "NOT_REQUESTED", roleReason = null;
+    if (id === "manager" && row && (row.roleObservationRequired !== undefined || Object.hasOwn(row, "roleObservation"))) {
+      const observation = row.roleObservation;
+      const enrolled = row.roleObservationRequired !== false || Object.hasOwn(row, "roleObservation");
+      if (enrolled) {
+        roleCoverage = "LIMITED";
+        const bound = supported && (row.roleObservationRequired === undefined || typeof row.roleObservationRequired === "boolean") &&
+          observation && filled(receipt.manager) && observation.manager === receipt.manager &&
+          observation.binding === row.binding && observation.binding === managerRoleBinding(observation) &&
+          roleReference(observation.evidence) &&
+          ["COMPLETE","PARTIAL"].includes(observation.coverage) &&
+          ["APPLIED","ROLE_VIOLATION","DISPATCHED","UNKNOWN"].includes(observation.result);
+        if (!bound) {
+          if (status !== "NOT_DONE") status = "NOT_CHECKED";
+          roleReason = "MISSING_OR_STALE_ROLE_OBSERVATION";
+        } else if (observation.result === "ROLE_VIOLATION") {
+          // One sourced violation is contrary evidence even if the rest of the turn is unknown.
+          status = "NOT_DONE"; roleCoverage = "MISMATCH"; roleReason = "OBSERVED_ROLE_VIOLATION";
+        } else if (observation.coverage !== "COMPLETE" || observation.result !== "APPLIED" ||
+            !["worker","workerTurn","applicationEvidence"].every(k => roleReference(observation[k])) ||
+            observation.worker === observation.manager || observation.workerTurn === observation.turn) {
+          if (status !== "NOT_DONE") status = "NOT_CHECKED";
+          roleReason = "ROLE_APPLICATION_NOT_OBSERVED";
+        } else roleCoverage = "OBSERVED";
+      }
+    }
     return { id, status, evidence: row?.evidence || null, owner: row?.owner || null,
+      ...(id === "manager" ? {roleCoverage} : {}),
       next: row?.next || null, reason: !localMatch ? "MISSING_OR_STALE_WORKSPACE" : workerMismatch
-        ? target.workerCheck?.reason || "WORKER_KIT_NOT_CONFIRMED" : !current ? "MISSING_OR_STALE_BINDING" : row?.reason || null };
+        ? target.workerCheck?.reason || "WORKER_KIT_NOT_CONFIRMED" : !current ? "MISSING_OR_STALE_BINDING" : roleReason || row?.reason || null };
   });
   return { status: checks.every(r => ["CONFIRMED", "NOT_APPLICABLE"].includes(r.status))
     ? "DOCUMENTED_COMPLETE" : "INCOMPLETE", checks,

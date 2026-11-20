@@ -13,7 +13,7 @@ Expected orchestration output:
 Route to focused context when:
 ```
 
-Advisors may inspect existing durable product context, including a verified repository, only far enough to improve that control decision. Use them on a material cold-path ambiguity where parallel critique or alternative reasoning improves quality; routine continue stays on the orchestrator hot path without extra agents.
+Advisors use decision-ready durable sources or the same named-fact lookup allowed by the [orchestrator role contract](framework-orchestrator.md#role-contract): known source, question and stop condition. They do not investigate missing project evidence or duplicate the active owner's work. Use them on a material cold-path ambiguity where parallel critique improves the control decision; routine continuation needs no advisor.
 
 ## 2. Keep The Result Control-Only
 

@@ -9,9 +9,9 @@ Delegation retains an open owner control turn through result application: dispat
 
 ## Read route
 
-`AGENTS.md` is the shared entrypoint; do not reread its embedded managed rules from `docs/AGENTS_CORE.md`. For an ordinary current-contract continuation, read only the latest relevant event and its lease; continue authorized work. Answer a direct user status question from current evidence. For a cold decision, dispatch, return, memory integration or rotation, read the atomic Project State control snapshot and `docs/workflows/framework-orchestrator.md` and only the workflow it routes to. `docs/FRAMEWORK.md` is the human overview and a reference for unresolved framework meaning, not a routine prerequisite.
+`AGENTS.md` is the shared entrypoint; do not reread its embedded managed rules from `docs/AGENTS_CORE.md`. Apply its role boundary before choosing hot or cold path. For an ordinary current-contract continuation, read only the latest relevant event and its lease; the current owner continues authorized work. Answer a direct user status question from current evidence. For a cold decision, dispatch, return, memory integration or rotation, read the atomic Project State control snapshot and `docs/workflows/framework-orchestrator.md` and only the workflow it routes to. `docs/FRAMEWORK.md` is a human reference, not a routine prerequisite.
 
-Apply the decision-evidence boundary in `docs/workflows/framework-orchestrator.md#role-contract`: decide from ready evidence; answer a bounded fact from a named source. If finding the answer grows into investigation, retain what was found and route the whole remaining result to a suitable focused owner. Required independent review still uses originals.
+Use `docs/workflows/framework-orchestrator.md#role-contract` at a changed evidence or ownership boundary. If a lookup grows into investigation, retain its findings and route the whole remaining result to the suitable owner; while waiting, do other ready management work, not the assigned investigation. Required independent review still uses originals.
 
 ## Decisions
 
