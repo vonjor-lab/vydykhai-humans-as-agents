@@ -5,7 +5,8 @@ import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { readLeaseActivityScope, readProductionContinuation, createReturnSync, createReturnRoute } from "../scripts/vydykhai.mjs";
+import { applyReturnApplication, readLeaseActivityScope, readProductionContinuation,
+  createReturnSync, createReturnRoute, validateDurableOutbox } from "../scripts/vydykhai.mjs";
 import { assessCapabilityReadiness } from "../scripts/adoption-plan.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -786,6 +787,356 @@ Last retrieval check: probes-1 / fresh evaluator / PASS
 | --- | --- | --- | --- |
 <!-- vydykhai:project-memory-graph:end -->
 `;
+
+function publishWorkingState(state, owner, evidence) {
+  const {value, returnApplication} = readProductionContinuation(state);
+  return state.replace(/^(\| WORK-1 [^|\n]*\| )WAITING( \|)/m, "$1WORKING$2")
+    .replace(/^\{"schemaVersion":1,"id":[^\n]+/m, () =>
+      JSON.stringify({...value, returnApplication, owner, evidence, state:"WORKING"}));
+}
+
+function applicationFixture() {
+  const hash = value => createHash("sha256").update(value).digest("hex");
+  const owner = "task-one", work = "WORK-1", revision = "brief-7", dod = "actor completes the flow";
+  const earlier = readProductionContinuation(healthyState).value;
+  const checkpoint = {id:"checkpoint-7", owner, dueAt:"2026-12-01T00:00:00Z", expected:"access proof",
+    receiptId:"return-7", authority:"brief-7"};
+  const state = healthyState
+    .replace("Human attention: NONE", "Human attention: PENDING | ID: HUMAN-OTHER | Request: Decide future scope | Source: alignment-7 | Raised: event-7 | Resume after: next review")
+    .replace("- Current DOD: " + dod, `- Current DOD: ${dod}\n- Accepted proof: actor baseline\n- Remaining: complete flow and verify actor outcome`)
+    .replace("| WORK-1 [DOD] — close actor flow | WORKING | task-one |",
+      `| WORK-1 [DOD] — close actor flow | WAITING | task-one | workspace | baseline -> candidate | flow | ${JSON.stringify(checkpoint)} | outbox |\n| WORK-OTHER | STARTED | other-owner |`)
+    .replace("## Detours And Recall", "| return-7 | WORK-1 / task-one | RECEIVED |\n## Detours And Recall")
+    .replace(/\{"schemaVersion":1,"id":"NEXT-7"[^\n]+/,
+      JSON.stringify({...earlier, state:"WAITING", evidence:"old-access", resumeWhen:"Access is restored"}));
+  const current = {state, graph:healthyGraph, outbox:""};
+  const request = {boundary:"return-application", receiptId:"return-7", stateSha256:hash(state)};
+  const events = [];
+  const deliver = (receiptId, status, evidence, extra = {}) => {
+    current.outbox += "\n" + createReturnSync({status, returnReceiptId:receiptId,
+      taskContextArtifact:`${extra.work ?? work} / ${extra.owner ?? owner} / ${evidence}`, memoryCandidates:"NO_MEMORY_DELTA",
+      artifactDisposition:"Retain candidate at safe-ref", recommendedNextAction:"Non-authoritative worker suggestion"});
+    current.result = {sha256:validateDurableOutbox(current.outbox).returns.find(row => row.id === receiptId).sha256,
+      work, owner, revision, dod, evidence, ...extra};
+  };
+  deliver(request.receiptId, "CHECKPOINT_READY", "verified access and retained technical output",
+    {previousWait:{id:"access-gate", evidence:"old-access", status:"SATISFIED"}});
+  current.next = {kind:"EXECUTE", id:"NEXT-8", action:"Run the retained candidate against the actor flow",
+    owner, evidence:"brief-7 actor check", obligation:"actor-check"};
+  current.taskDisposition = {boundary:"task-disposition", work, owner, revision, action:"execute",
+    candidate:"safe-ref", plan:"plan-7", authority:"human-7", ledger:"attempts-7", pause:"CLEARED", effects:"RECONCILED",
+    assignment:{work, owner, revision, contextEpoch:"epoch-7", evidence:"brief-7", humanEvent:"human-7",
+      directions:[{id:"human-7", source:"decision-7", orderSource:"durable-human-events", work,
+        sequence:7, kind:"AUTHORIZE", supersedes:null}],
+      readback:{humanEvent:"human-7", contextEpoch:"epoch-7", evidence:"current-readback", revision},
+      obligations:[{id:current.next.obligation, owner, state:"READY", evidence:current.next.evidence}]},
+    budget:{limit:10, spent:4, reserved:1, next:2, reviewReserve:2, unit:"steps"},
+    attempts:[{id:"attempt-7", hypothesis:"access probe", evidence:"access-7", outcome:"succeeded", escalated:false,
+      progressEvidence:"access verified"}], maxAttempts:3, maxEscalations:0,
+    next:{hypothesis:"retained candidate completes flow", check:"actor verification", reason:"access verified", escalated:false},
+    authors:[owner], review:{required:false, triggers:[], basis:"ordinary execute only"},
+    routing:{boundary:"work-routing", work, revision, orchestrator:"current", actor:owner,
+      purpose:"resume actor outcome", source:"brief-7", expectedOutput:"actor verification",
+      operation:"verify", evidenceNeed:"ready"}};
+  const host = {
+    async readCurrent() {return structuredClone(current);},
+    async compareAndSwapState({expected, candidate}) {
+      assert.equal(expected.stateSha256, hash(current.state)); events.push("state"); current.state = candidate; return "APPLIED";
+    },
+    async appendReturnRoute({expected, route}) {
+      assert.equal(expected.stateSha256, hash(current.state)); assert.equal(expected.outboxSha256, hash(current.outbox));
+      events.push("route"); current.outbox += "\n" + route; return "APPLIED";
+    },
+    async runNext({binding, routing, expected}) {
+      assert.equal(binding.stateSha256, hash(current.state)); assert.equal(expected.outboxSha256, hash(current.outbox));
+      assert.equal(routing.source, "brief-7"); events.push("operation");
+      const evidence = "actor-check-started";
+      current.state = publishWorkingState(current.state, binding.owner, evidence);
+      return {...binding, kind:"FIRST_ACTION", evidence, turnId:"worker-turn-8", observedStateSha256:hash(current.state)};
+    },
+  };
+  const wait = (resumeWhen = "Provider publishes completed verification report") => {
+    const gate = {owner, evidence:"provider-report-id", resumeWhen};
+    current.next = {kind:"WAIT", id:"NEXT-9", action:"Read the provider verification report",
+      obligation:"report", ...gate};
+    current.taskDisposition.assignment.obligations = [{id:"report", state:"WAITING", ...gate}];
+  };
+  return {current, host, request, events, hash, deliver, wait};
+}
+
+test("Return application runs the retained next operation and accepts only the final parent DOD", async t => {
+  const {current, host, request, events, hash, deliver} = applicationFixture();
+  const dir = await mkdtemp(path.join(tmpdir(), "return-application-"));
+  t.after(() => rm(dir, {recursive:true, force:true}));
+  const output = path.join(dir, "observed-actor-flow");
+  const run = host.runNext;
+  const originalOutbox = current.outbox, originalTask = structuredClone(current.taskDisposition);
+  host.runNext = async args => {
+    assert.match(current.state, /- Remaining: complete flow and verify actor outcome/);
+    assert.match(current.state, /- Accepted proof: actor baseline/);
+    assert.doesNotMatch(current.state, /Access is restored/);
+    assert.match(current.outbox, /Retain candidate at safe-ref/);
+    await writeFile(output, "actor flow completed", {flag:"wx"});
+    const observed = await run(args);
+    deliver("return-8", "ACCEPT", "proof-8", {scope:"PARENT_DOD", previousActionId:args.binding.actionId});
+    return observed;
+  };
+  const partial = await applyReturnApplication(request, host);
+  assert.equal(partial.status, "CONTINUED", JSON.stringify(partial));
+  assert.equal(readProductionContinuation(current.state).value.state, "WORKING");
+  assert.deepEqual(events, ["state", "route", "operation"]);
+  assert.equal(await readFile(output, "utf8"), "actor flow completed");
+  assert.ok(current.outbox.startsWith(originalOutbox));
+  assert.equal(current.graph, healthyGraph);
+  assert.deepEqual(current.taskDisposition, originalTask);
+  assert.match(current.state, /Human attention: PENDING \| ID: HUMAN-OTHER/);
+  assert.match(current.state, /Project Guard: ACTIVE .*Independent: YES/);
+  assert.match(current.state, /\| WORK-OTHER \| STARTED \| other-owner \|/);
+  assert.match(current.state, /\| DET-1 \| revisit copy at review \| OPEN \|/);
+  assert.doesNotMatch(current.state, /checkpoint-7|\| return-7 \|/);
+  assert.equal((await applyReturnApplication(request, host)).status, "ALREADY_RECORDED");
+  assert.deepEqual(events, ["state", "route", "operation"]);
+  const task = current.taskDisposition;
+  task.action = "accept"; task.acceptanceEvidence = "proof-8";
+  task.assignment.obligations[0].state = "DONE";
+  current.next = {kind:"ACCEPT", id:"NEXT-10", owner:"current", action:"Read the next accepted goal",
+    evidence:"project intake route", resumeWhen:"A new goal is admitted through the existing intake"};
+  const finalRequest = {...request, receiptId:"return-8", stateSha256:hash(current.state)};
+  assert.equal((await applyReturnApplication(finalRequest, host)).status, "LIMITED", "parent closure needs independent acceptance");
+  task.review = {required:true, triggers:["acceptance"], basis:"accepted plan", dispatch:"review-8",
+    verdict:{id:"verdict-8", reviewer:task.owner, evidence:"independent review proof", decision:"ACCEPT",
+      ...Object.fromEntries(["work","revision","candidate","plan","ledger"].map(key => [key, task[key]]))},
+    application:{verdict:"verdict-8", owner:task.owner, evidence:"owner checked verdict"}};
+  assert.equal((await applyReturnApplication(finalRequest, host)).status, "UNVERIFIED", "self-review cannot close parent");
+  task.review.verdict.reviewer = "reviewer-other";
+  current.result.scope = "CHECKPOINT";
+  assert.equal((await applyReturnApplication(finalRequest, host)).status, "HELD");
+  current.result.scope = "PARENT_DOD";
+  const final = await applyReturnApplication(finalRequest, host);
+  assert.equal(final.status, "ACCEPTED", JSON.stringify(final));
+  assert.match(current.state, /- Current DOD: actor completes the flow\n- Accepted proof: proof-8\n- Remaining: No remaining work/);
+  assert.match(current.state, /\| WORK-1 .* \| CLOSED \| task-one/);
+  assert.deepEqual(events, ["state", "route", "operation", "state", "route"]);
+});
+
+test("Return application keeps genuine owned waits and rejects the stale satisfied access wait", async () => {
+  const {current, host, request, events, wait} = applicationFixture();
+  wait("Access is restored");
+  current.next.evidence = current.taskDisposition.assignment.obligations[0].evidence = "old-access";
+  assert.equal((await applyReturnApplication(request, host)).status, "HELD");
+  wait("Provider restores the permission");
+  current.next.obligation = current.taskDisposition.assignment.obligations[0].id = "access-gate";
+  assert.equal((await applyReturnApplication(request, host)).status, "HELD", "renaming a satisfied gate does not reopen it");
+  wait("Access is restored");
+  current.next.obligation = current.taskDisposition.assignment.obligations[0].id = "access-gate";
+  current.next.evidence = current.taskDisposition.assignment.obligations[0].evidence = "old-access";
+  current.result.previousWait.status = "PENDING";
+  assert.equal((await applyReturnApplication(request, host)).status, "LIMITED", "unchanged genuine wait retains its action");
+  assert.equal(readProductionContinuation(current.state).value.id, "NEXT-7");
+  current.result.previousWait.status = "SATISFIED";
+  wait();
+  const result = await applyReturnApplication(request, host);
+  assert.equal(result.status, "WAITING", JSON.stringify(result));
+  assert.deepEqual(events, ["state", "route"]);
+  assert.equal(readProductionContinuation(current.state).value.resumeWhen, current.next.resumeWhen);
+  assert.equal(readProductionContinuation(current.state).value.owner, current.next.owner);
+  assert.match(current.state, /- Remaining: complete flow and verify actor outcome/);
+});
+
+test("Return application consumes the child access Return and invokes the separate parent assignment", async () => {
+  const {current, host, request, events, hash, deliver} = applicationFixture();
+  current.outbox = "";
+  deliver(request.receiptId, "ACCEPT", "child access verified", {
+    work:"CHILD-ACCESS", owner:"access-worker", revision:"access-brief", parentWork:"UNRELATED",
+    scope:"CHILD_OUTCOME", previousWait:{id:"access-gate", evidence:"old-access", status:"SATISFIED"},
+  });
+  current.state = current.state
+    .replace("## Pending Return Inbox", "| CHILD-ACCESS | RETURNED | access-worker |\n## Pending Return Inbox")
+    .replace("| return-7 | WORK-1 / task-one |", "| return-7 | CHILD-ACCESS / access-worker |");
+  request.stateSha256 = hash(current.state);
+  assert.equal((await applyReturnApplication(request, host)).status, "LIMITED");
+  assert.equal(readProductionContinuation(current.state).value.id, "NEXT-7");
+  current.result.parentWork = "WORK-1";
+  const applied = await applyReturnApplication(request, host);
+  assert.equal(applied.status, "CONTINUED", JSON.stringify(applied));
+  assert.equal(applied.observed.owner, "task-one");
+  assert.equal(applied.observed.revision, "brief-7");
+  assert.match(current.state, /\| CHILD-ACCESS \| CLOSED \| access-worker \|/);
+  assert.match(current.state, /\| WORK-1 .* \| WORKING \| task-one \|/);
+  assert.match(current.state, /- Accepted proof: actor baseline\n- Remaining: complete flow/);
+  const {application} = validateDurableOutbox(current.outbox).routes[0];
+  assert.equal(application.sourceWork, "CHILD-ACCESS");
+  assert.equal(application.sourceRevision, "access-brief");
+  assert.equal(application.work, "WORK-1");
+  assert.deepEqual(events, ["state", "route", "operation"]);
+});
+
+test("Return application preserves unrelated pending inbox and memory, but holds dependent action", async () => {
+  const {current, host, request, events, hash, deliver} = applicationFixture();
+  const ownResult = current.result;
+  deliver("return-other", "CHECKPOINT_READY", "unrelated checkpoint", {work:"WORK-OTHER", owner:"other-owner"});
+  current.result = ownResult;
+  current.state = current.state.replace("## Detours And Recall", "| return-other | WORK-OTHER / other-owner | RECEIVED |\n## Detours And Recall");
+  const memory = "| EVENT-OTHER | unrelated | a to b | ENT-01 | none | review delta | source-other | PENDING |";
+  current.graph = current.graph.replace("## Live Retrieval Probes", memory + "\n## Live Retrieval Probes");
+  const graph = current.graph;
+  request.stateSha256 = hash(current.state);
+  assert.equal((await applyReturnApplication(request, host)).status, "HELD", "unresolved memory dependencies are not assumed unrelated");
+  current.next.memoryEvents = ["EVENT-OTHER"];
+  assert.equal((await applyReturnApplication(request, host)).status, "HELD");
+  current.next.memoryEvents = [];
+  current.graph = graph.replace("ENT-01 | none | review delta", "ENT-UNKNOWN | none | review delta");
+  assert.equal((await applyReturnApplication(request, host)).status, "HELD", "invalid memory anchors are still blocking");
+  current.graph = graph;
+  current.outbox = current.outbox.replace("WORK-OTHER / other-owner / unrelated checkpoint", "AMBIGUOUS / other-owner / unrelated checkpoint");
+  assert.equal((await applyReturnApplication(request, host)).status, "HELD", "unbound pending Return is not ignored");
+  current.outbox = current.outbox.replace("AMBIGUOUS / other-owner / unrelated checkpoint", "WORK-OTHER / other-owner / unrelated checkpoint");
+  const applied = await applyReturnApplication(request, host);
+  assert.equal(applied.status, "CONTINUED", JSON.stringify(applied));
+  assert.deepEqual(events, ["state", "route", "operation"]);
+  assert.equal(current.graph, graph);
+  assert.match(current.state, /\| return-other \| WORK-OTHER \/ other-owner \| RECEIVED \|/);
+  assert.deepEqual(validateDurableOutbox(current.outbox).pendingReturnIds, ["return-other"]);
+});
+
+test("Return application distinguishes a manager terminal operation from an observed working lease", async () => {
+  const {current, host, request, events, hash, deliver, wait} = applicationFixture();
+  const task = current.taskDisposition;
+  current.next.owner = task.owner = task.assignment.owner = task.assignment.obligations[0].owner = "current";
+  task.routing.actor = "current";
+  task.routing.operation = "coordinate";
+  host.runNext = async ({binding}) => {
+    events.push("operation");
+    const id = "manager-return", evidence = "provider verification requested";
+    deliver(id, "CHECKPOINT_READY", evidence, {owner:binding.owner, previousActionId:binding.actionId});
+    const {value} = readProductionContinuation(current.state);
+    current.state = current.state.replace("## Detours And Recall", `| ${id} | WORK-1 / current | RECEIVED |\n## Detours And Recall`)
+      .replace(/^\{"schemaVersion":1,"id":[^\n]+/m, () =>
+        JSON.stringify({...value, id:"NEXT-9", action:"Apply the manager Return", evidence:id}));
+    return {...binding, kind:"TERMINAL_RETURN", returnReceiptId:id, evidence, turnId:"manager-turn-8",
+      observedStateSha256:hash(current.state)};
+  };
+  const terminal = await applyReturnApplication(request, host);
+  assert.equal(terminal.status, "APPLICATION_PENDING", JSON.stringify(terminal));
+  assert.equal(readProductionContinuation(current.state).value.evidence, terminal.returnReceiptId);
+  wait();
+  current.next.id = "NEXT-10";
+  const applied = await applyReturnApplication({...request, receiptId:terminal.returnReceiptId,
+    stateSha256:hash(current.state)}, host);
+  assert.equal(applied.status, "WAITING", JSON.stringify(applied));
+  assert.deepEqual(events, ["state", "route", "operation", "state", "route"]);
+});
+
+test("Return application fails closed around stale, conflicting and uncertain effects", async t => {
+  for (const [name, status, count, mutate] of [
+    ["stale State", "CONFLICT", 0, f => {f.request.stateSha256 = "1".repeat(64);}],
+    ["wrong revision", "HELD", 0, f => {f.current.result.revision = "old";}],
+    ["budget exhausted", "HELD", 0, f => {f.current.taskDisposition.budget.spent = 9;}],
+    ["unknown attempt", "OUTCOME_UNKNOWN", 0, f => {f.current.taskDisposition.attempts[0].outcome = "unknown";}],
+    ["legacy route", "LIMITED", 0, f => {f.current.outbox += "\n" + createReturnRoute({
+      returnReceiptId:f.request.receiptId, consumer:"current", routedNextAction:"continue later", evidence:"unbound"});}],
+    ["CAS conflict", "CONFLICT", 0, f => {f.host.compareAndSwapState = async () => "CONFLICT";}],
+    ["lost State reply", "OUTCOME_UNKNOWN", 1, f => {
+      const write = f.host.compareAndSwapState;
+      f.host.compareAndSwapState = async args => {await write(args); throw Error("lost reply");};
+    }],
+    ["mismatched State readback", "OUTCOME_UNKNOWN", 1, f => {
+      const write = f.host.compareAndSwapState;
+      f.host.compareAndSwapState = async args => {await write(args); f.current.state += "\n"; return "APPLIED";};
+    }],
+    ["newer source-backed pause", "HELD", 1, f => {
+      const write = f.host.compareAndSwapState;
+      f.host.compareAndSwapState = async args => {
+        await write(args);
+        const task = f.current.taskDisposition;
+        task.assignment.directions.push({...task.assignment.directions[0], id:"human-8", kind:"PAUSE",
+          supersedes:"human-7", sequence:8, source:"decision-8"});
+        task.assignment.readback.humanEvent = task.assignment.humanEvent = task.authority = "human-8";
+        task.pause = "ACTIVE";
+        return "APPLIED";
+      };
+    }],
+    ["lost route reply", "OUTCOME_UNKNOWN", 2, f => {
+      const append = f.host.appendReturnRoute;
+      f.host.appendReturnRoute = async args => {await append(args); throw Error("lost route reply");};
+    }],
+    ["dispatch ACK is not observed execution", "OUTCOME_UNKNOWN", 3, f => {
+      const run = f.host.runNext;
+      f.host.runNext = async args => ({...await run(args), kind:"ACK"});
+    }],
+    ["first-action claim without current WORKING State", "OUTCOME_UNKNOWN", 3, f => {
+      f.host.runNext = async ({binding}) => {
+        f.events.push("operation");
+        return {...binding, kind:"FIRST_ACTION", evidence:"worker started", turnId:"turn-8",
+          observedStateSha256:f.hash(f.current.state)};
+      };
+    }],
+  ]) await t.test(name, async () => {
+    const fixture = applicationFixture();
+    mutate(fixture);
+    const {current, host, request, events} = fixture;
+    const result = await applyReturnApplication(request, host);
+    assert.equal(result.status, status, JSON.stringify(result));
+    assert.equal(events.length, count);
+    assert.equal(result.replayAuthorized, false);
+    if (count) {
+      const stateAfter = current.state, outboxAfter = current.outbox;
+      await applyReturnApplication(request, host);
+      assert.equal(events.length, count, "duplicate cannot invoke another write or operation");
+      assert.equal(current.state, stateAfter);
+      assert.equal(current.outbox, outboxAfter);
+    }
+  });
+});
+
+test("manual Return application exports compact candidate and checks exact readback without claiming native execution", async t => {
+  const {current, request, hash} = applicationFixture();
+  const dir = await mkdtemp(path.join(tmpdir(), "return-application-cli-"));
+  t.after(() => rm(dir, {recursive:true, force:true}));
+  const [state, graph, outbox, input, candidate, authority] = ["state.md","graph.md","outbox.md","input.json","candidate.md","authority.json"]
+    .map(name => path.join(dir, name));
+  const packet = {...request, result:current.result, next:current.next, taskDisposition:current.taskDisposition};
+  await Promise.all([[state,current.state],[graph,current.graph],[outbox,current.outbox],[input,JSON.stringify(packet)]]
+    .map(([file, data]) => writeFile(file, data)));
+  const readAuthority = exportBody => writeFile(authority, JSON.stringify({
+    stateSha256:hash(exportBody), work:packet.taskDisposition.work, revision:packet.taskDisposition.revision,
+    owner:packet.taskDisposition.owner, contextEpoch:packet.taskDisposition.assignment.contextEpoch,
+    direction:packet.taskDisposition.assignment.directions.at(-1), evidence:"fresh source read",
+  }));
+  const args = ["action-receipt", "--input", input, "--state", state, "--graph", graph, "--outbox", outbox];
+  assert.equal(JSON.parse(runCli([...args, "--candidate", candidate]).stdout).status, "LIMITED");
+  await readAuthority(current.state);
+  args.push("--receipt", authority);
+  const preview = runCli([...args, "--candidate", candidate]);
+  const prepared = JSON.parse(preview.stdout);
+  assert.equal(preview.status, 2);
+  assert.equal(prepared.status, "LIMITED");
+  assert.equal(prepared.phase, "CANDIDATE");
+  assert.equal(prepared.candidate, undefined);
+  assert.equal(hash(await readFile(candidate, "utf8")), prepared.candidateSha256);
+  const verify = [...args, "--expect-state-sha", prepared.candidateSha256];
+  assert.equal(JSON.parse(runCli(verify).stdout).status, "HELD", "the old WAIT is not candidate readback");
+  const candidateBody = await readFile(candidate, "utf8");
+  await writeFile(state, candidateBody);
+  assert.equal(JSON.parse(runCli(verify).stdout).status, "HELD", "old authority export is not current readback");
+  await readAuthority(candidateBody);
+  const readback = JSON.parse(runCli(verify).stdout);
+  assert.equal(readback.phase, "STATE_READBACK");
+  assert.equal(readback.firstAction, "UNVERIFIED");
+  const matchingOutbox = current.outbox + "\n" + readback.returnRoute;
+  await writeFile(outbox, matchingOutbox);
+  const workingState = publishWorkingState(candidateBody, readback.binding.owner, "exact first effect");
+  await writeFile(input, JSON.stringify({...packet, observed:{...readback.binding, kind:"FIRST_ACTION",
+    evidence:"exact first effect", turnId:"manual-worker-turn", observedStateSha256:hash(workingState)}}));
+  assert.equal(JSON.parse(runCli(verify).stdout).status, "HELD", "READY State is not a first action");
+  await writeFile(state, workingState);
+  await readAuthority(workingState);
+  const observed = JSON.parse(runCli(verify).stdout);
+  assert.equal(observed.status, "LIMITED");
+  assert.equal(observed.firstAction, "DECLARED_MATCH");
+  assert.equal(observed.routeReadback, true);
+  assert.equal(observed.returnRoute, undefined);
+});
 
 test("truthful health publication preserves operational gates", async t => {
   const target = await mkdtemp(path.join(tmpdir(), "vydykhai-health-publication-"));

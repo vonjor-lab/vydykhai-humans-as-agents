@@ -133,7 +133,7 @@ The existing Guard routes a stranded obligation using its normal deduplicated in
 
 ## Canonical Return Route Receipt
 
-After the orchestrator consumes and routes a marked Return Sync, append this paired receipt to the same durable outbox or its stable linked control record. It is the machine-readable proof Project Guard compares with the producer receipt.
+After the orchestrator consumes and routes a marked Return Sync, append this paired receipt to the same durable outbox or its stable linked control record. Project Guard compares it with the producer receipt. For current application follow [Apply A Return](production-continuation.md#apply-a-return): publish/read back the joined State and next action before appending the generated `Application` binding. A legacy receipt or result comment proves routing only, not current State, parent acceptance or actual continuation. Do not duplicate the record to claim upgraded proof.
 
 ```md
 <!-- vydykhai:return-route v1 -->

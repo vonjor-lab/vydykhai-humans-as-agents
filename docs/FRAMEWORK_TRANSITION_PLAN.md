@@ -1,5 +1,30 @@
 # Framework Efficiency Transition
 
+## Return Application - 2.1.36
+
+Evolution Gate: implement the existing responsibility and State-publication
+contract, not a new goal, role, controller or ledger. Constitution priorities
+remain outcome/meaning, human authority, retained proof/memory and independent
+acceptance, with whole-outcome cost optimized inside those constraints.
+Observed gap: partial Returns reached comments while the authoritative next
+action still waited on an already satisfied prerequisite. Technical checkpoints
+then ended the manager turn without an applied next step or a human decision.
+
+The existing Return transition must bind current assignment, parent outcome,
+source result and next operation; publish/read back the current projection before
+acting. A partial result does not close the parent. A real blocker retains its
+scope and owner; optional improvements do not become necessary dependencies by
+default. Unknown effects, newer human pauses, protected review and actual spend
+limits remain binding. Reuse evidence, source links and the current executor.
+No recurring full retrieval, extra reviewer, invented attempts or budget renewal.
+
+Focused executable cases cover child-to-parent continuation, retained unrelated
+records, independent acceptance, current authority, observed start, duplicate
+delivery and uncertain writes. Independent review accepted the bounded route
+after repairing those boundaries. Full regression, release and active adoption
+remain separate gates. Native authenticity/concurrency stays LIMITED; tests do
+not prove arbitrary final interception, closed-chat wake-up or whole-DOD savings.
+
 ## Role Continuity - 2.1.35
 
 Evolution Gate: application rule and adoption evidence, not a new principle.

@@ -21,12 +21,12 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { compileExecutableBrief, validateApplicationReceipt } from "./memory-brief.mjs";
+import { canonicalJson, compileExecutableBrief, validateApplicationReceipt } from "./memory-brief.mjs";
 import { runContextFile } from "./context-run.mjs";
 import { prepareContext } from "./context-prepare.mjs";
 import { planAdoption, assessWorkerAdoption, assessCapabilityReadiness, readCapabilityAdoption, kitIdentity, assessUpdateAcceptance } from "./adoption-plan.mjs";
 import { classifyCheckpointReviews } from "./checkpoint-review.mjs";
-import { evaluateTaskIdentity, evaluateResumeReceipt, evaluateTaskDisposition, evaluateWorkRouting } from "./task-continuity.mjs";
+import { evaluateCurrentAssignment, evaluateTaskIdentity, evaluateResumeReceipt, evaluateTaskDisposition, evaluateWorkRouting } from "./task-continuity.mjs";
 import { readMemoryGraph, memoryStorageCommand } from "./memory-storage.mjs";
 import { section, tableRows, bulletFields } from "./artifact-markdown.mjs";
 export { evaluateTaskIdentity, evaluateResumeReceipt, evaluateTaskDisposition, evaluateWorkRouting } from "./task-continuity.mjs";
@@ -59,6 +59,8 @@ Usage:
   node scripts/vydykhai.mjs install <target-repo> [--force] [--approve-transition <from-version>:<to-version>]
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--receipt <transition-export.json>] [--json]
   node scripts/vydykhai.mjs action-receipt --input <resume-receipt.json>
+  node scripts/vydykhai.mjs action-receipt --input <return-application.json> --receipt <current-authority.json> --state <state.md> --graph <graph.md> --outbox <outbox.md> [--candidate <new-file> | --expect-state-sha <candidate-sha>]
+  node scripts/vydykhai.mjs action-receipt --input <return-application.json> --host <trusted-host.mjs>
   node scripts/vydykhai.mjs control-activate --runtime-source <trusted-source> --input <private-request.json>
   node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--expect-state-sha <sha256>] [--expect-graph-sha <sha256>] [--json]
   node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--woken-incident <semantic-id>] [--repair-incident <semantic-id> --repair-attempts <count>] [--json]
@@ -100,6 +102,8 @@ function parseArgs(argv) {
     expectStateSha: null,
     expectGraphSha: null,
     input: null,
+    host: null,
+    candidate: null,
     envelope: null,
     receipt: null,
     worker: null,
@@ -127,7 +131,7 @@ function parseArgs(argv) {
       i += 1;
       if (!flags.from) throw new Error("--from requires a framework repository path");
     } else if (
-      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--woken-incident", "--repair-incident", "--repair-attempts", "--expect-state-sha", "--expect-graph-sha", "--input", "--envelope", "--receipt", "--worker", "--mode", "--uncertain-incident", "--notice-at"].includes(
+      ["--state", "--graph", "--outbox", "--activity", "--accepted-incident", "--woken-incident", "--repair-incident", "--repair-attempts", "--expect-state-sha", "--expect-graph-sha", "--input", "--host", "--candidate", "--envelope", "--receipt", "--worker", "--mode", "--uncertain-incident", "--notice-at"].includes(
         value,
       )
     ) {
@@ -143,6 +147,8 @@ function parseArgs(argv) {
         "--expect-state-sha": "expectStateSha",
         "--expect-graph-sha": "expectGraphSha",
         "--input": "input",
+        "--host": "host",
+        "--candidate": "candidate",
         "--worker": "worker",
         "--envelope": "envelope",
         "--receipt": "receipt",
@@ -944,7 +950,11 @@ export function createReturnRoute({
   consumer,
   routedNextAction,
   evidence,
+  application,
 } = {}) {
+  if (application !== undefined && !validReturnApplication(application)) {
+    throw new TypeError("invalid Return application binding");
+  }
   return [
     "<!-- vydykhai:return-route v1 -->",
     "# Return Route",
@@ -953,9 +963,21 @@ export function createReturnRoute({
     `Consumer: ${requiredWriterLine("consumer", consumer)}`,
     `Routed next action: ${requiredWriterLine("routedNextAction", routedNextAction)}`,
     `Evidence: ${requiredWriterLine("evidence", evidence)}`,
+    ...(application ? [`Application: ${JSON.stringify(application)}`] : []),
     "<!-- vydykhai:return-route:end -->",
   ].join("\n");
 }
+
+const digest = value => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
+const applicationFields = ["sourceSha256", "priorStateSha256", "graphSha256", "decisionSha256",
+  "sourceWork", "sourceRevision", "sourceOwner", "work", "revision", "actionId", "owner", "authority", "disposition"];
+const validApplicationBinding = value => value &&
+  ["sourceSha256", "priorStateSha256", "graphSha256", "decisionSha256"].every(key => digest(value[key])) &&
+  ["sourceWork", "sourceRevision", "sourceOwner", "work", "revision", "actionId", "owner", "authority"]
+    .every(key => concreteLine(value[key])) &&
+  ["EXECUTE", "WAIT", "ACCEPT"].includes(value.disposition);
+const validReturnApplication = value => validApplicationBinding(value) &&
+  digest(value.stateSha256) && Object.keys(value).length === applicationFields.length + 1;
 
 // Shared by the CLI and host adapters; only complete, unambiguous pairs close returns.
 export function validateDurableOutbox(content) {
@@ -1032,6 +1054,7 @@ export function validateDurableOutbox(content) {
     }
     returns.set(id, {
       id,
+      sha256: sha256(block),
       fields: Object.fromEntries(required),
       rawStatus,
       statusQualifiers: parsedStatus.qualifiers,
@@ -1068,6 +1091,14 @@ export function validateDurableOutbox(content) {
     if (lifecycle && !/^RECEIVED\s*->\s*CONSUMED\s*->\s*ROUTED$/.test(lifecycle)) {
       issues.push(`Durable outbox: Return Route ${id || "<missing>"} lifecycle is not RECEIVED -> CONSUMED -> ROUTED`);
     }
+    let application;
+    const binding = compatibleBlockField(block, "Application");
+    if (binding.occurrenceCount) {
+      try { application = JSON.parse(binding.value); } catch { /* Invalid declaration. */ }
+      if (!validReturnApplication(application) || application.sourceSha256 !== returns.get(id)?.sha256) {
+        issues.push(`Durable outbox: Return Route ${id || "<missing>"} has an invalid application binding`);
+      }
+    }
     if (!id) continue;
     if (routes.has(id)) {
       issues.push(`Durable outbox: duplicate Return Route ${id}`);
@@ -1075,6 +1106,8 @@ export function validateDurableOutbox(content) {
     }
     routes.set(id, {
       id,
+      sha256: sha256(block),
+      ...(application === undefined ? {} : { application }),
       fields: Object.fromEntries(required),
       compatibility: {
         consumerField: consumer.selectedName,
@@ -1320,6 +1353,7 @@ export function readProductionContinuation(content) {
   if (value.schemaVersion !== 1) fail("schemaVersion must be 1");
   if (!["READY", "WORKING", "WAITING"].includes(value.state)) fail("state must be READY, WORKING, or WAITING");
   if (value.state === "WAITING" && !concreteLine(value.resumeWhen)) fail("WAITING needs a concrete resumeWhen");
+  if (value.obligation !== undefined && !concreteLine(value.obligation)) fail("invalid obligation reference");
   const orchestrator = content.match(/^Orchestrator health:.*\|\s*Context:\s*([^|\n]+)/m)?.[1]?.trim();
   if (!concreteLine(orchestrator)) fail("current orchestrator context is unresolved");
   if (value.state === "READY" && value.owner !== orchestrator) fail("READY must belong to the current orchestrator");
@@ -1337,6 +1371,15 @@ export function readProductionContinuation(content) {
     fail("WAITING needs the current orchestrator or its matching task owner");
   }
   if (lease?.[1] === "OUTCOME_UNKNOWN") fail("uncertain work needs reconciliation before continuation");
+  const application = value.returnApplication;
+  if (application !== undefined && (!validApplicationBinding(application) ||
+      !concreteLine(application.receiptId) || Object.keys(application).length !== applicationFields.length + 1 ||
+      application.work !== value.work || application.actionId !== value.id ||
+      (application.disposition === "EXECUTE" ? value.state !== "READY" &&
+        (value.state !== "WORKING" || application.owner !== value.owner)
+        : value.state !== "WAITING" || application.owner !== value.owner))) {
+    fail("invalid current Return application");
+  }
   const record = Object.fromEntries(["schemaVersion", "id", "work", "action", "owner", "state", "evidence", "resumeWhen"]
     .map((field) => [field, value[field] ?? null]));
   const binding = {
@@ -1350,11 +1393,413 @@ export function readProductionContinuation(content) {
   };
   return {
     value: record,
+    ...(application === undefined ? {} : { returnApplication: application }),
+    ...(value.obligation === undefined ? {} : { obligation: value.obligation }),
     orchestrator,
     binding,
     issues,
     key: issues.length ? null : sha256(JSON.stringify(binding)),
   };
+}
+
+const heldReturn = (status, reason, details = {}) => ({status, reason, ...details, replayAuthorized: false});
+const returnDecision = ({result = null, next = null, taskDisposition = null}) =>
+  sha256(canonicalJson({result, next, taskDisposition}));
+const returnSnapshot = current => ({
+  stateSha256: sha256(current.state), outboxSha256: sha256(current.outbox),
+  graphSha256: sha256(current.graph), decisionSha256: returnDecision(current),
+});
+
+function replaceReturnSection(state, heading, end, update) {
+  const body = section(state, heading, [end], {stopAtPeerHeading: true});
+  const start = state.indexOf(heading) + heading.length;
+  return state.slice(0, start) + update(body) + state.slice(start + body.length);
+}
+
+const leaseRows = state => tableRows(section(state, "## Execution Leases", ["## Pending Return Inbox"]), /^Work$/i);
+const workMatches = (name, key) => concreteLine(key) && (name === key || name.startsWith(key + " "));
+const inboxRows = state => tableRows(section(state, "## Pending Return Inbox", ["## Detours And Recall"]), /^Receipt$/i);
+const routeBindingMatches = (route, app) => route?.valid && app &&
+  applicationFields.every(key => route.application?.[key] === app[key]);
+
+function returnApplicationCheck(state, graph, manifest, application, outbox, next) {
+  const operational = [];
+  const issues = validateProjectState(state, manifest, operational);
+  const leases = leaseRows(state);
+  const adoption = readCapabilityAdoption(section(state, "## Control Snapshot", ["## Current DOD"]), leases);
+  const unrelated = new Set();
+  for (const [id, sender] of inboxRows(state)) {
+    const work = sender?.split(/\s+\/\s+/)[0];
+    const receipt = outbox.returns.find(row => row.id === id && row.valid);
+    const matches = leases.filter(([name]) => workMatches(name, work));
+    if (outbox.pendingReturnIds.includes(id) && receipt &&
+        work === receipt.fields["Task / context / PR / commit / artifact"].split(/\s+\/\s+/)[0] &&
+        matches.length === 1 && ![application.sourceWork, application.work].some(key => workMatches(matches[0][0], key))) {
+      unrelated.add(`Project State: pending return ${id} requires reconciliation`);
+    }
+  }
+  const pending = tableRows(section(graph, "## Pending Memory Events", ["## Live Retrieval Probes"],
+    {stopAtPeerHeading: true}), /^Event$/i);
+  const pendingIds = pending.filter(row => row.at(-1) === "PENDING").map(row => row[0]);
+  const result = [...issues.filter(issue => !unrelated.has(issue) &&
+    (application.disposition !== "WAIT" || !operational.includes(issue))),
+    ...adoption.issues, ...validateMemoryGraph(graph, manifest, {inspectionOnly: true})];
+  if (duplicateValues(pending.map(row => row[0])).length) result.push("Project Memory Graph: duplicate memory event");
+  if ((pendingIds.length || next.memoryEvents !== undefined) && (!Array.isArray(next.memoryEvents) ||
+      !next.memoryEvents.every(id => pending.some(row => row[0] === id)))) {
+    result.push("current action memory dependencies are unresolved");
+  } else if (pendingIds.some(id => next.memoryEvents.includes(id))) {
+    result.push("current action depends on a pending memory event");
+  }
+  return result;
+}
+
+function inspectReturn(request, current) {
+  const stop = reason => ({stop: heldReturn("HELD", reason)});
+  if (!concreteLine(request?.receiptId) || !digest(request.stateSha256) ||
+      ![current?.state, current?.outbox, current?.graph].every(v => typeof v === "string")) {
+    return stop("exact prior State, current exports and Return receipt id required");
+  }
+  const outbox = validateDurableOutbox(current.outbox);
+  const source = outbox.returns.find(row => row.id === request.receiptId);
+  if (!source?.valid || outbox.issues.some(issue =>
+    !outbox.pendingReturnIds.some(id => issue === `Durable outbox: return ${id} requires routing`))) {
+    return stop("current outbox or selected Return is missing or ambiguous");
+  }
+  const paired = outbox.routes.find(row => row.id === source.id);
+  const continuation = readProductionContinuation(current.state);
+  return {outbox, source, paired, continuation};
+}
+
+function prepareReturnApplication(request, current, manifest) {
+  const inspection = inspectReturn(request, current);
+  if (inspection.stop) return inspection.stop;
+  const {outbox, source, paired, continuation} = inspection;
+  const {result, next, taskDisposition: task, state, graph} = current;
+  const stop = (reason, status = "HELD") => heldReturn(status, reason);
+  if (paired) return stop(paired.application
+    ? "bound Return Route already exists; reconcile any unobserved next operation without replay"
+    : "legacy Return Route is delivery evidence only; reconcile its application before proceeding",
+  paired.application ? "ALREADY_RECORDED" : "LIMITED");
+  const prior = continuation.returnApplication;
+  if (prior && (!outbox.routes.some(row => row.id === prior.receiptId && routeBindingMatches(row, prior)) ||
+      (prior.disposition === "EXECUTE" && result?.previousActionId !== prior.actionId))) {
+    return stop("prior State publication or next operation requires reconciliation", "OUTCOME_UNKNOWN");
+  }
+  const expected = returnSnapshot(current);
+  if (expected.stateSha256 !== request.stateSha256) return stop("prior State no longer matches", "CONFLICT");
+  if (task?.action === "halt" && next?.kind !== "WAIT") return stop("safety stop; no action invoked");
+  const {value, orchestrator} = continuation;
+  const leases = leaseRows(state);
+  const sourceLeases = leases.filter(([name]) => workMatches(name, result?.work));
+  const targetLeases = leases.filter(([name]) => workMatches(name, task?.work));
+  const [sourceLease] = sourceLeases, [targetLease] = targetLeases;
+  const sameWork = result?.work === task?.work;
+  const managerResult = result?.owner === orchestrator && outbox.routes.some(row => row.valid &&
+    row.application?.disposition === "EXECUTE" && row.application.owner === result.owner &&
+    row.application.work === result.work && row.application.revision === result.revision &&
+    row.application.actionId === result.previousActionId);
+  if (continuation.issues.length || !task || sourceLeases.length !== 1 || targetLeases.length !== 1 ||
+      (!sameWork && sourceLease === targetLease) ||
+      [sourceLease[1], targetLease[1]].some(s => ["CLOSED", "OUTCOME_UNKNOWN"].includes(s)) ||
+      result?.sha256 !== source.sha256 || ![result.revision, result.owner, result.evidence].every(concreteLine) ||
+      (!managerResult && !sourceLease[2]?.split(/\s+\/\s+/).includes(result.owner)) ||
+      (sameWork && result.revision !== task.revision) ||
+      (task.owner !== orchestrator && !targetLease[2]?.split(/\s+\/\s+/).includes(task.owner))) {
+    return stop("Return source lease or next assignment identity is unresolved");
+  }
+  if (![result.work, task.work].includes(value.work) || (!sameWork && result.parentWork !== task.work)) {
+    return stop("Return is outside the current action and accepted parent assignment; current action retained", "LIMITED");
+  }
+  const kind = next?.kind;
+  if (!["EXECUTE", "WAIT", "ACCEPT"].includes(kind) ||
+      !["id", "owner", "action", "evidence"].every(key => concreteLine(next[key])) ||
+      next.id === value.id || (kind !== "EXECUTE" && !concreteLine(next.resumeWhen))) {
+    return stop("a material next action with exact owner and evidence is required");
+  }
+  const dod = bulletFields(section(state, "## Current DOD", ["## Execution Leases"], {stopAtPeerHeading: true}).split("\n"));
+  const outcome = dod.fields.get("Current DOD"), proof = dod.fields.get("Accepted proof"), remaining = dod.fields.get("Remaining");
+  if (dod.duplicates.length || ![outcome, proof, remaining].every(concreteLine) || result.dod !== outcome) {
+    return stop("exact current parent DOD, retained proof and remaining work required");
+  }
+  const assignment = evaluateCurrentAssignment(task);
+  if (assignment.status !== "PASS") return stop(assignment.reason);
+  const obligation = task.assignment.obligations.find(row => row.id === next.obligation);
+  const sourceStatus = source.fields.Status;
+  const waitReadback = result.previousWait?.evidence === value.evidence && concreteLine(result.previousWait.id) &&
+    (!continuation.obligation || continuation.obligation === result.previousWait.id) ? result.previousWait : null;
+  if (kind === "EXECUTE" && value.state === "WAITING" && waitReadback?.status !== "SATISFIED") {
+    return stop("current gate is not evidenced as satisfied; preserve the existing action", "LIMITED");
+  }
+  if (kind === "WAIT") {
+    const priorGate = continuation.obligation ?? waitReadback?.id;
+    if (value.state === "WAITING" && waitReadback?.status === "PENDING" && priorGate === waitReadback.id &&
+        next.obligation === priorGate && value.evidence === next.evidence &&
+        value.resumeWhen === next.resumeWhen && value.owner === next.owner &&
+        obligation?.state === "WAITING" && obligation.owner === next.owner &&
+        obligation.evidence === next.evidence && obligation.resumeWhen === next.resumeWhen) {
+      return stop("existing source-backed gate remains pending; preserve the current action without claiming application", "LIMITED");
+    }
+    if (obligation?.state !== "WAITING" || obligation.owner !== next.owner ||
+        obligation.evidence !== next.evidence || obligation.resumeWhen !== next.resumeWhen ||
+        (task.pause === "CLEARED" && task.effects === "RECONCILED" &&
+         task.assignment.obligations.some(row => row.state === "READY")) ||
+        (value.state === "WAITING" && (!priorGate || priorGate === next.obligation || value.evidence === next.evidence))) {
+      return stop("WAIT must record a distinct current external gate and owner, not unchanged or ready work");
+    }
+  } else {
+    if (sourceStatus === "OUTCOME_UNKNOWN" || task.action !== (kind === "EXECUTE" ? "execute" : "accept")) {
+      return stop("Return does not authorize the requested operation");
+    }
+    const disposition = evaluateTaskDisposition(task);
+    if (disposition.status !== "PASS") return stop(disposition.reason, disposition.status);
+    if (kind === "EXECUTE" && (obligation?.state !== "READY" || obligation.owner !== next.owner ||
+        next.owner !== task.owner || obligation.evidence !== next.evidence ||
+        (!sameWork && next.owner !== orchestrator && ["STARTED", "WORKING"].includes(targetLease[1])) ||
+        evaluateWorkRouting(task.routing, {work: task.work, revision: task.revision,
+          actor: next.owner, orchestrator}).status !== "PASS")) {
+      return stop("current owned execution obligation and enrolled route are required");
+    }
+    if (kind === "ACCEPT" && (!sameWork || source.rawStatus !== "ACCEPT" || result.scope !== "PARENT_DOD" ||
+        task.acceptanceEvidence !== result.evidence || next.owner !== orchestrator)) {
+      return stop("only accepted parent DOD evidence can close the parent");
+    }
+    if (kind === "ACCEPT" && task.review.required !== true) {
+      return stop("parent closure here requires the existing independent acceptance verdict", "LIMITED");
+    }
+  }
+
+  const application = {receiptId: source.id, sourceSha256: source.sha256,
+    priorStateSha256: expected.stateSha256, graphSha256: expected.graphSha256,
+    sourceWork: result.work, sourceRevision: result.revision, sourceOwner: result.owner, work: task.work, revision: task.revision,
+    actionId: next.id, owner: next.owner, disposition: kind, authority: task.authority,
+    decisionSha256: expected.decisionSha256};
+  const record = {schemaVersion: 1, id: next.id, work: task.work, action: next.action,
+    owner: kind === "EXECUTE" ? orchestrator : next.owner,
+    state: kind === "EXECUTE" ? "READY" : "WAITING", evidence: next.evidence,
+    ...(kind === "EXECUTE" ? {} : {resumeWhen: next.resumeWhen}),
+    ...(kind === "WAIT" ? {obligation: next.obligation} : {}), returnApplication: application};
+  const settled = "No remaining work for this accepted DOD";
+  const snapshot = state.replace(/^Snapshot as of: [^\r\n]+/m, () => `Snapshot as of: Return application ${source.id}`);
+  let candidate = replaceReturnSection(snapshot, "## Control Snapshot", "## Current DOD", body =>
+    body.replace(/^DOD Control Line: [^\r\n]+/m, () =>
+      `DOD Control Line: ${outcome} -> ${kind === "ACCEPT" ? result.evidence : proof} -> ${kind === "ACCEPT" ? settled : remaining} -> ${next.action}`));
+  if (kind === "ACCEPT") candidate = replaceReturnSection(candidate, "## Current DOD", "## Execution Leases", body =>
+    body.replace(/^- Accepted proof: [^\r\n]+/m, () => `- Accepted proof: ${result.evidence}`)
+      .replace(/^- Remaining: [^\r\n]+/m, () => `- Remaining: ${settled}`));
+  candidate = replaceReturnSection(candidate, "## Execution Leases", "## Pending Return Inbox", body =>
+    body.split("\n").map(line => {
+      const row = tableRows(line, /^Work$/i)[0];
+      const isSource = row?.[0] === sourceLease[0] && (!managerResult || kind === "ACCEPT"),
+        targetWait = kind === "WAIT" && row?.[0] === targetLease[0];
+      if (!isSource && !targetWait) return line;
+      const closeChild = !sameWork && isSource && source.rawStatus === "ACCEPT" && result.scope === "CHILD_OUTCOME";
+      row[1] = kind === "ACCEPT" || closeChild ? "CLOSED" : "WAITING"; // No first action observed yet.
+      if (row.length === 8) {
+        let checkpoint;
+        try { checkpoint = JSON.parse(row[6]); } catch { /* Legacy checkpoint prose. */ }
+        if (!checkpoint || checkpoint.receiptId === source.id || row[1] === "CLOSED") {
+          row[6] = !sameWork && isSource ? result.evidence
+            : kind === "EXECUTE" ? `${next.id}: ${next.action}` : next.resumeWhen;
+        }
+      }
+      return `| ${row.map(cell => cell.replaceAll("|", "\\|")).join(" | ")} |`;
+    }).join("\n"));
+  candidate = replaceReturnSection(candidate, "## Pending Return Inbox", "## Detours And Recall", body =>
+    body.split("\n").filter(line => tableRows(line, /^Receipt$/i)[0]?.[0] !== source.id).join("\n"));
+  candidate = replaceReturnSection(candidate, "## Next-Best-Action", "<!-- vydykhai:project-state:end -->", body =>
+    body.replace(/^\`\`\`json\s*\n[\s\S]*?^\`\`\`\s*$/m, () => "\`\`\`json\n" + JSON.stringify(record) + "\n\`\`\`\n"));
+  const issues = returnApplicationCheck(candidate, graph, manifest, application, outbox, next);
+  const applied = readProductionContinuation(candidate).returnApplication;
+  if (applied?.receiptId !== source.id || applied.actionId !== next.id) issues.push("current action was not replaced");
+  if (kind === "ACCEPT") {
+    const accepted = bulletFields(section(candidate, "## Current DOD", ["## Execution Leases"],
+      {stopAtPeerHeading: true}).split("\n")).fields;
+    if (accepted.get("Accepted proof") !== result.evidence || accepted.get("Remaining") !== settled) {
+      issues.push("accepted proof and remaining DOD did not render exactly");
+    }
+  }
+  if (issues.length) return heldReturn("HELD", "candidate failed existing control validation", {issues});
+  return {status: "CANDIDATE", candidate, expected, candidateSha256: sha256(candidate),
+    receiptId: source.id, work: task.work, revision: task.revision, disposition: kind, next,
+    replayAuthorized: false};
+}
+
+function boundReturnRoute(current, inspection) {
+  const {source, continuation: {returnApplication: applied, orchestrator, value}} = inspection;
+  return createReturnRoute({returnReceiptId: source.id, consumer: orchestrator, routedNextAction: value.action,
+    evidence: value.evidence, application: {...Object.fromEntries(applicationFields.map(key => [key, applied[key]])),
+      stateSha256: sha256(current.state)}});
+}
+
+function observedReturnAction(observed, binding) {
+  return ["FIRST_ACTION", "TERMINAL_RETURN"].includes(observed?.kind) && digest(observed.observedStateSha256) &&
+    concreteLine(observed.turnId) && concreteLine(observed.evidence) &&
+    ["receiptId", "work", "revision", "actionId", "owner", "authority", "stateSha256"]
+      .every(key => observed[key] === binding[key]);
+}
+
+function observedWorkingState(observed, binding, current, seen) {
+  const {value, returnApplication, issues} = seen.continuation;
+  return observed?.kind === "FIRST_ACTION" && observedReturnAction(observed, binding) &&
+    sha256(current.state) === observed.observedStateSha256 && !issues.length &&
+    value.state === "WORKING" && value.id === binding.actionId && value.work === binding.work &&
+    value.owner === binding.owner && value.evidence === observed.evidence &&
+    returnApplication?.receiptId === binding.receiptId && routeBindingMatches(seen.paired, returnApplication) &&
+    seen.paired.application.stateSha256 === binding.stateSha256;
+}
+
+function observedTerminalReturn(observed, binding, current, seen) {
+  const {value, issues} = seen.continuation;
+  const receipt = seen.outbox.returns.find(row => row.id === observed.returnReceiptId && row.valid);
+  const result = current.result;
+  return observed.kind === "TERMINAL_RETURN" && !issues.length &&
+    sha256(current.state) === observed.observedStateSha256 && receipt?.id !== binding.receiptId &&
+    receipt && seen.outbox.pendingReturnIds.includes(receipt.id) && result?.sha256 === receipt.sha256 &&
+    result.work === binding.work && result.owner === binding.owner && result.revision === binding.revision &&
+    result.previousActionId === binding.actionId && result.evidence === observed.evidence &&
+    value.state === "READY" && value.work === binding.work && value.id !== binding.actionId &&
+    value.evidence === receipt.id && inboxRows(current.state).some(([id, sender]) =>
+      id === receipt.id && sender === `${binding.work} / ${binding.owner}`);
+}
+
+function currentNativeAuthority(receipt, state, task) {
+  const current = evaluateCurrentAssignment(task);
+  return current.status === "PASS" && receipt?.stateSha256 === sha256(state) &&
+    receipt.work === task.work && receipt.owner === task.owner && receipt.revision === task.revision &&
+    receipt.contextEpoch === task.assignment.contextEpoch && concreteLine(receipt.evidence) &&
+    receipt.direction && canonicalJson(receipt.direction) === canonicalJson(task.assignment.directions.at(-1));
+}
+
+async function manualReturnApplication(input, flags) {
+  if (!flags.state || !flags.graph || !flags.outbox || !flags.receipt || (flags.candidate && flags.expectStateSha)) {
+    return heldReturn("LIMITED", "manual application requires current State, graph, outbox and separate authority exports");
+  }
+  const manifest = await loadManifest(SCRIPT_ROOT);
+  const current = {...input, state: await readFile(path.resolve(flags.state), "utf8"),
+    graph: (await readMemoryGraph(path.resolve(flags.graph))).text,
+    outbox: await readFile(path.resolve(flags.outbox), "utf8")};
+  const authority = await readJson(path.resolve(flags.receipt));
+  if (!currentNativeAuthority(authority, current.state, input.taskDisposition)) {
+    return heldReturn("HELD", "refresh the applicable original authority against the current State export");
+  }
+  if (!flags.expectStateSha) {
+    const prepared = prepareReturnApplication(input, current, manifest);
+    if (prepared.status !== "CANDIDATE") return prepared;
+    const {candidate, status, ...summary} = prepared;
+    if (flags.candidate) await writeFile(path.resolve(flags.candidate), candidate, {flag: "wx", mode: 0o600});
+    return heldReturn("LIMITED", "candidate validated; native publication, concurrency and execution not verified",
+      {...summary, phase: status, candidateFile: flags.candidate ? path.resolve(flags.candidate) : null});
+  }
+  const seen = inspectReturn(input, current);
+  if (seen.stop) return seen.stop;
+  const {returnApplication: applied, value, issues} = seen.continuation;
+  if (issues.length || applied?.receiptId !== input.receiptId ||
+      applied.priorStateSha256 !== input.stateSha256 || applied.sourceSha256 !== seen.source.sha256 ||
+      applied.graphSha256 !== sha256(current.graph) || applied.decisionSha256 !== returnDecision(current)) {
+    return heldReturn("HELD", "State, Return or current decision does not match candidate readback");
+  }
+  const controlIssues = returnApplicationCheck(current.state, current.graph, manifest, applied, seen.outbox, input.next);
+  if (controlIssues.length) return heldReturn("HELD", "readback failed existing control validation", {issues: controlIssues});
+  const binding = {receiptId: applied.receiptId, work: applied.work, revision: applied.revision,
+    actionId: applied.actionId, owner: applied.owner, authority: applied.authority, stateSha256: flags.expectStateSha};
+  if (input.observed) {
+    if (!observedWorkingState(input.observed, binding, current, seen) ||
+        seen.paired.fields["Routed next action"] !== input.next.action || seen.paired.fields.Evidence !== input.next.evidence ||
+        seen.paired.fields.Consumer !== seen.continuation.orchestrator) {
+      return heldReturn("HELD", "observed action does not match current WORKING State and bound Return Route");
+    }
+    return heldReturn("LIMITED", "working State and declared observation match; native authenticity is host-owned",
+      {phase: "WORKING_READBACK", binding, firstAction: "DECLARED_MATCH", routeReadback: true});
+  }
+  if (sha256(current.state) !== flags.expectStateSha || value.state === "WORKING") {
+    return heldReturn("HELD", "exported State is not the exact candidate");
+  }
+  const route = boundReturnRoute(current, seen);
+  const routeMatches = seen.paired?.sha256 === sha256(markedBlocks(route, "return-route", "Return Route").blocks[0]);
+  if (seen.paired && !routeMatches) return heldReturn("LIMITED", "existing route is not this application; do not append another");
+  return heldReturn("LIMITED", "exact exported readback matched; native concurrency and observation authenticity are host-owned",
+    {phase: "STATE_READBACK", binding, disposition: applied.disposition, nextAction: value.action,
+      firstAction: applied.disposition === "EXECUTE" ? "UNVERIFIED" : "NOT_REQUIRED",
+      returnRoute: routeMatches ? undefined : route, routeReadback: routeMatches});
+}
+
+// The host owns real CAS and current authority at dispatch admission. A transport
+// error is not evidence of non-delivery; even a duplicate never re-enters a write.
+export async function applyReturnApplication(request, host) {
+  const stop = (status, reason, details) => heldReturn(status, reason, details);
+  if (typeof host?.readCurrent !== "function" ||
+      !["compareAndSwapState", "appendReturnRoute"].every(key => typeof host[key] === "function")) {
+    return stop("LIMITED", "guarded State and Return host callbacks unavailable");
+  }
+  const read = (receiptId = request?.receiptId) => host.readCurrent({receiptId});
+  let stage = "current read";
+  let details;
+  try {
+    const manifest = await loadManifest(SCRIPT_ROOT);
+    const prepared = prepareReturnApplication(request, await read(), manifest);
+    if (prepared.status !== "CANDIDATE") return prepared;
+    const {candidate, expected, next, status, ...summary} = prepared;
+    details = summary;
+    if (next.kind === "EXECUTE" && typeof host.runNext !== "function") {
+      return stop("LIMITED", "no enrolled handler for the ready operation", details);
+    }
+    stage = "State publication";
+    const write = await host.compareAndSwapState({receiptId: request.receiptId, expected, candidate});
+    if (write === "CONFLICT") return stop("CONFLICT", "guarded State publication refused", details);
+    if (write !== "APPLIED") return stop("OUTCOME_UNKNOWN", "State publication not confirmed", details);
+    const current = await read();
+    if (current.state !== candidate) return stop("OUTCOME_UNKNOWN", "State readback differs; reconcile without rollback or dispatch", details);
+    const pinned = returnSnapshot(current);
+    if (pinned.decisionSha256 !== expected.decisionSha256 || pinned.graphSha256 !== expected.graphSha256 ||
+        pinned.outboxSha256 !== expected.outboxSha256) {
+      return stop("HELD", "current authority, memory or Return changed after State publication", details);
+    }
+    const route = boundReturnRoute(current, inspectReturn(request, current));
+    stage = "Return Route publication";
+    const appended = await host.appendReturnRoute({receiptId: request.receiptId, expected: pinned, route});
+    if (appended !== "APPLIED") return stop(appended === "CONFLICT" ? "CONFLICT" : "OUTCOME_UNKNOWN",
+      "Return Route publication not confirmed; no next action invoked", details);
+    const live = await read();
+    const seen = inspectReturn(request, live);
+    if (seen.stop || seen.paired?.sha256 !== sha256(markedBlocks(route, "return-route", "Return Route").blocks[0])) {
+      return stop("OUTCOME_UNKNOWN", "Return Route readback differs; no next action invoked", details);
+    }
+    const admission = returnSnapshot(live);
+    if (live.state !== candidate || admission.decisionSha256 !== pinned.decisionSha256 ||
+        admission.graphSha256 !== pinned.graphSha256) {
+      return stop("HELD", "State or current authority changed before next operation", details);
+    }
+    if (next.kind !== "EXECUTE") return {status: next.kind === "ACCEPT" ? "ACCEPTED" : "WAITING",
+      ...details, next, replayAuthorized: false};
+    stage = "next operation";
+    const binding = {receiptId: request.receiptId, work: details.work, revision: details.revision,
+      actionId: next.id, owner: next.owner, authority: live.taskDisposition.authority, stateSha256: pinned.stateSha256};
+    const observed = await host.runNext({binding, expected: admission, next, routing: live.taskDisposition.routing});
+    if (!observedReturnAction(observed, binding)) {
+      return stop("OUTCOME_UNKNOWN", "next operation lacks bound first-action readback; do not resend", details);
+    }
+    const after = await read(observed.kind === "TERMINAL_RETURN" ? observed.returnReceiptId : undefined);
+    const readback = inspectReturn(request, after);
+    if (readback.stop || readback.paired?.sha256 !== seen.paired.sha256 ||
+        after.taskDisposition?.authority !== binding.authority || after.taskDisposition?.pause !== "CLEARED" ||
+        after.taskDisposition.work !== binding.work || after.taskDisposition.revision !== binding.revision ||
+        evaluateCurrentAssignment(after.taskDisposition).status !== "PASS" ||
+        canonicalJson(after.taskDisposition.assignment.directions.at(-1)) !==
+          canonicalJson(live.taskDisposition.assignment.directions.at(-1))) {
+      return stop("OUTCOME_UNKNOWN", "observed operation, current authority or Return Route needs reconciliation", details);
+    }
+    if (observedTerminalReturn(observed, binding, after, readback)) {
+      return {status: "APPLICATION_PENDING", ...details, returnReceiptId: observed.returnReceiptId, observed, replayAuthorized: false};
+    }
+    if (!observedWorkingState(observed, binding, after, readback)) {
+      return stop("OUTCOME_UNKNOWN", "bound observation lacks current WORKING State or durable terminal Return; do not resend", details);
+    }
+    return {status: "CONTINUED", ...details, next, observed, replayAuthorized: false};
+  } catch {
+    return stop(stage === "current read" ? "LIMITED" : "OUTCOME_UNKNOWN",
+      `${stage} unavailable; reconcile current evidence before any dependent operation`, details);
+  }
 }
 
 export function evaluateGuardLock(
@@ -2295,6 +2740,9 @@ async function main() {
   }
 
   const { positionals, flags } = parseArgs(rest);
+  if ((flags.host || flags.candidate) && command !== "action-receipt") {
+    throw new Error("--host and --candidate require action-receipt");
+  }
   if(flags.guardDecision && !["install","update"].includes(command))throw Error("Guard permission only applies to setup");
   if (flags.approveTransition !== null && command !== "install" && command !== "update") {
     throw new Error("--approve-transition is only supported by install/update");
@@ -2329,6 +2777,18 @@ async function main() {
   if (command === "action-receipt") {
     if (!flags.input) throw new Error("action-receipt requires --input");
     const input = JSON.parse(await readFile(path.resolve(flags.input), "utf8"));
+    if (input?.boundary === "return-application") {
+      if (flags.host && (flags.state || flags.graph || flags.outbox || flags.candidate || flags.expectStateSha || flags.receipt)) {
+        throw new Error("--host cannot be combined with manual State exports");
+      }
+      const result = flags.host
+        ? await applyReturnApplication(input, (await import(pathToFileURL(path.resolve(flags.host)).href)).default)
+        : await manualReturnApplication(input, flags);
+      console.log(JSON.stringify(result, null, 2));
+      if (!["CONTINUED", "WAITING", "ACCEPTED"].includes(result.status)) process.exitCode = 2;
+      return;
+    }
+    if (flags.host || flags.candidate) throw new Error("--host and --candidate require boundary return-application");
     const result = input?.boundary === "work-routing" ? evaluateWorkRouting(input)
       : input?.boundary === "task-disposition" ? evaluateTaskDisposition(input) : evaluateResumeReceipt(input);
     console.log(JSON.stringify(result, null, 2));

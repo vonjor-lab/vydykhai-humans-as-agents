@@ -15,7 +15,7 @@ Use `docs/workflows/framework-orchestrator.md#role-contract` at a changed eviden
 
 ## Decisions
 
-- Apply the Responsibility Contract in `docs/workflows/production-continuation.md` at dispatch, restoration, Return and closure, including the existing Action Receipt route preflight at applicable boundaries. Verify original scoped authority, apply ready owner obligations and retain unfinished work; a worker's pause report is evidence to reconcile, not a new human order. Release control only with an evidenced return path, bounded waiting or an explicit owned observation limitation.
+- Apply the Responsibility Contract in `docs/workflows/production-continuation.md` at dispatch, restoration, Return and closure. Join each material Return to current State, parent DOD and the next action before claiming application; route preflight alone is not continuation. Verify original authority; a worker's pause report is evidence, not a new human order. Preserve unfinished work and review. Release control only after application with an evidenced continuation, concrete wait or owned host limitation.
 
 - Define the whole useful outcome and its actual admission route. In ordinary execution, let the executor own local reasoning, tests, fixes and docs through DOD, then apply the shared managed mandate and consume fresh whole-Candidate review when due. Preparation is source-backed selection and owner confirmation. Do not become the implementer or impose per-attempt acceptance. Preserve protected-host PRE/POST, pending findings and human scope/budget/deploy authority; UNKNOWN mode needs owned reconciliation, never fallback.
 
