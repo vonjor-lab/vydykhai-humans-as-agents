@@ -31,7 +31,7 @@ async function fixture(t) {
     cursor:()=>readFile(path.join(project,'.vydykhai/guard-foreground.json'),'utf8')};
 }
 
-test('outcome -> observation -> reopen -> application: only route settles notification, not DOD',async t=>{
+test('routing stops notifications; only a bound route records application, not next execution or DOD',async t=>{
   const x=await fixture(t);
   const waiting=x.wait();
   const timer=setTimeout(()=>writeFile(x.outbox,x.result),50);
@@ -48,13 +48,27 @@ test('outcome -> observation -> reopen -> application: only route settles notifi
   }
   assert.equal(await x.cursor(),cursor);
   await writeFile(x.outbox,x.result+'\n'+x.route);
+  // Upgrade a pre-binding cursor at the same outbox stamp, without re-notifying.
+  assert.equal((await x.wait()).status,'APPLICATION_PENDING');
+  const legacy=JSON.parse(await x.cursor());delete legacy.cursor.bound;
+  await writeFile(path.join(x.project,'.vydykhai/guard-foreground.json'),JSON.stringify(legacy));
+  const pending=await x.wait();
+  assert.equal(pending.application,'RECONCILE_CURRENT_STATE_WITHOUT_REPLAY');
+  assert.equal(pending.replayAuthorized,false);
+  assert.equal((await x.observe()).status,'QUIET');
+  const hash='a'.repeat(64);
+  const bound=createReturnRoute({returnReceiptId:x.receipt,consumer:x.owner,routedNextAction:'repair',evidence:'decision',
+    application:{sourceSha256:parse(x.result).returns[0].sha256,priorStateSha256:hash,graphSha256:hash,
+      decisionSha256:hash,stateSha256:hash,sourceWork:'work',sourceRevision:'revision',sourceOwner:'worker',
+      work:'work',revision:'revision',actionId:'repair',owner:'worker',authority:'direction',disposition:'EXECUTE'}});
+  await writeFile(x.outbox,x.result+'\n'+bound);
   const applied=await x.wait();
   assert.equal(applied.status,'ALREADY_RECONCILED');
-  assert.equal(applied.assurance,'DECLARED_ROUTE_NOT_TASK_ACCEPTANCE');
+  assert.equal(applied.application,'RECORDED_NOT_EXECUTION_PROOF');
   const settled=await x.cursor();
   for(let i=0;i<3;i++)assert.equal((await x.wait()).status,'ALREADY_RECONCILED');
   assert.equal(await x.cursor(),settled);
-  assert.equal(await readFile(x.outbox,'utf8'),x.result+'\n'+x.route);
+  assert.equal(await readFile(x.outbox,'utf8'),x.result+'\n'+bound);
 });
 
 test('foreign reader and explicit human pause cannot consume the owner obligation',async t=>{

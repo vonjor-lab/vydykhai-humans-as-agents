@@ -33,8 +33,29 @@ export function evaluateWorkRouting(v, binding = {}) {
   if (focused && v.actor === v.orchestrator) {
     return result("MISMATCH", "missing project evidence belongs to a focused execution context", "FOCUSED_CONTEXT");
   }
-  return result("PASS", "declared route consistent; not dispatch, execution or native interception proof",
+  const decision = result("PASS", "declared route consistent; not dispatch, execution or native interception proof",
     focused || v.actor !== v.orchestrator ? "FOCUSED_CONTEXT" : "CONTROL_CONTEXT");
+  if (!Object.hasOwn(v, "spawnProfile") && !binding.requireSpawnProfile && !binding.compileSpawn) return decision;
+  const p = v.spawnProfile;
+  if (v.actor === v.orchestrator || !keys(p, ["source","model","effort"]) || !text(p.source) ||
+      !text(p.model) || !/^[a-zA-Z0-9][a-zA-Z0-9._:/-]{0,127}$/.test(p.model) ||
+      !["low","medium","high","xhigh","max","ultra"].includes(p.effort)) {
+    return result("UNVERIFIED", "fresh worker launch needs a sourced, explicit model and effort");
+  }
+  if (Object.hasOwn(binding,"nativeProfile")) {
+    const n = binding.nativeProfile;
+    if (!text(binding.turnId) || !object(n) || !text(n.evidence) ||
+        n.turnId !== binding.turnId || n.actor !== v.actor || n.work !== v.work || n.revision !== v.revision ||
+        !text(n.model) || !text(n.effort)) return result("UNVERIFIED", "current native profile readback missing");
+    if (n.model !== p.model || n.effort !== p.effort) return result("MISMATCH", "observed native model/effort differs from selected profile");
+  }
+  if (!binding.compileSpawn) return decision;
+  const a = binding.acceptedAssignment;
+  if (!keys(a,["work","revision","actor","spawnProfile"]) || !["work","revision","actor"].every(k => a[k] === v[k]) ||
+      !["source","model","effort"].every(k => a.spawnProfile?.[k] === p[k])) {
+    return result("UNVERIFIED", "selected profile does not match the accepted assignment readback");
+  }
+  return {...decision, spawnArgs:{model:p.model, reasoning_effort:p.effort, fork_context:false}};
 }
 
 function evaluateEnrolledRouting(v, revision = v.revision) {

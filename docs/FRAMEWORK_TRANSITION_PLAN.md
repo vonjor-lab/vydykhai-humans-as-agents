@@ -1,5 +1,9 @@
 # Framework Efficiency Transition
 
+## Worker launch and Return scope - 2.1.37 candidate
+
+Repair the existing work-routing and Return boundaries, not the constitution. A sourced profile supplies fresh native spawn arguments; current-turn readback distinguishes selection from application. A batch report does not settle the parent obligation. Preserve module ownership, bounded authority, memory, pauses and independent review. For adoption use one natural launch and parent Return at the next safe boundary; unsupported hosts remain limited. Installation, a local test or a shorter packet is not evidence of product savings. Compare the complete accepted outcome before making that claim.
+
 ## Return Application - 2.1.36
 
 Evolution Gate: implement the existing responsibility and State-publication

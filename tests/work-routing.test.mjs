@@ -85,6 +85,18 @@ test("existing continuation and lease observations bind routing to actual owner 
   assert.equal(assess().nextAction,"RECONCILE_ROUTING");
   activity.owner.routing=route({actor:"worker",operation:"investigate"});
   assert.equal(assess().coverage,"COVERED");
+  activity.owner.spawnProfileRequired=true;
+  assert.equal(assess().nextAction,"RECONCILE_ROUTING");
+  activity.owner.routing.spawnProfile={source:"accepted-matrix:r3/routine",model:"test-model",effort:"low"};
+  assert.equal(assess().nextAction,"RECONCILE_ROUTING");
+  const observed={work:"task",revision:"brief",actor:"worker",turnId:"turn",model:"test-model",effort:"low",evidence:"native-turn"};
+  activity.owner.nativeProfile=observed;
+  assert.equal(assess().coverage,"COVERED");
+  for(const key of Object.keys(observed)){
+    activity.owner.nativeProfile={...observed,[key]:key==="evidence"?"":"other"};
+    assert.equal(assess().nextAction,"RECONCILE_ROUTING",key);
+  }
+  activity.owner.nativeProfile=observed;
   activity.owner.routingRequired="true";
   assert.equal(assess().nextAction,"RECONCILE_ROUTING");
   activity.owner.routingRequired=true;
@@ -103,4 +115,32 @@ test("existing continuation and lease observations bind routing to actual owner 
   activity.owner=activity.leases[0];
   activity.owner.status="IDLE";activity.owner.terminal={turnId:"turn",status:"RESULT",evidence:"durable-return"};
   assert.equal(assess().nextAction,"RECONCILE_RESULT","routing cannot lose an already produced result");
+});
+
+test("Codex spawn compiles accepted worker profile only; omitted selection cannot inherit the manager",async t=>{
+  const root=await mkdtemp(path.join(tmpdir(),"spawn-profile-"));
+  t.after(()=>rm(root,{recursive:true,force:true}));
+  const input=path.join(root,"route.json");
+  const cli=fileURLToPath(new URL("../scripts/vydykhai.mjs",import.meta.url));
+  const profile={source:"approved-matrix:execution",model:"example-worker",effort:"low"};
+  const receipt=path.join(root,"accepted.json"), high={...profile,effort:"high",source:"accepted-visual-exception"};
+  const assignment={work:"task",revision:"brief",actor:"worker",spawnProfile:profile};
+  const launch=(p)=>spawnSync(process.execPath,[cli,"action-receipt","--worker-spawn","--input",input,...(p?["--receipt",p]:[])],{encoding:"utf8"});
+  for(const [actor,p,ok] of [["worker",profile,true],["worker",high,true],
+    ["worker",undefined,false],["worker",{...profile,effort:""},false],["worker",{...profile,source:""},false],["manager",profile,false]]){
+    await writeFile(input,JSON.stringify(route({actor,spawnProfile:p})));
+    await writeFile(receipt,JSON.stringify({...assignment,spawnProfile:p===high?high:profile}));
+    const r=launch(receipt);
+    assert.equal(r.status,ok?0:2,r.stderr);
+    const out=JSON.parse(r.stdout);
+    assert.deepEqual(out.spawnArgs,ok?{model:p.model,reasoning_effort:p.effort,fork_context:false}:undefined);
+    assert.equal(out.executionProven,false);
+  }
+  await writeFile(input,JSON.stringify(route({actor:"worker",spawnProfile:profile})));
+  for(const invalid of [null,input]) assert.equal(launch(invalid).status,2);
+  for(const delta of [{revision:"old"},{work:"other"},{actor:"manager"},{spawnProfile:high},
+    {spawnProfile:{...profile,source:"unapproved"}}]){
+    await writeFile(receipt,JSON.stringify({...assignment,...delta}));
+    assert.equal(launch(receipt).status,2);
+  }
 });

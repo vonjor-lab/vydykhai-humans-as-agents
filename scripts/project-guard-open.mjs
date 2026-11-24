@@ -20,7 +20,7 @@ export async function changedReturns(project,previous,parse){
     const s=await stat(file,{bigint:true});if(!s.isFile() || s.size>2097152n)throw Error('invalid outbox');
     stamp=[s.dev,s.ino,s.size,s.ctimeNs,s.mtimeNs].join(':');
   }catch(e){if(e.code!=='ENOENT')throw e;}
-  if(previous?.stamp===stamp && Array.isArray(previous.routed) && Array.isArray(previous.reports))return previous;
+  if(previous?.stamp===stamp && Array.isArray(previous.routed) && Array.isArray(previous.reports) && Array.isArray(previous.bound))return previous;
   const result=parse(await localText(project,relative));
   if(!result.issues.every(x=>/^Durable outbox: return .* requires routing$/.test(x)))throw Error('invalid outbox; existing evidence retained');
   const rows=new Map(result.returns.map(r=>[r.id,r.fields]));
@@ -29,7 +29,8 @@ export async function changedReturns(project,previous,parse){
     const row=rows.get(id);return [id,row.Status,createHash('sha256').update(JSON.stringify(row)).digest('hex')];
   });
   const reports=result.returns.map(r=>[r.id,createHash('sha256').update(JSON.stringify(r.fields)).digest('hex')]);
-  return {stamp,pending,routed:result.routedReturnIds,reports};
+  const bound=result.routes.filter(row=>row.valid && row.application).map(row=>row.id);
+  return {stamp,pending,routed:result.routedReturnIds,bound,reports};
 }
 async function writeAtomic(file,data){
   const tmp=file+'.'+randomUUID();try{
@@ -93,7 +94,12 @@ export async function portableGuard(project,{parse,session,decision,receipt}={})
     if(receipt){
       if(state.paused)return {status:'PAUSED'};
       if(!owner || owner!==session)return {status:'LIMITED',reason:'wait owner is not bound'};
-      if(state.cursor?.routed?.includes(receipt))return {status:'ALREADY_RECONCILED',assurance:'DECLARED_ROUTE_NOT_TASK_ACCEPTANCE'};
+      if(typeof parse!=='function')return {status:'LIMITED',reason:'current outbox evidence unavailable'};
+      if(state.cursor?.routed?.includes(receipt)){
+        // A legacy route closes notification, not the owner's application obligation.
+        if(!state.cursor.bound.includes(receipt))return {status:'APPLICATION_PENDING',application:'RECONCILE_CURRENT_STATE_WITHOUT_REPLAY'};
+        return {status:'ALREADY_RECONCILED',application:'RECORDED_NOT_EXECUTION_PROOF',assurance:'DECLARED_ROUTE_NOT_TASK_ACCEPTANCE'};
+      }
       if(changed.length)return {status:'RETURN',changed,application:'PENDING'};
       // Observation deduplicates notification, not the owner's obligation to apply.
       if(state.cursor?.pending?.some(([id])=>id===receipt))return {status:'APPLICATION_PENDING',receipt};

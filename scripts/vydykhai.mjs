@@ -59,6 +59,7 @@ Usage:
   node scripts/vydykhai.mjs install <target-repo> [--force] [--approve-transition <from-version>:<to-version>]
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--receipt <transition-export.json>] [--json]
   node scripts/vydykhai.mjs action-receipt --input <resume-receipt.json>
+  node scripts/vydykhai.mjs action-receipt --worker-spawn --input <work-routing.json> --receipt <accepted-assignment.json>
   node scripts/vydykhai.mjs action-receipt --input <return-application.json> --receipt <current-authority.json> --state <state.md> --graph <graph.md> --outbox <outbox.md> [--candidate <new-file> | --expect-state-sha <candidate-sha>]
   node scripts/vydykhai.mjs action-receipt --input <return-application.json> --host <trusted-host.mjs>
   node scripts/vydykhai.mjs control-activate --runtime-source <trusted-source> --input <private-request.json>
@@ -114,6 +115,7 @@ function parseArgs(argv) {
 
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
+    if (value === "--worker-spawn") { flags.codexSpawn = true; continue; }
     if (value === "--guard-background-approved" || value === "--guard-background-declined") {
       if(flags.guardDecision)throw Error("Conflicting background decisions");
       flags.guardDecision=value.endsWith("-approved")?"APPROVED":"DECLINED";
@@ -1928,9 +1930,14 @@ function evaluateExecutionObservation(view, work, orchestrator) {
   }
   const routingSources = sources.filter(source =>
     (source.routingRequired === true || Object.hasOwn(source, "routing")));
+  if ((Object.hasOwn(view,"spawnProfileRequired") && typeof view.spawnProfileRequired !== "boolean") ||
+      (view.spawnProfileRequired && !routingSources.length)) {
+    return { ...limited("current worker launch route unavailable", "RECONCILE_ROUTING"), ...identity };
+  }
   for (const source of routingSources) {
     const routing = evaluateWorkRouting(source.routing, {work:work?.split(/\s/)[0],
-      revision:view.taskIdentity?.current?.revision, actor:view.context, orchestrator});
+      revision:view.taskIdentity?.current?.revision, actor:view.context, orchestrator,
+      requireSpawnProfile:view.spawnProfileRequired, nativeProfile:view.nativeProfile, turnId:view.turnId});
     if (routing.status !== "PASS") return { ...limited(routing.reason, "RECONCILE_ROUTING"), ...identity };
   }
   const distinctRoutes = [...new Set(routingSources.map(source =>
@@ -2689,6 +2696,7 @@ async function reportGuardSetup(target,result,flags){
 
 async function main() {
   const [command, ...rest] = process.argv.slice(2);
+  if (rest.includes("--worker-spawn") && command !== "action-receipt") throw new Error("--worker-spawn requires action-receipt");
   if (!command || command === "help" || command === "--help") {
     console.log(usage());
     return;
@@ -2777,6 +2785,7 @@ async function main() {
   if (command === "action-receipt") {
     if (!flags.input) throw new Error("action-receipt requires --input");
     const input = JSON.parse(await readFile(path.resolve(flags.input), "utf8"));
+    if (flags.codexSpawn && input?.boundary !== "work-routing") throw new Error("--worker-spawn requires work-routing");
     if (input?.boundary === "return-application") {
       if (flags.host && (flags.state || flags.graph || flags.outbox || flags.candidate || flags.expectStateSha || flags.receipt)) {
         throw new Error("--host cannot be combined with manual State exports");
@@ -2789,7 +2798,9 @@ async function main() {
       return;
     }
     if (flags.host || flags.candidate) throw new Error("--host and --candidate require boundary return-application");
-    const result = input?.boundary === "work-routing" ? evaluateWorkRouting(input)
+    const acceptedAssignment = flags.codexSpawn && flags.receipt
+      ? JSON.parse(await readFile(path.resolve(flags.receipt), "utf8")) : null;
+    const result = input?.boundary === "work-routing" ? evaluateWorkRouting(input,{compileSpawn:flags.codexSpawn,acceptedAssignment})
       : input?.boundary === "task-disposition" ? evaluateTaskDisposition(input) : evaluateResumeReceipt(input);
     console.log(JSON.stringify(result, null, 2));
     if (result.status !== "PASS") process.exitCode = 2;

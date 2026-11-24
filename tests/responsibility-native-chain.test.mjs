@@ -116,8 +116,8 @@ async function scenario(t,{pause=false,unknown=false}={}) {
   await writeFile(outbox,result+'\n'+createReturnRoute({returnReceiptId:'RESULT-1',
     consumer:'manager',routedNextAction:'fixture accepted; no outstanding fixture work',
     evidence:'separate process PASS and exact retained checkpoint'}));
-  assert.equal((await wait()).status,'ALREADY_RECONCILED');
-  events.push('OUTCOME_APPLIED');
+  assert.equal((await wait()).application,'RECONCILE_CURRENT_STATE_WITHOUT_REPLAY');
+  events.push('FIXTURE_REVIEW_RETAINED_ROUTE_ONLY');
   const cursor=await readFile(path.join(root,'.vydykhai/guard-foreground.json'),'utf8');
   for(let i=0;i<3;i++)assert.equal((await portableGuard(root,{session:'manager',parse})).status,'QUIET');
   assert.equal(await readFile(path.join(root,'.vydykhai/guard-foreground.json'),'utf8'),cursor);
