@@ -883,6 +883,7 @@ test("Return application runs the retained next operation and accepts only the f
   };
   const partial = await applyReturnApplication(request, host);
   assert.equal(partial.status, "CONTINUED", JSON.stringify(partial));
+  assert.equal(partial.ownerNext,"AWAIT_ACTIVE_OWNER");
   assert.equal(readProductionContinuation(current.state).value.state, "WORKING");
   assert.deepEqual(events, ["state", "route", "operation"]);
   assert.equal(await readFile(output, "utf8"), "actor flow completed");
@@ -914,6 +915,7 @@ test("Return application runs the retained next operation and accepts only the f
   current.result.scope = "PARENT_DOD";
   const final = await applyReturnApplication(finalRequest, host);
   assert.equal(final.status, "ACCEPTED", JSON.stringify(final));
+  assert.equal(final.ownerNext,"PARENT_ACCEPTED");
   assert.match(current.state, /- Current DOD: actor completes the flow\n- Accepted proof: proof-8\n- Remaining: No remaining work/);
   assert.match(current.state, /\| WORK-1 .* \| CLOSED \| task-one/);
   assert.deepEqual(events, ["state", "route", "operation", "state", "route"]);
@@ -1018,6 +1020,7 @@ test("Return application distinguishes a manager terminal operation from an obse
   };
   const terminal = await applyReturnApplication(request, host);
   assert.equal(terminal.status, "APPLICATION_PENDING", JSON.stringify(terminal));
+  assert.equal(terminal.ownerNext,"APPLY_RETURN");
   assert.equal(readProductionContinuation(current.state).value.evidence, terminal.returnReceiptId);
   wait();
   current.next.id = "NEXT-10";

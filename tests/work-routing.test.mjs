@@ -39,6 +39,22 @@ for (const operation of ["investigate","implement","verify"]) test(`${operation}
   assert.equal(evaluateWorkRouting(r).executionProven,false);
 });
 
+test("resume verifies selected profile before follow-up; a previous High is not authority",()=>{
+  const p={model:"worker-model",effort:"low",source:"approved-matrix:routine"};
+  const r=route({actor:"worker",operation:"investigate",spawnProfile:p});
+  const now=Date.now(), activity={work:r.work,revision:r.revision,actor:r.actor,status:"IDLE",
+    turnId:"previous",model:p.model,effort:p.effort,evidence:"native observation",observedAt:new Date(now).toISOString()};
+  const binding={compileResume:true,now,acceptedAssignment:{work:r.work,revision:r.revision,actor:r.actor,
+    previousTurnId:"previous",spawnProfile:p}};
+  const run=n=>evaluateWorkRouting(r,{...binding,workerActivity:n});
+  assert.deepEqual(run(activity).resumeArgs,{target:"worker"});
+  for(const delta of [{effort:"high"},{actor:"other"},{status:"ACTIVE"},{turnId:"older"},{observedAt:new Date(now-300001).toISOString()},{revision:"old"},{evidence:""}]){
+    const out=run({...activity,...delta});assert.notEqual(out.status,"PASS");assert.equal(out.resumeArgs,undefined);
+  }
+  assert.equal(run(null).status,"UNVERIFIED");
+  assert.equal(evaluateWorkRouting(r,{compileResume:true,workerActivity:activity}).status,"UNVERIFIED");
+});
+
 test("a management label cannot hide a declared need for investigation", () => {
   for (const purpose of ["Read-only inventory", "Review many documents", "Visual acceptance", "Find missing module facts"]) {
     assert.equal(evaluateWorkRouting(route({purpose,evidenceNeed:"investigation"})).status,"MISMATCH");

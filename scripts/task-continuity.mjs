@@ -35,12 +35,13 @@ export function evaluateWorkRouting(v, binding = {}) {
   }
   const decision = result("PASS", "declared route consistent; not dispatch, execution or native interception proof",
     focused || v.actor !== v.orchestrator ? "FOCUSED_CONTEXT" : "CONTROL_CONTEXT");
-  if (!Object.hasOwn(v, "spawnProfile") && !binding.requireSpawnProfile && !binding.compileSpawn) return decision;
+  const resume = binding.compileResume === true;
+  if (!Object.hasOwn(v, "spawnProfile") && !binding.requireSpawnProfile && !binding.compileSpawn && !resume) return decision;
   const p = v.spawnProfile;
   if (v.actor === v.orchestrator || !keys(p, ["source","model","effort"]) || !text(p.source) ||
       !text(p.model) || !/^[a-zA-Z0-9][a-zA-Z0-9._:/-]{0,127}$/.test(p.model) ||
       !["low","medium","high","xhigh","max","ultra"].includes(p.effort)) {
-    return result("UNVERIFIED", "fresh worker launch needs a sourced, explicit model and effort");
+    return result("UNVERIFIED", "worker route needs a sourced, explicit model and effort");
   }
   if (Object.hasOwn(binding,"nativeProfile")) {
     const n = binding.nativeProfile;
@@ -49,11 +50,25 @@ export function evaluateWorkRouting(v, binding = {}) {
         !text(n.model) || !text(n.effort)) return result("UNVERIFIED", "current native profile readback missing");
     if (n.model !== p.model || n.effort !== p.effort) return result("MISMATCH", "observed native model/effort differs from selected profile");
   }
-  if (!binding.compileSpawn) return decision;
+  if (!binding.compileSpawn && !resume) return decision;
   const a = binding.acceptedAssignment;
-  if (!keys(a,["work","revision","actor","spawnProfile"]) || !["work","revision","actor"].every(k => a[k] === v[k]) ||
+  if (!keys(a,["work","revision","actor","spawnProfile",...(resume?["previousTurnId"]:[])]) || !["work","revision","actor"].every(k => a[k] === v[k]) ||
       !["source","model","effort"].every(k => a.spawnProfile?.[k] === p[k])) {
     return result("UNVERIFIED", "selected profile does not match the accepted assignment readback");
+  }
+  if (resume) {
+    // A follow-up with no selector retains the existing profile. Never send it to discover the mismatch.
+    const n = binding.workerActivity, observedAt = Date.parse(n?.observedAt);
+    const age = (binding.now ?? Date.now()) - observedAt;
+    if (!text(a.previousTurnId) || !Number.isFinite(age) || age < 0 || age > 300000 ||
+        n?.actor !== a.actor || n.status !== "IDLE" || n.turnId !== a.previousTurnId ||
+        n.work !== a.work || n.revision !== a.revision || ![n.model,n.effort,n.evidence].every(text)) {
+      return result("UNVERIFIED", "fresh idle worker profile bound to the accepted assignment and last turn required");
+    }
+    if (n.model !== p.model || n.effort !== p.effort) {
+      return result("MISMATCH", "follow-up would inherit a different profile; preserve ownership, choose an authorized compatible route");
+    }
+    return {...decision, resumeArgs:{target:v.actor}};
   }
   return {...decision, spawnArgs:{model:p.model, reasoning_effort:p.effort, fork_context:false}};
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import {versionParts,compareVersions} from "./framework-version.mjs";
-import {waitForReturn} from "./manager-event-wait.mjs";
+import {waitForReturn,prepareNativeWait} from "./manager-event-wait.mjs";
 import {portableGuard,installOpenHook} from "./project-guard-open.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -60,6 +60,8 @@ Usage:
   node scripts/vydykhai.mjs doctor [target-repo] [--offline] [--receipt <transition-export.json>] [--json]
   node scripts/vydykhai.mjs action-receipt --input <resume-receipt.json>
   node scripts/vydykhai.mjs action-receipt --worker-spawn --input <work-routing.json> --receipt <accepted-assignment.json>
+  node scripts/vydykhai.mjs action-receipt --worker-resume --input <work-routing.json> --receipt <accepted-assignment.json> --activity <worker-profile.json>
+  node scripts/vydykhai.mjs context-run --native-wait <receipt-id> <target> [<target> ...]
   node scripts/vydykhai.mjs action-receipt --input <return-application.json> --receipt <current-authority.json> --state <state.md> --graph <graph.md> --outbox <outbox.md> [--candidate <new-file> | --expect-state-sha <candidate-sha>]
   node scripts/vydykhai.mjs action-receipt --input <return-application.json> --host <trusted-host.mjs>
   node scripts/vydykhai.mjs control-activate --runtime-source <trusted-source> --input <private-request.json>
@@ -116,6 +118,7 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
     if (value === "--worker-spawn") { flags.codexSpawn = true; continue; }
+    if (value === "--worker-resume") { flags.workerResume = true; continue; }
     if (value === "--guard-background-approved" || value === "--guard-background-declined") {
       if(flags.guardDecision)throw Error("Conflicting background decisions");
       flags.guardDecision=value.endsWith("-approved")?"APPROVED":"DECLINED";
@@ -1773,7 +1776,7 @@ export async function applyReturnApplication(request, host) {
       return stop("HELD", "State or current authority changed before next operation", details);
     }
     if (next.kind !== "EXECUTE") return {status: next.kind === "ACCEPT" ? "ACCEPTED" : "WAITING",
-      ...details, next, replayAuthorized: false};
+      ...details, next, ownerNext:next.kind === "ACCEPT" ? "PARENT_ACCEPTED" : "WAIT_FOR_GATE", replayAuthorized: false};
     stage = "next operation";
     const binding = {receiptId: request.receiptId, work: details.work, revision: details.revision,
       actionId: next.id, owner: next.owner, authority: live.taskDisposition.authority, stateSha256: pinned.stateSha256};
@@ -1792,12 +1795,12 @@ export async function applyReturnApplication(request, host) {
       return stop("OUTCOME_UNKNOWN", "observed operation, current authority or Return Route needs reconciliation", details);
     }
     if (observedTerminalReturn(observed, binding, after, readback)) {
-      return {status: "APPLICATION_PENDING", ...details, returnReceiptId: observed.returnReceiptId, observed, replayAuthorized: false};
+      return {status: "APPLICATION_PENDING", ...details, ownerNext:"APPLY_RETURN", returnReceiptId: observed.returnReceiptId, observed, replayAuthorized: false};
     }
     if (!observedWorkingState(observed, binding, after, readback)) {
       return stop("OUTCOME_UNKNOWN", "bound observation lacks current WORKING State or durable terminal Return; do not resend", details);
     }
-    return {status: "CONTINUED", ...details, next, observed, replayAuthorized: false};
+    return {status: "CONTINUED", ...details, ownerNext:"AWAIT_ACTIVE_OWNER", next, observed, replayAuthorized: false};
   } catch {
     return stop(stage === "current read" ? "LIMITED" : "OUTCOME_UNKNOWN",
       `${stage} unavailable; reconcile current evidence before any dependent operation`, details);
@@ -2696,7 +2699,7 @@ async function reportGuardSetup(target,result,flags){
 
 async function main() {
   const [command, ...rest] = process.argv.slice(2);
-  if (rest.includes("--worker-spawn") && command !== "action-receipt") throw new Error("--worker-spawn requires action-receipt");
+  if (rest.some(v=>["--worker-spawn","--worker-resume"].includes(v)) && command !== "action-receipt") throw new Error("worker selection requires action-receipt");
   if (!command || command === "help" || command === "--help") {
     console.log(usage());
     return;
@@ -2729,6 +2732,12 @@ async function main() {
     return;
   }
   if (command === "context-run") {
+    if(rest[0]==="--native-wait"){
+      if(!existsSync(path.join(SCRIPT_ROOT,LOCK_FILE)))throw Error("Wait requires an installed project");
+      const reply=await prepareNativeWait(SCRIPT_ROOT,rest[1],process.env.VYDYKHAI_SESSION_ID || process.env.CODEX_THREAD_ID,rest.slice(2));
+      console.log(JSON.stringify(reply));if(reply.status!=="PASS")process.exitCode=2;
+      return;
+    }
     if(rest.length===2 && rest[0]==='--wait-for'){
       if(!existsSync(path.join(SCRIPT_ROOT,LOCK_FILE)))throw Error('Wait requires an installed project');
       const owner=process.env.VYDYKHAI_SESSION_ID || process.env.CODEX_THREAD_ID;
@@ -2785,7 +2794,7 @@ async function main() {
   if (command === "action-receipt") {
     if (!flags.input) throw new Error("action-receipt requires --input");
     const input = JSON.parse(await readFile(path.resolve(flags.input), "utf8"));
-    if (flags.codexSpawn && input?.boundary !== "work-routing") throw new Error("--worker-spawn requires work-routing");
+    if ((flags.codexSpawn || flags.workerResume) && (input?.boundary !== "work-routing" || (flags.codexSpawn && flags.workerResume))) throw new Error("select one worker route for work-routing");
     if (input?.boundary === "return-application") {
       if (flags.host && (flags.state || flags.graph || flags.outbox || flags.candidate || flags.expectStateSha || flags.receipt)) {
         throw new Error("--host cannot be combined with manual State exports");
@@ -2798,9 +2807,10 @@ async function main() {
       return;
     }
     if (flags.host || flags.candidate) throw new Error("--host and --candidate require boundary return-application");
-    const acceptedAssignment = flags.codexSpawn && flags.receipt
+    const acceptedAssignment = (flags.codexSpawn || flags.workerResume) && flags.receipt
       ? JSON.parse(await readFile(path.resolve(flags.receipt), "utf8")) : null;
-    const result = input?.boundary === "work-routing" ? evaluateWorkRouting(input,{compileSpawn:flags.codexSpawn,acceptedAssignment})
+    const workerActivity = flags.workerResume && flags.activity ? JSON.parse(await readFile(path.resolve(flags.activity),"utf8")) : null;
+    const result = input?.boundary === "work-routing" ? evaluateWorkRouting(input,{compileSpawn:flags.codexSpawn,compileResume:flags.workerResume,acceptedAssignment,workerActivity})
       : input?.boundary === "task-disposition" ? evaluateTaskDisposition(input) : evaluateResumeReceipt(input);
     console.log(JSON.stringify(result, null, 2));
     if (result.status !== "PASS") process.exitCode = 2;

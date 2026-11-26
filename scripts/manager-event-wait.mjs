@@ -6,6 +6,9 @@ import {randomUUID} from 'node:crypto';
 import {portableGuard,waitClaimName,compactWaitView} from './project-guard-open.mjs';
 
 const need=(ok,message)=>{if(!ok)throw Error(message);};
+const idPattern=/^[a-zA-Z0-9_.:-]{1,180}$/;
+const validId=value=>typeof value==='string' && idPattern.test(value);
+const withinBounds=(remaining,budget)=>remaining>0 && remaining<=900000 && remaining+500<=budget;
 async function smallJson(file){
   const info=await lstat(file);
   need(info.isFile() && info.size<=16384 && await realpath(file)===file,'unsafe or oversized wait checkpoint');
@@ -19,21 +22,60 @@ async function once(file,data){
     try{await link(tmp,file);return true;}catch(e){if(e.code==='EEXIST')return false;throw e;}
   }finally{await unlink(tmp).catch(e=>{if(e.code!=='ENOENT')throw e;});}
 }
-export async function waitForReturn(project,receipt,owner,parse){
-  const idPattern=/^[a-zA-Z0-9_.:-]{1,180}$/;
-  need(idPattern.test(receipt) && typeof owner==='string' && idPattern.test(owner),'invalid wait identity');
+async function waitPaths(project,receipt,owner){
+  need(validId(receipt) && validId(owner),'invalid wait identity');
   const dir=path.join(project,'.vydykhai');
   need(await realpath(dir)===dir,'wait state is redirected');
-  const claim=path.join(dir,waitClaimName(owner,receipt));
+  return {dir,claim:path.join(dir,waitClaimName(owner,receipt))};
+}
+async function readPlan(dir,receipt,owner){
+  const plan=await smallJson(path.join(dir,'manager-wait-plan.json'));
+  need(plan.owner===owner && plan.receipt===receipt,'dispatch identity mismatch');
+  need(Number.isSafeInteger(plan.outerBudgetMs) && plan.outerBudgetMs>0 &&
+    typeof plan.deadline==='string' && Number.isFinite(Date.parse(plan.deadline)),'invalid wait bounds');
+  return {...plan,view:compactWaitView(plan.view)};
+}
+function claimRecord({owner,receipt,deadline,outerBudgetMs,view}){
+  return {owner,receipt,deadline,outerBudgetMs,view};
+}
+
+// plan.targets binds an exact, nonempty set. PASS grants one immediate wait_agent
+// call via waitArgs; LIMITED (reason) and PAUSED grant none. Never replay a PASS.
+export async function prepareNativeWait(project,receipt,owner,targets){
+  const limited=reason=>({status:'LIMITED',reason});
+  try{
+    const requested=Array.isArray(targets)?new Set(targets):new Set();
+    const {dir,claim}=await waitPaths(project,receipt,owner);
+    const existing=await lstat(claim).catch(e=>{if(e.code==='ENOENT')return null;throw e;});
+    if(existing)return limited('existing wait claim; do not re-arm');
+    const plan=await readPlan(dir,receipt,owner);
+    const intended=plan.targets;
+    if(!Array.isArray(targets) || !Array.isArray(intended) || !intended.length || !intended.every(validId) ||
+      new Set(intended).size!==intended.length || requested.size!==targets.length ||
+      requested.size!==intended.length || !intended.every(id=>requested.has(id))){
+      return limited('native wait targets do not match dispatch plan');
+    }
+    if(!await once(claim,{...claimRecord(plan),targets:intended}))return limited('existing wait claim; do not re-arm');
+    const guard=await portableGuard(project,{session:owner,receipt,bindingOnly:true});
+    if(guard.status==='PAUSED')return {status:'PAUSED'};
+    if(guard.status!=='OWNER_BOUND'){
+      return limited(guard.reason || 'native wait guard did not admit');
+    }
+    const remaining=Date.parse(plan.deadline)-Date.now();
+    if(remaining<10000 || !withinBounds(remaining,plan.outerBudgetMs))return limited('deadline outside native wait bounds; do not re-arm');
+    return {status:'PASS',waitArgs:{targets:intended,timeout_ms:remaining}};
+  }catch(e){
+    return limited(e.code?'native wait state unavailable':e.message);
+  }
+}
+
+export async function waitForReturn(project,receipt,owner,parse){
+  const {dir,claim}=await waitPaths(project,receipt,owner);
   let plan=await smallJson(claim).catch(e=>{if(e.code==='ENOENT')return null;throw e;});
   let first=false;
   if(!plan){
     // The dispatch packet is project-local. The first agreed deadline wins.
-    plan=await smallJson(path.join(dir,'manager-wait-plan.json'));
-    need(plan.owner===owner && plan.receipt===receipt,'dispatch identity mismatch');
-    need(Number.isSafeInteger(plan.outerBudgetMs) && plan.outerBudgetMs>0 &&
-      Number.isFinite(Date.parse(plan.deadline)),'invalid wait bounds');
-    plan={owner,receipt,deadline:plan.deadline,outerBudgetMs:plan.outerBudgetMs,view:compactWaitView(plan.view)};
+    plan=claimRecord(await readPlan(dir,receipt,owner));
     first=await once(claim,plan);
     if(!first)plan=await smallJson(claim);
   }
@@ -53,11 +95,11 @@ export async function waitForReturn(project,receipt,owner,parse){
       replayAuthorized:false});
   };
   const remaining=Date.parse(plan.deadline)-Date.now();
-  if(!first || remaining<=0 || remaining+500>plan.outerBudgetMs || remaining>900000){
+  if(!first || !withinBounds(remaining,plan.outerBudgetMs)){
     const observed=await terminal(await check());if(observed)return observed;
     const earlier=await smallJson(claim+'.limited').catch(e=>{if(e.code==='ENOENT')return null;throw e;});
     if(earlier)return result('LIMITED',{reason:earlier.reason,view:plan.view,obligation:path.basename(claim)});
-    if(remaining<=0 || remaining+500>plan.outerBudgetMs || remaining>900000)return limited('deadline or outer bound; next actual return requires owner entry');
+    if(!withinBounds(remaining,plan.outerBudgetMs))return limited('deadline or outer bound; next actual return requires owner entry');
     return limited('existing wait claim does not prove a live observer; reconcile return coverage without re-arming');
   }
   let wake,dirty=true,error,timer,expired=false;

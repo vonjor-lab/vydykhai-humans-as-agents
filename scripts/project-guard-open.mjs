@@ -45,7 +45,7 @@ export function compactWaitView(view){
   if(!fields.every(k=>typeof view?.[k]==='string' && view[k].length<=768))throw Error('invalid compact wait view');
   return Object.fromEntries(fields.map(k=>[k,view[k]]));
 }
-export async function portableGuard(project,{parse,session,decision,receipt}={}){
+export async function portableGuard(project,{parse,session,decision,receipt,bindingOnly=false}={}){
   project=await realpath(project);
   const dir=path.join(project,'.vydykhai');await mkdir(dir,{recursive:true});
   if(await realpath(dir)!==dir)throw Error('redirected project state');
@@ -94,6 +94,7 @@ export async function portableGuard(project,{parse,session,decision,receipt}={})
     if(receipt){
       if(state.paused)return {status:'PAUSED'};
       if(!owner || owner!==session)return {status:'LIMITED',reason:'wait owner is not bound'};
+      if(bindingOnly)return {status:'OWNER_BOUND'};
       if(typeof parse!=='function')return {status:'LIMITED',reason:'current outbox evidence unavailable'};
       if(state.cursor?.routed?.includes(receipt)){
         // A legacy route closes notification, not the owner's application obligation.

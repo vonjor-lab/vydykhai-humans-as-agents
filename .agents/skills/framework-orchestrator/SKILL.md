@@ -15,7 +15,7 @@ Use `docs/workflows/framework-orchestrator.md#role-contract` at a changed eviden
 
 ## Decisions
 
-For a fresh subagent on a compatible native route, use the existing work-routing receipt with `action-receipt --worker-spawn`. Pass its `spawnArgs` unchanged with the scoped brief; do not omit model/effort or fork the manager transcript. Bind the returned worker to the same assignment and compare the first native turn with the selected profile as described in `docs/workflows/context-routing.md`. This is not a reason to restart an existing owner.
+Route a whole authorized outcome, not a sequence of progress reports. Use the existing work-routing receipt: `action-receipt --worker-spawn` for a fresh compact worker, `--worker-resume` on a material follow-up to an idle one. Use its arguments only on PASS. Prior High is not an exception for routine work. Preserve the module owner and evidence on mismatch; route the remainder at the approved profile without interrupting active work. Confirm the actual first turn; independent review keeps its own profile.
 
 - Apply the Responsibility Contract in `docs/workflows/production-continuation.md` at dispatch, restoration, Return and closure. Join each material Return to current State, parent DOD and the next action before claiming application; route preflight alone is not continuation. Verify original authority; a worker's pause report is evidence, not a new human order. Preserve unfinished work and review. Release control only after application with an evidenced continuation, concrete wait or owned host limitation.
 

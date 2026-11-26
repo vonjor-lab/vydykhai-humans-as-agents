@@ -1,5 +1,9 @@
 # Framework Efficiency Transition
 
+## Group continuation - 2.1.38
+
+Reuse work-routing, the existing wait claim and Return disposition for a complete authorized group. Isolated tests qualify the route only. Verify on the next natural group: actual worker/turn profile, waits, independent verdict, parent outcome, human reminders and whole-group usage. No change to memory or authority.
+
 ## Worker launch and Return scope - 2.1.37 candidate
 
 Repair the existing work-routing and Return boundaries, not the constitution. A sourced profile supplies fresh native spawn arguments; current-turn readback distinguishes selection from application. A batch report does not settle the parent obligation. Preserve module ownership, bounded authority, memory, pauses and independent review. For adoption use one natural launch and parent Return at the next safe boundary; unsupported hosts remain limited. Installation, a local test or a shorter packet is not evidence of product savings. Compare the complete accepted outcome before making that claim.
