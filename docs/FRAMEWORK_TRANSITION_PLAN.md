@@ -1,5 +1,9 @@
 # Framework Efficiency Transition
 
+## Activation source - 2.1.40
+
+Use the reviewed release installer. Reconcile the registered Stop command and selected authoritative State with the native owner; a proper wait stays a wait. Check the last real Stop turn and source digest separately at adoption. Absence is LIMITED, not authority to simulate a turn, replay work or declare economy.
+
 ## Owner checkpoint - 2.1.39
 
 Close the gap between a saved owner action and native turn release using the existing foreground callback. No scheduler, self-Return or new authority. Local protocol proof is not host activation. At the next enrolled group use only retained evidence: new READY action, actual next start before human input, independent parent acceptance or genuine gate, reminders and whole-group usage including continuation. Do not replay a finished group for measurement.

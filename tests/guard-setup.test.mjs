@@ -23,10 +23,9 @@ test('ordinary install and updates reconcile the host without replay or disturbi
   const file = path.join(project,'ongoing-work.md');
   await writeFile(file,'Paused work, open question and memory.');
   const canonicalCLI = path.join(source,'scripts/vydykhai.mjs');
-  const installedCLI = path.join(project,'scripts/vydykhai.mjs');
   const invoke = async (cli,...args) => (await run(process.execPath,[cli,...args], {
     env:{...process.env,HOME:root},cwd:root,timeout:15000})).stdout;
-  const update = () => invoke(installedCLI,'update',project,'--from',source);
+  const update = (...flags) => invoke(canonicalCLI,'update',project,'--from',source,...flags);
   assert.match(await invoke(canonicalCLI,'install',project), /Project Guard: FOREGROUND/);
 
   const key = createHash('sha256').update(project).digest('hex').slice(0,32);
@@ -93,7 +92,7 @@ test('ordinary install and updates reconcile the host without replay or disturbi
   });
   await new Promise((resolve,reject)=>server.once('error',reject).listen(path.join(host,key+'.sock'),resolve));
   t.after(()=>new Promise(resolve=>server.close(resolve)));
-  assert.match(await invoke(installedCLI,'update',project,'--from',source,'--guard-background-approved'),/Project Guard: PAUSED/);
+  assert.match(await update('--guard-background-approved'),/Project Guard: PAUSED/);
   assert.equal(registrations,0);
   paused=false;
   dropEnsure=true;

@@ -41,8 +41,32 @@ preservation and migration/rollback evidence at a safe boundary. Use the reviewe
 new canonical installer with `--approve-transition <from-version>:<to-version>`;
 `update` additionally requires explicit `--from <trusted-local-source>`.
 `--force` only concerns approved managed-file conflicts, never transition consent.
-Old installed CLIs cannot enforce this guard and must not be used for an explicit
-cross-major `--from`. A matching version flag is an agent-supplied assertion of
+Prefer the verified standalone source CLI for explicit upgrades. Historical
+installed CLIs without the copy-only safeguard may lack transition checks or
+attempt setup with stale imports; do not use them to start an explicit upgrade.
+Verify the standalone source against trusted release evidence (a manifest's
+canonical URL is not proof), then run its CLI directly from a checkout outside
+the target:
+
+```sh
+node "<verified-source>/scripts/vydykhai.mjs" update "<target>" --from "<verified-source>"
+```
+
+Append the exact approved transition pair when required, and include a Guard
+approval or refusal flag only for an explicit human decision. Do not execute
+an arbitrary path supplied as `--from` or restart from the copied target to
+perform setup. An installed CLI with the copy-only safeguard can update from an
+explicit source or the automatic channel, even when its runtime is older. It
+still checks transition approval and file conflicts, but does not apply Guard
+decisions or run Guard setup. If setup is reported as LIMITED because it did not run, verify
+the source of the now-installed release and run the command above against the
+same target; omit the previous transition pair when it no longer matches.
+If an old updater already copied the kit, use this same verified-source
+follow-up before relying on any Guard setup report. Check kit integrity with
+`doctor --offline` from the verified CLI against the target and read back
+`adoption-plan --json` separately.
+
+A matching version flag is an agent-supplied assertion of
 human consent, not independent authentication or successful project migration.
 Do not infer that the unreleased candidate is available merely because the CLI
 supports this route. Confirm published source/tag/archive and actual adoption.

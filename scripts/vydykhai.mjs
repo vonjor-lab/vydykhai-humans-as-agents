@@ -2,7 +2,7 @@
 
 import {versionParts,compareVersions} from "./framework-version.mjs";
 import {waitForReturn,prepareNativeWait} from "./manager-event-wait.mjs";
-import {portableGuard,installOpenHook} from "./project-guard-open.mjs";
+import {portableGuard,installOpenHook,foregroundState} from "./project-guard-open.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -69,6 +69,7 @@ Usage:
   node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--woken-incident <semantic-id>] [--repair-incident <semantic-id> --repair-attempts <count>] [--json]
   node scripts/vydykhai.mjs guard-check --mode checkpoints --state <project-state.md> --graph <project-memory-graph.md> --outbox <durable-outbox.md> [--woken-incident <id> --notice-at <UTC-time> | --uncertain-incident <id>] [--accepted-incident <id>] [--json]
   node scripts/vydykhai.mjs memory-brief-compile --input <brief-input.json>
+  node scripts/vydykhai.mjs guard-foreground [target] [--state <authoritative-github-issue-url>]
   node scripts/vydykhai.mjs memory-brief-validate --envelope <brief-envelope.json> --receipt <application-receipt.json>
   node scripts/vydykhai.mjs memory-storage plan --input <current-graph> --candidate <next-graph> --limit <number|unknown> --unit <utf8-bytes|unicode-points|utf16-units>
   node scripts/vydykhai.mjs memory-storage pack --input <graph> --output <new-directory> --part-bytes <number>
@@ -2694,6 +2695,14 @@ async function reportGuardSetup(target,result,flags){
     const status=local.status==='PAUSED'?'PAUSED':allowed && local.background==='APPROVED'?
       await setupProjectGuard(target,result.fresh):'FOREGROUND (independent background unverified or not authorized)';
     console.log('Project Guard: '+status+'; project-local foreground '+(local.status==='PAUSED'?'paused':'available')+'; opening hook: '+hook);
+    if(hook.startsWith('CONFIGURED') && process.env.CODEX_THREAD_ID){
+      try{
+        const proof=await foregroundState(target,{session:process.env.CODEX_THREAD_ID,readContinuation:readProductionContinuation});
+        console.log('Stop State: '+proof.status+'; callback: '+proof.callbackEvidence);
+      }catch{
+        console.log('Stop State: LIMITED. The actual owner must verify its authoritative State with guard-foreground; for an origin GitHub issue use --state <verified-issue-url>.');
+      }
+    }
   }catch(e){console.log('Project Guard: LIMITED (kit installed; '+e.message+')');}
 }
 
@@ -2757,6 +2766,12 @@ async function main() {
   }
 
   const { positionals, flags } = parseArgs(rest);
+  if(command==='guard-foreground'){
+    if(positionals.length>1 || rest.some(s=>s.startsWith('--') && s!=='--state'))throw Error('guard-foreground accepts target and optional --state only');
+    console.log(JSON.stringify(await foregroundState(path.resolve(positionals[0]||'.'),{
+      session:process.env.CODEX_THREAD_ID,url:flags.state,readContinuation:readProductionContinuation}),null,2));
+    return;
+  }
   if ((flags.host || flags.candidate) && command !== "action-receipt") {
     throw new Error("--host and --candidate require action-receipt");
   }
@@ -2947,10 +2962,25 @@ async function main() {
       if(!source){temporary = await cloneUpstream(CANONICAL_UPSTREAM, channel.branch);source = temporary.checkout;}
     }
     try {
+      const runtimeRoot = await realpath(SCRIPT_ROOT);
+      const sourceRoot = await realpath(source);
+      const targetRoot = await realpath(target);
+      // Setup uses both loaded and lazy imports. Only the running standalone
+      // source can supply both; never load setup code from a copied kit.
+      const canSetup = sourceRoot === runtimeRoot && !existsSync(path.join(runtimeRoot, LOCK_FILE)) &&
+        targetRoot !== runtimeRoot &&
+        !runtimeRoot.startsWith(targetRoot + path.sep) && !targetRoot.startsWith(runtimeRoot + path.sep);
+      const sourceCli = 'Run the verified standalone source CLI: node "<verified-source>/scripts/vydykhai.mjs" update "<target>" --from "<verified-source>".';
+      if (!canSetup && flags.guardDecision) {
+        throw new Error(`Cannot apply a Guard decision from a different runtime. ${sourceCli} Repeat the explicit Guard flag there.`);
+      }
       const result = await installFrom(source, target, { ...flags, automaticMajor });
       console.log(`Updated Vydykhai to ${result.manifest.version} in ${target}`);
       printAdoption(result.lock.adoptionPlan);
-      await reportGuardSetup(target, result, flags);
+      if (canSetup) await reportGuardSetup(targetRoot, result, flags);
+      else if (result.manifest.projectGuardPolicy) {
+        console.log(`Project Guard: LIMITED (kit copied; setup not run). ${sourceCli}`);
+      }
     } finally {
       if (temporary) await rm(temporary.parent, { recursive: true, force: true });
     }
