@@ -1,5 +1,9 @@
 # Framework Efficiency Transition
 
+## Owner checkpoint - 2.1.39
+
+Close the gap between a saved owner action and native turn release using the existing foreground callback. No scheduler, self-Return or new authority. Local protocol proof is not host activation. At the next enrolled group use only retained evidence: new READY action, actual next start before human input, independent parent acceptance or genuine gate, reminders and whole-group usage including continuation. Do not replay a finished group for measurement.
+
 ## Group continuation - 2.1.38
 
 Reuse work-routing, the existing wait claim and Return disposition for a complete authorized group. Isolated tests qualify the route only. Verify on the next natural group: actual worker/turn profile, waits, independent verdict, parent outcome, human reminders and whole-group usage. No change to memory or authority.

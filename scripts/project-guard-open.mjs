@@ -45,7 +45,7 @@ export function compactWaitView(view){
   if(!fields.every(k=>typeof view?.[k]==='string' && view[k].length<=768))throw Error('invalid compact wait view');
   return Object.fromEntries(fields.map(k=>[k,view[k]]));
 }
-export async function portableGuard(project,{parse,session,decision,receipt,bindingOnly=false}={}){
+export async function portableGuard(project,{parse,session,decision,receipt,bindingOnly=false,event,readContinuation}={}){
   project=await realpath(project);
   const dir=path.join(project,'.vydykhai');await mkdir(dir,{recursive:true});
   if(await realpath(dir)!==dir)throw Error('redirected project state');
@@ -65,6 +65,27 @@ export async function portableGuard(project,{parse,session,decision,receipt,bind
     const declared=/^Guard foreground owner: ([A-Za-z0-9_.:-]{1,180})$/m.exec(route)?.[1];
     const native=/^Orchestrator health:.*?\| Context: codex:\/\/threads\/([a-f0-9-]{36})(?:\s|$)/m.exec(route)?.[1];
     const owner=declared && native && declared!==native ? null : declared || native;
+    let continueOwner=false;
+    if(owner && owner===session && event && typeof readContinuation==='function' &&
+        typeof event.turn_id==='string' && /^[\w:-]{1,180}$/.test(event.turn_id)){
+      const turn=event.turn_id, current=readContinuation(route);
+      const valid=!state.paused && current.key && current.orchestrator==='codex://threads/'+session;
+      const fingerprint=s=>createHash('sha256').update(s.trim().replace(/\s+/g,' ').toLowerCase()).digest('hex');
+      const opened=state.ownerTurn;
+      if(event.hook_event_name==='UserPromptSubmit'){
+        // Baseline only. A fresh prompt (including a pause) cannot inherit an old continuation.
+        state.ownerTurn={session,turn,work:valid?current.value.work:null,prior:valid?current.value.id:null,
+          ...(valid?{step:fingerprint(current.value.action),basis:fingerprint(current.value.evidence)}:{})};
+      }else if(event.hook_event_name==='Stop' && opened?.session===session && opened.turn===turn){
+        delete state.ownerTurn;
+        continueOwner=Boolean(valid && event.stop_hook_active===false && opened.work===current.value.work &&
+          opened.step && opened.basis && opened.step!==fingerprint(current.value.action) &&
+          opened.basis!==fingerprint(current.value.evidence) &&
+          opened.prior!==current.value.id && current.value.state==='READY' &&
+          ['PREPARED','RETURNED','WAITING'].includes(current.binding.leaseIdentity?.state) &&
+          route.match(/^Human attention:.*$/gm)?.length===1 && /^Human attention:[ \t]*NONE[ \t]*\r?$/m.test(route));
+      }
+    }
     const changed=[];
     if(parse && !state.paused && owner && owner===session){
       state.cursor=await changedReturns(project,state.cursor,parse);
@@ -106,7 +127,7 @@ export async function portableGuard(project,{parse,session,decision,receipt,bind
       if(state.cursor?.pending?.some(([id])=>id===receipt))return {status:'APPLICATION_PENDING',receipt};
       if(state.seen.some(([id])=>id===receipt))return {status:'LIMITED',reason:'observed return missing from current outbox; reconcile retained evidence'};
     }
-    return {status:state.paused?'PAUSED':changed.length?'CHANGED':'QUIET',background:state.background,changed,...(managerView?{managerView}:{})};
+    return {status:state.paused?'PAUSED':continueOwner?'OWNER_STEP_READY':changed.length?'CHANGED':'QUIET',background:state.background,changed,...(managerView?{managerView}:{})};
   }finally{await rm(lock,{recursive:true});}
 }
 export async function installOpenHook(project){
@@ -117,14 +138,19 @@ export async function installOpenHook(project){
   if(unsafe.test(script))return 'LIMITED (hook command path unsupported)';
   const quoted=process.platform==='win32'?'"'+script+'"':"'"+script.replaceAll("'","'\\''")+"'";
   const group=[{hooks:[{type:'command',command:'node '+quoted}]}];
-  const expected={hooks:{SessionStart:group,UserPromptSubmit:group}};
+  const legacy={hooks:{SessionStart:group,UserPromptSubmit:group}};
+  const expected={hooks:{...legacy.hooks,Stop:group}};
   const file=path.join(dir,'hooks.json');
   try{await writeFile(file,JSON.stringify(expected,null,2)+'\n',{flag:'wx',mode:0o600});}
   catch(e){
     if(e.code!=='EEXIST')throw e;
     let same=false;
     if((await lstat(file)).isFile()){
-      try{same=JSON.stringify(JSON.parse(await localText(project,'.codex/hooks.json')))===JSON.stringify(expected);}
+      try{
+        const current=JSON.stringify(JSON.parse(await localText(project,'.codex/hooks.json')));
+        same=current===JSON.stringify(expected);
+        if(current===JSON.stringify(legacy)){await writeAtomic(file,expected);same=true;}
+      }
       catch{/* A malformed or redirected custom hook remains owned by the project. */}
     }
     if(!same)return 'LIMITED (existing hook configuration preserved)';
