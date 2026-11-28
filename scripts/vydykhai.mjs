@@ -64,6 +64,9 @@ Usage:
   node scripts/vydykhai.mjs context-run --native-wait <receipt-id> <target> [<target> ...]
   node scripts/vydykhai.mjs action-receipt --input <return-application.json> --receipt <current-authority.json> --state <state.md> --graph <graph.md> --outbox <outbox.md> [--candidate <new-file> | --expect-state-sha <candidate-sha>]
   node scripts/vydykhai.mjs action-receipt --input <return-application.json> --host <trusted-host.mjs>
+  node scripts/vydykhai.mjs action-receipt --input <active-work.json> --state <prior.md> --graph <graph.md> --outbox <outbox.md> --receipt <native-evidence.json> --candidate <candidate.md>
+  node scripts/vydykhai.mjs action-receipt --input <active-work-restore.json> --state <latest.md> --receipt <historical-accepted.md> --graph <graph.md> --outbox <outbox.md> --candidate <restored.md>
+  node scripts/vydykhai.mjs action-receipt --input <observed-correction.json> --state <ready.md> --graph <graph.md> --outbox <outbox.md> --receipt <authority.json> --expect-state-sha <ready-sha256> --candidate <working.md>
   node scripts/vydykhai.mjs control-activate --runtime-source <trusted-source> --input <private-request.json>
   node scripts/vydykhai.mjs control-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--expect-state-sha <sha256>] [--expect-graph-sha <sha256>] [--json]
   node scripts/vydykhai.mjs guard-check --state <project-state.md> --graph <project-memory-graph.md> [--outbox <durable-outbox.md>] [--activity <fresh-observation.json>] [--accepted-incident <semantic-id>] [--woken-incident <semantic-id>] [--repair-incident <semantic-id> --repair-attempts <count>] [--json]
@@ -1378,6 +1381,29 @@ export function readProductionContinuation(content) {
   }
   if (lease?.[1] === "OUTCOME_UNKNOWN") fail("uncertain work needs reconciliation before continuation");
   const application = value.returnApplication;
+  const retainedWait = value.retainedWait;
+  const actionStart = value.actionStart;
+  if (actionStart !== undefined && (!retainedWait || !validSelectedStart(actionStart, value.work) ||
+      actionStart.owner !== retainedWait.start?.owner || actionStart.revision !== retainedWait.start?.revision ||
+      sameNativeTurn(actionStart, retainedWait.start) ||
+      (value.state === "WORKING" && (actionStart.actionId !== value.id || actionStart.evidence !== value.evidence)))) {
+    fail("invalid current independent action start");
+  }
+  if (retainedWait !== undefined) {
+    const wait = retainedWait?.action;
+    const waitLeases = leases.filter(([work]) => workMatches(work, wait?.work));
+    if (wait?.state !== "WAITING" || wait.work === value.work || waitLeases.length !== 1 ||
+        waitLeases[0][1] !== "WAITING" || (wait.owner !== orchestrator &&
+          !waitLeases[0][2]?.split(/\s+\/\s+/).includes(wait.owner)) ||
+        !["id", "action", "evidence", "resumeWhen"].every(key => concreteLine(wait[key])) ||
+        !Array.isArray(retainedWait.dependsOn) || !retainedWait.dependsOn.every(concreteLine) ||
+        !Array.isArray(retainedWait.protectedEffects) || !retainedWait.protectedEffects.every(concreteLine) ||
+        typeof retainedWait.dodSection !== "string" || !concreteLine(retainedWait.controlLine) ||
+        !concreteLine(retainedWait.outcome) || !validSelectedStart(retainedWait.start, value.work) ||
+        !Array.isArray(retainedWait.effects) || !retainedWait.effects.every(concreteLine)) {
+      fail("invalid retained independent wait");
+    }
+  }
   if (application !== undefined && (!validApplicationBinding(application) ||
       !concreteLine(application.receiptId) || Object.keys(application).length !== applicationFields.length + 1 ||
       application.work !== value.work || application.actionId !== value.id ||
@@ -1396,11 +1422,15 @@ export function readProductionContinuation(content) {
     state: value.state,
     orchestrator,
     leaseIdentity: lease ? { work: lease[0], state: lease[1], owner: lease[2] } : null,
+    ...(retainedWait === undefined ? {} : {retainedWait}),
+    ...(actionStart === undefined ? {} : {actionStart}),
   };
   return {
     value: record,
     ...(application === undefined ? {} : { returnApplication: application }),
     ...(value.obligation === undefined ? {} : { obligation: value.obligation }),
+    ...(retainedWait === undefined ? {} : { retainedWait }),
+    ...(actionStart === undefined ? {} : { actionStart }),
     orchestrator,
     binding,
     issues,
@@ -1425,6 +1455,28 @@ function replaceReturnSection(state, heading, end, update) {
 const leaseRows = state => tableRows(section(state, "## Execution Leases", ["## Pending Return Inbox"]), /^Work$/i);
 const workMatches = (name, key) => concreteLine(key) && (name === key || name.startsWith(key + " "));
 const inboxRows = state => tableRows(section(state, "## Pending Return Inbox", ["## Detours And Recall"]), /^Receipt$/i);
+const currentDodSection = state => section(state, "## Current DOD", ["## Execution Leases"], {stopAtPeerHeading: true});
+const putAction = (state, record) =>
+  replaceReturnSection(state, "## Next-Best-Action", "<!-- vydykhai:project-state:end -->", body =>
+    body.replace(/^\x60\x60\x60json\s*\n[\s\S]*?^\x60\x60\x60\s*$/m,
+      () => "\x60\x60\x60json\n" + JSON.stringify(record) + "\n\x60\x60\x60\n"));
+const putDod = (state, body, controlLine) =>
+  replaceReturnSection(replaceReturnSection(state, "## Current DOD", "## Execution Leases", () => body),
+    "## Control Snapshot", "## Current DOD", snapshot =>
+      snapshot.replace(/^DOD Control Line: [^\r\n]+/m, () => "DOD Control Line: " + controlLine));
+const startFields = ["work", "revision", "owner", "authority", "contextEpoch", "actionId", "stateSha256",
+  "turnId", "source", "evidence"];
+const validSelectedStart = (start, work) => start?.work === work && digest(start?.stateSha256) &&
+  startFields.every(key => concreteLine(start[key]));
+const selectStart = observed => Object.fromEntries(startFields.map(key => [key, observed[key]]));
+const sameNativeTurn = (a, b) => a?.turnId === b?.turnId || a?.source === b?.source;
+const selectedReturnMatches = (result, {value, retainedWait, actionStart}) => {
+  const latest = actionStart ?? (value.id === retainedWait.start.actionId || value.state === "WAITING"
+    ? retainedWait.start : null);
+  return value.state !== "READY" && latest && result.previousActionId === value.id &&
+    canonicalJson(result.start ?? null) === canonicalJson(retainedWait.start) &&
+    canonicalJson(result.actionStart ?? result.start ?? null) === canonicalJson(latest);
+};
 const routeBindingMatches = (route, app) => route?.valid && app &&
   applicationFields.every(key => route.application?.[key] === app[key]);
 
@@ -1483,6 +1535,9 @@ function prepareReturnApplication(request, current, manifest) {
   const {outbox, source, paired, continuation} = inspection;
   const {result, next, taskDisposition: task, state, graph} = current;
   const stop = (reason, status = "HELD") => heldReturn(status, reason);
+  if (continuation.retainedWait && [result?.work, task?.work].includes(continuation.retainedWait.action?.work)) {
+    return stop("restore the retained wait as the current action before applying its Return", "LIMITED");
+  }
   if (paired) return stop(paired.application
     ? "bound Return Route already exists; reconcile any unobserved next operation without replay"
     : "legacy Return Route is delivery evidence only; reconcile its application before proceeding",
@@ -1527,6 +1582,14 @@ function prepareReturnApplication(request, current, manifest) {
   const outcome = dod.fields.get("Current DOD"), proof = dod.fields.get("Accepted proof"), remaining = dod.fields.get("Remaining");
   if (dod.duplicates.length || ![outcome, proof, remaining].every(concreteLine) || result.dod !== outcome) {
     return stop("exact current parent DOD, retained proof and remaining work required");
+  }
+  const selected = continuation.retainedWait;
+  if (selected && (task.work !== value.work || task.revision !== selected.start.revision ||
+      task.owner !== selected.start.owner || targetLease[2] !== selected.start.owner || outcome !== selected.outcome ||
+      (kind === "ACCEPT" && result.owner !== selected.start.owner) ||
+      (sameWork && !selectedReturnMatches(result, continuation)) ||
+      (kind === "EXECUTE" && canonicalJson(task.assignment?.effects ?? null) !== canonicalJson(selected.effects)))) {
+    return stop("operation is outside the selected parent start, assignment or retained effects", "LIMITED");
   }
   const assignment = evaluateCurrentAssignment(task);
   if (assignment.status !== "PASS") return stop(assignment.reason);
@@ -1585,6 +1648,8 @@ function prepareReturnApplication(request, current, manifest) {
     state: kind === "EXECUTE" ? "READY" : "WAITING", evidence: next.evidence,
     ...(kind === "EXECUTE" ? {} : {resumeWhen: next.resumeWhen}),
     ...(kind === "WAIT" ? {obligation: next.obligation} : {}), returnApplication: application};
+  if (continuation.retainedWait) record.retainedWait = continuation.retainedWait;
+  if (kind !== "ACCEPT" && continuation.actionStart) record.actionStart = continuation.actionStart;
   const settled = "No remaining work for this accepted DOD";
   const snapshot = state.replace(/^Snapshot as of: [^\r\n]+/m, () => `Snapshot as of: Return application ${source.id}`);
   let candidate = replaceReturnSection(snapshot, "## Control Snapshot", "## Current DOD", body =>
@@ -1638,21 +1703,24 @@ function boundReturnRoute(current, inspection) {
       stateSha256: sha256(current.state)}});
 }
 
+function matchesReturnAction(observed, binding) {
+  return Object.keys(binding).every(key => observed?.[key] === binding[key]);
+}
+
 function observedReturnAction(observed, binding) {
   return ["FIRST_ACTION", "TERMINAL_RETURN"].includes(observed?.kind) && digest(observed.observedStateSha256) &&
-    concreteLine(observed.turnId) && concreteLine(observed.evidence) &&
-    ["receiptId", "work", "revision", "actionId", "owner", "authority", "stateSha256"]
-      .every(key => observed[key] === binding[key]);
+    concreteLine(observed.turnId) && concreteLine(observed.evidence) && matchesReturnAction(observed, binding);
 }
 
 function observedWorkingState(observed, binding, current, seen) {
-  const {value, returnApplication, issues} = seen.continuation;
+  const {value, returnApplication, issues, retainedWait, actionStart} = seen.continuation;
   return observed?.kind === "FIRST_ACTION" && observedReturnAction(observed, binding) &&
     sha256(current.state) === observed.observedStateSha256 && !issues.length &&
     value.state === "WORKING" && value.id === binding.actionId && value.work === binding.work &&
     value.owner === binding.owner && value.evidence === observed.evidence &&
     returnApplication?.receiptId === binding.receiptId && routeBindingMatches(seen.paired, returnApplication) &&
-    seen.paired.application.stateSha256 === binding.stateSha256;
+    seen.paired.application.stateSha256 === binding.stateSha256 &&
+    (!retainedWait || (actionStart && canonicalJson(actionStart) === canonicalJson(selectStart(observed))));
 }
 
 function observedTerminalReturn(observed, binding, current, seen) {
@@ -1678,7 +1746,8 @@ function currentNativeAuthority(receipt, state, task) {
 }
 
 async function manualReturnApplication(input, flags) {
-  if (!flags.state || !flags.graph || !flags.outbox || !flags.receipt || (flags.candidate && flags.expectStateSha)) {
+  if (!flags.state || !flags.graph || !flags.outbox || !flags.receipt ||
+      (flags.candidate && Boolean(flags.expectStateSha) !== Boolean(input.observed))) {
     return heldReturn("LIMITED", "manual application requires current State, graph, outbox and separate authority exports");
   }
   const manifest = await loadManifest(SCRIPT_ROOT);
@@ -1699,10 +1768,12 @@ async function manualReturnApplication(input, flags) {
   }
   const seen = inspectReturn(input, current);
   if (seen.stop) return seen.stop;
-  const {returnApplication: applied, value, issues} = seen.continuation;
+  const {returnApplication: applied, retainedWait, value, issues} = seen.continuation;
   if (issues.length || applied?.receiptId !== input.receiptId ||
       applied.priorStateSha256 !== input.stateSha256 || applied.sourceSha256 !== seen.source.sha256 ||
-      applied.graphSha256 !== sha256(current.graph) || applied.decisionSha256 !== returnDecision(current)) {
+      applied.graphSha256 !== sha256(current.graph) || applied.decisionSha256 !== returnDecision(current) ||
+      (retainedWait && applied.sourceWork === applied.work &&
+        canonicalJson(current.result?.start ?? null) !== canonicalJson(retainedWait.start))) {
     return heldReturn("HELD", "State, Return or current decision does not match candidate readback");
   }
   const controlIssues = returnApplicationCheck(current.state, current.graph, manifest, applied, seen.outbox, input.next);
@@ -1710,9 +1781,38 @@ async function manualReturnApplication(input, flags) {
   const binding = {receiptId: applied.receiptId, work: applied.work, revision: applied.revision,
     actionId: applied.actionId, owner: applied.owner, authority: applied.authority, stateSha256: flags.expectStateSha};
   if (input.observed) {
-    if (!observedWorkingState(input.observed, binding, current, seen) ||
-        seen.paired.fields["Routed next action"] !== input.next.action || seen.paired.fields.Evidence !== input.next.evidence ||
-        seen.paired.fields.Consumer !== seen.continuation.orchestrator) {
+    if (seen.paired?.fields["Routed next action"] !== input.next?.action ||
+        seen.paired?.fields.Evidence !== input.next?.evidence ||
+        seen.paired?.fields.Consumer !== seen.continuation.orchestrator) {
+      return heldReturn("HELD", "observed action does not match the bound Return Route");
+    }
+    if (flags.candidate) {
+      const observed = input.observed;
+      const priorStart = seen.continuation.actionStart ?? retainedWait?.start;
+      if (!retainedWait || applied.disposition !== "EXECUTE" || value.state !== "READY" ||
+          sha256(current.state) !== binding.stateSha256 || !routeBindingMatches(seen.paired, applied) ||
+          seen.paired.application.stateSha256 !== binding.stateSha256 ||
+          observed.kind !== "FIRST_ACTION" || !matchesReturnAction(observed, binding) ||
+          !validSelectedStart(observed, value.work) || sameNativeTurn(observed, priorStart) ||
+          sameNativeTurn(observed, retainedWait.start) || observed.contextEpoch !== authority.contextEpoch ||
+          observed.readbackEvidence !== input.taskDisposition.assignment.readback.evidence ||
+          !Number.isSafeInteger(observed.readbackSequence) || observed.readbackSequence < 0 ||
+          !Number.isSafeInteger(observed.sequence) || observed.sequence <= observed.readbackSequence ||
+          input.taskDisposition.pause !== "CLEARED" || input.taskDisposition.effects !== "RECONCILED") {
+        return heldReturn("HELD", "corrected action requires a fresh owner turn bound to the exact READY State and Return Route");
+      }
+      const candidate = putAction(replaceReturnSection(current.state, "## Execution Leases", "## Pending Return Inbox", body =>
+        body.split("\n").map(line => tableRows(line, /^Work$/i)[0]?.[0] === seen.continuation.binding.leaseIdentity?.work
+          ? line.replace(/^(\s*\|[^|]*\|\s*)(WAITING|PREPARED|STARTED)(?=\s*\|)/, "$1WORKING") : line).join("\n")),
+      {...value, owner:observed.owner, state:"WORKING", evidence:observed.evidence,
+        returnApplication:applied, retainedWait, actionStart:selectStart(observed)});
+      const issues = returnApplicationCheck(candidate, current.graph, manifest, applied, seen.outbox, input.next);
+      if (issues.length) return heldReturn("HELD", "corrected WORKING candidate failed control validation", {issues});
+      await writeFile(path.resolve(flags.candidate), candidate, {flag:"wx", mode:0o600});
+      return heldReturn("LIMITED", "observed WORKING candidate validated; publish against unchanged READY State",
+        {phase:"WORKING_CANDIDATE", candidateSha256:sha256(candidate), dispatch:"NOT_INVOKED"});
+    }
+    if (!observedWorkingState(input.observed, binding, current, seen)) {
       return heldReturn("HELD", "observed action does not match current WORKING State and bound Return Route");
     }
     return heldReturn("LIMITED", "working State and declared observation match; native authenticity is host-owned",
@@ -1788,6 +1888,7 @@ export async function applyReturnApplication(request, host) {
     const after = await read(observed.kind === "TERMINAL_RETURN" ? observed.returnReceiptId : undefined);
     const readback = inspectReturn(request, after);
     if (readback.stop || readback.paired?.sha256 !== seen.paired.sha256 ||
+        canonicalJson(readback.continuation.retainedWait ?? null) !== canonicalJson(seen.continuation.retainedWait ?? null) ||
         after.taskDisposition?.authority !== binding.authority || after.taskDisposition?.pause !== "CLEARED" ||
         after.taskDisposition.work !== binding.work || after.taskDisposition.revision !== binding.revision ||
         evaluateCurrentAssignment(after.taskDisposition).status !== "PASS" ||
@@ -1798,7 +1899,8 @@ export async function applyReturnApplication(request, host) {
     if (observedTerminalReturn(observed, binding, after, readback)) {
       return {status: "APPLICATION_PENDING", ...details, ownerNext:"APPLY_RETURN", returnReceiptId: observed.returnReceiptId, observed, replayAuthorized: false};
     }
-    if (!observedWorkingState(observed, binding, after, readback)) {
+    if (!observedWorkingState(observed, binding, after, readback) ||
+        (seen.continuation.actionStart && sameNativeTurn(observed, seen.continuation.actionStart))) {
       return stop("OUTCOME_UNKNOWN", "bound observation lacks current WORKING State or durable terminal Return; do not resend", details);
     }
     return {status: "CONTINUED", ...details, ownerNext:"AWAIT_ACTIVE_OWNER", next, observed, replayAuthorized: false};
@@ -1808,6 +1910,153 @@ export async function applyReturnApplication(request, host) {
   }
 }
 
+async function manualActiveWork(input, flags) {
+  const stop = heldReturn;
+  const restoring = input.operation === "restore";
+  if (!flags.state || !flags.graph || !flags.outbox || (!restoring && !flags.receipt) || !flags.candidate ||
+      (input.operation !== undefined && !["select", "restore"].includes(input.operation)) ||
+      !digest(input.stateSha256) || !concreteLine(input.work)) {
+    return stop("LIMITED", "independent publication requires prior State, graph, outbox, native evidence and candidate path");
+  }
+  const state = await readFile(path.resolve(flags.state), "utf8");
+  if (sha256(state) !== input.stateSha256) return stop("CONFLICT", "prior State no longer matches");
+  const graph = (await readMemoryGraph(path.resolve(flags.graph))).text;
+  const outbox = validateDurableOutbox(await readFile(path.resolve(flags.outbox), "utf8"));
+  const manifest = await loadManifest(SCRIPT_ROOT);
+  const waiting = readProductionContinuation(state);
+  if (outbox.issues.some(issue => !outbox.pendingReturnIds.some(id =>
+    issue === "Durable outbox: return " + id + " requires routing"))) {
+    return stop("HELD", "current outbox cannot be verified");
+  }
+  if (restoring) {
+    const {retainedWait: saved, returnApplication: accepted, value, binding} = waiting;
+    const historical = flags.receipt ? await readFile(path.resolve(flags.receipt), "utf8") : state;
+    const historicalView = readProductionContinuation(historical);
+    const scopedRows = body => leaseRows(body).filter(([name]) =>
+      [value?.work, saved?.action?.work].some(work => workMatches(name, work)));
+    if (waiting.issues.length || !saved || accepted?.disposition !== "ACCEPT" ||
+        value.work !== input.work || binding.leaseIdentity?.state !== "CLOSED" ||
+        accepted.sourceWork !== value.work || accepted.revision !== saved.start.revision ||
+        accepted.sourceOwner !== saved.start.owner ||
+        !outbox.returns.some(row => row.valid && row.id === accepted.receiptId && row.rawStatus === "ACCEPT" &&
+          row.sha256 === accepted.sourceSha256) ||
+        !outbox.routes.some(row => row.id === accepted.receiptId && routeBindingMatches(row, accepted) &&
+          row.application.stateSha256 === sha256(historical)) ||
+        historicalView.issues.length || canonicalJson(historicalView) !== canonicalJson(waiting) ||
+        currentDodSection(historical) !== currentDodSection(state) ||
+        historical.match(/^DOD Control Line: .*$/m)?.[0] !== state.match(/^DOD Control Line: .*$/m)?.[0] ||
+        canonicalJson(scopedRows(historical)) !== canonicalJson(scopedRows(state)) ||
+        (saved.action.returnApplication && !outbox.routes.some(row =>
+          row.id === saved.action.returnApplication.receiptId && routeBindingMatches(row, saved.action.returnApplication)))) {
+      return stop("HELD", "restore requires the selected parent's exact accepted State and bound Return Route");
+    }
+    const candidate = putAction(putDod(state, saved.dodSection, saved.controlLine), saved.action);
+    const issues = returnApplicationCheck(candidate, graph, manifest, accepted, outbox, input);
+    if (issues.length) return stop("HELD", "restored State failed existing control validation", {issues});
+    return exportActiveWork(candidate, flags, {work:saved.action.work, owner:saved.action.owner,
+      actionId:saved.action.id}, "WAITING_READBACK");
+  }
+  const proof = await readJson(path.resolve(flags.receipt));
+  const {next, taskDisposition: task} = input;
+  const a = waiting.value;
+  const rows = leaseRows(state);
+  const bRows = rows.filter(([name]) => workMatches(name, input.work));
+  const [b] = bRows;
+  if (waiting.issues.length || a.state !== "WAITING" || waiting.retainedWait || bRows.length !== 1 ||
+      !["PREPARED", "WORKING", "STARTED"].includes(b[1]) || workMatches(b[0], a.work) ||
+      waiting.binding.leaseIdentity?.state !== "WAITING" || task?.work !== input.work ||
+      task.owner === waiting.orchestrator || task.owner === a.owner ||
+      b[2] !== task.owner || /\s+\/\s+/.test(task.owner) ||
+      task.action !== "execute" || evaluateTaskDisposition(task).status !== "PASS" ||
+      !currentNativeAuthority(proof, state, task) ||
+      evaluateWorkRouting(task.routing, {work: task.work, revision: task.revision,
+        actor: task.owner, orchestrator: waiting.orchestrator}).status !== "PASS" ||
+      next?.kind !== "EXECUTE" || next.owner !== task.owner || next.id === a.id ||
+      ![next.id, next.action, next.evidence].every(concreteLine) ||
+      !task.assignment.obligations.some(o => o.id === next.obligation && o.state === "READY" &&
+        o.owner === task.owner && o.evidence === next.evidence)) {
+    return stop("HELD", "current wait and separately authorized independent assignment required");
+  }
+
+  const {wait, observed, scope, dod} = proof;
+  const dodSection = currentDodSection(state);
+  const controlLine = state.match(/^DOD Control Line: (.+)$/m)?.[1];
+  if (!dod || ![controlLine, dod.outcome, dod.acceptedProof, dod.remaining].every(concreteLine) ||
+      dod.outcome === bulletFields(dodSection.split("\n")).fields.get("Current DOD") ||
+      canonicalJson(task.assignment.dod ?? null) !== canonicalJson(dod)) {
+    return stop("HELD", "independent parent requires its own accepted assignment DOD");
+  }
+  const effectSet = list => Array.isArray(list) && list.length > 0 &&
+    list.every(key => typeof key === "string" && /^[a-z0-9_-]+(?:\/[a-z0-9_.-]+)*$/.test(key) &&
+      !key.split("/").some(part => part === "." || part === "..")) && new Set(list).size === list.length;
+  const age = Date.now() - Date.parse(proof.observedAt);
+  if (!Number.isFinite(age) || age < -5000 || age > 300000 || proof.pause !== "CLEARED" ||
+      wait?.status !== "PENDING" || wait.work !== a.work || wait.owner !== a.owner ||
+      wait.id !== a.id || wait.obligation !== waiting.obligation ||
+      wait.resumeWhen !== a.resumeWhen || wait.evidence !== a.evidence ||
+      !Array.isArray(wait.dependsOn) || !wait.dependsOn.every(dep => concreteLine(dep) &&
+        !workMatches(b[0], dep) && !workMatches(waiting.binding.leaseIdentity.work, dep) &&
+        !rows.some(([name, status]) => status === "CLOSED" && workMatches(name, dep))) ||
+      scope?.status !== "COMPLETE" || scope.actionId !== next.id || !concreteLine(scope.evidence) ||
+      !effectSet(wait.protectedEffects) || !effectSet(scope.protectedEffects) || !effectSet(scope.effects) ||
+      !wait.protectedEffects.every(key => scope.protectedEffects.includes(key)) ||
+      scope.effects.some(key => scope.protectedEffects.some(held =>
+        key === held || key.startsWith(held + "/") || held.startsWith(key + "/"))) ||
+      canonicalJson(task.assignment.effects ?? null) !== canonicalJson(scope.effects)) {
+    return stop("HELD", "fresh pending dependency, clear pause and complete disjoint effect scope required");
+  }
+  const binding = {work: task.work, revision: task.revision, owner: task.owner, authority: task.authority,
+    contextEpoch: task.assignment.contextEpoch, actionId: next.id, stateSha256: input.stateSha256};
+  if (observed?.kind !== "FIRST_ACTION" || !validSelectedStart(observed, task.work) ||
+      !concreteLine(observed.evidence) || observed.readbackEvidence !== task.assignment.readback.evidence ||
+      !Number.isSafeInteger(observed.readbackSequence) || observed.readbackSequence < 0 ||
+      !Number.isSafeInteger(observed.sequence) || observed.sequence <= observed.readbackSequence ||
+      !Object.keys(binding).every(key => observed[key] === binding[key])) {
+    return stop("LIMITED", "native first action and exact observed owner, turn and State required");
+  }
+
+  if (waiting.returnApplication && !outbox.routes.some(row => row.id === waiting.returnApplication.receiptId &&
+        routeBindingMatches(row, waiting.returnApplication))) {
+    return stop("HELD", "outbox or current wait application cannot be verified");
+  }
+  const prior = {...Object.fromEntries(Object.entries(a).filter(([, value]) => value !== null)),
+    ...(waiting.obligation === undefined ? {} : {obligation: waiting.obligation}),
+    ...(waiting.returnApplication ? {returnApplication: waiting.returnApplication} : {})};
+  const started = replaceReturnSection(state, "## Execution Leases", "## Pending Return Inbox", body =>
+    body.split("\n").map(line => tableRows(line, /^Work$/i)[0]?.[0] === b[0]
+      ? line.replace(/^(\s*\|[^|]*\|\s*)(PREPARED|STARTED)(?=\s*\|)/, "$1WORKING") : line).join("\n"));
+  const record = {schemaVersion: 1, id: next.id, work: task.work, action: next.action, owner: task.owner,
+    state: "WORKING", evidence: observed.evidence,
+    retainedWait: {action: prior, dependsOn: wait.dependsOn, protectedEffects: wait.protectedEffects, dodSection, controlLine,
+      outcome: dod.outcome, effects: scope.effects, start: selectStart(observed)}};
+  const candidate = putAction(putDod(started,
+    "\n\n- Current DOD: " + dod.outcome + "\n- Accepted proof: " + dod.acceptedProof + "\n- Remaining: " + dod.remaining + "\n\n",
+    [dod.outcome, dod.acceptedProof, dod.remaining, next.action].join(" -> ")), record);
+  const issues = returnApplicationCheck(candidate, graph, manifest, {sourceWork: a.work, work: task.work}, outbox, next);
+  const working = readProductionContinuation(candidate);
+  if (working.value?.state !== "WORKING" || working.value.id !== next.id) issues.push("observed start did not render");
+  if (issues.length) return stop("HELD", "candidate failed existing control validation", {issues});
+
+  return exportActiveWork(candidate, flags, {work:task.work, owner:task.owner, actionId:next.id}, "WORKING_READBACK");
+}
+
+async function exportActiveWork(candidate, flags, identity, phase) {
+  const stop = heldReturn;
+  const candidateSha256 = sha256(candidate);
+  const summary = {...identity, candidateSha256,
+    concurrency: "UNVERIFIED", dispatch: "NOT_INVOKED"};
+  if (flags.expectStateSha) {
+    const published = await readFile(path.resolve(flags.candidate), "utf8");
+    if (flags.expectStateSha !== candidateSha256 || published !== candidate) {
+      return stop("CONFLICT", "published State does not match the exact validated candidate");
+    }
+    return stop("LIMITED", "published State matches the candidate; concurrency and native authenticity not verified",
+      {...summary, phase});
+  }
+  await writeFile(path.resolve(flags.candidate), candidate, {flag: "wx", mode: 0o600});
+  return stop("LIMITED", "candidate validated; publish only against unchanged current State and read it back",
+    {...summary, phase: "CANDIDATE"});
+}
 export function evaluateGuardLock(
   observation,
   { now = Date.now(), graceSeconds = 120 } = {},
@@ -2011,8 +2260,11 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
   const scope = readLeaseActivityScope(content);
   const result = (coverage, issues = []) => ({ key: scope.key, coverage, issues,
     signal: coverage === "COVERED" && issues.length > 0, nextActions: [] });
-  if (!activity || !Object.hasOwn(activity, "leases")) return result("NOT_REQUESTED");
   const limited = (reason) => result("LIMITED", [`Lease activity: LIMITED (${reason})`]);
+  const {retainedWait, issues: continuationIssues} = readProductionContinuation(content);
+  if (retainedWait !== undefined && continuationIssues.length) return limited("invalid retained wait");
+  if (!activity || !Object.hasOwn(activity, "leases")) return retainedWait
+    ? limited("retained wait needs whole-lease observation") : result("NOT_REQUESTED");
   const observed = typeof activity.observedAt === "string" ? Date.parse(activity.observedAt) : NaN;
   if (activity.schemaVersion !== 1 || activity.leaseKey !== scope.key) return limited("missing or stale lease binding");
   if (!Number.isFinite(observed) || observed > now + 5000 || now - observed > maxAgeSeconds * 1000) {
@@ -2047,6 +2299,13 @@ export function evaluateLeaseActivity(content, activity, { now = Date.now(), max
       if (!["PENDING", "CHANGED"].includes(view.wait?.status) || !concreteLine(view.wait.evidence) ||
           !concreteLine(view.wait.resumeWhen) || !Array.isArray(view.wait.dependsOn)) {
         return limited(`wait condition unavailable for ${lease.work}`);
+      }
+      if (retainedWait && workMatches(lease.work, retainedWait.action?.work) &&
+          view.wait.status === "PENDING" &&
+          (view.wait.resumeWhen !== retainedWait.action.resumeWhen || view.wait.evidence !== retainedWait.action.evidence ||
+           retainedWait.dependsOn.some(dep => resolve(dep).length > 0 &&
+             !view.wait.dependsOn.some(key => resolve(key)[0] === resolve(dep)[0])))) {
+        return limited(`retained wait readback differs for ${lease.work}`);
       }
       for (const dependency of view.wait.dependsOn) {
         const targets = resolve(dependency);
@@ -2810,6 +3069,12 @@ async function main() {
     if (!flags.input) throw new Error("action-receipt requires --input");
     const input = JSON.parse(await readFile(path.resolve(flags.input), "utf8"));
     if ((flags.codexSpawn || flags.workerResume) && (input?.boundary !== "work-routing" || (flags.codexSpawn && flags.workerResume))) throw new Error("select one worker route for work-routing");
+    if (input?.boundary === "active-work") {
+      if (flags.host) throw new Error("active-work is native State publication, not host dispatch");
+      console.log(JSON.stringify(await manualActiveWork(input, flags), null, 2));
+      process.exitCode = 2;
+      return;
+    }
     if (input?.boundary === "return-application") {
       if (flags.host && (flags.state || flags.graph || flags.outbox || flags.candidate || flags.expectStateSha || flags.receipt)) {
         throw new Error("--host cannot be combined with manual State exports");

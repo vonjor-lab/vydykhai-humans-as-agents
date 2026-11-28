@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { copyFile, mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -863,6 +863,269 @@ function applicationFixture() {
   };
   return {current, host, request, events, hash, deliver, wait};
 }
+
+test("native active-work State publication keeps the wait and never dispatches", async t => {
+  const dir = await mkdtemp(path.join(tmpdir(), "active-work-"));
+  t.after(() => rm(dir, {recursive:true, force:true}));
+  const f = applicationFixture();
+  const aTask = structuredClone(f.current.taskDisposition);
+  const aResult = structuredClone(f.current.result);
+  const task = f.current.taskDisposition;
+  const session = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+  const orchestrator = "codex://threads/" + session;
+  aTask.routing.orchestrator = orchestrator;
+  const owner = "task-two", work = "WORK-2";
+  const next = {...f.current.next, id:"NEXT-B", owner, action:"Verify independent outcome"};
+  const dod = {outcome:"independent outcome is visible", acceptedProof:"B baseline", remaining:"verify B result"};
+  const effects = ["repo/isolated"];
+  Object.assign(task, {work, owner});
+  Object.assign(task.assignment, {work, owner, dod, effects,
+    obligations:[{id:next.obligation, owner, state:"READY", evidence:next.evidence}]});
+  task.assignment.directions[0].work = work;
+  Object.assign(task.routing, {work, actor:owner, orchestrator});
+  const original = f.current.state.replace(/^\| return-7 .*\n/m, "")
+    .replace("Context: current |", "Context: " + orchestrator + " |")
+    .replace("| WORK-OTHER | STARTED | other-owner |",
+      "| WORK-OTHER | STARTED | other-owner |\n| WORK-C | WAITING | other-wait-owner |\n| WORK-2 | PREPARED | task-two |");
+  const file = name => path.join(dir, name);
+  const args = ["action-receipt", "--input", file("request"), "--state", file("state"),
+    "--graph", file("graph"), "--outbox", file("outbox"), "--receipt", file("receipt"), "--candidate", file("candidate")];
+  await writeFile(file("graph"), healthyGraph);
+  await writeFile(file("outbox"), "");
+  const request = {boundary:"active-work", work, stateSha256:f.hash(original), next, taskDisposition:task};
+  const a = readProductionContinuation(original).value;
+  const proof = {stateSha256:request.stateSha256, work, owner, revision:task.revision,
+    contextEpoch:task.assignment.contextEpoch, direction:task.assignment.directions[0], evidence:"native authority readback",
+    observedAt:new Date().toISOString(), pause:"CLEARED", dod,
+    wait:{work:a.work, owner:a.owner, id:a.id, status:"PENDING", resumeWhen:a.resumeWhen, evidence:a.evidence,
+      dependsOn:["EXTERNAL-ACCESS"], protectedEffects:["tracker/access"]},
+    scope:{status:"COMPLETE", actionId:next.id, evidence:"accepted scoped resource inventory",
+      protectedEffects:["tracker/access", "repo/other"], effects},
+    observed:{kind:"FIRST_ACTION", work, revision:task.revision, owner, authority:task.authority,
+      stateSha256:request.stateSha256, contextEpoch:task.assignment.contextEpoch, actionId:next.id,
+      turnId:"worker-two-turn", source:"native://worker-two-turn/first-action",
+      evidence:"native command output", readbackEvidence:task.assignment.readback.evidence,
+      readbackSequence:10, sequence:11}};
+  const invoke = async (state, req, receipt, extra = [], replace = null) => {
+    await writeFile(file("state"), state);
+    await writeFile(file("request"), JSON.stringify(req));
+    await writeFile(file("receipt"), typeof receipt === "string" ? receipt : JSON.stringify(receipt));
+    const command = replace === false ? args.slice(0, -2) : replace ? [...args.slice(0, -1), file(replace)] : args;
+    const result = run([...command, ...extra]);
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    return JSON.parse(result.stdout);
+  };
+  for (const [mutation, status, reason] of [
+    [p => { delete p.scope; }, "HELD", /effect scope/],
+    [p => { p.scope.status = "UNKNOWN"; }, "HELD", /effect scope/],
+    [p => { p.scope.effects = ["tracker"]; }, "HELD", /effect scope/],
+    [p => { p.scope.effects = ["repo/other"]; }, "HELD", /effect scope/],
+    [p => { p.wait.dependsOn = [work]; }, "HELD", /dependency/],
+    [p => { p.wait.status = "UNKNOWN"; }, "HELD", /dependency/],
+    [p => { p.pause = "ACTIVE"; }, "HELD", /pause/],
+    [p => { p.observedAt = "2000-01-01T00:00:00Z"; }, "HELD", /fresh/],
+    [p => { delete p.observed; }, "LIMITED", /first action/],
+    [p => { p.observed.owner = "wrong-owner"; }, "LIMITED", /owner/],
+    [p => { delete p.observed.source; }, "LIMITED", /first action/],
+    [p => { delete p.dod; }, "HELD", /assignment DOD/],
+    [p => { p.observed.kind = "ACK"; }, "LIMITED", /first action/],
+    [p => { p.observed.sequence = 10; }, "LIMITED", /first action/],
+  ]) {
+    const bad = structuredClone(proof);
+    mutation(bad);
+    const result = await invoke(original, request, bad);
+    assert.equal(result.status, status);
+    assert.match(result.reason, reason);
+    await assert.rejects(readFile(file("candidate")), {code:"ENOENT"});
+  }
+  assert.equal((await invoke(original + "\n", request, proof)).status, "CONFLICT");
+  const paused = structuredClone(request);
+  paused.taskDisposition.pause = "ACTIVE";
+  assert.equal((await invoke(original, paused, proof)).status, "HELD");
+  const ambiguous = original.replace("| PREPARED | task-two |", "| PREPARED | task-two / second-owner |");
+  const ambiguousSha = f.hash(ambiguous);
+  assert.match((await invoke(ambiguous, {...request, stateSha256:ambiguousSha},
+    {...proof, stateSha256:ambiguousSha, observed:{...proof.observed, stateSha256:ambiguousSha}})).reason, /separately authorized/);
+
+  const prepared = await invoke(original, request, proof);
+  assert.equal(prepared.phase, "CANDIDATE", JSON.stringify(prepared));
+  assert.equal(prepared.dispatch, "NOT_INVOKED");
+  const candidate = await readFile(file("candidate"), "utf8");
+  const view = readProductionContinuation(candidate);
+  assert.deepEqual(view.issues, []);
+  assert.equal(view.value.state, "WORKING");
+  assert.equal(view.value.owner, owner);
+  assert.deepEqual(view.retainedWait.dependsOn, proof.wait.dependsOn);
+  assert.deepEqual(view.retainedWait.protectedEffects, proof.wait.protectedEffects);
+  assert.deepEqual(view.retainedWait.action, a);
+  assert.match(candidate, /- Current DOD: independent outcome is visible/);
+  assert.doesNotMatch(candidate, /^- Current DOD: actor completes the flow/m);
+  for (const key of ["work", "revision", "owner", "contextEpoch", "turnId", "source", "stateSha256"]) {
+    assert.equal(view.retainedWait.start[key], proof.observed[key], key);
+  }
+  for (const line of original.split("\n").filter(line => /WORK-1.*WAITING|WORK-OTHER.*STARTED|WORK-C.*WAITING/.test(line))) {
+    assert.ok(candidate.includes(line));
+  }
+  assert.match(candidate, /\| WORK-2 \| WORKING \| task-two \|/);
+  await writeFile(file("published"), candidate + "\n");
+  const readback = ["--expect-state-sha", prepared.candidateSha256];
+  assert.equal((await invoke(original, request, proof, readback, "published")).status, "CONFLICT");
+  await writeFile(file("published"), candidate);
+  const confirmed = await invoke(original, request, proof, readback, "published");
+  assert.equal(confirmed.phase, "WORKING_READBACK");
+  assert.equal(confirmed.concurrency, "UNVERIFIED");
+  assert.equal(confirmed.replayAuthorized, false);
+  assert.equal((await invoke(candidate, request, proof)).status, "CONFLICT");
+  const alreadyWorking = original.replace("WORK-2 | PREPARED", "WORK-2 | WORKING");
+  const stateSha256 = f.hash(alreadyWorking);
+  const existing = await invoke(alreadyWorking, {...request, stateSha256},
+    {...proof, stateSha256, observed:{...proof.observed, stateSha256}}, [], "existing");
+  assert.equal(existing.phase, "CANDIDATE");
+  assert.equal(readProductionContinuation(await readFile(file("existing"), "utf8")).retainedWait.start.stateSha256, stateSha256);
+
+  await mkdir(file("scripts"));
+  const hook = file("scripts/project-guard-hook.mjs");
+  await copyFile(path.join(root, "scripts/project-guard-hook.mjs"), hook);
+  for (const name of ["project-guard-open.mjs", "vydykhai.mjs"]) {
+    await symlink(path.join(root, "scripts", name), file("scripts/" + name));
+  }
+  const invokeHook = name => {
+    const result = spawnSync(process.execPath, [hook], {encoding:"utf8", input:JSON.stringify({
+      cwd:dir, session_id:session, turn_id:"manager-turn", hook_event_name:name, stop_hook_active:false})});
+    assert.equal(result.status, 0, result.stderr);
+    return JSON.parse(result.stdout || "{}");
+  };
+  await writeFile(file("PROJECT_STATE.md"), original);
+  assert.deepEqual(invokeHook("UserPromptSubmit"), {});
+  await writeFile(file("PROJECT_STATE.md"), candidate);
+  assert.deepEqual(invokeHook("Stop"), {});
+  const stop = JSON.parse(await readFile(file(".vydykhai/guard-foreground.json"), "utf8")).lastOwnerStop;
+  assert.equal(stop?.decision, "QUIET");
+  assert.equal(stop?.state, "WORKING");
+
+  const returned = candidate.replace("## Detours And Recall",
+    "| return-7 | WORK-1 / task-one | RECEIVED |\n## Detours And Recall");
+  const returnSha = f.hash(returned);
+  await writeFile(file("outbox"), f.current.outbox);
+  const held = await invoke(returned, {...f.request, stateSha256:returnSha, result:aResult,
+    next:f.current.next, taskDisposition:aTask}, {
+    stateSha256:returnSha, work:aTask.work, owner:aTask.owner, revision:aTask.revision,
+    contextEpoch:aTask.assignment.contextEpoch, direction:aTask.assignment.directions[0], evidence:"native authority",
+  }, [], "return-candidate");
+  assert.equal(held.status, "LIMITED");
+  assert.match(held.reason, /restore the retained wait/);
+  await assert.rejects(readFile(file("return-candidate")), {code:"ENOENT"});
+
+  const authority = (state, assignment) => ({stateSha256:f.hash(state), work:assignment.work, owner:assignment.owner,
+    revision:assignment.revision, contextEpoch:assignment.assignment.contextEpoch,
+    direction:assignment.assignment.directions.at(-1), evidence:"native authority readback"});
+  const correction = structuredClone(task);
+  correction.review = {required:true, triggers:["acceptance"], basis:"review identified a missing check", dispatch:"review-correct",
+    verdict:{id:"correct-b", reviewer:"reviewer-b", evidence:"independent correction", decision:"CORRECT",
+      gap:"Missing independent check", check:task.next.check,
+      ...Object.fromEntries(["work","revision","candidate","plan","ledger"].map(key => [key, task[key]]))},
+    application:{verdict:"correct-b", owner, evidence:"owner checked correction"}};
+  f.deliver("return-correction", "CHECKPOINT_READY", "independent correction needed", {work, owner, dod:dod.outcome,
+    previousActionId:next.id, start:view.retainedWait.start});
+  const correctionState = candidate.replace("## Detours And Recall",
+    "| return-correction | WORK-2 / task-two | RECEIVED |\n## Detours And Recall");
+  const correctionRequest = {boundary:"return-application", receiptId:"return-correction",
+    stateSha256:f.hash(correctionState), result:f.current.result, taskDisposition:correction,
+    next:{...next, id:"NEXT-B-CORRECT", action:"Apply independently reviewed correction"}};
+  await writeFile(file("outbox"), f.current.outbox);
+  const correctionCandidate = await invoke(correctionState, correctionRequest, authority(correctionState, correction),
+    [], "correction-ready");
+  assert.equal(correctionCandidate.phase, "CANDIDATE", JSON.stringify(correctionCandidate));
+  const ready = await readFile(file("correction-ready"), "utf8");
+  const readyFlag = ["--expect-state-sha", correctionCandidate.candidateSha256];
+  const correctionRoute = await invoke(ready, correctionRequest, authority(ready, correction), readyFlag, false);
+  assert.equal(correctionRoute.phase, "STATE_READBACK");
+  f.current.outbox += "\n" + correctionRoute.returnRoute;
+  await writeFile(file("outbox"), f.current.outbox);
+  const observed = {...proof.observed, ...correctionRoute.binding, turnId:"corrected-worker-turn",
+    source:"native://corrected-worker-turn/first-action", evidence:"observed correction command"};
+  const correctionObserved = {...correctionRequest, observed};
+  const replayObservation = {...correctionObserved, observed:{...observed, turnId:proof.observed.turnId}};
+  assert.match((await invoke(ready, replayObservation, authority(ready, correction), readyFlag, "corrected")).reason,
+    /fresh owner turn/);
+  const wrongOwner = {...correctionObserved, observed:{...observed, owner:"other-owner"}};
+  assert.match((await invoke(ready, wrongOwner, authority(ready, correction), readyFlag, "corrected")).reason,
+    /fresh owner turn/);
+  await assert.rejects(readFile(file("corrected")), {code:"ENOENT"});
+  const corrected = await invoke(ready, correctionObserved, authority(ready, correction), readyFlag, "corrected");
+  assert.equal(corrected.phase, "WORKING_CANDIDATE", JSON.stringify(corrected));
+  const working = await readFile(file("corrected"), "utf8");
+  const correctedView = readProductionContinuation(working);
+  assert.deepEqual(correctedView.retainedWait.start, view.retainedWait.start);
+  assert.equal(correctedView.actionStart.source, observed.source);
+  const correctedReadback = await invoke(working, {...correctionObserved,
+    observed:{...observed, observedStateSha256:corrected.candidateSha256}}, authority(working, correction), readyFlag, false);
+  assert.equal(correctedReadback.phase, "WORKING_READBACK");
+
+  const bTask = structuredClone(task);
+  bTask.action = "accept";
+  bTask.acceptanceEvidence = "B independent verified proof";
+  bTask.assignment.obligations[0].state = "DONE";
+  bTask.review = {required:true, triggers:["acceptance"], basis:"independent review required", dispatch:"review-b",
+    verdict:{id:"verdict-b", reviewer:"reviewer-b", evidence:"independent verification", decision:"ACCEPT",
+      ...Object.fromEntries(["work","revision","candidate","plan","ledger"].map(key => [key, bTask[key]]))},
+    application:{verdict:"verdict-b", owner, evidence:"owner checked verdict"}};
+  f.deliver("return-b", "ACCEPT", bTask.acceptanceEvidence, {work, owner, dod:dod.outcome, scope:"PARENT_DOD",
+    previousActionId:correctionRequest.next.id, start:view.retainedWait.start, actionStart:correctedView.actionStart});
+  const bReturned = working.replace("## Detours And Recall",
+    "| return-b | WORK-2 / task-two | RECEIVED |\n## Detours And Recall");
+  const bRequest = {boundary:"return-application", receiptId:"return-b", stateSha256:f.hash(bReturned),
+    result:f.current.result, taskDisposition:bTask,
+    next:{kind:"ACCEPT", id:"ACCEPT-B", owner:orchestrator, action:"Close only parent B",
+      evidence:"B review verdict", resumeWhen:"Restore the retained parent A"}};
+  await writeFile(file("outbox"), f.current.outbox);
+  const wrongStart = structuredClone(bRequest);
+  wrongStart.result.actionStart = view.retainedWait.start;
+  assert.match((await invoke(bReturned, wrongStart, authority(bReturned, bTask), [], "accept-b")).reason, /selected parent start/);
+  const wrongDod = structuredClone(bRequest);
+  wrongDod.result.dod = aResult.dod;
+  assert.match((await invoke(bReturned, wrongDod, authority(bReturned, bTask), [], "accept-b")).reason, /parent DOD/);
+  const accepted = await invoke(bReturned, bRequest, authority(bReturned, bTask), [], "accept-b");
+  assert.equal(accepted.phase, "CANDIDATE", JSON.stringify(accepted));
+  const bAccepted = await readFile(file("accept-b"), "utf8");
+  assert.match(bAccepted, /- Current DOD: independent outcome is visible\n- Accepted proof: B independent verified proof/);
+  assert.match(bAccepted, /\| WORK-2 \| CLOSED \| task-two \|/);
+  assert.doesNotMatch(bAccepted, /\| return-7 \| WORK-1 \/ task-one \| RECEIVED \|/);
+  const bReadback = await invoke(bAccepted, bRequest, authority(bAccepted, bTask),
+    ["--expect-state-sha", accepted.candidateSha256], false);
+  assert.equal(bReadback.disposition, "ACCEPT");
+  assert.equal(bReadback.phase, "STATE_READBACK");
+  const latest = bAccepted.replace("## Detours And Recall", "| return-7 | WORK-1 / task-one | RECEIVED |\n## Detours And Recall");
+  const restore = {boundary:"active-work", operation:"restore", work, stateSha256:f.hash(latest)};
+  assert.match((await invoke(latest, restore, bAccepted, [], "restore-a")).reason, /bound Return Route/);
+  await writeFile(file("outbox"), f.current.outbox + "\n" + bReadback.returnRoute);
+  assert.match((await invoke(bAccepted, restore, bAccepted, [], "restore-a")).reason, /prior State/);
+  assert.match((await invoke(latest, restore, latest, [], "restore-a")).reason, /bound Return Route/);
+  const altered = latest.replace("actor baseline", "altered retained proof");
+  assert.match((await invoke(altered, {...restore, stateSha256:f.hash(altered)}, bAccepted, [], "restore-a")).reason,
+    /bound Return Route/);
+  const alteredDod = latest.replace("- Accepted proof: B independent verified proof", "- Accepted proof: altered B proof");
+  assert.match((await invoke(alteredDod, {...restore, stateSha256:f.hash(alteredDod)}, bAccepted, [], "restore-a")).reason,
+    /bound Return Route/);
+  assert.equal((await invoke(bAccepted, bRequest, authority(bAccepted, bTask), [], "accept-replay")).status, "ALREADY_RECORDED");
+  const restored = await invoke(latest, restore, bAccepted, [], "restore-a");
+  assert.equal(restored.phase, "CANDIDATE", JSON.stringify(restored));
+  const aRestored = await readFile(file("restore-a"), "utf8");
+  assert.deepEqual(readProductionContinuation(aRestored).value, a);
+  assert.match(aRestored, /- Current DOD: actor completes the flow\n- Accepted proof: actor baseline\n- Remaining: complete flow/);
+  assert.match(aRestored, /\| WORK-2 \| CLOSED \| task-two \|/);
+  assert.match(aRestored, /\| return-7 \| WORK-1 \/ task-one \| RECEIVED \|/);
+  const aReadback = await invoke(latest, restore, bAccepted, ["--expect-state-sha", restored.candidateSha256], "restore-a");
+  assert.equal(aReadback.phase, "WAITING_READBACK");
+  const aRequest = {...f.request, stateSha256:f.hash(aRestored), taskDisposition:aTask,
+    next:{...f.current.next, owner:a.owner}, result:aResult};
+  const pending = structuredClone(aRequest);
+  pending.result.previousWait.status = "PENDING";
+  assert.match((await invoke(aRestored, pending, authority(aRestored, aTask), [], "resume-a")).reason, /not evidenced as satisfied/);
+  const resumed = await invoke(aRestored, aRequest, authority(aRestored, aTask), [], "resume-a");
+  assert.equal(resumed.phase, "CANDIDATE", JSON.stringify(resumed));
+  assert.equal(readProductionContinuation(await readFile(file("resume-a"), "utf8")).value.work, a.work);
+});
 
 test("Return application runs the retained next operation and accepts only the final parent DOD", async t => {
   const {current, host, request, events, hash, deliver} = applicationFixture();

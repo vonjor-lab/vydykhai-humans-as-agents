@@ -104,19 +104,12 @@ Research starts with known scope, authoritative sources, exact gaps and a permit
    The executor reads/acknowledges and starts authorized work in the same turn.
    Reuse the same worker for later supplements unless the authorized safe-boundary context pivot in `memory-recall.md` requires a fresh executor; preserve logical task, effects and spend, never replay finished work.
    Preparation for a manager/Discovery decision returns scoped evidence to that existing owner instead; it does not create an implementation task prematurely.
-3. At a real gap, the executor reports the exact missing fact, affected operation
-   and retained progress to the orchestrator. Continue independent safe work.
-   The orchestrator distinguishes missing evidence, new solution design and
-   environment failure; only bounded retrieval goes to cheap preparation.
-4. The orchestrator approves a narrow supplementary question. The preparer
-   returns an evidence delta; the owner incorporates it into a complete revised
-   package retaining prior applicable constraints. A delta alone is not the task.
-5. Confirm that package in a fresh output directory, then the authorized current worker reads
-   and acknowledges it, continues, verifies retained and new behavior, and sends
-   the current-task Return Sync. No new human checkpoint for an already authorized
-   internal handoff. Changed scope/authority needs the ordinary rebrief instead.
+3. For a named read-only gap under unchanged authority, the executor uses only already allowed sources. Retrieve directly or ask bounded factual help on a proven profile for the missing fact, with a stop condition. Return a compact cited delta or the exact unresolved gap to the executor, who keeps the parent assignment and sole lease. No rebrief, replacement packet or per-item approval. Continue independent safe work; the delta alone is neither DOD progress nor acceptance. Preserve attempts, spend, ordinary final independent review and Return Sync.
+4. Boundary, shared contract, conflicting evidence, safety or authority questions go to the existing owner with the originals and retained progress. No source expansion or solution choice under a factual label. Use a confirmed supplement only when the owner needs a replacement package; changed scope or authority needs the ordinary rebrief.
 
-Every navigation packet has `assignment` with exactly `owner`, `requestId`, `question`, `phase`, `previous`. Owner equals package owner; request id and question are nonempty. For `phase: "initial"`, `previous` is null. For `"supplement"`, it is `{plan:{path,sha256},approval:{path,sha256}}` pointing to the previous approved package. The builder checks those bytes, owner approval and exact task identity, worker, scope, action and Candidate files. Paths are workspace-relative.
+Optional `work-routing` lookup: use `lookup` / `named-fact` with `question,source,stopWhen` and `preparation:{gap,readOnly,affectedOperation,retained,parent,delta?}`. Require `gap:"fact"`, `readOnly:true`, and `parent:{work,revision,owner,authority,evidence,sources}` from the accepted lease. In disposition/resume, retain that receipt as `assignment.preparationEvidence`, not active `routing`; keep routing enrollment and use the current execution or verification route. Dependent continuation requires `delta:{fact,source,locator}` and matching current authority and `assignment.preparationSources` from existing grants, never the proposal. `WORKER_PREPARATION` checks declarations only; existing access controls and required independent acceptance stay unchanged.
+
+Every full-package navigation packet has `assignment` with exactly `owner`, `requestId`, `question`, `phase`, `previous`. Owner equals package owner; request id and question are nonempty. For `phase: "initial"`, `previous` is null. For `"supplement"`, it is `{plan:{path,sha256},approval:{path,sha256}}` pointing to the previous approved package. The builder checks those bytes, owner approval and exact task identity, worker, scope, action and Candidate files. Paths are workspace-relative.
 
 Supplement input and output use new names; never overwrite predecessor evidence. Confirmation records `<previous-plan-path>.superseded.json` pointing to the exact successor. The supported `context-run` path rejects the old package and a competing successor; the new worker must acknowledge the new package. A failed confirmation is not permission to dispatch. Review its exact state and retry the same output; do not create parallel successors. These checks neither authenticate identities nor intercept arbitrary native edits; ordinary owner/lease control still applies.
 

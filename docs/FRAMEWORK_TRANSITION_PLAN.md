@@ -1,5 +1,9 @@
 # Framework Efficiency Transition
 
+## Assignment custody - 2.1.41
+
+At the owner's safe boundary retain each scoped wait, original authority, spent allowance and evidence. Select independent work through its own lease. Follow one whole assignment from actual worker start to the applied independent verdict; count intermediate checkpoints as progress only. Separate cumulative assignment usage from adoption and observation. A missing native witness stays pending, not a reason to repeat accepted checks.
+
 ## Activation source - 2.1.40
 
 Use the reviewed release installer. Reconcile the registered Stop command and selected authoritative State with the native owner; a proper wait stays a wait. Check the last real Stop turn and source digest separately at adoption. Absence is LIMITED, not authority to simulate a turn, replay work or declare economy.

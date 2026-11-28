@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "vydykhai",
-"version": "2.1.40",
+"version": "2.1.41",
   "distributionStatus": "STABLE",
   "creator": {
     "name": "Alexander Rozhnov",
@@ -640,7 +640,7 @@
     {
       "id": "active-context",
       "since": "1.30.0",
-      "action": "Read back the actual active context cwd/accepted HEAD/core/title/State and its own live plus offline doctor; rotate only with justification and existing confirmation.",
+      "action": "Read back the actual active context cwd/accepted HEAD/core/title/State and its own live plus offline doctor; rotate only with justification and existing confirmation. At the next independent assignment verify the selected owner acted, the unrelated wait survived and the verdict covers the whole assignment. Record cumulative spend separately from release overhead.",
       "reuseBy": [
         "targetBundle",
         "activeContext",
@@ -664,7 +664,7 @@
     {
       "id": "prepared-work",
       "since": "1.30.0",
-      "action": "Use context-prepare/context-run for new qualifying tasks and context.package.v3 for owner-reviewed consume/change/create boundaries. Read memory-recall.md and only the applicable #conditional-preparation-details in framework-activation.md: ordinary recall, multipart sources, alignment, association, safe pointers or memory misses. Resolve an explicit gap through bounded preparation/Discovery; a locator or packet inventory never proves semantic completeness. Keep required inputs available before execution and judge new output at acceptance, not as permission to produce it. Retain legacy packets and ongoing workers until a safe rebrief. Repair an evidenced gap or record source-backed NO_CHANGE; publish through existing shared integration and prove affected recipients' unhinted retrieval/application with retained/new behavior, Return and memory. Missing or stale proof remains pending. Preserve authority, negative evidence, unknown effects, costs and pauses; no automatic cutover, extra access or replay. For a naturally occurring preparation-lock failure use context-preparation.md#interrupted-preparation; recovery neither grants execution nor clears uncertainty. Small packets and local tests do not prove economy or live adoption.",
+      "action": "Use context-prepare/context-run for new qualifying tasks and context.package.v3 for owner-reviewed consume/change/create boundaries. Read memory-recall.md and only the applicable #conditional-preparation-details in framework-activation.md: ordinary recall, multipart sources, alignment, association, safe pointers or memory misses. Resolve a factual gap from approved sources inside the existing assignment; return the sourced delta. Changed boundaries require bounded preparation/Discovery; a locator or packet inventory never proves semantic completeness. Keep required inputs available before execution and judge new output at acceptance, not as permission to produce it. Retain legacy packets and ongoing workers until a safe rebrief. Repair an evidenced gap or record source-backed NO_CHANGE; publish through existing shared integration and prove affected recipients' unhinted retrieval/application with retained/new behavior, Return and memory. Missing or stale proof remains pending. Preserve authority, negative evidence, unknown effects, costs and pauses; no automatic cutover, extra access or replay. For a naturally occurring preparation-lock failure use context-preparation.md#interrupted-preparation; recovery neither grants execution nor clears uncertainty. Small packets and local tests do not prove economy or live adoption.",
       "reuseBy": [
         "targetBundle",
         "sourceRange",

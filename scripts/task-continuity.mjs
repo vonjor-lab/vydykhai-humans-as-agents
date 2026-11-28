@@ -30,11 +30,48 @@ export function evaluateWorkRouting(v, binding = {}) {
        !text(v.question) || !text(v.stopWhen))) {
     return result("UNVERIFIED", "bounded lookup needs a named question and expansion stop condition");
   }
+  const preparation = Object.hasOwn(v, "preparation");
+  if (preparation) {
+    const p = v.preparation, parent = p?.parent;
+    if (!object(p) || !object(parent) ||
+        !["authority","evidence"].every(k => text(parent[k])) ||
+        !Array.isArray(parent.sources) || !parent.sources.length || parent.sources.length > 32 ||
+        !parent.sources.every(text) || new Set(parent.sources).size !== parent.sources.length ||
+        !["affectedOperation","retained"].every(k => text(p[k]))) {
+      return result("UNVERIFIED", "preparation requires current parent custody, allowed sources and retained work");
+    }
+    if (v.operation !== "lookup" || v.actor === v.orchestrator ||
+        parent.work !== v.work || parent.revision !== v.revision || parent.owner !== v.actor ||
+        (Object.hasOwn(binding, "authority") && parent.authority !== binding.authority) ||
+        (Object.hasOwn(binding, "preparationSources") &&
+          (!Array.isArray(binding.preparationSources) ||
+           binding.preparationSources.length !== parent.sources.length ||
+           !parent.sources.every(source => binding.preparationSources.includes(source)))) ||
+        !parent.sources.includes(v.source) ||
+        binding.compileSpawn || binding.compileResume) {
+      return result("MISMATCH", "preparation cannot change parent custody, authority, source scope or execution route", "OWNER_DECISION");
+    }
+    if (["boundary","contract","conflict","safety","authority"].includes(p.gap)) {
+      return result("HELD", "material gap requires owner decision", "OWNER_DECISION");
+    }
+    if (p.gap !== "fact" || p.readOnly !== true) {
+      return result("UNVERIFIED", "only a read-only factual gap can stay in the worker cycle");
+    }
+    if (Object.hasOwn(p, "delta")) {
+      const d = p.delta;
+      if (!keys(d, ["fact","source","locator"]) || !Object.values(d).every(text)) {
+        return result("UNVERIFIED", "compact fact and addressable original required");
+      }
+      if (d.source !== v.source) return result("MISMATCH", "delta is not from the scoped source", "OWNER_DECISION");
+    } else if (binding.requirePreparationDelta) {
+      return result("UNVERIFIED", "complete the scoped lookup before continuing the dependent operation");
+    }
+  }
   if (focused && v.actor === v.orchestrator) {
     return result("MISMATCH", "missing project evidence belongs to a focused execution context", "FOCUSED_CONTEXT");
   }
   const decision = result("PASS", "declared route consistent; not dispatch, execution or native interception proof",
-    focused || v.actor !== v.orchestrator ? "FOCUSED_CONTEXT" : "CONTROL_CONTEXT");
+    preparation ? "WORKER_PREPARATION" : focused || v.actor !== v.orchestrator ? "FOCUSED_CONTEXT" : "CONTROL_CONTEXT");
   const resume = binding.compileResume === true;
   if (!Object.hasOwn(v, "spawnProfile") && !binding.requireSpawnProfile && !binding.compileSpawn && !resume) return decision;
   const p = v.spawnProfile;
@@ -74,12 +111,24 @@ export function evaluateWorkRouting(v, binding = {}) {
 }
 
 function evaluateEnrolledRouting(v, revision = v.revision) {
+  const binding = {work:v.work, revision, actor:v.owner,
+    authority:v.authority ?? v.humanEvent, preparationSources:v.assignment?.preparationSources};
+  if (Object.hasOwn(v.assignment ?? {}, "preparationEvidence")) {
+    const evidence = evaluateWorkRouting(v.assignment.preparationEvidence, {...binding, requirePreparationDelta:true});
+    if (evidence.status !== "PASS") return evidence;
+    if (evidence.route !== "WORKER_PREPARATION") {
+      return {status:"UNVERIFIED", reason:"scoped factual preparation evidence required"};
+    }
+  }
   if (v.routingRequired === undefined && !Object.hasOwn(v, "routing")) return null;
   if (v.routingRequired !== undefined && typeof v.routingRequired !== "boolean") {
     return {status:"UNVERIFIED", reason:"invalid routing enrollment"};
   }
   if (v.routingRequired === false && !Object.hasOwn(v, "routing")) return null;
-  return evaluateWorkRouting(v.routing, {work:v.work, revision, actor:v.owner});
+  if (object(v.routing) && Object.hasOwn(v.routing, "preparation")) {
+    return {status:"UNVERIFIED", reason:"retain preparation as assignment evidence, not the active route"};
+  }
+  return evaluateWorkRouting(v.routing, binding);
 }
 
 // Projection of the existing assignment, not a second authority journal. Sequence

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { evaluateTaskDisposition } from "../scripts/task-continuity.mjs";
+import { evaluateTaskDisposition, evaluateWorkRouting } from "../scripts/task-continuity.mjs";
 import { runContextTransition } from "../scripts/context-run.mjs";
 import { fixture } from "./context-fixture.mjs";
 import { assignment } from "./assignment-fixture.mjs";
@@ -19,6 +19,76 @@ const receipt = () => { const r = {boundary:"task-disposition",work:"task",owner
   r.assignment=assignment(r); return r; };
 
 const unsuccessful = id => ({id,hypothesis:"different-"+id,evidence:"original-"+id,outcome:"failed",escalated:false});
+
+const preparationRoute = r => ({boundary:"work-routing",work:r.work,revision:r.revision,
+  orchestrator:"manager",actor:r.owner,operation:"lookup",evidenceNeed:"named-fact",
+  purpose:"Recover the accepted dependency version",source:"release-index",
+  expectedOutput:"Version and original locator",question:"Which version was accepted?",
+  stopWhen:"The accepted entry is found or the index cannot answer",
+  preparation:{gap:"fact",readOnly:true,affectedOperation:"verify dependency",
+    retained:"existing candidate",parent:{work:r.work,revision:r.revision,owner:r.owner,
+      authority:r.authority,evidence:"accepted lease",sources:["release-index"]}}});
+const factualDelta = {fact:"Version 2 is accepted",source:"release-index",locator:"release-index.md:12"};
+const enrollPreparation = r => {
+  const lookup=preparationRoute(r);
+  r.routingRequired=true;
+  r.routing={...lookup,operation:"implement",evidenceNeed:"ready",purpose:"Complete the assignment"};
+  delete r.routing.preparation;
+  r.assignment.preparationSources=["release-index"];
+  r.assignment.preparationEvidence=lookup;
+  return lookup;
+};
+
+test("scoped preparation stays with the parent worker and a sourced delta unblocks the existing route", () => {
+  const r=receipt(), evidence=enrollPreparation(r);
+  r.review={required:false,triggers:[],basis:"ordinary execution"};
+  const lookup=evaluateWorkRouting(evidence);
+  assert.equal(lookup.route,"WORKER_PREPARATION");
+  assert.equal(lookup.status,"PASS");
+  assert.equal(lookup.executionProven,false);
+  assert.equal(lookup.replayAuthorized,false);
+  assert.match(evaluateTaskDisposition(r).reason,/complete the scoped lookup/);
+  evidence.preparation.delta=factualDelta;
+  const result=evaluateTaskDisposition(r);
+  assert.equal(result.status,"PASS");
+  assert.equal(result.productAccepted,false);
+});
+
+test("material gaps and mismatched custody or source cannot use worker preparation", () => {
+  const r=receipt(); enrollPreparation(r);
+  for (const gap of ["boundary","contract","conflict","safety","authority"]) {
+    const route=preparationRoute(r); route.preparation.gap=gap;
+    const out=evaluateWorkRouting(route);
+    assert.equal(out.status,"HELD",gap);
+    assert.equal(out.route,"OWNER_DECISION",gap);
+  }
+  for (const mutate of [p=>p.parent.work="other",p=>p.parent.owner="helper",
+    p=>p.parent.revision="old",p=>p.parent.authority="old",p=>p.parent.sources=["private"],
+    p=>p.readOnly=false,p=>p.delta={...factualDelta,source:"private"},p=>delete p.delta.locator]) {
+    const evidence=r.assignment.preparationEvidence=preparationRoute(r);
+    evidence.preparation.delta={...factualDelta};
+    mutate(evidence.preparation);
+    assert.notEqual(evaluateTaskDisposition(r).status,"PASS",mutate.toString());
+  }
+  const evidence=r.assignment.preparationEvidence=preparationRoute(r);
+  evidence.source="private";
+  evidence.preparation.parent.sources=["private"];
+  evidence.preparation.delta={...factualDelta,source:"private"};
+  assert.equal(evaluateTaskDisposition(r).status,"UNVERIFIED");
+  delete r.assignment.preparationSources;
+  assert.equal(evaluateTaskDisposition(r).status,"UNVERIFIED");
+});
+
+test("preparation cannot reset no-progress history or act as final independent acceptance", () => {
+  const r=receipt(), evidence=enrollPreparation(r);
+  evidence.preparation.delta=factualDelta;
+  r.attempts=[unsuccessful("one"),unsuccessful("two")];
+  assert.match(evaluateTaskDisposition(r).reason,/outcome stagnation/);
+  r.next.reframe=reframeFor(r);
+  delete r.review.dispatch;
+  assert.match(evaluateTaskDisposition(r).reason,/independent verdict/);
+});
+
 const reframeFor = r => ({evidence:"existing-brief/reframe",outcome:"remaining DOD",preserved:"accepted candidate",
   change:"repair the consumer boundary, not another producer rewrite",attemptIds:r.attempts.filter(a=>a.outcome==="failed").map(a=>a.id),check:r.next.check});
 
@@ -103,24 +173,45 @@ test("delivered consultation is not product acceptance; success needs product pr
   assert.equal(evaluateTaskDisposition(r).status,"UNVERIFIED");
   r.acceptanceEvidence="actual DOD"; assert.equal(evaluateTaskDisposition(r).productAccepted,true);
 });
-test("enrolled reference runner refuses absent verdict before actual command and allows bounded correction", async t => {
+test("enrolled preparation survives actual execution and required independent acceptance", async t => {
   const f=await fixture(t); await f.prepare();
   const r=receipt(); r.work=f.task.id; r.owner=f.task.owner; r.revision=f.request.task.sha256;
   r.assignment=assignment(r);
   Object.assign(r.review.verdict,{work:r.work,revision:r.revision}); r.review.application.owner=r.owner;
   const request={...f.request,operation:"resume"};
-  const services={dispositionRequired:true,readTaskDisposition:async()=>r};
+  const evidence=enrollPreparation(r);
+  evidence.preparation.delta=factualDelta;
+  const services={dispositionRequired:true,routingRequired:true,readTaskDisposition:async()=>r,
+    orchestrator:r.routing.orchestrator,readWorkRouting:async()=>r.routing};
   const saved=r.review.verdict; delete r.review.verdict;
   const held=await runContextTransition(request,services);
   assert.equal(held.code,"TASK_DISPOSITION_HELD"); assert.equal(held.stats.commands,0);
   await assert.rejects(readFile(path.join(f.root,"actions.log")),{code:"ENOENT"});
   r.review.verdict=saved;
+  delete evidence.preparation.delta;
+  const pending=await runContextTransition(request,services);
+  assert.equal(pending.code,"TASK_DISPOSITION_HELD");
+  assert.equal(pending.stats.commands,0);
+  evidence.preparation.delta=factualDelta;
   const done=await runContextTransition(request,services);
   assert.equal(done.status,"ACTION_COMPLETED",JSON.stringify(done));
   assert.equal(done.stats.dependentCommands,1);
   r.budget.spent=r.budget.limit;
   const stopped=await runContextTransition(request,services);
   assert.equal(stopped.code,"TASK_DISPOSITION_HELD"); assert.equal(stopped.stats.commands,0);
+  r.action="accept";
+  r.routing={...r.routing,operation:"verify",purpose:"Verify the whole candidate"};
+  assert.equal(await readFile(path.join(f.root,"actions.log"),"utf8"),"called\n");
+  r.acceptanceEvidence="actions.log:1";
+  r.review.triggers=["acceptance"];
+  delete r.review.verdict;
+  assert.match(evaluateTaskDisposition(r).reason,/independent verdict/);
+  assert.equal(evaluateTaskDisposition(r).productAccepted,false);
+  r.review.verdict={...saved,id:"final-verdict",decision:"ACCEPT"};
+  r.review.application={...r.review.application,verdict:"final-verdict"};
+  assert.equal(evaluateTaskDisposition({...r,routing:evidence}).productAccepted,false);
+  assert.equal(evaluateTaskDisposition({...r,routing:undefined}).productAccepted,false);
+  assert.equal(evaluateTaskDisposition(r).productAccepted,true);
 });
 test("activity cannot treat stale revision or delivered consultation as execution clearance", () => {
   const r=receipt();
